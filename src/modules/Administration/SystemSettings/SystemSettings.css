@@ -1,0 +1,1738 @@
+.ims-system-settings-page,
+.ims-system-settings-page * {
+  box-sizing: border-box;
+}
+
+.ims-system-settings-page {
+  width: 100%;
+  min-height: calc(100dvh - 96px);
+  padding: 14px;
+  background: #f8fafc;
+  font-family: var(--font-sans, Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  color: #0f172a;
+  overflow: visible;
+}
+
+/* HEADER */
+.ims-system-settings-header {
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+.ims-system-settings-header__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.ims-system-settings-header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #0f172a;
+}
+
+.ims-system-settings-header p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+.ims-system-settings-header__content {
+  min-width: 0;
+}
+
+.ims-system-settings-header__icon {
+  display: none;
+}
+
+.ims-system-settings-header__metrics {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ims-settings-metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ims-settings-metric strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.ims-settings-metric--total,
+.ims-settings-metric--success {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #047857;
+}
+
+.ims-settings-metric--value {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+/* MAIN LAYOUT - NO FIXED HEIGHT */
+.ims-system-settings-shell {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* LEFT MENU */
+.ims-system-settings-menu {
+  width: 236px;
+  flex: 0 0 236px;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.ims-system-settings-menu__item {
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 6px;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ims-system-settings-menu__item:last-child {
+  margin-bottom: 0;
+}
+
+.ims-system-settings-menu__item svg {
+  flex: 0 0 auto;
+  color: #64748b;
+}
+
+.ims-system-settings-menu__item span,
+.ims-system-settings-menu__item-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ims-system-settings-menu__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.ims-system-settings-menu__count {
+  margin-left: auto;
+  min-width: 22px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ims-system-settings-menu__item:hover,
+.ims-system-settings-menu__item:focus-visible {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #047857;
+  outline: none;
+}
+
+.ims-system-settings-menu__item:hover svg,
+.ims-system-settings-menu__item:focus-visible svg,
+.ims-system-settings-menu__item.is-active svg {
+  color: #059669;
+}
+
+.ims-system-settings-menu__item.is-active {
+  border-color: #86efac;
+  background: #ecfdf5;
+  color: #047857;
+  font-weight: 700;
+}
+
+.ims-system-settings-menu__item.is-active .ims-system-settings-menu__count {
+  background: #ffffff;
+  color: #047857;
+}
+
+/* RIGHT PANEL */
+.ims-system-settings-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.ims-system-settings-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ims-system-settings-panel__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  color: #059669;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ims-system-settings-panel h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.ims-system-settings-panel p {
+  max-width: 720px;
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.ims-system-settings-panel__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+/* BUTTONS */
+.ims-settings-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ims-settings-button:hover,
+.ims-settings-button:focus-visible {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  color: #0f172a;
+  outline: none;
+}
+
+.ims-settings-button--primary {
+  border-color: #047857;
+  background: #059669;
+  color: #ffffff;
+}
+
+.ims-settings-button--primary:hover,
+.ims-settings-button--primary:focus-visible {
+  border-color: #065f46;
+  background: #047857;
+  color: #ffffff;
+}
+
+/* SUCCESS */
+.ims-system-settings-success {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  background: #f0fdf4;
+  color: #047857;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+/* GRID - AUTO HEIGHT, NO MERGING */
+.ims-system-settings-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(248px, 1fr));
+  gap: 8px;
+}
+
+/* CARD */
+.ims-setting-card {
+  width: 100%;
+  min-width: 0;
+  min-height: 62px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(132px, 172px);
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.ims-setting-card:hover {
+  border-color: #bbf7d0;
+  background: #fbfefc;
+}
+
+.ims-setting-card--toggle {
+  grid-template-columns: minmax(0, 1fr) 48px;
+}
+
+.ims-setting-card__copy {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ims-setting-card__copy label {
+  display: -webkit-box;
+  margin-bottom: 2px;
+  color: #0f172a;
+  font-size: 12.75px;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+}
+
+.ims-setting-card__copy span {
+  display: -webkit-box;
+  color: #64748b;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.25;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+}
+
+/* INPUTS */
+.ims-setting-input {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  padding: 0 9px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 12.5px;
+  font-weight: 600;
+  outline: none;
+}
+
+.ims-setting-input:hover {
+  border-color: #94a3b8;
+}
+
+.ims-setting-input:focus {
+  border-color: #059669;
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.12);
+}
+
+select.ims-setting-input {
+  cursor: pointer;
+}
+
+/* TOGGLE */
+.ims-setting-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  cursor: pointer;
+}
+
+.ims-setting-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  pointer-events: none;
+}
+
+.ims-setting-toggle,
+.ims-setting-toggle__track,
+.ims-setting-card {
+  user-select: none;
+  -webkit-user-select: none;
+  overflow-anchor: none;
+}
+
+.ims-system-settings-page,
+.ims-system-settings-grid {
+  overflow-anchor: none;
+}
+
+.ims-setting-toggle__track {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.ims-setting-toggle__thumb {
+  position: absolute;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+  transition: transform 140ms ease;
+}
+
+.ims-setting-toggle input:checked+.ims-setting-toggle__track {
+  border-color: #059669;
+  background: #059669;
+}
+
+.ims-setting-toggle input:checked+.ims-setting-toggle__track .ims-setting-toggle__thumb {
+  transform: translateX(18px);
+}
+
+/* NOTE */
+.ims-system-settings-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  margin-top: 10px;
+  padding: 9px 10px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.ims-system-settings-note svg {
+  flex: 0 0 auto;
+}
+
+.ims-system-settings-note span {
+  min-width: 0;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1200px) {
+  .ims-system-settings-shell {
+    flex-direction: column;
+  }
+
+  .ims-system-settings-menu {
+    width: 100%;
+    flex: none;
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+  }
+
+  .ims-system-settings-menu__item {
+    width: auto;
+    min-width: 210px;
+    margin-bottom: 0;
+    flex: 0 0 auto;
+  }
+
+  .ims-system-settings-panel {
+    width: 100%;
+  }
+
+  .ims-system-settings-grid {
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .ims-system-settings-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ims-setting-card,
+  .ims-setting-card--toggle {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: flex-start;
+  }
+
+  .ims-setting-toggle {
+    justify-content: flex-start;
+  }
+
+  .ims-system-settings-panel__actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .ims-system-settings-page {
+    padding: 10px;
+  }
+
+  .ims-system-settings-menu__item {
+    min-width: 180px;
+  }
+
+  .ims-settings-button {
+    flex: 1 1 auto;
+  }
+}
+
+/* ── Spin animation ─────────────────────────────────────────────────── */
+@keyframes ims-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ims-spin {
+  animation: ims-spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+/* ── Loading overlay ────────────────────────────────────────────────── */
+.ims-system-settings-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 260px;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.ims-system-settings-loading svg {
+  color: #16a34a;
+}
+
+/* ── Error banner (top of page, full-width) ─────────────────────────── */
+.ims-system-settings-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ims-system-settings-error-banner svg {
+  flex-shrink: 0;
+}
+
+/* ── Unsaved-changes dot in sidebar ─────────────────────────────────── */
+.ims-settings-dirty-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f59e0b;
+  margin-left: 5px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* ── Disabled button state ───────────────────────────────────────────── */
+.ims-settings-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Backend-integrated System Settings workspace polish. */
+.ims-system-settings-page {
+  height: 100% !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  padding: 10px 12px 12px !important;
+  background: #f8fafc !important;
+  overflow: hidden !important;
+}
+
+.ims-system-settings-header {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  margin: 0 !important;
+}
+
+.ims-system-settings-header__title-row {
+  justify-content: flex-start !important;
+}
+
+.ims-system-settings-header h1 {
+  font-size: 20px !important;
+  font-weight: 760 !important;
+  letter-spacing: 0 !important;
+}
+
+.ims-system-settings-header p {
+  max-width: 780px !important;
+  margin-top: 4px !important;
+  font-size: 12.75px !important;
+}
+
+.ims-system-settings-header__metrics {
+  flex: 0 0 auto !important;
+  justify-content: flex-end !important;
+}
+
+.ims-system-settings-shell {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  align-items: stretch !important;
+  overflow: hidden !important;
+}
+
+.ims-system-settings-menu {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(148, 163, 184, 0.55) transparent !important;
+  transition:
+    width 160ms ease,
+    flex-basis 160ms ease,
+    padding 160ms ease !important;
+}
+
+.ims-system-settings-menu__header {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 0 2px 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ims-system-settings-menu__header-label {
+  min-width: 0;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 780;
+  letter-spacing: 0;
+}
+
+.ims-system-settings-menu__collapse {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border: 1px solid #dbe5f0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+}
+
+.ims-system-settings-menu__collapse:hover,
+.ims-system-settings-menu__collapse:focus-visible {
+  border-color: #86efac;
+  background: #ecfdf5;
+  color: #047857;
+  outline: none;
+}
+
+.ims-system-settings-menu__item {
+  position: relative;
+}
+
+.ims-system-settings-menu.is-collapsed {
+  width: 72px !important;
+  flex-basis: 72px !important;
+  padding: 10px 8px !important;
+  overflow-x: hidden !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(148, 163, 184, 0.18) transparent !important;
+  scrollbar-gutter: auto !important;
+}
+
+.ims-system-settings-menu.is-collapsed::-webkit-scrollbar {
+  width: 4px !important;
+  height: 4px !important;
+}
+
+.ims-system-settings-menu.is-collapsed::-webkit-scrollbar-thumb {
+  border: 0 !important;
+  background: rgba(148, 163, 184, 0.16) !important;
+}
+
+.ims-system-settings-menu.is-collapsed:hover,
+.ims-system-settings-menu.is-collapsed:focus-within {
+  scrollbar-color: rgba(100, 116, 139, 0.58) transparent !important;
+}
+
+.ims-system-settings-menu.is-collapsed:hover::-webkit-scrollbar-thumb,
+.ims-system-settings-menu.is-collapsed:focus-within::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.58) !important;
+}
+
+.ims-system-settings-menu.is-collapsed .ims-system-settings-menu__header {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.ims-system-settings-menu.is-collapsed .ims-system-settings-menu__header-label,
+.ims-system-settings-menu.is-collapsed .ims-system-settings-menu__item-title,
+.ims-system-settings-menu.is-collapsed .ims-system-settings-menu__count {
+  display: none !important;
+}
+
+.ims-system-settings-menu.is-collapsed .ims-system-settings-menu__item {
+  min-height: 44px;
+  justify-content: center;
+  gap: 0;
+  padding: 8px;
+}
+
+.ims-system-settings-menu.is-collapsed .ims-system-settings-menu__icon {
+  width: 30px;
+  height: 30px;
+  justify-content: center;
+}
+
+.ims-system-settings-menu.is-collapsed .ims-system-settings-menu__item.is-dirty::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 7px;
+  height: 7px;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  background: #f59e0b;
+}
+
+.ims-system-settings-menu::-webkit-scrollbar,
+.ims-system-settings-grid::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.ims-system-settings-menu::-webkit-scrollbar-track,
+.ims-system-settings-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ims-system-settings-menu::-webkit-scrollbar-thumb,
+.ims-system-settings-grid::-webkit-scrollbar-thumb {
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.55);
+}
+
+.ims-system-settings-panel {
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.06) !important;
+}
+
+.ims-system-settings-panel__header {
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  margin-bottom: 0 !important;
+}
+
+.ims-system-settings-panel__meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-top: 9px;
+}
+
+.ims-system-settings-panel__meta span {
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 720;
+  line-height: 1;
+}
+
+.ims-system-settings-grid {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  grid-template-columns: repeat(auto-fit, minmax(248px, 1fr)) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  gap: 8px !important;
+  align-content: start !important;
+  padding: 10px 4px 2px 0 !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(148, 163, 184, 0.55) transparent !important;
+}
+
+.ims-setting-card:not(.ims-setting-card--toggle) {
+  grid-template-columns: minmax(0, 1fr) minmax(132px, 172px) !important;
+}
+
+.ims-setting-card {
+  min-height: 62px !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    box-shadow 140ms ease !important;
+}
+
+.ims-setting-card:hover {
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.045) !important;
+}
+
+.ims-settings-button--primary:disabled {
+  border-color: #cbd5e1 !important;
+  background: #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+.ims-setting-card__copy,
+.ims-setting-card__copy label,
+.ims-setting-card__copy span {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.ims-setting-card__copy {
+  overflow: hidden !important;
+}
+
+.ims-setting-card__copy label,
+.ims-setting-card__copy span {
+  display: -webkit-box !important;
+  overflow: hidden !important;
+  overflow-wrap: anywhere !important;
+  -webkit-box-orient: vertical !important;
+}
+
+.ims-setting-card__copy label {
+  line-clamp: 2 !important;
+  -webkit-line-clamp: 2 !important;
+}
+
+.ims-setting-card__copy span {
+  line-clamp: 2 !important;
+  -webkit-line-clamp: 2 !important;
+}
+
+@media (max-width: 1200px) {
+  .ims-system-settings-page {
+    overflow: hidden !important;
+  }
+
+  .ims-system-settings-shell {
+    flex-direction: column !important;
+  }
+
+  .ims-system-settings-menu {
+    height: auto !important;
+    max-height: 74px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .ims-system-settings-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .ims-system-settings-header__metrics {
+    justify-content: flex-start !important;
+  }
+
+  .ims-system-settings-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+/* Premium production layout refresh. Keep this block last. */
+.ims-system-settings-page {
+  gap: 12px !important;
+  padding: 14px 18px 16px !important;
+  background:
+    linear-gradient(180deg, #f8fbff 0%, #f6f8fb 42%, #f8fafc 100%) !important;
+}
+
+.ims-system-settings-header {
+  min-height: 64px !important;
+  align-items: center !important;
+  padding: 0 2px !important;
+}
+
+.ims-system-settings-header__title-row {
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.ims-system-settings-header__icon {
+  width: 36px !important;
+  height: 36px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid rgba(16, 185, 129, 0.24) !important;
+  border-radius: 10px !important;
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+}
+
+.ims-system-settings-header h1 {
+  font-size: 22px !important;
+  font-weight: 820 !important;
+}
+
+.ims-system-settings-header p {
+  max-width: 680px !important;
+  color: #64748b !important;
+  font-size: 13px !important;
+}
+
+.ims-settings-metric {
+  min-height: 34px !important;
+  padding: 0 12px !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.045) !important;
+  font-size: 12.5px !important;
+}
+
+.ims-system-settings-shell {
+  gap: 14px !important;
+}
+
+.ims-system-settings-menu {
+  width: 214px !important;
+  flex-basis: 214px !important;
+  padding: 12px !important;
+  border-color: #dbe6f1 !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 16px 42px rgba(15, 23, 42, 0.055) !important;
+}
+
+.ims-system-settings-menu__header {
+  min-height: 36px !important;
+  margin-bottom: 10px !important;
+  padding: 0 0 10px !important;
+}
+
+.ims-system-settings-menu__header-label {
+  color: #0f172a !important;
+  font-size: 12.5px !important;
+  font-weight: 820 !important;
+}
+
+.ims-system-settings-menu__collapse {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.045) !important;
+}
+
+.ims-system-settings-menu__item {
+  min-height: 42px !important;
+  gap: 10px !important;
+  margin-bottom: 7px !important;
+  padding: 8px 9px !important;
+  border-radius: 11px !important;
+  color: #475569 !important;
+  font-size: 13.5px !important;
+  font-weight: 720 !important;
+}
+
+.ims-system-settings-menu__icon {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 9px !important;
+  background: #f8fafc !important;
+  color: #64748b !important;
+}
+
+.ims-system-settings-menu__item svg {
+  color: currentColor !important;
+}
+
+.ims-system-settings-menu__item:hover,
+.ims-system-settings-menu__item:focus-visible {
+  border-color: #d1fae5 !important;
+  background: #f7fefb !important;
+  color: #047857 !important;
+}
+
+.ims-system-settings-menu__item.is-active {
+  border-color: #99f6e4 !important;
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 100%) !important;
+  color: #047857 !important;
+  box-shadow: inset 3px 0 0 #10b981, 0 10px 22px rgba(16, 185, 129, 0.08) !important;
+}
+
+.ims-system-settings-menu__item.is-active .ims-system-settings-menu__icon {
+  background: #d1fae5 !important;
+  color: #047857 !important;
+}
+
+.ims-system-settings-menu__count {
+  min-width: 24px !important;
+  height: 24px !important;
+  background: #eef2f7 !important;
+  color: #475569 !important;
+  font-size: 11.5px !important;
+}
+
+.ims-system-settings-menu.is-collapsed {
+  width: 66px !important;
+  flex-basis: 66px !important;
+  padding: 10px 7px !important;
+}
+
+.ims-system-settings-menu.is-collapsed .ims-system-settings-menu__item {
+  min-height: 42px !important;
+  padding: 7px !important;
+}
+
+.ims-system-settings-panel {
+  border-color: #dbe6f1 !important;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 20px 52px rgba(15, 23, 42, 0.07) !important;
+}
+
+.ims-system-settings-panel__header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 3 !important;
+  align-items: center !important;
+  padding: 16px 18px 14px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+}
+
+.ims-system-settings-panel__identity {
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 13px !important;
+}
+
+.ims-system-settings-panel__icon {
+  width: 44px !important;
+  height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  border: 1px solid rgba(16, 185, 129, 0.22) !important;
+  border-radius: 13px !important;
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 100%) !important;
+  color: #047857 !important;
+}
+
+.ims-system-settings-panel__copy {
+  min-width: 0 !important;
+}
+
+.ims-system-settings-panel__eyebrow {
+  margin-bottom: 5px !important;
+  font-size: 11px !important;
+  letter-spacing: 0.08em !important;
+}
+
+.ims-system-settings-panel__eyebrow.is-dirty {
+  color: #b45309 !important;
+}
+
+.ims-system-settings-panel h2 {
+  font-size: 20px !important;
+  font-weight: 820 !important;
+}
+
+.ims-system-settings-panel p {
+  max-width: 620px !important;
+  color: #64748b !important;
+  font-size: 13px !important;
+}
+
+.ims-system-settings-panel__actions {
+  gap: 8px !important;
+}
+
+.ims-settings-button {
+  min-height: 38px !important;
+  padding: 0 13px !important;
+  border-color: #d6e1ee !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  color: #334155 !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.045) !important;
+  font-size: 12.75px !important;
+}
+
+.ims-settings-button:hover,
+.ims-settings-button:focus-visible {
+  border-color: #b6c6d8 !important;
+  background: #f8fafc !important;
+}
+
+.ims-settings-button--primary {
+  border-color: #047857 !important;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  color: #ffffff !important;
+}
+
+.ims-settings-button--primary:hover,
+.ims-settings-button--primary:focus-visible {
+  border-color: #065f46 !important;
+  background: linear-gradient(135deg, #047857 0%, #065f46 100%) !important;
+  color: #ffffff !important;
+}
+
+.ims-settings-button--primary:disabled {
+  border-color: #d6e1ee !important;
+  background: #edf2f7 !important;
+  color: #94a3b8 !important;
+  box-shadow: none !important;
+}
+
+.ims-system-settings-panel__meta {
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: 10px 18px !important;
+  border-bottom: 1px solid #edf2f7 !important;
+  background: #fbfdff !important;
+}
+
+.ims-system-settings-panel__meta span {
+  min-height: 28px !important;
+  padding: 4px 10px !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  color: #475569 !important;
+  box-shadow: inset 0 0 0 1px #e2e8f0 !important;
+}
+
+.ims-system-settings-panel__meta span strong {
+  color: #0f172a !important;
+  font-weight: 820 !important;
+}
+
+.ims-system-settings-panel__meta span.is-synced {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  box-shadow: inset 0 0 0 1px #bbf7d0 !important;
+}
+
+.ims-system-settings-panel__meta span.is-dirty {
+  background: #fff7ed !important;
+  color: #c2410c !important;
+  box-shadow: inset 0 0 0 1px #fed7aa !important;
+}
+
+.ims-system-settings-grid {
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)) !important;
+  gap: 10px !important;
+  padding: 14px 18px 18px !important;
+}
+
+.ims-setting-card {
+  min-height: 82px !important;
+  padding: 14px 15px !important;
+  border-color: #e2e8f0 !important;
+  border-radius: 13px !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.035) !important;
+}
+
+.ims-setting-card:hover {
+  border-color: #bfdbfe !important;
+  background: #fcfdff !important;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.06) !important;
+}
+
+.ims-setting-card.is-enabled {
+  border-color: #bbf7d0 !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fefb 100%) !important;
+}
+
+.ims-setting-card--toggle {
+  grid-template-columns: minmax(0, 1fr) 54px !important;
+}
+
+.ims-setting-card:not(.ims-setting-card--toggle),
+.ims-setting-card--value {
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 260px) !important;
+}
+
+.ims-setting-card__copy {
+  display: flex !important;
+  min-width: 0 !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+}
+
+.ims-setting-card__title-row {
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.ims-setting-card__copy label {
+  margin: 0 !important;
+  color: #111827 !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+}
+
+.ims-setting-card__copy span:not(.ims-setting-card__type) {
+  color: #64748b !important;
+  font-size: 12.5px !important;
+  font-weight: 560 !important;
+  line-height: 1.35 !important;
+}
+
+.ims-setting-card__type {
+  min-height: 22px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  flex: 0 0 auto !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  color: #475569 !important;
+  background: #f1f5f9 !important;
+  font-size: 10.5px !important;
+  font-weight: 820 !important;
+  line-height: 1 !important;
+  text-transform: uppercase !important;
+}
+
+.ims-setting-card__type.is-enabled {
+  background: #dcfce7 !important;
+  color: #047857 !important;
+}
+
+.ims-setting-card__type.is-disabled {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+}
+
+.ims-setting-card__type.is-value {
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+}
+
+.ims-setting-input {
+  height: 40px !important;
+  padding: 0 13px !important;
+  border-color: #cfd9e6 !important;
+  border-radius: 11px !important;
+  background: #fbfdff !important;
+  font-size: 13.5px !important;
+  font-weight: 720 !important;
+}
+
+.ims-setting-input:focus {
+  border-color: #10b981 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12) !important;
+}
+
+.ims-setting-toggle {
+  width: 54px !important;
+}
+
+.ims-setting-toggle__track {
+  width: 50px !important;
+  height: 28px !important;
+  border-color: #cbd5e1 !important;
+  background: #e2e8f0 !important;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.12) !important;
+}
+
+.ims-setting-toggle__thumb {
+  left: 4px !important;
+  width: 20px !important;
+  height: 20px !important;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.22) !important;
+}
+
+.ims-setting-toggle input:checked+.ims-setting-toggle__track {
+  border-color: #059669 !important;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+}
+
+.ims-setting-toggle input:checked+.ims-setting-toggle__track .ims-setting-toggle__thumb {
+  transform: translateX(22px) !important;
+}
+
+.ims-system-settings-loading {
+  flex: 1 1 auto !important;
+  min-height: 320px !important;
+}
+
+@media (max-width: 1320px) {
+  .ims-system-settings-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 1200px) {
+  .ims-system-settings-menu {
+    width: 100% !important;
+    flex-basis: auto !important;
+  }
+
+  .ims-system-settings-panel__header {
+    position: relative !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .ims-system-settings-page {
+    padding: 10px !important;
+  }
+
+  .ims-system-settings-panel__header {
+    align-items: flex-start !important;
+    padding: 14px !important;
+  }
+
+  .ims-system-settings-panel__identity {
+    align-items: flex-start !important;
+  }
+
+  .ims-setting-card,
+  .ims-setting-card--toggle,
+  .ims-setting-card--value {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .ims-setting-toggle {
+    justify-content: flex-start !important;
+  }
+}
+
+/* Production settings console: simplified UX, fewer labels, full-width rule rows. */
+.ims-system-settings-page {
+  gap: 10px !important;
+  padding: 16px 20px !important;
+  background: #f6f8fb !important;
+}
+
+.ims-system-settings-header {
+  min-height: auto !important;
+  align-items: center !important;
+  padding: 0 !important;
+}
+
+.ims-system-settings-header__title-row {
+  gap: 10px !important;
+}
+
+.ims-system-settings-header__icon {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 12px !important;
+  background: #ffffff !important;
+  color: #047857 !important;
+  box-shadow: inset 0 0 0 1px #dbe6f1 !important;
+}
+
+.ims-system-settings-header h1 {
+  color: #0f172a !important;
+  font-size: 22px !important;
+  font-weight: 820 !important;
+}
+
+.ims-system-settings-header p {
+  display: none !important;
+}
+
+.ims-system-settings-header__metrics {
+  gap: 7px !important;
+}
+
+.ims-settings-metric {
+  min-height: 32px !important;
+  padding: 0 11px !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+}
+
+.ims-system-settings-tabs {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  gap: 8px !important;
+  width: 100% !important;
+  min-height: 48px !important;
+  padding: 6px !important;
+  border: 1px solid #dbe6f1 !important;
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  overflow-x: auto !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(148, 163, 184, 0.38) transparent !important;
+}
+
+.ims-system-settings-tabs::-webkit-scrollbar {
+  height: 5px !important;
+}
+
+.ims-system-settings-tabs::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.ims-system-settings-tabs::-webkit-scrollbar-thumb {
+  border-radius: 999px !important;
+  background: rgba(148, 163, 184, 0.38) !important;
+}
+
+.ims-system-settings-tabs .ims-system-settings-menu__item {
+  width: auto !important;
+  min-width: max-content !important;
+  min-height: 36px !important;
+  flex: 0 0 auto !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  padding: 7px 11px !important;
+  border-radius: 10px !important;
+  color: #475569 !important;
+  font-size: 12.75px !important;
+  font-weight: 760 !important;
+}
+
+.ims-system-settings-tabs .ims-system-settings-menu__icon {
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 8px !important;
+  background: #f8fafc !important;
+}
+
+.ims-system-settings-tabs .ims-system-settings-menu__item-title {
+  max-width: none !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.ims-system-settings-tabs .ims-system-settings-menu__item:hover,
+.ims-system-settings-tabs .ims-system-settings-menu__item:focus-visible {
+  border-color: #d1fae5 !important;
+  background: #f8fffc !important;
+  color: #047857 !important;
+}
+
+.ims-system-settings-tabs .ims-system-settings-menu__item.is-active {
+  border-color: #99f6e4 !important;
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  box-shadow: none !important;
+}
+
+.ims-system-settings-tabs .ims-system-settings-menu__item.is-active .ims-system-settings-menu__icon {
+  background: #d1fae5 !important;
+}
+
+.ims-system-settings-shell {
+  display: block !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.ims-system-settings-panel {
+  height: 100% !important;
+  border: 1px solid #dbe6f1 !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.055) !important;
+}
+
+.ims-system-settings-panel__header {
+  position: relative !important;
+  min-height: 74px !important;
+  padding: 14px 18px !important;
+  border-bottom: 1px solid #edf2f7 !important;
+  background: #ffffff !important;
+}
+
+.ims-system-settings-panel__identity {
+  gap: 12px !important;
+}
+
+.ims-system-settings-panel__icon {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 12px !important;
+  background: #f8fafc !important;
+  color: #047857 !important;
+}
+
+.ims-system-settings-panel__eyebrow {
+  margin-bottom: 3px !important;
+  color: #64748b !important;
+  font-size: 10.5px !important;
+  letter-spacing: 0.06em !important;
+}
+
+.ims-system-settings-panel__eyebrow.is-dirty {
+  color: #b45309 !important;
+}
+
+.ims-system-settings-panel h2 {
+  font-size: 19px !important;
+  font-weight: 820 !important;
+}
+
+.ims-system-settings-panel p {
+  display: none !important;
+}
+
+.ims-system-settings-panel__actions {
+  gap: 8px !important;
+}
+
+.ims-settings-button {
+  min-height: 36px !important;
+  padding: 0 12px !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  font-size: 12.5px !important;
+}
+
+.ims-settings-button--primary {
+  background: #059669 !important;
+}
+
+.ims-system-settings-panel__meta {
+  gap: 7px !important;
+  padding: 9px 18px !important;
+  background: #fbfdff !important;
+}
+
+.ims-system-settings-panel__meta span {
+  min-height: 26px !important;
+  padding: 3px 9px !important;
+  box-shadow: inset 0 0 0 1px #e2e8f0 !important;
+  font-size: 11.5px !important;
+}
+
+.ims-system-settings-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  padding: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.ims-setting-card,
+.ims-setting-card:not(.ims-setting-card--toggle),
+.ims-setting-card--toggle,
+.ims-setting-card--value {
+  min-height: 58px !important;
+  display: grid !important;
+  grid-template-columns: minmax(220px, 1fr) minmax(180px, 320px) !important;
+  align-items: center !important;
+  gap: 16px !important;
+  padding: 10px 18px !important;
+  border: 0 !important;
+  border-bottom: 1px solid #edf2f7 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.ims-setting-card:hover,
+.ims-setting-card.is-enabled {
+  border-color: #edf2f7 !important;
+  background: #fbfdff !important;
+  box-shadow: none !important;
+}
+
+.ims-setting-card__copy {
+  gap: 0 !important;
+}
+
+.ims-setting-card__title-row {
+  display: block !important;
+}
+
+.ims-setting-card__copy label {
+  display: block !important;
+  color: #182235 !important;
+  font-size: 13.5px !important;
+  font-weight: 760 !important;
+  line-height: 1.25 !important;
+  overflow: visible !important;
+  line-clamp: unset !important;
+  -webkit-line-clamp: unset !important;
+}
+
+.ims-setting-card__copy span,
+.ims-setting-card__type {
+  display: none !important;
+}
+
+.ims-setting-input {
+  height: 38px !important;
+  max-width: 320px !important;
+  justify-self: end !important;
+  border-color: #d5dfeb !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 13.25px !important;
+}
+
+.ims-setting-toggle {
+  width: 50px !important;
+  justify-self: end !important;
+}
+
+.ims-setting-toggle__track {
+  width: 48px !important;
+  height: 26px !important;
+}
+
+.ims-setting-toggle__thumb {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.ims-setting-toggle input:checked+.ims-setting-toggle__track .ims-setting-toggle__thumb {
+  transform: translateX(22px) !important;
+}
+
+.ims-system-settings-loading {
+  min-height: 260px !important;
+}
+
+@media (max-width: 900px) {
+  .ims-system-settings-header {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  .ims-system-settings-panel__header {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  .ims-system-settings-panel__actions {
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+
+  .ims-setting-card,
+  .ims-setting-card:not(.ims-setting-card--toggle),
+  .ims-setting-card--toggle,
+  .ims-setting-card--value {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 9px !important;
+  }
+
+  .ims-setting-input,
+  .ims-setting-toggle {
+    justify-self: start !important;
+  }
+}

@@ -1,0 +1,53 @@
+export const IMS_TOAST_EVENT = 'ims:toast'
+
+let lastToastKey = ''
+let lastToastAt = 0
+
+function sanitizeToastMessage(message) {
+  const value = String(message ?? '').trim()
+
+  if (/vite_api_base_url|backend server|ims api|failed to fetch|networkerror|load failed/i.test(value)) {
+    return 'Unable to connect to the server.'
+  }
+
+  if (/stack trace|exception|system\.|microsoft\.|sql|object reference/i.test(value)) {
+    return 'We are having trouble completing this request right now.'
+  }
+
+  return value
+}
+
+export function showToast(detail) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  const nextDetail = {
+    duration: 3600,
+    type: 'info',
+    ...detail,
+    message: sanitizeToastMessage(detail?.message),
+  }
+  const toastKey = [
+    nextDetail.type,
+    nextDetail.title || '',
+    nextDetail.message || '',
+  ].join('|')
+  const now = Date.now()
+
+  if (toastKey === lastToastKey && now - lastToastAt < 1800) {
+    return
+  }
+
+  lastToastKey = toastKey
+  lastToastAt = now
+
+  window.dispatchEvent(
+    new CustomEvent(IMS_TOAST_EVENT, {
+      detail: {
+        id: `${now}-${Math.random().toString(36).slice(2, 8)}`,
+        ...nextDetail,
+      },
+    }),
+  )
+}
