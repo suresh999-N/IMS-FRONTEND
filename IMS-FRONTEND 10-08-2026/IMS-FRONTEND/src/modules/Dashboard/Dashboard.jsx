@@ -22,6 +22,7 @@ import LowStockWidget from './components/LowStockWidget'
 import SkeletonCard from './components/SkeletonCard'
 import StatCard from './components/StatCard'
 import TopProductsList from './components/TopProductsList'
+import LowStockAlert from '../../components/LowStockAlert/LowStockAlert'
 import './Dashboard.css'
 
 const EMPTY_DASHBOARD = {
@@ -312,6 +313,7 @@ export default function Dashboard() {
   const [dashboard, setDashboard] = useState(EMPTY_DASHBOARD)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [showLowStockModal, setShowLowStockModal] = useState(false)
 
   const loadDashboard = useCallback(async function loadDashboard() {
     setIsLoading(true)
@@ -350,6 +352,20 @@ export default function Dashboard() {
         window.removeEventListener(IMS_DATA_MUTATION_EVENT, handleCatalogUpdated);
     };
 }, [loadDashboard]);
+
+  useEffect(() => {
+    let timer = null
+    if (!isLoading && dashboard.lowStock && dashboard.lowStock.length > 0) {
+      timer = setTimeout(() => {
+        setShowLowStockModal(true)
+      }, 1500)
+    }
+    return () => {
+      if (timer) {
+        clearTimeout(timer)
+      }
+    }
+  }, [isLoading, dashboard.lowStock])
 
   const monthlyTrend = useMemo(
     () => buildMonthlyTrend(dashboard.monthlySales, dashboard.monthlyPurchases),
@@ -553,6 +569,13 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {showLowStockModal && (
+        <LowStockAlert
+          lowStockProducts={dashboard.lowStock}
+          onClose={() => setShowLowStockModal(false)}
+        />
+      )}
     </div>
   )
 }
