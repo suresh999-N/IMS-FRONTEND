@@ -31,6 +31,14 @@ const documentStatusOptions = [
   { value: 'cancelled', label: 'Cancelled' },
 ]
 
+const stockAuditStatusOptions = [
+  { value: 'Draft', label: 'Draft' },
+  { value: 'Pending', label: 'Pending' },
+  { value: 'Approved', label: 'Approved' },
+  { value: 'Posted', label: 'Posted' },
+  { value: 'Cancelled', label: 'Cancelled' },
+]
+
 const notificationTypes = [
   { value: 'info', label: 'Info' },
   { value: 'warning', label: 'Warning' },
@@ -735,16 +743,16 @@ export const RESOURCE_CONFIGS = {
         name: 'auditType',
         label: 'Audit Type',
         type: 'select',
-        defaultValue: 'cycle',
+        defaultValue: 'Cycle Count',
         options: [
-          { value: 'cycle', label: 'Cycle Count' },
-          { value: 'full', label: 'Full Audit' },
-          { value: 'spot', label: 'Spot Check' },
+          { value: 'Cycle Count', label: 'Cycle Count' },
+          { value: 'Full Audit', label: 'Full Audit' },
+          { value: 'Spot Check', label: 'Spot Check' },
         ],
       },
-      { name: 'status', label: 'Status', type: 'select', options: documentStatusOptions, defaultValue: 'draft' },
-      { name: 'createdBy', label: 'Created By', type: 'number', min: 1 },
-      { name: 'approvedBy', label: 'Approved By', type: 'number', min: 1 },
+      { name: 'status', label: 'Status', type: 'select', options: stockAuditStatusOptions, defaultValue: 'Draft' },
+      { name: 'createdBy', label: 'Created By', type: 'text' },
+      { name: 'approvedBy', label: 'Approved By', type: 'text' },
       { name: 'notes', label: 'Notes', type: 'textarea' },
     ],
     columns: [
@@ -781,6 +789,18 @@ export const RESOURCE_CONFIGS = {
     byId: API_ENDPOINTS.stockAuditItems.byId,
     forceDelete: true,
     idFields: ['auditItemId', 'id'],
+    referenceEndpoints: {
+      stockAudits: API_ENDPOINTS.stockAudits.list,
+      products: API_ENDPOINTS.products.list,
+      productVariants: API_ENDPOINTS.productVariants.list,
+      bins: API_ENDPOINTS.bins.list,
+    },
+    referenceListKeys: {
+      stockAudits: 'stockAudits',
+      products: 'products',
+      productVariants: 'productVariants',
+      bins: 'bins',
+    },
     fields: [
       {
         name: 'auditId',

@@ -126,7 +126,7 @@ export default function DatePicker(props) {
       )
       let top = rect.bottom + 7
 
-      if (top + popoverHeight > window.innerHeight - gutter) {
+      if (restProps.forceDownward === false && top + popoverHeight > window.innerHeight - gutter) {
         top = Math.max(gutter, rect.top - popoverHeight - 7)
       }
 

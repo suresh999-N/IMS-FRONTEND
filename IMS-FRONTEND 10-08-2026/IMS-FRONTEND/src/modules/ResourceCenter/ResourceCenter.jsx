@@ -1558,7 +1558,7 @@ function ResourceForm({
     }
 
     if (field.type === 'searchableSelect') {
-      const referenceRows = (
+      let referenceRows = (
         Array.isArray(referenceData[field.optionsFrom])
           ? referenceData[field.optionsFrom]
           : []
@@ -1568,6 +1568,16 @@ function ResourceForm({
         }
         return true
       })
+
+      if (field.name === 'variantId' && formData.productId) {
+        const filteredVariants = referenceRows.filter((item) =>
+          String(item.productId ?? item.product_id ?? item.product?.id) === String(formData.productId)
+        )
+        if (filteredVariants.length > 0) {
+          referenceRows = filteredVariants
+        }
+      }
+
       const referenceError = field.optionsFrom ? referenceErrors[field.optionsFrom] : ''
       const options = (field.optionsFrom
         ? referenceRows.map((item) => ({
@@ -1584,10 +1594,21 @@ function ResourceForm({
         option.label !== null &&
         option.label !== ''
       )
+      const fieldNoun = field.name === 'productId'
+        ? 'product'
+        : field.name === 'variantId'
+          ? 'variant'
+          : field.name === 'binId'
+            ? 'bin code'
+            : field.name === 'warehouseId'
+              ? 'warehouse'
+              : field.name === 'auditId'
+                ? 'audit number'
+                : getFieldLabel(field).toLowerCase()
       const emptyOptionsMessage = referenceError
-        ? `Unable to load ${getFieldLabel(field).toLowerCase()} options. Please retry after the category service is available.`
+        ? `Unable to load ${fieldNoun} options. Please retry after the service is available.`
         : !isReferenceLoading && field.required && options.length === 0
-          ? 'No categories available.'
+          ? `No ${fieldNoun}s available.`
           : ''
       const fieldError = error || emptyOptionsMessage
 
@@ -1607,10 +1628,10 @@ function ResourceForm({
             options={options}
             placeholder={
               isReferenceLoading
-                ? 'Loading categories...'
+                ? `Loading ${fieldNoun}s...`
                 : field.placeholder || `Select ${getFieldLabel(field).toLowerCase()}`
             }
-            searchPlaceholder={field.searchPlaceholder || `Search ${getFieldLabel(field).toLowerCase()}...`}
+            searchPlaceholder={field.searchPlaceholder || `Search ${fieldNoun}s...`}
             error={fieldError}
             showError={Boolean(fieldError)}
             disabled={field.readOnly || isReferenceLoading || Boolean(referenceError) || options.length === 0}
@@ -1620,7 +1641,7 @@ function ResourceForm({
             showPlaceholder={field.showPlaceholder}
           />
           {isReferenceLoading ? (
-            <span className="field-help resource-form__reference-note">Loading category options...</span>
+            <span className="field-help resource-form__reference-note">Loading {fieldNoun} options...</span>
           ) : null}
         </div>
       )

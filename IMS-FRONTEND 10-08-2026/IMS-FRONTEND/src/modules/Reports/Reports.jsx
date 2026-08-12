@@ -55,6 +55,9 @@ import {
   buildTopSuppliersReport,
   buildWarehousePerformanceReport,
 } from '../../data/reportData'
+import ReportKpiPrintContainer from './components/ReportKpiPrintContainer'
+import ReportPrintContainer from './components/ReportPrintContainer'
+import ReportsFilterSelect from './components/ReportsFilterSelect'
 import './Reports.css'
 
 const EMPTY_REPORTS = {
@@ -189,41 +192,103 @@ function rowValue(row, keys) {
   return keys.map((key) => row[key]).find((value) => value != null && value !== '')
 }
 
-function matchesFilter(row, filterValue, keys) {
-  if (!filterValue || filterValue === 'all') return true
-  const value = String(rowValue(row, keys) || '').toLowerCase()
-  return value === String(filterValue).toLowerCase()
+function matchesWarehouseFilter(row, filterWarehouseId, warehousesList = [], stockList = []) {
+  if (!filterWarehouseId || filterWarehouseId === 'all') return true
+
+  const targetId = String(filterWarehouseId).toLowerCase()
+  const selectedWarehouse = warehousesList.find(
+    (w) => String(w.id).toLowerCase() === targetId || String(w.warehouseId || '').toLowerCase() === targetId,
+  )
+  const targetName = selectedWarehouse ? String(selectedWarehouse.name || selectedWarehouse.warehouseName || '').toLowerCase() : ''
+
+  const rowWhId = String(row.warehouseId ?? row.warehouse_id ?? row.whId ?? '').toLowerCase()
+  const rowWhName = String(row.warehouse ?? row.warehouseName ?? row.location ?? row.whName ?? '').toLowerCase()
+
+  if (rowWhId && rowWhId === targetId) return true
+  if (rowWhName && targetName && rowWhName === targetName) return true
+  if (rowWhName && rowWhName === targetId) return true
+  if (targetName && rowWhId && targetId && (rowWhId.includes(targetId) || targetId.includes(rowWhId))) return true
+
+  const items = row.items || row.products || row.orderItems || row.lines
+  if (Array.isArray(items) && items.length > 0) {
+    const hasItemMatch = items.some((item) => {
+      const itemWhId = String(item.warehouseId ?? item.warehouse_id ?? '').toLowerCase()
+      const itemWhName = String(item.warehouse ?? item.warehouseName ?? item.location ?? '').toLowerCase()
+      if (itemWhId && itemWhId === targetId) return true
+      if (itemWhName && targetName && itemWhName === targetName) return true
+      if (itemWhName && itemWhName === targetId) return true
+      return false
+    })
+    if (hasItemMatch) return true
+  }
+
+  const prodName = String(row.productName || row.product || row.name || '').toLowerCase()
+  const prodId = String(row.productId || '').toLowerCase()
+
+  if (stockList.length > 0 && (prodName || prodId)) {
+    const foundStock = stockList.find(
+      (s) => (prodId && String(s.productId || s.id).toLowerCase() === prodId) ||
+             (prodName && String(s.productName || s.product || s.name).toLowerCase() === prodName),
+    )
+    if (foundStock) {
+      const stockWhId = String(foundStock.warehouseId || '').toLowerCase()
+      const stockWhName = String(foundStock.warehouseName || foundStock.warehouse || '').toLowerCase()
+      if (stockWhId && stockWhId === targetId) return true
+      if (stockWhName && targetName && stockWhName === targetName) return true
+      if (stockWhName && stockWhName === targetId) return true
+      if (stockWhId || stockWhName) return false
+    }
+  }
+
+  const hasAnyWhProp = Boolean(rowWhId || rowWhName)
+  if (hasAnyWhProp) return false
+
+  return true
 }
 
-function applyAdvancedFilters(rows, filters, reportKey, { categories = [], warehouses = [], products = [], customers = [], suppliers = [] } = {}) {
-  const selectedCategoryName = categories.find(c => String(c.id) === String(filters.category))?.name;
-  const selectedWarehouseName = warehouses.find(w => String(w.id) === String(filters.warehouse))?.name;
-  const selectedProductName = products.find(p => String(p.id) === String(filters.product))?.name;
-  const selectedCustomerName = customers.find(c => String(c.id) === String(filters.customer))?.name;
-  const selectedSupplierName = suppliers.find(s => String(s.id) === String(filters.supplier))?.name;
+function matchesEntityFilter(row, filterId, nameKeys, idKeys, entityList = []) {
+  if (!filterId || filterId === 'all') return true
 
+  const selectedEntity = entityList.find(
+    (e) => String(e.id).toLowerCase() === String(filterId).toLowerCase(),
+  )
+  const targetId = String(filterId).toLowerCase()
+  const targetName = selectedEntity ? String(selectedEntity.name).toLowerCase() : ''
+
+  const rowId = String(rowValue(row, idKeys) || '').toLowerCase()
+  const rowName = String(rowValue(row, nameKeys) || '').toLowerCase()
+
+  if (rowId && rowId === targetId) return true
+  if (rowName && targetName && rowName === targetName) return true
+  if (rowName && rowName === targetId) return true
+
+  const hasAnyProp = Boolean(rowId || rowName)
+  return !hasAnyProp
+}
+
+function applyAdvancedFilters(rows, filters, reportKey, { categories = [], warehouses = [], products = [], customers = [], suppliers = [], stock = [] } = {}) {
   return rows.filter((row) => {
     const dateOk = isWithinDateRange(row, filters)
-    const warehouseOk = !filters.warehouse || filters.warehouse === 'all' || matchesFilter(row, selectedWarehouseName || filters.warehouse, ['warehouse', 'warehouseName', 'location'])
-    const categoryOk = !filters.category || filters.category === 'all' || matchesFilter(row, selectedCategoryName || filters.category, ['category', 'categoryName'])
-    const productOk = !filters.product || filters.product === 'all' || matchesFilter(row, selectedProductName || filters.product, ['product', 'productName', 'name'])
-    const customerOk = !filters.customer || filters.customer === 'all' || matchesFilter(row, selectedCustomerName || filters.customer, ['customer', 'customerName', 'name'])
-    const supplierOk = !filters.supplier || filters.supplier === 'all' || matchesFilter(row, selectedSupplierName || filters.supplier, ['supplier', 'supplierName', 'name'])
+    const warehouseOk = matchesWarehouseFilter(row, filters.warehouse, warehouses, stock)
+    const categoryOk = matchesEntityFilter(row, filters.category, ['category', 'categoryName', 'type'], ['categoryId', 'category_id'], categories)
+    const productOk = matchesEntityFilter(row, filters.product, ['product', 'productName', 'name', 'item'], ['productId', 'product_id', 'id'], products)
+    const customerOk = matchesEntityFilter(row, filters.customer, ['customer', 'customerName', 'name', 'partyName'], ['customerId', 'customer_id'], customers)
+    const supplierOk = matchesEntityFilter(row, filters.supplier, ['supplier', 'supplierName', 'name', 'partyName'], ['supplierId', 'supplier_id'], suppliers)
     const statusOk = matchesStatusFilter(row, filters.status)
 
     if (['sales', 'invoices', 'customerBalances', 'topCustomers', 'customerOutstanding'].includes(reportKey)) {
-      return dateOk && customerOk && statusOk
+      return dateOk && customerOk && statusOk && warehouseOk
     }
 
     if (['purchases', 'topSuppliers', 'supplierOutstanding'].includes(reportKey)) {
-      return dateOk && supplierOk && statusOk
+      return dateOk && supplierOk && statusOk && warehouseOk
     }
 
     if (['stock', 'inventoryValuation', 'lowStock', 'fastMoving', 'slowMoving', 'profitability', 'warehousePerformance'].includes(reportKey)) {
       return dateOk && warehouseOk && categoryOk && productOk && statusOk
     }
 
-    return dateOk && statusOk
+    return dateOk && statusOk && warehouseOk
   })
 }
 
@@ -816,17 +881,17 @@ function buildKpiPdfLines({ title, value, trend, caption, dateRangeLabel, report
   return lines
 }
 
-function SummaryCard({ title, value, caption, icon: Icon, trend, tone = 'neutral', onClick, onDownload }) {
+function SummaryCard({ title, value, caption, icon: Icon, trend, tone = 'neutral', onClick, onDownload, loading }) {
   return (
     <div className="reports-kpi-tile">
       <button type="button" className="reports-kpi-button" onClick={onClick}>
         <StatisticsCard
           icon={Icon}
           label={title}
-          value={value}
+          value={loading ? '...' : value}
           helper={
             <span className={`reports-kpi-helper reports-kpi-helper--${tone}`}>
-              <strong>{trend}</strong>
+              <strong>{loading ? '...' : trend}</strong>
               <span>{caption}</span>
             </span>
           }
@@ -837,15 +902,15 @@ function SummaryCard({ title, value, caption, icon: Icon, trend, tone = 'neutral
       <button
         type="button"
         className="reports-kpi-download-btn"
-        title={`Download ${title} KPI PDF`}
-        aria-label={`Download ${title} KPI PDF`}
+        title={`Print ${title} KPI Report`}
+        aria-label={`Print ${title} KPI Report`}
         onClick={(event) => {
           event.preventDefault()
           event.stopPropagation()
           onDownload?.()
         }}
       >
-        <Download size={14} strokeWidth={2.4} />
+        <Printer size={14} strokeWidth={2.4} />
       </button>
     </div>
   )
@@ -874,7 +939,37 @@ export default function Reports({ data = {} }) {
   const [isPeriodMenuOpen, setIsPeriodMenuOpen] = useState(false)
   const [error, setError] = useState('')
   const [retryTrigger, setRetryTrigger] = useState(0)
+  const [activeKpiPrint, setActiveKpiPrint] = useState(null)
   const periodMenuRef = useRef(null)
+
+  useEffect(() => {
+    if (!activeKpiPrint) return undefined
+
+    const timer = setTimeout(() => {
+      window.print()
+    }, 150)
+
+    function handleAfterPrint() {
+      setActiveKpiPrint(null)
+    }
+
+    window.addEventListener('afterprint', handleAfterPrint)
+
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('afterprint', handleAfterPrint)
+    }
+  }, [activeKpiPrint])
+
+  function handlePrintKpiCard({ title, value, trend, caption, reportKey }) {
+    setActiveKpiPrint({
+      title,
+      value,
+      trend,
+      caption,
+      reportKey,
+    })
+  }
 
   // Categories loading states
   const [categories, setCategories] = useState([])
@@ -1104,10 +1199,11 @@ export default function Reports({ data = {} }) {
           products: productsList,
           customers: customersList,
           suppliers: suppliersList,
+          stock: reports.stock || [],
         }),
       ]),
     )
-  }, [allRowsByReport, filters, categoriesList, warehousesList, productsList, customersList, suppliersList])
+  }, [allRowsByReport, filters, categoriesList, warehousesList, productsList, customersList, suppliersList, reports.stock])
 
   const summary = useMemo(() => {
     const salesTotal = filteredReports.sales.reduce((total, row) => total + numeric(row.totalAmount || row.amount || row.grandTotal || row.total), 0)
@@ -1115,17 +1211,64 @@ export default function Reports({ data = {} }) {
     const balanceTotal = filteredReports.customerBalances.reduce((total, row) => total + numeric(row.outstandingBalance || row.balance || row.balanceAmount), 0)
     const stockAvailable = filteredReports.stock.reduce((total, row) => total + numeric(row.availableQuantity || row.availableStock || row.quantity), 0)
 
+    const totalInventoryValue = filteredReports.inventoryValuation.reduce((total, row) => total + numeric(row.totalStockValue), 0)
+    const lowStockItems = filteredReports.lowStock.filter((row) => row.status === 'Critical' || row.status === 'Warning').length
+    const outstandingReceivables = balanceTotal || filteredReports.customerOutstanding.reduce((total, row) => total + numeric(row.balanceAmount), 0)
+    const outstandingPayables = filteredReports.supplierOutstanding.reduce((total, row) => total + numeric(row.balanceAmount), 0)
+    const grossProfit = salesTotal - purchaseTotal
+    const topSellingItem = filteredReports.fastMoving[0]?.productName || 'No sales yet'
+
     return {
       salesTotal,
       purchaseTotal,
       balanceTotal,
       stockAvailable,
+      totalInventoryValue,
+      lowStockItems,
+      outstandingReceivables,
+      outstandingPayables,
+      grossProfit,
+      topSellingItem,
     }
   }, [filteredReports])
 
   const filterOptions = useMemo(() => ({
     statuses: [...new Set(Object.values(allRowsByReport).flat().map(getEffectiveStatus).filter(Boolean))],
   }), [allRowsByReport])
+
+  const warehouseOptions = useMemo(() => [
+    { value: 'all', label: 'All Warehouses' },
+    ...warehousesList.map((w) => ({ value: String(w.id), label: w.name })),
+  ], [warehousesList])
+
+  const categoryOptions = useMemo(() => [
+    { value: 'all', label: 'All Categories' },
+    ...categoriesList.map((c) => ({ value: String(c.id), label: c.name })),
+  ], [categoriesList])
+
+  const productOptions = useMemo(() => [
+    { value: 'all', label: 'All Products' },
+    ...productsList.map((p) => ({ value: String(p.id), label: p.name })),
+  ], [productsList])
+
+  const customerOptions = useMemo(() => [
+    { value: 'all', label: 'All Customers' },
+    ...customersList.map((c) => ({ value: String(c.id), label: c.name })),
+  ], [customersList])
+
+  const supplierOptions = useMemo(() => [
+    { value: 'all', label: 'All Suppliers' },
+    ...suppliersList.map((s) => ({ value: String(s.id), label: s.name })),
+  ], [suppliersList])
+
+  const reportTypeOptions = useMemo(() => [
+    ...REPORT_TABS.map((tab) => ({ value: tab.key, label: tab.label })),
+  ], [])
+
+  const statusOptions = useMemo(() => [
+    { value: 'all', label: 'All Status' },
+    ...filterOptions.statuses.map((v) => ({ value: v, label: v })),
+  ], [filterOptions.statuses])
 
   const transactionTrend = useMemo(
     () => buildTrendRows(filteredReports.sales, filteredReports.purchases),
@@ -1136,38 +1279,34 @@ export default function Reports({ data = {} }) {
   const kpiTrends = useMemo(() => {
     const rowTotal = (row) => numeric(row.totalAmount || row.amount || row.grandTotal || row.total)
 
-    const salesTrend = computeTrendPercent(reports.sales, rowTotal)
-    const purchaseTrend = computeTrendPercent(reports.purchases, rowTotal)
+    const salesTrend = computeTrendPercent(filteredReports.sales, rowTotal)
+    const purchaseTrend = computeTrendPercent(filteredReports.purchases, rowTotal)
 
-    // Inventory value trend: compare sum of totalStockValue across inventory rows grouped by lastPurchaseDate month
     const invTrend = computeTrendPercent(
-      erpReports.inventoryValuation.map((row) => ({
+      filteredReports.inventoryValuation.map((row) => ({
         orderDate: row.lastPurchaseDate || '',
         totalAmount: row.totalStockValue || 0,
       })),
       rowTotal,
     )
 
-    // Receivables trend: compare outstandingBalance across customer balance rows by date
     const recTrend = computeTrendPercent(
-      reports.customerBalances.map((row) => ({
+      filteredReports.customerBalances.map((row) => ({
         orderDate: row.orderDate || row.date || row.createdAt || '',
         totalAmount: numeric(row.outstandingBalance || row.balance || row.balanceAmount),
       })),
       rowTotal,
     )
 
-    // Payables trend: compare purchase amounts month-over-month (proxy for payables movement)
-    const payTrend = computeTrendPercent(reports.purchases, rowTotal)
+    const payTrend = computeTrendPercent(filteredReports.purchases, rowTotal)
 
-    // Profit trend: derived from sales minus purchases per month
     const profitByMonth = new Map()
-    reports.sales.forEach((row) => {
+    filteredReports.sales.forEach((row) => {
       const key = (row.orderDate || '').slice(0, 7)
       if (!key) return
       profitByMonth.set(key, { ...profitByMonth.get(key) || { sales: 0, purchases: 0 }, sales: (profitByMonth.get(key)?.sales || 0) + rowTotal(row) })
     })
-    reports.purchases.forEach((row) => {
+    filteredReports.purchases.forEach((row) => {
       const key = (row.orderDate || '').slice(0, 7)
       if (!key) return
       const cur = profitByMonth.get(key) || { sales: 0, purchases: 0 }
@@ -1178,12 +1317,9 @@ export default function Reports({ data = {} }) {
       .map(([key, vals]) => ({ orderDate: `${key}-01`, totalAmount: vals.sales - vals.purchases }))
     const profitTrend = computeTrendPercent(profitRows, rowTotal)
 
-    // Low stock: count change is directional — negative is good (fewer critical items), positive is bad
-    const lowStockCount = erpReports.lowStock.filter((r) => r.status === 'Critical' || r.status === 'Warning').length
+    const lowStockCount = summary.lowStockItems
     const lowStockTrend = lowStockCount === 0 ? 'None' : `${lowStockCount} items`
-
-    // Top selling: derive from fast-moving data
-    const topItem = erpReports.summary.topSellingItem || '-'
+    const topItem = summary.topSellingItem
 
     return {
       sales: salesTrend,
@@ -1195,14 +1331,13 @@ export default function Reports({ data = {} }) {
       receivables: recTrend,
       receivablesTone: trendTone(recTrend),
       payables: payTrend,
-      // For payables: lower is better, so invert tone
       payablesTone: trendTone(payTrend) === 'positive' ? 'negative' : trendTone(payTrend) === 'negative' ? 'positive' : 'neutral',
       profit: profitTrend,
       profitTone: trendTone(profitTrend),
       lowStock: lowStockTrend,
       topItem,
     }
-  }, [reports.sales, reports.purchases, reports.customerBalances, erpReports])
+  }, [filteredReports, summary])
 
   const stockChartData = useMemo(
     () => filteredReports.stock.slice(0, 8).map((row) => ({
@@ -1636,73 +1771,79 @@ export default function Reports({ data = {} }) {
         {/* Row 1, Col 4: Warehouse */}
         <label className="reports-page__filter-field">
           <span>Warehouse</span>
-          <select name="warehouse" value={filters.warehouse} onChange={handleFilterChange} className="reports-page__filter-select">
-            <option value="all">All Warehouses</option>
-            {warehousesList.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
-          </select>
+          <ReportsFilterSelect
+            name="warehouse"
+            value={filters.warehouse}
+            onChange={handleFilterChange}
+            options={warehouseOptions}
+          />
         </label>
 
         {/* Row 1, Col 5: Category */}
         <label className="reports-page__filter-field">
           <span>Category {categoriesError ? '(Error)' : isCategoriesLoading ? '...' : ''}</span>
-          <select
+          <ReportsFilterSelect
             name="category"
             value={filters.category}
             onChange={handleFilterChange}
-            className="reports-page__filter-select"
+            options={categoryOptions}
             disabled={isCategoriesLoading || Boolean(categoriesError)}
-          >
-            <option value="all">All Categories</option>
-            {categoriesError ? (
-              <option disabled>Failed to load</option>
-            ) : (
-              categoriesList.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)
-            )}
-          </select>
+          />
         </label>
 
         {/* Row 2, Col 1: Product */}
         <label className="reports-page__filter-field">
           <span>Product</span>
-          <select name="product" value={filters.product} onChange={handleFilterChange} className="reports-page__filter-select">
-            <option value="all">All Products</option>
-            {productsList.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
+          <ReportsFilterSelect
+            name="product"
+            value={filters.product}
+            onChange={handleFilterChange}
+            options={productOptions}
+          />
         </label>
 
         {/* Row 2, Col 2: Customer */}
         <label className="reports-page__filter-field">
           <span>Customer</span>
-          <select name="customer" value={filters.customer} onChange={handleFilterChange} className="reports-page__filter-select">
-            <option value="all">All Customers</option>
-            {customersList.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          <ReportsFilterSelect
+            name="customer"
+            value={filters.customer}
+            onChange={handleFilterChange}
+            options={customerOptions}
+          />
         </label>
 
         {/* Row 2, Col 3: Supplier */}
         <label className="reports-page__filter-field">
           <span>Supplier</span>
-          <select name="supplier" value={filters.supplier} onChange={handleFilterChange} className="reports-page__filter-select">
-            <option value="all">All Suppliers</option>
-            {suppliersList.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
+          <ReportsFilterSelect
+            name="supplier"
+            value={filters.supplier}
+            onChange={handleFilterChange}
+            options={supplierOptions}
+          />
         </label>
 
         {/* Row 2, Col 4: Report Type */}
         <label className="reports-page__filter-field">
           <span>Report Type</span>
-          <select name="reportType" value={activeReport} onChange={handleReportTypeChange} className="reports-page__filter-select">
-            {REPORT_TABS.map((tab) => <option key={tab.key} value={tab.key}>{tab.label}</option>)}
-          </select>
+          <ReportsFilterSelect
+            name="reportType"
+            value={activeReport}
+            onChange={handleReportTypeChange}
+            options={reportTypeOptions}
+          />
         </label>
 
         {/* Row 2, Col 5: Status */}
         <label className="reports-page__filter-field">
           <span>Status</span>
-          <select name="status" value={filters.status} onChange={handleFilterChange} className="reports-page__filter-select">
-            <option value="all">All Status</option>
-            {filterOptions.statuses.map((value) => <option key={value} value={value}>{value}</option>)}
-          </select>
+          <ReportsFilterSelect
+            name="status"
+            value={filters.status}
+            onChange={handleFilterChange}
+            options={statusOptions}
+          />
         </label>
       </div>
 
@@ -1754,18 +1895,18 @@ export default function Reports({ data = {} }) {
         </div>
 
         <div className="stats-grid reports-page__summary-grid reports-page__no-print">
-          <SummaryCard title="Total Sales" value={formatCurrency(summary.salesTotal)} icon={ShoppingCart} trend={kpiTrends.sales} tone={kpiTrends.salesTone} caption="vs prev month" onClick={() => handleTabChange('sales')} onDownload={() => handleDownloadKpiPdf({ title: 'Total Sales', value: formatCurrency(summary.salesTotal), trend: kpiTrends.sales, caption: 'vs prev month', reportKey: 'sales' })} />
-          <SummaryCard title="Total Purchases" value={formatCurrency(summary.purchaseTotal)} icon={FileText} trend={kpiTrends.purchases} tone={kpiTrends.purchaseTone} caption="vs prev month" onClick={() => handleTabChange('purchases')} onDownload={() => handleDownloadKpiPdf({ title: 'Total Purchases', value: formatCurrency(summary.purchaseTotal), trend: kpiTrends.purchases, caption: 'vs prev month', reportKey: 'purchases' })} />
-          <SummaryCard title="Inventory Value" value={formatCurrency(erpReports.summary.totalInventoryValue)} icon={IndianRupee} trend={kpiTrends.inventory} tone={kpiTrends.inventoryTone} caption="stock value" onClick={() => handleTabChange('inventoryValuation')} onDownload={() => handleDownloadKpiPdf({ title: 'Inventory Value', value: formatCurrency(erpReports.summary.totalInventoryValue), trend: kpiTrends.inventory, caption: 'stock value', reportKey: 'inventoryValuation' })} />
-          <SummaryCard title="Low Stock Items" value={erpReports.summary.lowStockItems} icon={AlertTriangle} trend={kpiTrends.lowStock} tone={kpiTrends.lowStock === 'None' ? 'positive' : 'negative'} caption="reorder watch" onClick={() => handleTabChange('lowStock')} onDownload={() => handleDownloadKpiPdf({ title: 'Low Stock Items', value: String(erpReports.summary.lowStockItems), trend: kpiTrends.lowStock, caption: 'reorder watch', reportKey: 'lowStock' })} />
-          <SummaryCard title="Receivables" value={formatCurrency(summary.balanceTotal || erpReports.summary.outstandingReceivables)} icon={Users} trend={kpiTrends.receivables} tone={kpiTrends.receivablesTone} caption="customer dues" onClick={() => handleTabChange('customerOutstanding')} onDownload={() => handleDownloadKpiPdf({ title: 'Receivables', value: formatCurrency(summary.balanceTotal || erpReports.summary.outstandingReceivables), trend: kpiTrends.receivables, caption: 'customer dues', reportKey: 'customerOutstanding' })} />
-          <SummaryCard title="Payables" value={formatCurrency(erpReports.summary.outstandingPayables)} icon={PackageSearch} trend={kpiTrends.payables} tone={kpiTrends.payablesTone} caption="supplier dues" onClick={() => handleTabChange('supplierOutstanding')} onDownload={() => handleDownloadKpiPdf({ title: 'Payables', value: formatCurrency(erpReports.summary.outstandingPayables), trend: kpiTrends.payables, caption: 'supplier dues', reportKey: 'supplierOutstanding' })} />
-          <SummaryCard title="Profit" value={formatCurrency(erpReports.summary.grossProfit)} icon={TrendingUp} trend={kpiTrends.profit} tone={kpiTrends.profitTone} caption="sales minus purchases" onClick={() => handleTabChange('profitability')} onDownload={() => handleDownloadKpiPdf({ title: 'Profit', value: formatCurrency(erpReports.summary.grossProfit), trend: kpiTrends.profit, caption: 'sales minus purchases', reportKey: 'profitability' })} />
-          <SummaryCard title="Top Selling Item" value={erpReports.summary.topSellingItem} icon={Trophy} trend="Fast Moving" tone="neutral" caption="by sales volume" onClick={() => handleTabChange('fastMoving')} onDownload={() => handleDownloadKpiPdf({ title: 'Top Selling Item', value: erpReports.summary.topSellingItem, trend: 'Fast Moving', caption: 'by sales volume', reportKey: 'fastMoving' })} />
+          <SummaryCard loading={isLoading} title="Total Sales" value={formatCurrency(summary.salesTotal)} icon={ShoppingCart} trend={kpiTrends.sales} tone={kpiTrends.salesTone} caption="vs prev month" onClick={() => handleTabChange('sales')} onDownload={() => handlePrintKpiCard({ title: 'Total Sales', value: formatCurrency(summary.salesTotal), trend: kpiTrends.sales, caption: 'vs prev month', reportKey: 'sales' })} />
+          <SummaryCard loading={isLoading} title="Total Purchases" value={formatCurrency(summary.purchaseTotal)} icon={FileText} trend={kpiTrends.purchases} tone={kpiTrends.purchaseTone} caption="vs prev month" onClick={() => handleTabChange('purchases')} onDownload={() => handlePrintKpiCard({ title: 'Total Purchases', value: formatCurrency(summary.purchaseTotal), trend: kpiTrends.purchases, caption: 'vs prev month', reportKey: 'purchases' })} />
+          <SummaryCard loading={isLoading} title="Inventory Value" value={formatCurrency(summary.totalInventoryValue)} icon={IndianRupee} trend={kpiTrends.inventory} tone={kpiTrends.inventoryTone} caption="stock value" onClick={() => handleTabChange('inventoryValuation')} onDownload={() => handlePrintKpiCard({ title: 'Inventory Value', value: formatCurrency(summary.totalInventoryValue), trend: kpiTrends.inventory, caption: 'stock value', reportKey: 'inventoryValuation' })} />
+          <SummaryCard loading={isLoading} title="Low Stock Items" value={summary.lowStockItems} icon={AlertTriangle} trend={kpiTrends.lowStock} tone={kpiTrends.lowStock === 'None' ? 'positive' : 'negative'} caption="reorder watch" onClick={() => handleTabChange('lowStock')} onDownload={() => handlePrintKpiCard({ title: 'Low Stock Items', value: String(summary.lowStockItems), trend: kpiTrends.lowStock, caption: 'reorder watch', reportKey: 'lowStock' })} />
+          <SummaryCard loading={isLoading} title="Receivables" value={formatCurrency(summary.outstandingReceivables)} icon={Users} trend={kpiTrends.receivables} tone={kpiTrends.receivablesTone} caption="customer dues" onClick={() => handleTabChange('customerOutstanding')} onDownload={() => handlePrintKpiCard({ title: 'Receivables', value: formatCurrency(summary.outstandingReceivables), trend: kpiTrends.receivables, caption: 'customer dues', reportKey: 'customerOutstanding' })} />
+          <SummaryCard loading={isLoading} title="Payables" value={formatCurrency(summary.outstandingPayables)} icon={PackageSearch} trend={kpiTrends.payables} tone={kpiTrends.payablesTone} caption="supplier dues" onClick={() => handleTabChange('supplierOutstanding')} onDownload={() => handlePrintKpiCard({ title: 'Payables', value: formatCurrency(summary.outstandingPayables), trend: kpiTrends.payables, caption: 'supplier dues', reportKey: 'supplierOutstanding' })} />
+          <SummaryCard loading={isLoading} title="Profit" value={formatCurrency(summary.grossProfit)} icon={TrendingUp} trend={kpiTrends.profit} tone={kpiTrends.profitTone} caption="sales minus purchases" onClick={() => handleTabChange('profitability')} onDownload={() => handlePrintKpiCard({ title: 'Profit', value: formatCurrency(summary.grossProfit), trend: kpiTrends.profit, caption: 'sales minus purchases', reportKey: 'profitability' })} />
+          <SummaryCard loading={isLoading} title="Top Selling Item" value={summary.topSellingItem} icon={Trophy} trend="Fast Moving" tone="neutral" caption="by sales volume" onClick={() => handleTabChange('fastMoving')} onDownload={() => handlePrintKpiCard({ title: 'Top Selling Item', value: summary.topSellingItem, trend: 'Fast Moving', caption: 'by sales volume', reportKey: 'fastMoving' })} />
         </div>
       </section>
 
-      <div className={`card reports-page__table-card reports-page__table-card--${activeReport}`}>
+      <div className={`card reports-page__table-card reports-page__table-card--${activeReport} reports-page__no-print`}>
         <div className="reports-page__table-strip reports-page__no-print">
           <div className="reports-page__tab-groups" role="tablist" aria-label="Report type">
             {REPORT_TAB_GROUPS.map((group) => (
@@ -1812,6 +1953,40 @@ export default function Reports({ data = {} }) {
           emptyMessage="No report records match the current filters."
         />
       </div>
+
+      {activeKpiPrint ? (
+        <ReportKpiPrintContainer
+          kpiKey={activeKpiPrint.reportKey}
+          kpiTitle={activeKpiPrint.title}
+          kpiValue={activeKpiPrint.value}
+          kpiTrend={activeKpiPrint.trend}
+          kpiCaption={activeKpiPrint.caption}
+          filters={filters}
+          activeRange={activeRange}
+          warehousesList={warehousesList}
+          categoriesList={categoriesList}
+          productsList={productsList}
+          customersList={customersList}
+          suppliersList={suppliersList}
+          filteredReports={filteredReports}
+          allRowsByReport={allRowsByReport}
+          summary={summary}
+        />
+      ) : (
+        <ReportPrintContainer
+          activeReport={activeReport}
+          activeTabLabel={activeTab?.label}
+          filters={filters}
+          activeRange={activeRange}
+          warehousesList={warehousesList}
+          categoriesList={categoriesList}
+          productsList={productsList}
+          customersList={customersList}
+          suppliersList={suppliersList}
+          columns={activeColumns}
+          rows={activeRows}
+        />
+      )}
     </div>
   )
 }

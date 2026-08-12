@@ -2230,3 +2230,636 @@
 }
 
 /* KPI card text is still compact, but the data table never hides values with dots. */
+
+/* =========================================================
+   REPORTS PRINT-ONLY STYLES (PROJECT GREEN THEME)
+   ========================================================= */
+
+/* On screen: hide print container */
+.reports-print-container {
+  display: none !important;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm;
+  }
+
+  html,
+  body,
+  #root,
+  .app-shell,
+  .app-shell__content,
+  .page-container,
+  .page,
+  .reports-page {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide navigation, sidebar, app headers, toast notifications & screen dashboard UI */
+  .app-shell__sidebar,
+  .app-shell__header,
+  .app-header,
+  .sidebar,
+  .app-shell__drawer-overlay,
+  .reports-page__no-print,
+  .toast-container,
+  .export-menu,
+  nav,
+  aside,
+  header {
+    display: none !important;
+  }
+
+  /* Exclusive Print Container Layout */
+  .reports-print-container {
+    display: block !important;
+    visibility: visible !important;
+    position: relative !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-size: 9.5pt !important;
+    line-height: 1.4 !important;
+  }
+
+  /* Emerald Brand Top Accent Line */
+  .print-brand-bar {
+    height: 4px !important;
+    width: 100% !important;
+    background: linear-gradient(90deg, #047857 0%, #059669 50%, #10b981 100%) !important;
+    border-radius: 2px !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* Header Section */
+  .print-report-header {
+    margin-bottom: 12px !important;
+    padding-bottom: 10px !important;
+    border-bottom: 2px solid #047857 !important;
+  }
+
+  .print-header-main {
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+  }
+
+  .print-company-brand {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+  }
+
+  .print-brand-tag {
+    font-size: 7.5pt !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.1em !important;
+    color: #047857 !important;
+    text-transform: uppercase !important;
+  }
+
+  .print-report-title {
+    font-size: 17pt !important;
+    font-weight: 850 !important;
+    letter-spacing: -0.02em !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    text-transform: uppercase !important;
+  }
+
+  .print-header-meta {
+    text-align: right !important;
+  }
+
+  .print-meta-badge {
+    display: inline-block !important;
+    background: #f0fdfa !important;
+    color: #047857 !important;
+    border: 1px solid #ccfbf1 !important;
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
+    font-size: 8.5pt !important;
+    font-weight: 700 !important;
+  }
+
+  /* Filter Summary Box */
+  .print-filter-card {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-left: 4px solid #047857 !important;
+    border-radius: 6px !important;
+    padding: 9px 14px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .print-filter-card-header {
+    margin-bottom: 6px !important;
+  }
+
+  .print-filter-card-title {
+    font-size: 8.5pt !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    color: #047857 !important;
+  }
+
+  .print-filter-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 5px 16px !important;
+  }
+
+  .print-filter-item {
+    font-size: 9pt !important;
+    color: #334155 !important;
+  }
+
+  .print-filter-label {
+    font-weight: 700 !important;
+    color: #0f172a !important;
+  }
+
+  .print-filter-val {
+    color: #334155 !important;
+  }
+
+  /* Table Wrapper & Print Table */
+  .print-table-wrapper {
+    width: 100% !important;
+    margin-bottom: 14px !important;
+  }
+
+  .print-report-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 0 !important;
+    page-break-inside: auto !important;
+  }
+
+  .print-report-table thead {
+    display: table-header-group !important;
+  }
+
+  .print-report-table tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .print-report-table th {
+    background: #047857 !important;
+    color: #ffffff !important;
+    font-weight: 750 !important;
+    font-size: 9pt !important;
+    text-align: left !important;
+    padding: 7px 10px !important;
+    border: 1px solid #065f46 !important;
+    letter-spacing: 0.01em !important;
+  }
+
+  .print-report-table td {
+    padding: 6px 10px !important;
+    font-size: 8.8pt !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #1e293b !important;
+    vertical-align: middle !important;
+  }
+
+  /* Row Striping: Alternating white and light mint tint */
+  .print-report-table tbody tr:nth-child(even) td {
+    background-color: #f8fafc !important;
+  }
+
+  .print-report-table tbody tr:nth-child(odd) td {
+    background-color: #ffffff !important;
+  }
+
+  .print-report-table td.reports-table__numeric,
+  .print-report-table th.reports-table__numeric {
+    text-align: right !important;
+  }
+
+  .print-table-empty {
+    text-align: center !important;
+    padding: 16px !important;
+    color: #64748b !important;
+    font-style: italic !important;
+  }
+
+  /* Status Badges inside Print Table */
+  .print-report-table .status-badge {
+    display: inline-block !important;
+    padding: 1.5px 7px !important;
+    border-radius: 4px !important;
+    font-size: 8pt !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    text-transform: capitalize !important;
+    box-shadow: none !important;
+  }
+
+  .print-report-table .status-success,
+  .print-report-table .status-healthy,
+  .print-report-table .status-available,
+  .print-report-table .status-completed,
+  .print-report-table .status-active {
+    background: #ecfdf5 !important;
+    color: #047857 !important;
+    border: 1px solid #a7f3d0 !important;
+  }
+
+  .print-report-table .status-failed,
+  .print-report-table .status-critical,
+  .print-report-table .status-overdue {
+    background: #fef2f2 !important;
+    color: #b91c1c !important;
+    border: 1px solid #fecaca !important;
+  }
+
+  .print-report-table .status-warning {
+    background: #fffbeb !important;
+    color: #b45309 !important;
+    border: 1px solid #fde68a !important;
+  }
+
+  .print-report-table .status-info,
+  .print-report-table .status-pending {
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+    border: 1px solid #bfdbfe !important;
+  }
+
+  /* Summary Card Footer */
+  .print-summary-card {
+    background: #f0fdfa !important;
+    border: 1px solid #ccfbf1 !important;
+    border-left: 4px solid #047857 !important;
+    border-radius: 6px !important;
+    padding: 10px 14px !important;
+    margin-top: 10px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .print-summary-card-header {
+    font-size: 8.5pt !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    color: #047857 !important;
+    margin-bottom: 6px !important;
+  }
+
+  .print-summary-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 12px 24px !important;
+  }
+
+  .print-summary-stat {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 9.5pt !important;
+  }
+
+  .print-summary-label {
+    font-weight: 700 !important;
+    color: #334155 !important;
+  }
+
+  .print-summary-val {
+    font-weight: 850 !important;
+    color: #047857 !important;
+  }
+
+  /* Prominent KPI Highlight Box (Green Theme) */
+  .kpi-print-highlight-box {
+    background: #f0fdfa !important;
+    border: 1px solid #ccfbf1 !important;
+    border-left: 5px solid #047857 !important;
+    border-radius: 8px !important;
+    padding: 12px 18px !important;
+    margin-bottom: 14px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .kpi-print-highlight-label {
+    font-size: 8.5pt !important;
+    font-weight: 850 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    color: #047857 !important;
+  }
+
+  .kpi-print-highlight-value {
+    font-size: 20pt !important;
+    font-weight: 900 !important;
+    color: #047857 !important;
+    line-height: 1.1 !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  .kpi-print-highlight-meta {
+    font-size: 8.5pt !important;
+    color: #475569 !important;
+    margin-top: 2px !important;
+  }
+
+  .kpi-print-highlight-meta strong {
+    color: #0f172a !important;
+  }
+
+  .kpi-print-trend {
+    color: #059669 !important;
+    font-weight: 700 !important;
+  }
+
+  .kpi-print-breakdown-section,
+  .kpi-print-detail-section {
+    margin-bottom: 14px !important;
+  }
+
+  .kpi-print-breakdown-title {
+    font-size: 9.5pt !important;
+    font-weight: 850 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    color: #047857 !important;
+    margin-bottom: 6px !important;
+    padding-bottom: 4px !important;
+    border-bottom: 1.5px solid #a7f3d0 !important;
+  }
+
+  .kpi-print-total-row td {
+    background: #ecfdf5 !important;
+    color: #047857 !important;
+    font-weight: 850 !important;
+    border-top: 2px solid #047857 !important;
+  }
+
+  /* Enterprise Print Footer */
+  .print-footer {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding-top: 10px !important;
+    margin-top: 16px !important;
+    border-top: 1px solid #cbd5e1 !important;
+    font-size: 8pt !important;
+    color: #64748b !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .print-footer-left span,
+  .print-footer-right span {
+    color: #64748b !important;
+  }
+}
+
+/* Force all dropdown menus and popovers on Reports page to open downward only */
+.reports-page .reports-page__period-menu,
+.reports-page .erp-export-menu__popover,
+.reports-page .erp-action-menu__popover,
+.reports-page .table-component__columns-popover {
+  top: calc(100% + 6px) !important;
+  bottom: auto !important;
+  transform-origin: top center !important;
+}
+
+.reports-page select.reports-page__filter-select,
+.reports-page select {
+  appearance: auto;
+}
+
+/* Custom Select Dropdown Styling — Opens Downward Only */
+.reports-custom-select-wrapper {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.reports-page__filter-select-trigger {
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  border: 1px solid #dbe5f0;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #334155;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 720;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  cursor: pointer;
+  outline: none;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.025);
+  transition: all 0.15s ease;
+}
+
+.reports-page__filter-select-trigger:focus-visible,
+.reports-page__filter-select-trigger.is-open {
+  border-color: #14b8a6;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.12);
+}
+
+.reports-custom-select-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  line-height: 1.3 !important;
+}
+
+.reports-custom-select-chevron {
+  color: #64748b;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.reports-page__filter-select-trigger.is-open .reports-custom-select-chevron {
+  transform: rotate(180deg);
+}
+
+/* ABSOLUTE FORCE DOWNWARD OPENING & MATCHING INPUT WIDTH */
+.reports-custom-select-dropdown {
+  position: absolute !important;
+  top: calc(100% + 4px) !important;
+  bottom: auto !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-height: 280px !important;
+  overflow-y: auto !important;
+  z-index: 9999 !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 10px !important;
+  padding: 4px !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.1) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  scrollbar-width: thin;
+}
+
+/* Wide Dropdown — Specific to Product dropdown ONLY */
+.reports-custom-select-dropdown--wide {
+  width: max(100%, 340px) !important;
+  max-width: 480px !important;
+  right: auto !important;
+  padding: 6px !important;
+  box-shadow: 0 14px 30px -4px rgba(15, 23, 42, 0.18), 0 6px 12px -4px rgba(15, 23, 42, 0.08) !important;
+}
+
+
+.reports-custom-select-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  background: #f8fafc;
+  margin-bottom: 4px;
+}
+
+.reports-custom-select-search-icon {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.reports-custom-select-search-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 12px;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.reports-custom-select-search-input::placeholder {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.reports-custom-select-option {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  width: 100% !important;
+  min-height: 36px !important;
+  padding: 7px 10px !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: transparent;
+  color: #334155 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-align: left !important;
+  line-height: 1.35 !important;
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.reports-custom-select-option span {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.35 !important;
+  display: block !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+  color: inherit !important;
+  font-size: 12px !important;
+  font-weight: inherit !important;
+}
+
+.reports-custom-select-option:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+.reports-custom-select-option.is-selected {
+  background: #f0fdfa !important;
+  color: #047857 !important;
+  font-weight: 750 !important;
+}
+
+.reports-custom-select-check {
+  color: #047857 !important;
+  flex-shrink: 0 !important;
+}
+
+.reports-custom-select-no-results {
+  padding: 10px;
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* Sleek Dark Enterprise Tooltip for Reports Select Options */
+.reports-select-dark-tooltip {
+  position: fixed !important;
+  z-index: 100000 !important;
+  max-width: 380px !important;
+  padding: 7px 11px !important;
+  border: 1px solid rgba(15, 118, 110, 0.3) !important;
+  border-radius: 7px !important;
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  font-size: 11.5px !important;
+  font-weight: 550 !important;
+  line-height: 1.38 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35), 0 4px 6px -2px rgba(0, 0, 0, 0.2) !important;
+  pointer-events: none !important;
+  transform: translate(-50%, -100%) !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  animation: reportsTooltipFadeIn 0.12s ease-out !important;
+}
+
+@keyframes reportsTooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -90%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%);
+  }
+}
+
+
+
+
+

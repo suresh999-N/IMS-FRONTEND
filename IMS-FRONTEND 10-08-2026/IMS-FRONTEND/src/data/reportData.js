@@ -41,10 +41,16 @@ function getSupplierName(row) {
 }
 
 function getWarehouseName(row, warehouses = []) {
-    return text(
-        row.warehouse || row.warehouseName || row.location || warehouses[0]?.name || warehouses[0]?.warehouseName,
-        'Main Warehouse',
-    )
+    if (row.warehouse || row.warehouseName || row.location) {
+        return text(row.warehouse || row.warehouseName || row.location)
+    }
+
+    if (row.warehouseId) {
+        const found = warehouses.find((w) => String(w.id || w.warehouseId).toLowerCase() === String(row.warehouseId).toLowerCase())
+        if (found) return text(found.name || found.warehouseName)
+    }
+
+    return ''
 }
 
 function getProductStock(product, stock) {
@@ -231,13 +237,15 @@ export function buildInventoryValuationReport({ products = [], stock = [], wareh
     return normalizeProducts(products, stock).map((product, index) => {
         const quantityAvailable = getProductStock(product, stock)
         const averageCost = getProductCost(product)
+        const stockRow = stock.find((s) => (s.productId || s.id) === (product.id || product.productId))
 
         return {
             id: product.id || product.productId || index + 1,
             productName: getProductName(product),
             sku: getProductSku(product, index),
             category: getProductCategory(product),
-            warehouse: getWarehouseName(product, warehouses),
+            warehouseId: product.warehouseId || stockRow?.warehouseId || '',
+            warehouse: product.warehouse || product.warehouseName || stockRow?.warehouseName || stockRow?.warehouse || getWarehouseName(product, warehouses),
             quantityAvailable,
             averageCost,
             totalStockValue: quantityAvailable * averageCost,
@@ -259,6 +267,8 @@ export function buildLowStockReport({ products = [], stock = [], warehouses = []
         if (availableStock <= minimumStockLevel) status = 'Critical'
         else if (availableStock <= minimumStockLevel + 5) status = 'Warning'
 
+        const stockRow = stock.find((s) => (s.productId || s.id) === (product.id || product.productId))
+
         return {
             id: product.id || product.productId || index + 1,
             productName: getProductName(product),
@@ -267,19 +277,21 @@ export function buildLowStockReport({ products = [], stock = [], warehouses = []
             availableStock,
             minimumStockLevel,
             reorderQuantity,
-            warehouse: getWarehouseName(product, warehouses),
+            warehouseId: product.warehouseId || stockRow?.warehouseId || '',
+            warehouse: product.warehouse || product.warehouseName || stockRow?.warehouseName || stockRow?.warehouse || getWarehouseName(product, warehouses),
             status,
         }
     })
 }
 
-export function buildFastMovingReport({ products = [], stock = [], sales = [] }) {
+export function buildFastMovingReport({ products = [], stock = [], sales = [], warehouses = [] }) {
     const productSales = salesByProduct(sales)
     const normalizedProducts = normalizeProducts(products, stock)
 
     return productSales
         .map((item, index) => {
             const product = normalizedProducts.find((row) => getProductName(row) === item.productName) || {}
+            const stockRow = stock.find((s) => (s.productId || s.id) === (product.id || product.productId))
             const stockLeft = getProductStock(product, stock)
 
             return {
@@ -289,13 +301,15 @@ export function buildFastMovingReport({ products = [], stock = [], sales = [] })
                 unitsSold: item.unitsSold,
                 salesValue: item.salesValue,
                 stockLeft,
+                warehouseId: product.warehouseId || stockRow?.warehouseId || '',
+                warehouse: product.warehouse || product.warehouseName || stockRow?.warehouseName || stockRow?.warehouse || getWarehouseName(product, warehouses),
                 movementStatus: item.unitsSold >= 10 ? 'Fast' : 'Watch',
             }
         })
         .sort((first, second) => second.unitsSold - first.unitsSold)
 }
 
-export function buildSlowMovingReport({ products = [], stock = [], sales = [] }) {
+export function buildSlowMovingReport({ products = [], stock = [], sales = [], warehouses = [] }) {
     const productSales = salesByProduct(sales)
     const salesMap = new Map(productSales.map((item) => [item.productName, item]))
 
@@ -307,6 +321,7 @@ export function buildSlowMovingReport({ products = [], stock = [], sales = [] })
             const stockAvailable = getProductStock(product, stock)
             const stockValue = stockAvailable * getProductCost(product)
             const daysSinceLastSale = lastSoldDate ? daysBetween(lastSoldDate) : 999
+            const stockRow = stock.find((s) => (s.productId || s.id) === (product.id || product.productId))
 
             return {
                 id: product.id || index + 1,
@@ -316,6 +331,8 @@ export function buildSlowMovingReport({ products = [], stock = [], sales = [] })
                 stockAvailable,
                 daysSinceLastSale,
                 stockValue,
+                warehouseId: product.warehouseId || stockRow?.warehouseId || '',
+                warehouse: product.warehouse || product.warehouseName || stockRow?.warehouseName || stockRow?.warehouse || getWarehouseName(product, warehouses),
                 movementStatus: daysSinceLastSale > 90 ? 'Slow' : 'Watch',
             }
         })
@@ -329,6 +346,8 @@ export function buildTopCustomersReport({ sales = [], customers = [] }) {
         const customer = customers.find((row) => getCustomerName(row) === customerName) || {}
         const totalSalesValue = customerSales.reduce((total, row) => total + getRowTotal(row), 0)
         const lastPurchaseDate = customerSales.map(getRowDate).filter(Boolean).sort().at(-1) || ''
+        const whId = customerSales.find(s => s.warehouseId)?.warehouseId || ''
+        const whName = customerSales.find(s => s.warehouse || s.warehouseName)?.warehouse || customerSales.find(s => s.warehouse || s.warehouseName)?.warehouseName || ''
 
         return {
             id: index + 1,
@@ -339,6 +358,8 @@ export function buildTopCustomersReport({ sales = [], customers = [] }) {
                 customer.outstandingBalance || customer.balance || customer.balanceAmount || customer.dueAmount,
             ),
             lastPurchaseDate,
+            warehouseId: whId,
+            warehouse: whName,
         }
     })
 
@@ -352,6 +373,8 @@ export function buildTopSuppliersReport({ purchases = [], suppliers = [] }) {
         const supplier = suppliers.find((row) => getSupplierName(row) === supplierName) || {}
         const purchaseValue = supplierPurchases.reduce((total, row) => total + getRowTotal(row), 0)
         const lastPurchaseDate = supplierPurchases.map(getRowDate).filter(Boolean).sort().at(-1) || ''
+        const whId = supplierPurchases.find(p => p.warehouseId)?.warehouseId || ''
+        const whName = supplierPurchases.find(p => p.warehouse || p.warehouseName)?.warehouse || supplierPurchases.find(p => p.warehouse || p.warehouseName)?.warehouseName || ''
 
         return {
             id: index + 1,
@@ -362,18 +385,21 @@ export function buildTopSuppliersReport({ purchases = [], suppliers = [] }) {
                 supplier.outstandingBalance || supplier.balance || supplier.balanceAmount || supplier.dueAmount,
             ),
             lastPurchaseDate,
+            warehouseId: whId,
+            warehouse: whName,
         }
     })
 
     return rows.sort((first, second) => second.purchaseValue - first.purchaseValue)
 }
 
-export function buildProfitabilityReport({ products = [], stock = [], sales = [] }) {
+export function buildProfitabilityReport({ products = [], stock = [], sales = [], warehouses = [] }) {
     const productSales = salesByProduct(sales)
     const normalizedProducts = normalizeProducts(products, stock)
 
     return productSales.map((item, index) => {
         const product = normalizedProducts.find((row) => getProductName(row) === item.productName) || {}
+        const stockRow = stock.find((s) => (s.productId || s.id) === (product.id || product.productId))
         const costValue = item.unitsSold * getProductCost(product)
         const salesValue = item.salesValue || item.unitsSold * getProductSalePrice(product)
         const grossProfit = salesValue - costValue
@@ -386,6 +412,8 @@ export function buildProfitabilityReport({ products = [], stock = [], sales = []
             costValue,
             grossProfit,
             profitMargin,
+            warehouseId: product.warehouseId || stockRow?.warehouseId || '',
+            warehouse: product.warehouse || product.warehouseName || stockRow?.warehouseName || stockRow?.warehouse || getWarehouseName(product, warehouses),
             status: profitMargin >= 25 ? 'Healthy' : profitMargin >= 10 ? 'Watch' : 'Critical',
         }
     })
@@ -408,6 +436,8 @@ export function buildCustomerOutstandingReport({ invoices = [], accountingInvoic
             invoiceAmount,
             paidAmount,
             balanceAmount,
+            warehouseId: invoice.warehouseId || '',
+            warehouse: invoice.warehouse || invoice.warehouseName || invoice.location || '',
             agingStatus: getAgingStatus(dueDate),
         }
     })
@@ -423,6 +453,8 @@ export function buildCustomerOutstandingReport({ invoices = [], accountingInvoic
         invoiceAmount: number(customer.creditLimit || customer.totalAmount || customer.balance),
         paidAmount: 0,
         balanceAmount: number(customer.outstandingBalance || customer.balance || customer.balanceAmount || customer.dueAmount),
+        warehouseId: customer.warehouseId || '',
+        warehouse: customer.warehouse || customer.warehouseName || customer.location || '',
         agingStatus: '0-30 Days',
     }))
 }
@@ -446,6 +478,8 @@ export function buildSupplierOutstandingReport({ purchases = [], suppliers = [] 
             billAmount,
             paidAmount,
             balanceAmount,
+            warehouseId: purchase.warehouseId || '',
+            warehouse: purchase.warehouse || purchase.warehouseName || purchase.location || '',
             agingStatus: getAgingStatus(dueDate),
         }
     })
@@ -458,9 +492,11 @@ export function buildSupplierOutstandingReport({ purchases = [], suppliers = [] 
         billNumber: `PAY-${index + 1}`,
         billDate: '',
         dueDate: '',
-        billAmount: number(supplier.totalAmount || supplier.balance),
+        invoiceAmount: number(supplier.totalAmount || supplier.balance),
         paidAmount: 0,
         balanceAmount: number(supplier.outstandingBalance || supplier.balance || supplier.balanceAmount || supplier.dueAmount),
+        warehouseId: supplier.warehouseId || '',
+        warehouse: supplier.warehouse || supplier.warehouseName || supplier.location || '',
         agingStatus: '0-30 Days',
     }))
 }
