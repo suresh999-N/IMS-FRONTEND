@@ -1,4 +1,4 @@
-import { Eye, RefreshCw, Trash2 } from 'lucide-react'
+import { Eye, Pencil, RefreshCw, Trash2 } from 'lucide-react'
 import { ActionMenu, DataTable, FilterBar, StatusBadge } from '../../../../components/erp'
 import { formatCurrency, formatDate } from '../../../../utils/helpers'
 
@@ -57,6 +57,7 @@ export default function PurchasesTable({
   canDelete,
   onDelete,
   onView,
+  onEdit,
   onRefresh,
   loading,
 }) {
@@ -106,6 +107,10 @@ export default function PurchasesTable({
       label: 'Status',
       sortable: true,
       mobileStatus: true,
+      className: 'purchases-page__col-status',
+      tableWidth: 160,
+      style: { width: 160, minWidth: 160 },
+      headerStyle: { width: 160, minWidth: 160 },
       render: (purchase) => {
         const status = getPurchaseOrderStatus(purchase.status)
 
@@ -139,6 +144,12 @@ export default function PurchasesTable({
             label: 'View Details',
             icon: Eye,
             onClick: () => onView?.(purchase),
+          },
+          {
+            key: 'edit',
+            label: 'Edit',
+            icon: Pencil,
+            onClick: () => onEdit?.(purchase),
           },
           canDelete && {
             key: 'delete',

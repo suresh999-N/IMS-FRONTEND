@@ -674,9 +674,9 @@ export default function GoodsReceiptForm({
             unitName: unitName,
             orderedQuantity: String(ordQty),
             previouslyReceivedQuantity: String(prevRx),
-            remainingQuantity: String(remQty || ordQty),
-            receivedQuantity: String(remQty > 0 ? remQty : ordQty),
-            acceptedQuantity: String(remQty > 0 ? remQty : ordQty),
+            remainingQuantity: String(remQty),
+            receivedQuantity: String(remQty > 0 ? remQty : 0),
+            acceptedQuantity: String(remQty > 0 ? remQty : 0),
             rejectedQuantity: '0',
             unitPrice: price,
             discount: String(item.discount ?? item.discountPercentage ?? '0'),
@@ -781,11 +781,29 @@ export default function GoodsReceiptForm({
     supplierId: getRequiredError(formData.supplierId, 'Supplier'),
     warehouseId: getRequiredError(formData.warehouseId, 'Warehouse'),
     receiptDate: getRequiredError(formData.receiptDate, 'Receipt date'),
-    lineItems: formData.lineItems.map(item => ({
-      productId: getRequiredError(item.productId, 'Product'),
-      receivedQuantity: getNumberError(item.receivedQuantity, 'Received quantity', { allowZero: false }),
-      unitPrice: getNumberError(item.unitPrice, 'Unit price', { allowZero: true }),
-    })),
+    lineItems: formData.lineItems.map(item => {
+      const ordQty = Number(item.orderedQuantity || 0)
+      const prevRx = Number(item.previouslyReceivedQuantity || 0)
+      const maxAllowed = Math.max(0, ordQty - prevRx)
+      const recQty = Number(item.receivedQuantity || 0)
+
+      let recError = null
+      if (maxAllowed > 0 || recQty > 0) {
+        recError = getNumberError(item.receivedQuantity, 'Received quantity', { allowZero: false })
+      }
+      if (!recError && recQty > maxAllowed) {
+        recError = `Received quantity cannot exceed the remaining quantity of ${maxAllowed}.`
+      }
+      if (!recError && recQty < 0) {
+        recError = `Received quantity must be greater than or equal to 0.`
+      }
+
+      return {
+        productId: getRequiredError(item.productId, 'Product'),
+        receivedQuantity: recError,
+        unitPrice: getNumberError(item.unitPrice, 'Unit price', { allowZero: true }),
+      }
+    }),
   }
 
   const isFormValid =
@@ -898,14 +916,14 @@ export default function GoodsReceiptForm({
   }
 
   return (
-    <form className="indent-create-wrapper" onSubmit={handleSubmit} autoComplete="off">
+    <form className="indent-create-wrapper" onSubmit={handleSubmit} autoComplete="off" style={{ minWidth: 0, maxWidth: '100%', width: '100%' }}>
       <div className="indent-create-header">
         <div className="indent-create-header__title">
           <h1>{mode === 'edit' ? 'Edit Goods Receipt' : 'Create Goods Receipt'}</h1>
         </div>
       </div>
 
-      <div className="indent-card">
+      <div className="indent-card" style={{ minWidth: 0, maxWidth: '100%', width: '100%' }}>
         <h3 className="indent-card__title">Goods Receipt Details</h3>
         <div className="indent-details-grid">
           <div className="indent-field-group">
@@ -1022,11 +1040,11 @@ export default function GoodsReceiptForm({
         </div>
       </div>
 
-      <div className="indent-card">
+      <div className="indent-card" style={{ minWidth: 0, maxWidth: '100%', width: '100%' }}>
         <h3 className="indent-card__title">Received Product Line Items</h3>
 
-        <div className="indent-items-table-wrapper" style={{ overflowX: 'auto', overflowY: 'hidden', width: '100%', display: 'block' }}>
-          <table className="indent-items-table" style={{ width: '100%', minWidth: '1100px', tableLayout: 'fixed' }}>
+        <div className="indent-items-table-wrapper" style={{ overflowX: 'auto', overflowY: 'hidden', width: '100%', display: 'block', minWidth: 0, maxWidth: '100%' }}>
+          <table className="indent-items-table" style={{ width: '100%', minWidth: '1200px', tableLayout: 'fixed' }}>
             <thead>
               <tr>
                 <th style={{ width: '36px', textAlign: 'center' }}>#</th>
@@ -1034,6 +1052,7 @@ export default function GoodsReceiptForm({
                 <th style={{ width: '130px' }}>Variant</th>
                 <th style={{ width: '90px', textAlign: 'center' }}>Ordered Qty</th>
                 <th style={{ width: '95px', textAlign: 'center' }}>Received *</th>
+                <th style={{ width: '110px', textAlign: 'center' }}>Remaining Qty</th>
                 <th style={{ width: '115px', textAlign: 'right' }}>Unit price *</th>
                 <th style={{ width: '95px', textAlign: 'center' }}>Discount (%)</th>
                 <th style={{ width: '85px', textAlign: 'center' }}>Tax (%)</th>
@@ -1095,6 +1114,18 @@ export default function GoodsReceiptForm({
                       onBlur={() => handleLineBlur(lineItem.id, 'receivedQuantity')}
                       error={touched[`${lineItem.id}-receivedQuantity`] ? errors.lineItems[index]?.receivedQuantity : ''}
                       className="indent-table-field indent-table-field--quantity"
+                      disabled={Number(lineItem.orderedQuantity || 0) - Number(lineItem.previouslyReceivedQuantity || 0) <= 0}
+                    />
+                  </td>
+
+                  <td>
+                    <input
+                      type="text"
+                      className="indent-table-input"
+                      value={Math.max(0, Number(lineItem.orderedQuantity || 0) - Number(lineItem.previouslyReceivedQuantity || 0) - Number(lineItem.receivedQuantity || 0))}
+                      readOnly
+                      disabled
+                      style={{ textAlign: 'center', background: '#f8fafc' }}
                     />
                   </td>
 

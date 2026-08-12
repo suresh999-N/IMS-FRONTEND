@@ -913,13 +913,13 @@
 
 /* Table scrollability adjustments */
 .edit-indent-modal .indent-items-table-wrapper {
-  overflow-x: hidden !important;
+  overflow-x: auto !important;
   width: 100% !important;
 }
 
 .edit-indent-modal .indent-items-table {
   width: 100% !important;
-  min-width: 0 !important;
+  min-width: 1200px !important;
 }
 
 /* Style SearchableSelect inside the items table */
@@ -1368,4 +1368,24 @@
 .purchases-page__table-card tbody tr.is-selected td.table-component__selection-cell {
   box-shadow: inset 3px 0 0 var(--primary) !important;
   background-color: var(--primary-soft) !important;
+}
+
+/* Goods Receipt Modal Horizontal Scroll Constraints */
+.indent-create-wrapper {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+.indent-card {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+.indent-items-table-wrapper {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  overflow-x: auto !important;
 }

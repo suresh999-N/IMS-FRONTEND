@@ -708,12 +708,50 @@ export default function CreatePurchaseReturn() {
           )
       )
 
+      const returnQtyStr = String(value || '').trim()
+      const returnableQtyVal = getNumber(items[index]?.returnableQuantity)
+      let errorMsg = ''
+
+      if (returnQtyStr === '') {
+        errorMsg = 'Return quantity is required.'
+      } else {
+        const returnQtyVal = Number(returnQtyStr)
+        if (isNaN(returnQtyVal)) {
+          errorMsg = 'Return quantity must be a valid number.'
+        } else if (returnQtyVal < 0) {
+          errorMsg = 'Return quantity cannot be negative.'
+        } else if (returnQtyVal > returnableQtyVal) {
+          errorMsg = `Return quantity cannot exceed the returnable quantity of ${returnableQtyVal}.`
+        }
+      }
+
       setValidationErrors(
-        (previous) => ({
-          ...previous,
-          itemErrors:
-            undefined,
-        })
+        (previous) => {
+          const newItemErrors = { ...(previous?.itemErrors || {}) }
+          if (errorMsg) {
+            newItemErrors[index] = {
+              ...(newItemErrors[index] || {}),
+              returnQuantity: errorMsg
+            }
+          } else {
+            if (newItemErrors[index]) {
+              const { returnQuantity, ...rest } = newItemErrors[index]
+              if (Object.keys(rest).length > 0) {
+                newItemErrors[index] = rest
+              } else {
+                delete newItemErrors[index]
+              }
+            }
+          }
+
+          const nextErrors = { ...previous }
+          if (Object.keys(newItemErrors).length > 0) {
+            nextErrors.itemErrors = newItemErrors
+          } else {
+            delete nextErrors.itemErrors
+          }
+          return nextErrors
+        }
       )
     }
 
@@ -785,66 +823,47 @@ export default function CreatePurchaseReturn() {
 
 
     const itemErrors = []
-
+    let totalReturnQty = 0
 
     items.forEach(
       (item, index) => {
         const rowErrors = {}
+        const returnQtyStr = String(item.returnQuantity || '').trim()
 
-        const returnQuantity =
-          getNumber(
-            item.returnQuantity
-          )
+        if (returnQtyStr === '') {
+          rowErrors.returnQuantity = 'Return quantity is required.'
+        } else {
+          const returnQuantity = Number(returnQtyStr)
+          const returnableQuantity = getNumber(item.returnableQuantity)
+          const price = getNumber(item.price)
 
-        const returnableQuantity =
-          getNumber(
-            item.returnableQuantity
-          )
+          if (isNaN(returnQuantity)) {
+            rowErrors.returnQuantity = 'Return quantity must be a valid number.'
+          } else if (returnQuantity < 0) {
+            rowErrors.returnQuantity = 'Return quantity cannot be negative.'
+          } else if (returnQuantity > returnableQuantity) {
+            rowErrors.returnQuantity = `Return quantity cannot exceed the returnable quantity of ${returnableQuantity}.`
+          } else {
+            totalReturnQty += returnQuantity
+          }
 
-        const price =
-          getNumber(
-            item.price
-          )
-
-
-        if (
-          returnQuantity <= 0
-        ) {
-          rowErrors.returnQuantity =
-            'Return quantity must be greater than 0.'
+          if (price < 0) {
+            rowErrors.price = 'Unit price cannot be negative.'
+          }
         }
 
-
-        if (
-          returnQuantity >
-          returnableQuantity
-        ) {
-          rowErrors.returnQuantity =
-            `Cannot return more than ${returnableQuantity}.`
-        }
-
-
-        if (price < 0) {
-          rowErrors.price =
-            'Unit price cannot be negative.'
-        }
-
-
-        if (
-          Object.keys(
-            rowErrors
-          ).length
-        ) {
-          itemErrors[index] =
-            rowErrors
+        if (Object.keys(rowErrors).length) {
+          itemErrors[index] = rowErrors
         }
       }
     )
 
+    if (items.length > 0 && totalReturnQty <= 0 && !itemErrors.some(x => x && x.returnQuantity)) {
+      errors.items = 'At least one item must have a return quantity greater than 0.'
+    }
 
-    if (itemErrors.length) {
-      errors.itemErrors =
-        itemErrors
+    if (itemErrors.filter(Boolean).length > 0) {
+      errors.itemErrors = itemErrors
     }
 
 
@@ -899,26 +918,28 @@ export default function CreatePurchaseReturn() {
             reason.trim(),
 
           items:
-            items.map(
-              (item) => ({
-                productId:
-                  Number(
-                    item.productId
-                  ),
+            items
+              .filter(item => getNumber(item.returnQuantity) > 0)
+              .map(
+                (item) => ({
+                  productId:
+                    Number(
+                      item.productId
+                    ),
 
-                variantId:
-                  item.variantId
-                    ? Number(
-                      item.variantId
-                    )
-                    : null,
+                  variantId:
+                    item.variantId
+                      ? Number(
+                        item.variantId
+                      )
+                      : null,
 
-                returnQuantity:
-                  Number(
-                    item.returnQuantity
-                  ),
-              })
-            ),
+                  returnQuantity:
+                    Number(
+                      item.returnQuantity
+                    ),
+                })
+              ),
         }
 
 
@@ -1388,25 +1409,19 @@ export default function CreatePurchaseReturn() {
 
 
           {!loadingGrnItems && (
-            <div className="items-table-container">
-              <table className="items-table">
+            <div className="items-table-container" style={{ width: '100%', maxWidth: '100%', overflowX: 'auto', display: 'block' }}>
+              <table className="items-table" style={{ width: '100%', minWidth: '1100px', tableLayout: 'fixed' }}>
                 <thead>
                   <tr>
-                    <th>Product</th>
-                    <th>Variant</th>
-                    <th>Received Qty</th>
-                    <th>
-                      Previously Returned
-                    </th>
-                    <th>Returnable Qty</th>
-                    <th>
-                      Return Qty *
-                    </th>
-                    <th>Unit Price</th>
-                    <th className="text-right">
-                      Total
-                    </th>
-                    <th />
+                    <th style={{ width: '250px', textAlign: 'left' }}>Product</th>
+                    <th style={{ width: '120px', textAlign: 'left' }}>Variant</th>
+                    <th style={{ width: '100px', textAlign: 'center' }}>Received Qty</th>
+                    <th style={{ width: '130px', textAlign: 'center' }}>Previously Returned</th>
+                    <th style={{ width: '110px', textAlign: 'center' }}>Returnable Qty</th>
+                    <th style={{ width: '110px', textAlign: 'center' }}>Return Qty *</th>
+                    <th style={{ width: '110px', textAlign: 'right' }}>Unit Price</th>
+                    <th style={{ width: '110px', textAlign: 'right' }}>Total</th>
+                    <th style={{ width: '60px', textAlign: 'center' }} />
                   </tr>
                 </thead>
 
@@ -1450,14 +1465,14 @@ export default function CreatePurchaseReturn() {
                             }
                           >
                             <td>
-                              <div className="font-semibold">
+                              <div className="font-semibold" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
                                 {
                                   item.productName
                                 }
                               </div>
 
-                              <small>
-                                {
+                              <small className="text-muted">
+                                ID: {
                                   item.productId
                                 }
                               </small>
@@ -1470,25 +1485,25 @@ export default function CreatePurchaseReturn() {
                               }
                             </td>
 
-                            <td>
+                            <td className="text-center">
                               {
                                 item.receivedQuantity
                               }
                             </td>
 
-                            <td>
+                            <td className="text-center">
                               {
                                 item.previouslyReturnedQuantity
                               }
                             </td>
 
-                            <td>
+                            <td className="text-center font-semibold">
                               {
                                 item.returnableQuantity
                               }
                             </td>
 
-                            <td>
+                            <td className="text-center">
                               <input
                                 type="number"
                                 step="0.01"
@@ -1514,10 +1529,11 @@ export default function CreatePurchaseReturn() {
                                     ? 'input-error'
                                     : ''
                                 }
+                                style={{ width: '100%', textAlign: 'center', boxSizing: 'border-box' }}
                               />
 
                               {itemErrors.returnQuantity && (
-                                <span className="field-error">
+                                <span className="field-error" style={{ display: 'block', marginTop: '4px', fontSize: '11px' }}>
                                   {
                                     itemErrors.returnQuantity
                                   }
@@ -1525,7 +1541,7 @@ export default function CreatePurchaseReturn() {
                               )}
                             </td>
 
-                            <td>
+                            <td className="text-right">
                               {formatCurrency(
                                 getNumber(
                                   item.price

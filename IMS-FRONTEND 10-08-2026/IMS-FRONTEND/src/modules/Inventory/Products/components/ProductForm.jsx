@@ -19,6 +19,7 @@ import { getResponseData, getResponseList, resolveApiAssetUrl } from "../../../.
 import {
   createBrand,
   createCategory,
+  createSubCategory,
   createUnit,
   getAttributeValues,
   getBrands,
@@ -29,6 +30,7 @@ import {
 } from "../../../../api/productApi";
 import { getVariantsByProduct } from "../../../../api/productVariantsApi";
 import { createId, getNumberError, getRequiredError, getToday } from "../../../../utils/helpers";
+import { showToast } from "../../../../components/common/toast";
 import './ProductForm.css'
 
 const trackedProductFields = [
@@ -619,12 +621,36 @@ export default function ProductForm({
 
     try {
       const response = await createCategory({ name: label })
-      if (!response.success) throw new Error(response.error || 'Failed to create category')
-      const nextOption = toOption(getResponseData(response))
-      setCategories((current) => [nextOption, ...current])
-      return nextOption
-    } catch {
-      return createAddOption(setCategories)(draft)
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to create category')
+      }
+
+      const createdCategory = getResponseData(response)
+
+      // Re-fetch all categories from backend (authoritative)
+      const categoriesData = await getMainCategories({ force: true })
+      if (categoriesData.success) {
+        const categoryList = getResponseList(categoriesData, 'categories')
+        setCategories(
+          Array.isArray(categoryList) && categoryList.length > 0
+            ? categoryList.map(toOption)
+            : defaultCategories,
+        )
+      }
+
+      // Notify other components/pages
+      window.dispatchEvent(
+        new CustomEvent('ims:catalog-structure-updated', {
+          detail: { resource: 'categories', action: 'created' },
+        })
+      )
+
+      showToast('Category created successfully.', 'success')
+      return toOption(createdCategory)
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Failed to create category'
+      showToast(msg, 'error')
+      return null
     }
   }
 
@@ -633,15 +659,50 @@ export default function ProductForm({
     if (!label) {
       return null
     }
-    const id = label.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-    const nextOption = { id, label, categoryId: formData.categoryId }
-    setSubCategories((current) => {
-      if (current.some((option) => option.label.toLowerCase() === label.toLowerCase())) {
-        return current
+
+    const categoryId = formData.categoryId
+    if (!categoryId) {
+      showToast('Please select a Category first.', 'error')
+      return null
+    }
+
+    try {
+      const response = await createSubCategory({
+        name: label,
+        categoryId: categoryId
+      })
+
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to create subcategory')
       }
-      return [nextOption, ...current]
-    })
-    return nextOption
+
+      const createdSubCategory = getResponseData(response)
+
+      // Re-fetch all subcategories from backend (authoritative)
+      const subCategoriesData = await getSubCategoryRecords({ force: true })
+      if (subCategoriesData.success) {
+        const subCategoryList = getResponseList(subCategoriesData, 'subCategories')
+        setSubCategories(
+          Array.isArray(subCategoryList) && subCategoryList.length > 0
+            ? subCategoryList.map(toOption)
+            : defaultSubCategories,
+        )
+      }
+
+      // Notify other components/pages
+      window.dispatchEvent(
+        new CustomEvent('ims:catalog-structure-updated', {
+          detail: { resource: 'subCategories', action: 'created' },
+        })
+      )
+
+      showToast('SubCategory created successfully.', 'success')
+      return toOption(createdSubCategory)
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Failed to create subcategory'
+      showToast(msg, 'error')
+      return null
+    }
   }
 
   async function handleAddBrand(draft) {
@@ -652,12 +713,32 @@ export default function ProductForm({
 
     try {
       const response = await createBrand({ name: label })
-      if (!response.success) throw new Error(response.error || 'Failed to create brand')
-      const nextOption = toOption(getResponseData(response))
-      setBrands((current) => [nextOption, ...current])
-      return nextOption
-    } catch {
-      return createAddOption(setBrands)(draft)
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to create brand')
+      }
+
+      const createdBrand = getResponseData(response)
+
+      // Re-fetch all brands from backend (authoritative)
+      const brandsData = await getBrands({ force: true })
+      if (brandsData.success) {
+        const brandList = getResponseList(brandsData, 'brands')
+        setBrands(Array.isArray(brandList) ? brandList.map(toOption) : [])
+      }
+
+      // Notify other components/pages
+      window.dispatchEvent(
+        new CustomEvent('ims:catalog-structure-updated', {
+          detail: { resource: 'brands', action: 'created' },
+        })
+      )
+
+      showToast('Brand created successfully.', 'success')
+      return toOption(createdBrand)
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Failed to create brand'
+      showToast(msg, 'error')
+      return null
     }
   }
 
@@ -669,12 +750,32 @@ export default function ProductForm({
 
     try {
       const response = await createUnit({ name: label, shortName: label.slice(0, 12) })
-      if (!response.success) throw new Error(response.error || 'Failed to create unit')
-      const nextOption = toOption(getResponseData(response))
-      setUnits((current) => [nextOption, ...current])
-      return nextOption
-    } catch {
-      return createAddOption(setUnits)(draft)
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to create unit')
+      }
+
+      const createdUnit = getResponseData(response)
+
+      // Re-fetch all units from backend (authoritative)
+      const unitsData = await getUnits({ force: true })
+      if (unitsData.success) {
+        const unitList = getResponseList(unitsData, 'units')
+        setUnits(Array.isArray(unitList) ? unitList.map(toOption) : [])
+      }
+
+      // Notify other components/pages
+      window.dispatchEvent(
+        new CustomEvent('ims:catalog-structure-updated', {
+          detail: { resource: 'units', action: 'created' },
+        })
+      )
+
+      showToast('Unit created successfully.', 'success')
+      return toOption(createdUnit)
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Failed to create unit'
+      showToast(msg, 'error')
+      return null
     }
   }
 

@@ -189,6 +189,7 @@ export function normalizePurchaseOrder(item) {
       unitName: text(line?.unitName ?? line?.UnitName ?? line?.unit ?? line?.Unit),
       quantity: qty,
       orderedQuantity: qty,
+      receivedQuantity: Number(line?.receivedQuantity ?? line?.ReceivedQuantity ?? line?.quantityReceived ?? line?.QuantityReceived ?? 0),
       price: unitPrice,
       unitPrice: unitPrice,
       unitCost: unitPrice,
@@ -669,6 +670,10 @@ export async function getPurchaseOrder(id) {
 
 export function createPurchaseOrder(data) {
   return apiRequest(API_ENDPOINTS.purchaseOrders.list, { method: 'POST', body: data })
+}
+
+export function updatePurchaseOrder(id, data) {
+  return apiRequest(API_ENDPOINTS.purchaseOrders.byId(id), { method: 'PUT', body: data })
 }
 
 export function deletePurchaseOrder(id) {

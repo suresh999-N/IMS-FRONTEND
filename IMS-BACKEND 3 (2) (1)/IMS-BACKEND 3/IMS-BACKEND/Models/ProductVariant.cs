@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IMSBackend.Models
@@ -24,5 +25,9 @@ namespace IMSBackend.Models
 
         [Column("cost_price")]
         public decimal? CostPrice { get; set; }
+
+        // Navigation properties
+        [ForeignKey("VariantId")]
+        public virtual ICollection<VariantAttributeValue> VariantAttributes { get; set; } = new List<VariantAttributeValue>();
     }
 }

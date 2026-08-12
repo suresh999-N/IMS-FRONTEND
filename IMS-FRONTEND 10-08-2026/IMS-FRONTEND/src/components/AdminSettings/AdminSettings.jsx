@@ -1357,8 +1357,9 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
         />
 
         {successMessage && (
-          <div className="settings-success-message" style={{ margin: 0 }}>
-            {successMessage}
+          <div className="settings-toast-success">
+            <span className="settings-toast-icon">✓</span>
+            <span>{successMessage}</span>
           </div>
         )}
 
@@ -1403,26 +1404,28 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
                             : "Role access configuration")}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={Boolean(role.isActive)}
-                  className={`settings-toggle-switch ${role.isActive ? 'is-active' : ''}`}
-                  onClick={() => handleToggleRoleStatus(role)}
-                  disabled={loadingSettings || savingSettings || loadingRoles || Boolean(roleActionId)}
-                  title={role.isActive ? "Deactivate Role" : "Activate Role"}
-                >
-                  <span className="settings-toggle-track">
-                    <span className="settings-toggle-thumb" />
-                  </span>
-                  <span className="settings-toggle-label">
+                <div className="role-control-wrapper">
+                  <i className={`status-badge-pill ${role.isActive ? 'active-badge' : 'inactive-badge'}`}>
                     {roleActionId === role.id
                       ? "Updating..."
                       : role.isActive
                         ? st.roles.active || "Active"
                         : "Inactive"}
-                  </span>
-                </button>
+                  </i>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={Boolean(role.isActive)}
+                    className={`settings-toggle-switch ${role.isActive ? 'is-active' : ''}`}
+                    onClick={() => handleToggleRoleStatus(role)}
+                    disabled={loadingSettings || savingSettings || loadingRoles || Boolean(roleActionId)}
+                    title={role.isActive ? "Deactivate Role" : "Activate Role"}
+                  >
+                    <i className="settings-toggle-track">
+                      <i className="settings-toggle-thumb" />
+                    </i>
+                  </button>
+                </div>
               </div>
             ))}
 
@@ -1441,6 +1444,7 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
               className="settings-final-save-btn button button-primary"
               onClick={handleSaveSettings}
               disabled={savingSettings || uploadingLogo || loadingSettings}
+              style={{ marginLeft: 'auto' }}
             >
               {savingSettings ? "Saving..." : st.saveChanges}
             </button>
@@ -1503,8 +1507,9 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
 
             <div className="settings-header-actions">
               {successMessage && (
-                <div className="settings-header-success-message">
-                  {successMessage}
+                <div className="settings-toast-success settings-header-success-message">
+                  <span className="settings-toast-icon">✓</span>
+                  <span>{successMessage}</span>
                 </div>
               )}
               <button
@@ -1584,26 +1589,28 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
                                     : "Role access configuration")}
                           </p>
                         </div>
-                        <button
-                          type="button"
-                          role="switch"
-                          aria-checked={Boolean(role.isActive)}
-                          className={`settings-toggle-switch ${role.isActive ? 'is-active' : ''}`}
-                          onClick={() => handleToggleRoleStatus(role)}
-                          disabled={loadingSettings || savingSettings || loadingRoles || Boolean(roleActionId)}
-                          title={role.isActive ? "Deactivate Role" : "Activate Role"}
-                        >
-                          <span className="settings-toggle-track">
-                            <span className="settings-toggle-thumb" />
-                          </span>
-                          <span className="settings-toggle-label">
+                        <div className="role-control-wrapper">
+                          <i className={`status-badge-pill ${role.isActive ? 'active-badge' : 'inactive-badge'}`}>
                             {roleActionId === role.id
                               ? "Updating..."
                               : role.isActive
                                 ? st.roles.active || "Active"
                                 : "Inactive"}
-                          </span>
-                        </button>
+                          </i>
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={Boolean(role.isActive)}
+                            className={`settings-toggle-switch ${role.isActive ? 'is-active' : ''}`}
+                            onClick={() => handleToggleRoleStatus(role)}
+                            disabled={loadingSettings || savingSettings || loadingRoles || Boolean(roleActionId)}
+                            title={role.isActive ? "Deactivate Role" : "Activate Role"}
+                          >
+                            <i className="settings-toggle-track">
+                              <i className="settings-toggle-thumb" />
+                            </i>
+                          </button>
+                        </div>
                       </div>
                     ))}
 

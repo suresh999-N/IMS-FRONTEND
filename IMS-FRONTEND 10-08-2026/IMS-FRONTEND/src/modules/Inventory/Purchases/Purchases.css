@@ -156,6 +156,18 @@
   max-width: none !important;
 }
 
+.purchases-page__table :where(th, td).purchases-page__col-status {
+  width: 160px !important;
+  min-width: 160px !important;
+  overflow: visible !important;
+}
+
+.purchases-page__table :where(th, td).purchases-page__col-status .status-badge {
+  white-space: nowrap !important;
+  max-width: none !important;
+  overflow: visible !important;
+}
+
 .purchases-page__table :where(th, td).purchases-page__col-actions {
   width: 72px !important;
   min-width: 72px !important;
@@ -768,4 +780,8 @@
   min-height: 0 !important;
   min-width: 0 !important;
   padding: 0 !important;
+}
+
+.edit-purchase-modal .form-modal__dialog {
+  width: min(820px, 98vw) !important;
 }

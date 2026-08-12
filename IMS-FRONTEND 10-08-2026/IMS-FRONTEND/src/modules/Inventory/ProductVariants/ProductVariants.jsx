@@ -16,6 +16,7 @@ import { API_ENDPOINTS } from '../../../api/endpoints'
 import {
   listResource,
   normalizeResourceRow,
+  readResourceValue,
 } from '../../../api/resourceApi'
 import { getProducts, getProductAttributes, getAttributeValues } from '../../../api/productApi'
 import { getStockRegister } from '../../../api/stockApi'
@@ -153,26 +154,31 @@ export default function ProductVariants() {
 
         const mappedFromDirect = directAttrs
           .map((va) => {
+            const vaAttr = readResourceValue(va, 'attribute')
+            const vaVal = readResourceValue(va, 'attributeValue')
             const attrName =
-              va.attributeName ||
-              va.attribute?.name ||
-              attributesList.find((a) => String(a.attributeId ?? a.id) === String(va.attributeId))?.name ||
+              readResourceValue(va, 'attributeName') ||
+              (vaAttr && readResourceValue(vaAttr, 'name')) ||
+              attributesList.find((a) => String(a.attributeId ?? a.id) === String(readResourceValue(va, 'attributeId')))?.name ||
               ''
             const valName =
-              va.value ||
-              va.valueName ||
-              va.name ||
-              valuesList.find((v) => String(v.valueId ?? v.id) === String(va.valueId))?.value ||
+              readResourceValue(va, 'value') ||
+              readResourceValue(va, 'valueName') ||
+              readResourceValue(va, 'name') ||
+              (vaVal && (readResourceValue(vaVal, 'value') || readResourceValue(vaVal, 'name'))) ||
+              valuesList.find((v) => String(v.valueId ?? v.id) === String(readResourceValue(va, 'valueId')))?.value ||
               ''
             return attrName ? (valName ? `${attrName}: ${valName}` : attrName) : ''
           })
           .filter(Boolean)
 
         const mappedFromList = varAttrList
-          .filter((va) => String(va.variantId) === String(variantId))
+          .filter((va) => String(readResourceValue(va, 'variantId')) === String(variantId))
           .map((va) => {
-            const attr = attributesList.find((a) => String(a.attributeId ?? a.id) === String(va.attributeId))
-            const val = valuesList.find((v) => String(v.valueId ?? v.id) === String(va.valueId))
+            const vaAttrId = readResourceValue(va, 'attributeId')
+            const vaValId = readResourceValue(va, 'valueId')
+            const attr = attributesList.find((a) => String(a.attributeId ?? a.id) === String(vaAttrId))
+            const val = valuesList.find((v) => String(v.valueId ?? v.id) === String(vaValId))
             if (attr) {
               return val ? `${attr.name}: ${val.value || val.name}` : attr.name
             }
@@ -231,10 +237,10 @@ export default function ProductVariants() {
     const productPrice = product ? (product.price || 0) : 0
 
     const currentAttrs = variantAttributes
-      .filter((va) => String(va.variantId) === String(item.variantId))
+      .filter((va) => String(readResourceValue(va, 'variantId')) === String(item.variantId))
       .map((va) => ({
-        attributeId: String(va.attributeId),
-        valueId: String(va.valueId),
+        attributeId: String(readResourceValue(va, 'attributeId')),
+        valueId: String(readResourceValue(va, 'valueId')),
       }))
 
     setEditingItem(item)

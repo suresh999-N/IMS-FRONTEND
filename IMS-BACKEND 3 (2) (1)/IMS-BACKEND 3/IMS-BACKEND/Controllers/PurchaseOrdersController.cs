@@ -564,6 +564,7 @@ namespace IMSBackend.Controllers
                     VariantName = variant != null ? variant.VariantName : null,
 
                     OrderedQty = item.Quantity,
+                    ReceivedQuantity = item.ReceivedQuantity ?? 0,
                     item.Price,
                     item.Discount,
                     item.Tax,

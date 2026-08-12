@@ -117,6 +117,13 @@ export function createCategory(data) {
   }))
 }
 
+export function createSubCategory(data) {
+  return runCatalogMutation(apiRequest(API_ENDPOINTS.subCategories.list, {
+    method: 'POST',
+    body: data,
+  }))
+}
+
 export async function getMainCategories(options = {}) {
   return cachedApiRequest(getCatalogCacheKey('mainCategories'), async () => {
     const response = await apiRequest(API_ENDPOINTS.categories.main)

@@ -5,6 +5,7 @@ import {
   createPurchaseOrder,
   deletePurchaseOrder,
   getPurchaseOrders,
+  updatePurchaseOrder,
 } from '../../../api/businessApi'
 import { updatePurchaseIndent } from '../../../api/purchaseIndentsApi'
 import { apiRequest } from '../../../api/apiClient'
@@ -293,6 +294,7 @@ export default function Purchases({
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [viewTarget, setViewTarget] = useState(null)
   const [prefilledData, setPrefilledData] = useState(null)
+  const [editingItem, setEditingItem] = useState(null)
 
   const canCreate = hasPermission('purchases', 'create')
   const canDelete = hasPermission('purchases', 'delete')
@@ -329,6 +331,25 @@ export default function Purchases({
       navigate(location.pathname, { replace: true, state: {} })
     }
   }, [location, products, navigate])
+
+  const handleOpenEdit = (item) => {
+    setEditingItem(item)
+    const prefilled = {
+      supplierId: String(item.supplierId || ''),
+      orderDate: item.orderDate ? item.orderDate.slice(0, 10) : getToday(),
+      expectedDate: item.expectedDate ? item.expectedDate.slice(0, 10) : '',
+      notes: item.notes || '',
+      lineItems: getPurchaseLines(item).map((line) => ({
+        id: line.id || createId('POL'),
+        productId: String(line.productId || ''),
+        variantId: line.variantId ? String(line.variantId) : '',
+        quantity: String(line.quantity || ''),
+        price: String(line.price ?? line.unitPrice ?? ''),
+      })),
+    }
+    setPrefilledData(prefilled)
+    setIsFormOpen(true)
+  }
 
   async function loadPurchaseOrders() {
     setIsLoading(true)
@@ -416,7 +437,7 @@ export default function Purchases({
         unitPrice: Number(lineItem.price),
       }))
       const firstLine = lineItems[0]
-      const response = await createPurchaseOrder({
+      const payload = {
         supplierId,
         productId: firstLine.productId,
         variantId: firstLine.variantId,
@@ -428,13 +449,20 @@ export default function Purchases({
         expectedDate: data.expectedDate || null,
         notes: data.notes.trim(),
         items: lineItems,
-      })
-
-      if (!response.success) {
-        throw new Error(response.error || 'Unable to create Purchase Order.')
       }
 
-      if (prefilledData && prefilledData.sourceIndentId) {
+      let response
+      if (editingItem) {
+        response = await updatePurchaseOrder(editingItem.id, payload)
+      } else {
+        response = await createPurchaseOrder(payload)
+      }
+
+      if (!response.success) {
+        throw new Error(response.error || `Unable to ${editingItem ? 'update' : 'create'} Purchase Order.`)
+      }
+
+      if (!editingItem && prefilledData && prefilledData.sourceIndentId) {
         await updatePurchaseIndent(prefilledData.sourceIndentId, { status: 'Ordered' })
       }
 
@@ -443,15 +471,16 @@ export default function Purchases({
       showToast({
         type: 'success',
         title: 'Purchase Orders',
-        message: 'Purchase Order created successfully.',
+        message: `Purchase Order ${editingItem ? 'updated' : 'created'} successfully.`,
       })
       setIsFormOpen(false)
       setPrefilledData(null)
+      setEditingItem(null)
     } catch (saveError) {
       showToast({
         type: 'error',
         title: 'Purchase Orders',
-        message: saveError instanceof Error ? saveError.message : 'Unable to create purchase order.',
+        message: saveError instanceof Error ? saveError.message : `Unable to ${editingItem ? 'update' : 'create'} purchase order.`,
       })
     } finally {
       setIsSaving(false)
@@ -540,17 +569,19 @@ export default function Purchases({
         canDelete={canDelete}
         onDelete={setDeleteTarget}
         onView={setViewTarget}
+        onEdit={handleOpenEdit}
         onRefresh={loadPurchaseOrders}
         loading={isLoading}
       />
 
       {isFormOpen ? (
         <FormModal
-          title={null}
-          className="edit-indent-modal"
+          title={editingItem ? 'Edit Purchase Order' : null}
+          className="edit-purchase-modal"
           onClose={() => {
             setIsFormOpen(false)
             setPrefilledData(null)
+            setEditingItem(null)
           }}
         >
           <PurchaseForm
@@ -561,6 +592,7 @@ export default function Purchases({
             onCancel={() => {
               setIsFormOpen(false)
               setPrefilledData(null)
+              setEditingItem(null)
             }}
             isSubmitting={isSaving}
           />

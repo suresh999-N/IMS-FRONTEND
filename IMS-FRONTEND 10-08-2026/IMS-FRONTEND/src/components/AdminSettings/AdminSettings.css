@@ -579,24 +579,37 @@
 }
 
 /* Modern Toggle Switch Component */
+/* Color overrides for page mode/modal mode consistency */
+.settings-overlay,
+.admin-settings-page {
+  --ims-success-dark: #047857;
+}
+
+.ims-dark-theme .settings-overlay,
+.ims-dark-theme .admin-settings-page {
+  --ims-success-dark: #86efac;
+}
+
+/* Modern Toggle Switch Component */
 .settings-toggle-switch {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 12px !important;
+  justify-content: center !important;
   background: transparent !important;
   border: none !important;
   cursor: pointer !important;
-  padding: 6px 8px !important;
-  border-radius: 24px !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  padding: 0 !important;
+  margin: 0 !important;
   user-select: none !important;
-  margin-left: auto !important;
   flex-shrink: 0 !important;
   outline: none !important;
+  width: 36px !important;
+  height: 20px !important;
+  box-sizing: border-box !important;
 }
 
 .settings-toggle-switch:hover {
-  opacity: 0.9 !important;
+  opacity: 0.95 !important;
 }
 
 .settings-toggle-switch:disabled {
@@ -606,48 +619,95 @@
 
 .settings-toggle-track {
   position: relative !important;
-  width: 48px !important;
-  height: 26px !important;
-  background-color: var(--ims-border, #cbd5e1) !important;
-  border-radius: 13px !important;
-  transition: background-color 0.25s ease, box-shadow 0.25s ease !important;
+  width: 36px !important;
+  height: 20px !important;
+  background-color: #cbd5e1 !important; /* Neutral gray track when OFF */
+  border-radius: 999px !important;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease !important;
   display: inline-block !important;
   flex-shrink: 0 !important;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12) !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ims-dark-theme .settings-toggle-track {
+  background-color: #475569 !important; /* Dark theme neutral gray track when OFF */
 }
 
 .settings-toggle-switch.is-active .settings-toggle-track {
-  background-color: var(--button-primary-bg, #00966b) !important;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 0 8px rgba(0, 150, 107, 0.3) !important;
+  background-color: var(--ims-success, #059669) !important; /* IMS primary green track when ON */
 }
 
 .settings-toggle-thumb {
   position: absolute !important;
   top: 3px !important;
   left: 3px !important;
-  width: 20px !important;
-  height: 20px !important;
+  width: 14px !important;
+  height: 14px !important;
   background-color: #ffffff !important;
   border-radius: 50% !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3) !important;
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  transition: left 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-sizing: border-box !important;
 }
 
 .settings-toggle-switch.is-active .settings-toggle-thumb {
-  transform: translateX(22px) !important;
+  left: 19px !important; /* Positioned on the right when ON: 36px - 14px - 3px = 19px */
 }
 
-.settings-toggle-label {
-  font-size: 0.875rem !important;
-  font-weight: 600 !important;
-  color: var(--ims-muted, #64748b) !important;
-  min-width: 54px !important;
-  text-align: left !important;
-  transition: color 0.2s ease !important;
+/* Dedicated control wrapper */
+.role-control-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
 }
 
-.settings-toggle-switch.is-active .settings-toggle-label {
-  color: var(--button-primary-bg, #00966b) !important;
+/* Rounded Pill Status Badge */
+.status-badge-pill {
+  padding: 4px 10px !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  user-select: none !important;
+  flex-shrink: 0 !important;
+  font-style: normal !important; /* Override i tag default italic style */
+  transition: all 0.2s ease !important;
+  box-sizing: border-box !important;
+}
+
+/* Active Status: light mint/green background, green text, subtle light-green border */
+.status-badge-pill.active-badge {
+  background-color: var(--ims-success-soft, #ecfdf5) !important;
+  color: var(--ims-success-dark, #047857) !important;
+  border: 1px solid var(--ims-success-border, #86efac) !important;
+}
+
+/* Inactive Status: subtle neutral gray background, gray text, subtle gray border */
+.status-badge-pill.inactive-badge {
+  background-color: #f1f5f9 !important;
+  color: #64748b !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+/* Dark Theme Overrides for Status Badges */
+.ims-dark-theme .status-badge-pill.active-badge {
+  background-color: rgba(5, 150, 105, 0.18) !important;
+  color: #86efac !important;
+  border-color: rgba(134, 239, 172, 0.35) !important;
+}
+
+.ims-dark-theme .status-badge-pill.inactive-badge {
+  background-color: #1e293b !important;
+  color: #94a3b8 !important;
+  border-color: #475569 !important;
 }
 
 .role-status-toggle-container {
@@ -776,7 +836,7 @@
   padding: 12px 18px;
   font-weight: 400;
   cursor: pointer;
-  order: 1;
+  order: 2;
 }
 
 .settings-final-save-btn:hover {
@@ -792,7 +852,7 @@
   padding: 12px 20px;
   font-weight: 400;
   cursor: pointer;
-  order: 2;
+  order: 1;
 }
 
 .settings-cancel-btn:hover {
@@ -1214,6 +1274,7 @@
   flex-direction: column;
   gap: 20px;
   width: 100%;
+  position: relative !important;
 }
 
 .admin-settings-card {
@@ -1241,6 +1302,78 @@
   font-size: 1.05rem !important;
   font-weight: 600 !important;
   color: var(--ims-heading, #0f172a);
+}
+
+/* Success Toast Notification - Positioned absolutely inside the relative page container */
+.settings-toast-success {
+  position: absolute !important;
+  top: 16px !important;
+  right: 24px !important;
+  z-index: 100 !important;
+  background-color: var(--ims-success-soft, #ecfdf5) !important;
+  color: var(--ims-success-dark, #047857) !important;
+  border: 1px solid var(--ims-success-border, #86efac) !important;
+  padding: 10px 16px !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.08) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  animation: settingsToastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  max-width: 380px !important;
+}
+
+.ims-dark-theme .settings-toast-success {
+  background-color: rgba(5, 150, 105, 0.2) !important;
+  color: #86efac !important;
+  border-color: rgba(134, 239, 172, 0.35) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Modal mode override: inline flow inside the header actions */
+.settings-header-success-message {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  margin-right: 12px !important;
+  box-shadow: none !important;
+  z-index: auto !important;
+  padding: 6px 12px !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  max-width: none !important;
+}
+
+.settings-toast-icon {
+  background: var(--ims-success, #059669) !important;
+  color: #ffffff !important;
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  flex-shrink: 0 !important;
+}
+
+.ims-dark-theme .settings-toast-icon {
+  background: #22c55e !important;
+  color: #052e1a !important;
+}
+
+@keyframes settingsToastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 

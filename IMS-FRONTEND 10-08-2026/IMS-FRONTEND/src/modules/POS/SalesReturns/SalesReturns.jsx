@@ -34,7 +34,6 @@ export default function SalesReturns({ data = {}, actions = {} }) {
 
   const [returns, setReturns] = useState([])
   const [customersMap, setCustomersMap] = useState({})
-  const [invoicesMap, setInvoicesMap] = useState({})
   const [customersList, setCustomersList] = useState([])
 
   const [loading, setLoading] = useState(true)
@@ -65,17 +64,17 @@ export default function SalesReturns({ data = {}, actions = {} }) {
     setLoading(true)
     setError(null)
     try {
-      const [returnsRes, customersRes, invoicesRes] = await Promise.allSettled([
+      const [returnsRes, customersRes] = await Promise.allSettled([
         getSalesReturns(),
         getCustomers(),
-        getInvoices({ pageSize: 500 }),
       ])
 
-      // Handle Customers lookup
+      // Handle Customers lookup for filter dropdown
       const cusList = customersRes.status === 'fulfilled' && customersRes.value?.success
         ? customersRes.value.data ?? []
-        : (Array.isArray(data.customers) ? data.customers : [])
+        : []
       setCustomersList(cusList)
+
       const cusMap = {}
       cusList.forEach((c) => {
         const id = String(c.id ?? c.customerId ?? c.customer_id)
@@ -83,45 +82,22 @@ export default function SalesReturns({ data = {}, actions = {} }) {
       })
       setCustomersMap(cusMap)
 
-      // Handle Invoices lookup
-      const invList = invoicesRes.status === 'fulfilled' && invoicesRes.value?.success
-        ? (Array.isArray(invoicesRes.value.data) ? invoicesRes.value.data : [])
-        : (Array.isArray(data.invoices) ? data.invoices : Array.isArray(data.sales) ? data.sales : Array.isArray(data.accountingInvoices) ? data.accountingInvoices : [])
-      const invMap = {}
-      invList.forEach((inv) => {
-        const id = String(inv.id ?? inv.invoiceId ?? inv.invoice_id)
-        invMap[id] = inv.invoiceNumber || inv.invoiceNo || inv.number || (id ? `SINV-${id}` : '-')
-      })
-      setInvoicesMap(invMap)
-
-      // Handle Sales Returns (Merge API results and local state returns)
-      const apiList = (returnsRes.status === 'fulfilled' && returnsRes.value?.success)
-        ? (returnsRes.value.data ?? [])
-        : []
-      const localList = Array.isArray(data.salesReturns) ? data.salesReturns : []
-
-      const mergedMap = new Map()
-      localList.forEach((item) => {
-        const key = String(item.returnId || item.id || '')
-        if (key) mergedMap.set(key, item)
-      })
-      apiList.forEach((item) => {
-        const key = String(item.returnId || item.id || '')
-        if (key) mergedMap.set(key, item)
-      })
-
-      const combinedReturns = Array.from(mergedMap.values())
-      setReturns(combinedReturns)
-    } catch (err) {
-      if (Array.isArray(data.salesReturns) && data.salesReturns.length > 0) {
-        setReturns(data.salesReturns)
+      // Handle Sales Returns strictly from backend API
+      if (returnsRes.status === 'fulfilled' && returnsRes.value?.success) {
+        setReturns(Array.isArray(returnsRes.value.data) ? returnsRes.value.data : [])
+      } else if (returnsRes.status === 'fulfilled' && Array.isArray(returnsRes.value?.data)) {
+        setReturns(returnsRes.value.data)
       } else {
-        setError(err instanceof Error ? err.message : 'An error occurred while fetching sales returns.')
+        setError(returnsRes.reason?.message || 'Failed to load sales returns from server.')
+        setReturns([])
       }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error loading sales returns.')
+      setReturns([])
     } finally {
       setLoading(false)
     }
-  }, [data.customers, data.invoices, data.sales, data.accountingInvoices, data.salesReturns])
+  }, [])
 
   useEffect(() => {
     fetchData()
@@ -129,9 +105,9 @@ export default function SalesReturns({ data = {}, actions = {} }) {
 
   const filteredReturns = useMemo(() => {
     return returns.filter((item) => {
-      const returnIdStr = String(item.returnId || item.id || '').toLowerCase()
+      const returnIdStr = String(item.returnNumber || item.returnId || item.id || '').toLowerCase()
       const customerNameStr = String(customersMap[String(item.customerId || item.customer_id)] || item.customerName || '').toLowerCase()
-      const invoiceNumStr = String(invoicesMap[String(item.invoiceId || item.invoice_id)] || item.invoiceNumber || '').toLowerCase()
+      const invoiceNumStr = String(item.invoiceNumber || (item.invoiceId ? `INV-${String(item.invoiceId).padStart(6, '0')}` : '')).toLowerCase()
       const reasonStr = String(item.reason || '').toLowerCase()
 
       const query = searchQuery.toLowerCase().trim()
@@ -147,7 +123,7 @@ export default function SalesReturns({ data = {}, actions = {} }) {
 
       return matchesSearch && matchesCustomer
     })
-  }, [returns, searchQuery, customerFilter, customersMap, invoicesMap])
+  }, [returns, searchQuery, customerFilter, customersMap])
 
   const totalRows = filteredReturns.length
   const totalPages = Math.max(1, Math.ceil(totalRows / pageSize))
@@ -192,24 +168,13 @@ export default function SalesReturns({ data = {}, actions = {} }) {
     try {
       const res = await deleteSalesReturn(deleteTargetId)
       if (res && res.success) {
-        actions.deleteSalesReturn?.(deleteTargetId)
         showToast('Sales return deleted successfully.', 'success')
-        setReturns((prev) => prev.filter((r) => String(r.id) !== String(deleteTargetId) && String(r.returnId) !== String(deleteTargetId)))
-      } else if (typeof actions.deleteSalesReturn === 'function') {
-        actions.deleteSalesReturn(deleteTargetId)
-        showToast('Sales return deleted successfully.', 'success')
-        setReturns((prev) => prev.filter((r) => String(r.id) !== String(deleteTargetId) && String(r.returnId) !== String(deleteTargetId)))
+        fetchData()
       } else {
-        showToast(res?.error || 'Failed to delete sales return.', 'error')
+        showToast(res?.error || res?.message || 'Failed to delete sales return on server.', 'error')
       }
     } catch (err) {
-      if (typeof actions.deleteSalesReturn === 'function') {
-        actions.deleteSalesReturn(deleteTargetId)
-        showToast('Sales return deleted successfully.', 'success')
-        setReturns((prev) => prev.filter((r) => String(r.id) !== String(deleteTargetId) && String(r.returnId) !== String(deleteTargetId)))
-      } else {
-        showToast(err instanceof Error ? err.message : 'Failed to delete sales return.', 'error')
-      }
+      showToast(err instanceof Error ? err.message : 'Failed to delete sales return.', 'error')
     } finally {
       setDeleting(false)
       setDeleteTargetId(null)
@@ -338,11 +303,11 @@ export default function SalesReturns({ data = {}, actions = {} }) {
             </thead>
             <tbody>
               {paginatedReturns.map((row) => {
-                const retId = row.returnId || row.id
+                const retId = row.salesReturnId || row.id || row.returnId
                 const custId = row.customerId || row.customer_id
                 const invId = row.invoiceId || row.invoice_id
                 const customerName = customersMap[String(custId)] || row.customerName || (custId ? `Customer #${custId}` : '-')
-                const invoiceName = invoicesMap[String(invId)] || row.invoiceNumber || (invId ? `SINV-${invId}` : '-')
+                const invoiceName = row.invoiceNumber || (invId ? `INV-${String(invId).padStart(6, '0')}` : '-')
 
                 const returnCode = (val) => {
                   if (!val) return '-'

@@ -103,6 +103,10 @@ namespace IMSBackend.Controllers
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
             var variants = await _context.ProductVariants
+                .Include(v => v.VariantAttributes)
+                    .ThenInclude(va => va.Attribute)
+                .Include(v => v.VariantAttributes)
+                    .ThenInclude(va => va.AttributeValue)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
 
@@ -115,6 +119,10 @@ namespace IMSBackend.Controllers
         public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         {
             var variant = await _context.ProductVariants
+                .Include(v => v.VariantAttributes)
+                    .ThenInclude(va => va.Attribute)
+                .Include(v => v.VariantAttributes)
+                    .ThenInclude(va => va.AttributeValue)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(item => item.VariantId == id, cancellationToken);
 

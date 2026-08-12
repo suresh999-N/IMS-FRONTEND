@@ -186,6 +186,9 @@ export const API_ENDPOINTS = {
   salesReturns: {
     list: "/SalesReturns",
     byId: (id) => `/SalesReturns/${id}`,
+    customers: "/SalesReturns/customers",
+    customerInvoices: (customerId) => `/SalesReturns/customers/${customerId}/invoices`,
+    invoiceItems: (invoiceId) => `/SalesReturns/invoices/${invoiceId}/items`,
   },
 
   purchaseReturns: {
