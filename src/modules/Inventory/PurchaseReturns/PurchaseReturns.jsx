@@ -5,65 +5,79 @@ import { ActionMenu, DataTable, FilterBar } from '../../../components/erp'
 import StateBlock from '../../../components/common/StateBlock'
 import { showToast } from '../../../components/common/toast'
 import FormModal from '../../../layouts/FormModal'
-import { getSalesReturns, deleteSalesReturn } from '../../../api/salesReturnApi'
-import { getCustomers } from '../../../api/customersApi'
+import {
+  deletePurchaseReturn,
+  getPurchaseReturns,
+  getPurchaseReturnSuppliers,
+} from '../../../api/purchaseReturnApi'
 import { formatCurrency, formatDate } from '../../../utils/helpers'
-import './SalesReturns.css'
+import './PurchaseReturns.css'
 
-export default function SalesReturns() {
+const getArrayFromResponse = (response) => {
+  if (Array.isArray(response)) return response
+  if (Array.isArray(response?.data)) return response.data
+  if (Array.isArray(response?.data?.items)) return response.data.items
+  if (Array.isArray(response?.items)) return response.items
+  return null
+}
+
+const getSupplierId = (supplier) =>
+  supplier?.id ?? supplier?.supplierId ?? supplier?.supplier_id
+
+const getSupplierName = (supplier) =>
+  supplier?.name ?? supplier?.supplierName ?? supplier?.supplier_name ?? (getSupplierId(supplier) ? `Supplier #${getSupplierId(supplier)}` : '-')
+
+const getReturnId = (item) =>
+  item?.purchaseReturnId ?? item?.returnId ?? item?.return_id ?? item?.id
+
+const getReturnNumberDisplay = (item) => {
+  const num = item?.returnNumber ?? item?.return_number
+  if (num) return String(num).startsWith('#') ? num : `#${num}`
+  const retId = getReturnId(item)
+  return retId ? `#PRR-${String(retId).padStart(6, '0')}` : '-'
+}
+
+export default function PurchaseReturns() {
   const navigate = useNavigate()
 
   const [returns, setReturns] = useState([])
-  const [customersList, setCustomersList] = useState([])
-
+  const [suppliers, setSuppliers] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [customerFilter, setCustomerFilter] = useState('')
+  const [error, setError] = useState('')
+  const [supplierFilter, setSupplierFilter] = useState('')
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [deleteTargetId, setDeleteTargetId] = useState(null)
   const [deleting, setDeleting] = useState(false)
 
-  // Fetch Sales Returns & Customers from Backend API
+  // Fetch Purchase Returns & Suppliers from Backend API
   const fetchData = useCallback(async () => {
     setLoading(true)
-    setError(null)
+    setError('')
     try {
-      const [returnsRes, customersRes] = await Promise.allSettled([
-        getSalesReturns(),
-        getCustomers(),
+      const [returnsResponse, suppliersResponse] = await Promise.all([
+        getPurchaseReturns(),
+        getPurchaseReturnSuppliers(),
       ])
 
-      // Handle Customers lookup for filter dropdown
-      const cusList = customersRes.status === 'fulfilled' && customersRes.value?.success
-        ? (Array.isArray(customersRes.value.data) ? customersRes.value.data : [])
-        : []
-      setCustomersList(cusList)
+      const returnsData = getArrayFromResponse(returnsResponse)
+      const suppliersData = getArrayFromResponse(suppliersResponse)
 
-      // Handle Sales Returns from API
-      if (returnsRes.status === 'fulfilled' && returnsRes.value?.success) {
-        const rawList = Array.isArray(returnsRes.value.data) ? returnsRes.value.data : []
-        setReturns(rawList.filter(Boolean))
-      } else if (returnsRes.status === 'fulfilled' && returnsRes.value) {
-        const errStr = typeof returnsRes.value.error === 'string'
-          ? returnsRes.value.error
-          : typeof returnsRes.value.message === 'string'
-          ? returnsRes.value.message
-          : 'Unable to connect to the server.'
-        setError(errStr)
-        setReturns([])
-      } else if (returnsRes.status === 'rejected') {
-        const errStr = returnsRes.reason instanceof Error
-          ? returnsRes.reason.message
-          : 'Failed to load sales returns.'
-        setError(errStr)
-        setReturns([])
-      } else {
-        setReturns([])
+      if (returnsData === null) {
+        throw new Error('Purchase Returns API returned an unexpected response format.')
       }
+
+      setReturns(returnsData.filter(Boolean))
+      setSuppliers(suppliersData || [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error loading sales returns.')
       setReturns([])
+      setSuppliers([])
+      setError(
+        err?.response?.data?.message ||
+        err?.response?.data?.title ||
+        err?.message ||
+        'Failed to load Purchase Returns.'
+      )
     } finally {
       setLoading(false)
     }
@@ -73,60 +87,61 @@ export default function SalesReturns() {
     fetchData()
   }, [fetchData])
 
-  // Filter returns based on customer filter dropdown
+  // Supplier Lookup Map
+  const suppliersMap = useMemo(() => {
+    const map = {}
+    suppliers.forEach((supplier) => {
+      const id = getSupplierId(supplier)
+      if (id !== null && id !== undefined && id !== '') {
+        map[String(id)] = getSupplierName(supplier)
+      }
+    })
+    return map
+  }, [suppliers])
+
+  // Filter Returns based on Supplier Filter
   const filteredReturns = useMemo(() => {
     const list = Array.isArray(returns) ? returns.filter(Boolean) : []
-    if (!customerFilter) return list
-    return list.filter((item) => String(item.customerId || item.customer_id) === String(customerFilter))
-  }, [returns, customerFilter])
+    if (!supplierFilter) return list
+    return list.filter((item) => String(item.supplierId ?? item.supplier_id ?? '') === String(supplierFilter))
+  }, [returns, supplierFilter])
 
   // Header Metrics Summary
   const stats = useMemo(() => {
     const list = Array.isArray(returns) ? returns.filter(Boolean) : []
     const total = list.length
-    const uniqueCustomers = new Set(
-      list.map((item) => item.customerId || item.customer_id).filter(Boolean)
+    const uniqueSuppliers = new Set(
+      list.map((item) => item.supplierId || item.supplier_id).filter(Boolean)
     ).size
     const totalAmount = list.reduce(
-      (sum, item) => sum + (Number(item.totalAmount || item.totalReturnAmount) || 0),
+      (sum, item) => sum + Number(item.totalAmount || item.total_amount || item.totalReturnAmount || 0),
       0
     )
 
     return {
       total,
-      customers: uniqueCustomers,
+      suppliers: uniqueSuppliers,
       totalAmount,
     }
   }, [returns])
 
   // Delete Handler
   const handleDeleteConfirm = async () => {
-    if (!deleteTargetId) return
+    if (!deleteTargetId || deleting) return
     setDeleting(true)
     try {
-      const res = await deleteSalesReturn(deleteTargetId)
-      if (res && res.success) {
-        showToast('Sales return deleted successfully.', 'success')
-        fetchData()
-      } else {
-        showToast(res?.error || res?.message || 'Failed to delete sales return on server.', 'error')
-      }
+      await deletePurchaseReturn(deleteTargetId)
+      setReturns((prev) => prev.filter((item) => String(getReturnId(item)) !== String(deleteTargetId)))
+      showToast('Purchase return deleted successfully.', 'success')
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to delete sales return.', 'error')
+      showToast(
+        err?.response?.data?.message || err?.message || 'Failed to delete purchase return.',
+        'error'
+      )
     } finally {
       setDeleting(false)
       setDeleteTargetId(null)
     }
-  }
-
-  // Format Return Number (SRR-XXXXXX)
-  const formatReturnCode = (val) => {
-    if (!val) return '-'
-    const str = String(val).trim().replace(/^#/, '')
-    if (/^SRR-\d{6}$/i.test(str)) return str.toUpperCase()
-    const digits = str.replace(/\D/g, '')
-    if (digits) return `SRR-${digits.padStart(6, '0')}`
-    return str.startsWith('SRR-') ? str : `SRR-${str}`
   }
 
   // DataTable Column Definitions matching Purchase Indents UI
@@ -136,38 +151,48 @@ export default function SalesReturns() {
       label: 'Return ID',
       sortable: true,
       mobilePrimary: true,
-      tableWidth: 160,
-      style: { width: 160, minWidth: 160 },
-      headerStyle: { width: 160, minWidth: 160 },
-      searchValue: (row) =>
-        `${formatReturnCode(row.returnNumber || row.salesReturnId)} ${row.customerName || ''} ${row.invoiceNumber || ''} ${row.reason || ''}`,
-      render: (row) => (
-        <span className="font-semibold text-primary" style={{ cursor: 'pointer' }} onClick={() => navigate(`/pos/returns/${row.salesReturnId || row.id}`)}>
-          {formatReturnCode(row.returnNumber || row.salesReturnId || row.id)}
-        </span>
-      ),
-    },
-    {
-      key: 'invoiceNumber',
-      label: 'Invoice',
-      sortable: true,
-      tableWidth: 160,
-      style: { width: 160, minWidth: 160 },
-      headerStyle: { width: 160, minWidth: 160 },
+      tableWidth: 170,
+      style: { width: 170, minWidth: 170 },
+      headerStyle: { width: 170, minWidth: 170 },
+      searchValue: (row) => {
+        const supId = row.supplierId ?? row.supplier_id
+        const supName = suppliersMap[String(supId ?? '')] || row.supplierName || ''
+        const grnNum = row.grnNumber || (row.grnId ? `GRN-${row.grnId}` : '')
+        return `${getReturnNumberDisplay(row)} ${supName} ${grnNum} ${row.reason || ''}`
+      },
       render: (row) => {
-        const invId = row.invoiceId || row.invoice_id
-        const invNum = row.invoiceNumber || (invId ? `INV-${String(invId).padStart(6, '0')}` : '-')
-        return <span className="invoice-badge">{invNum}</span>
+        const retId = getReturnId(row)
+        return (
+          <span className="font-semibold text-primary" style={{ cursor: 'pointer' }} onClick={() => navigate(`/inventory/purchase-returns/${retId}`)}>
+            {getReturnNumberDisplay(row)}
+          </span>
+        )
       },
     },
     {
-      key: 'customerName',
-      label: 'Customer',
+      key: 'supplierName',
+      label: 'Supplier',
       sortable: true,
-      tableWidth: 200,
-      style: { width: 200, minWidth: 200 },
-      headerStyle: { width: 200, minWidth: 200 },
-      render: (row) => row.customerName || (row.customerId ? `Customer #${row.customerId}` : '-'),
+      tableWidth: 220,
+      style: { width: 220, minWidth: 220 },
+      headerStyle: { width: 220, minWidth: 220 },
+      render: (row) => {
+        const supId = row.supplierId ?? row.supplier_id
+        return suppliersMap[String(supId ?? '')] ?? row.supplierName ?? row.supplier_name ?? (supId ? `Supplier #${supId}` : '-')
+      },
+    },
+    {
+      key: 'grnNumber',
+      label: 'GRN',
+      sortable: true,
+      tableWidth: 150,
+      style: { width: 150, minWidth: 150 },
+      headerStyle: { width: 150, minWidth: 150 },
+      render: (row) => {
+        const grnId = row.grnId ?? row.grn_id
+        const grnNum = row.grnNumber || row.grn_number || (grnId ? `GRN-${grnId}` : '-')
+        return <span className="grn-badge">{grnNum}</span>
+      },
     },
     {
       key: 'returnDate',
@@ -176,20 +201,26 @@ export default function SalesReturns() {
       tableWidth: 140,
       style: { width: 140, minWidth: 140 },
       headerStyle: { width: 140, minWidth: 140 },
-      render: (row) => (row.returnDate ? formatDate(row.returnDate) : '-'),
+      render: (row) => {
+        const rDate = row.returnDate ?? row.return_date
+        return rDate ? formatDate(rDate) : '-'
+      },
     },
     {
       key: 'totalAmount',
       label: 'Total Amount',
       sortable: true,
-      tableWidth: 150,
-      style: { width: 150, minWidth: 150 },
-      headerStyle: { width: 150, minWidth: 150 },
-      render: (row) => (
-        <span className="font-semibold" style={{ color: '#1e293b' }}>
-          {formatCurrency(Number(row.totalAmount || row.totalReturnAmount) || 0)}
-        </span>
-      ),
+      tableWidth: 160,
+      style: { width: 160, minWidth: 160 },
+      headerStyle: { width: 160, minWidth: 160 },
+      render: (row) => {
+        const amt = Number(row.totalAmount ?? row.total_amount ?? row.totalReturnAmount ?? 0)
+        return (
+          <span className="font-semibold" style={{ color: '#1e293b' }}>
+            {formatCurrency(amt)}
+          </span>
+        )
+      },
     },
     {
       key: 'reason',
@@ -214,11 +245,11 @@ export default function SalesReturns() {
       style: { width: 80, minWidth: 80, maxWidth: 80 },
       headerStyle: { width: 80, minWidth: 80, maxWidth: 80 },
       render: (row) => {
-        const retId = row.salesReturnId || row.id || row.returnId
+        const retId = getReturnId(row)
         return (
           <ActionMenu
             iconOnly
-            label={`Actions for ${formatReturnCode(row.returnNumber || retId)}`}
+            label={`Actions for ${getReturnNumberDisplay(row)}`}
             menuKey={retId}
             className="purchases-page__row-actions"
             actions={[
@@ -226,13 +257,13 @@ export default function SalesReturns() {
                 key: 'view',
                 label: 'View Details',
                 icon: Eye,
-                onClick: () => navigate(`/pos/returns/${retId}`),
+                onClick: () => navigate(`/inventory/purchase-returns/${retId}`),
               },
               {
                 key: 'edit',
                 label: 'Edit',
                 icon: Pencil,
-                onClick: () => navigate(`/pos/returns/edit/${retId}`),
+                onClick: () => navigate(`/inventory/purchase-returns/edit/${retId}`),
               },
               {
                 key: 'delete',
@@ -246,13 +277,13 @@ export default function SalesReturns() {
         )
       },
     },
-  ], [navigate])
+  ], [navigate, suppliersMap])
 
   const hasSelection = selectedRowKeys.length > 0
 
   // Selection toolbar matching Purchase Indents
   const selectionToolbar = hasSelection ? (
-    <FilterBar className="resource-center__product-style-selection-actions" ariaLabel="Selected sales returns actions">
+    <FilterBar className="resource-center__product-style-selection-actions" ariaLabel="Selected purchase returns actions">
       <div className="resource-center__product-style-selection-summary" aria-live="polite">
         <Check size={15} />
         <strong>{selectedRowKeys.length} selected</strong>
@@ -269,9 +300,9 @@ export default function SalesReturns() {
     <FilterBar className="purchases-page__table-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
       <div className="filter-group" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <select
-          id="customer-filter-select"
-          value={customerFilter}
-          onChange={(e) => setCustomerFilter(e.target.value)}
+          id="supplier-filter-select"
+          value={supplierFilter}
+          onChange={(e) => setSupplierFilter(e.target.value)}
           style={{
             height: '38px',
             padding: '0 32px 0 12px',
@@ -284,13 +315,13 @@ export default function SalesReturns() {
             cursor: 'pointer',
           }}
         >
-          <option value="">All Customers</option>
-          {customersList.map((c) => {
-            if (!c) return null
-            const cId = String(c.id ?? c.customerId ?? c.customer_id)
+          <option value="">All Suppliers</option>
+          {suppliers.map((supplier) => {
+            const supplierId = getSupplierId(supplier)
+            if (!supplierId) return null
             return (
-              <option key={cId} value={cId}>
-                {c.name || c.customerName || `Customer #${cId}`}
+              <option key={String(supplierId)} value={String(supplierId)}>
+                {getSupplierName(supplier)}
               </option>
             )
           })}
@@ -311,12 +342,12 @@ export default function SalesReturns() {
 
   if (error) {
     return (
-      <main className="sales-returns-page">
-        <PageHeader title="Sales Returns" />
-        <div className="card sales-returns-error-card" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <main className="purchase-returns-page">
+        <PageHeader title="Purchase Returns" />
+        <div className="card purchase-returns-error-card" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
           <RefreshCw size={24} style={{ color: '#ef4444' }} />
           <div style={{ flex: 1 }}>
-            <h3 style={{ margin: '0 0 4px 0' }}>Unable to load Sales Returns</h3>
+            <h3 style={{ margin: '0 0 4px 0' }}>Unable to load Purchase Returns</h3>
             <p style={{ margin: 0, color: '#64748b' }}>{String(error)}</p>
           </div>
           <button className="erp-button erp-button--primary" onClick={fetchData} type="button">
@@ -328,17 +359,17 @@ export default function SalesReturns() {
   }
 
   return (
-    <main className="sales-returns-page">
+    <main className="purchase-returns-page">
       {/* Compact Header matching Purchase Indents */}
       <header className="purchases-page__compact-header">
         <div className="purchases-page__compact-main">
-          <h1>Sales Returns</h1>
+          <h1>Purchase Returns</h1>
           <div className="purchases-page__metrics">
             <span className="purchases-page__metric purchases-page__metric--info">
               {stats.total} Returns
             </span>
             <span className="purchases-page__metric purchases-page__metric--warning">
-              {stats.customers} Customers
+              {stats.suppliers} Suppliers
             </span>
             <span className="purchases-page__metric purchases-page__metric--success">
               {formatCurrency(stats.totalAmount)} Total Returned
@@ -348,11 +379,11 @@ export default function SalesReturns() {
         <button
           type="button"
           className="button button-primary"
-          onClick={() => navigate('/pos/returns/create')}
+          onClick={() => navigate('/inventory/purchase-returns/create')}
           style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
         >
           <Plus size={16} />
-          Create Sales Return
+          Create Purchase Return
         </button>
       </header>
 
@@ -372,14 +403,14 @@ export default function SalesReturns() {
           hideSelectionSummary={true}
           selectedRowKeys={selectedRowKeys}
           onSelectionChange={setSelectedRowKeys}
-          keyField="salesReturnId"
+          keyField="purchaseReturnId"
           showSearch={!hasSelection}
           showColumnControls={!hasSelection}
-          columnStorageKey="ims.sales-returns.visibleColumns.v1"
-          defaultVisibleColumnKeys={['returnNumber', 'invoiceNumber', 'customerName', 'returnDate', 'totalAmount', 'reason', 'actions']}
+          columnStorageKey="ims.purchase-returns.visibleColumns.v1"
+          defaultVisibleColumnKeys={['returnNumber', 'supplierName', 'grnNumber', 'returnDate', 'totalAmount', 'reason', 'actions']}
           fitExplicitColumnsToContainer={false}
-          searchPlaceholder="Search by Return ID, Invoice #, Customer, or Reason..."
-          emptyMessage="No sales returns found."
+          searchPlaceholder="Search by Return ID, Supplier, GRN, or Reason..."
+          emptyMessage="No purchase returns found."
         />
       </div>
 
@@ -387,11 +418,11 @@ export default function SalesReturns() {
       {deleteTargetId && (
         <FormModal
           isOpen={Boolean(deleteTargetId)}
-          title="Delete Sales Return?"
+          title="Delete Purchase Return?"
           onClose={() => setDeleteTargetId(null)}
         >
           <div className="delete-confirm-content">
-            <p>This action will permanently delete this sales return and its associated items.</p>
+            <p>This action will permanently delete this purchase return and its associated items.</p>
             <p className="delete-warning">Return ID: #{deleteTargetId}</p>
 
             <div className="form-modal-actions">
