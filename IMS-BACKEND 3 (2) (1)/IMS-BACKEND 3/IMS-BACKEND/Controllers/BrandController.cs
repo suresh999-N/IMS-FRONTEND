@@ -31,7 +31,7 @@ namespace IMSBackend.Controllers
             var brands = await _context.Brands
                 .AsNoTracking()
                 .Where(brand => !brand.IsDeleted)
-                .OrderBy(brand => brand.Name)
+                .OrderByDescending(brand => brand.BrandId)
                 .ToListAsync(cancellationToken);
 
             return Ok(ApiResponse<List<Brand>>.Ok(

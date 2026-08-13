@@ -25,7 +25,7 @@ namespace IMSBackend.Controllers
             var units = await _context.Units
                 .AsNoTracking()
                 .Where(unit => !unit.IsDeleted)
-                .OrderBy(unit => unit.Name)
+                .OrderByDescending(unit => unit.UnitId)
                 .ToListAsync(cancellationToken);
 
             return Ok(ApiResponse<List<Unit>>.Ok(

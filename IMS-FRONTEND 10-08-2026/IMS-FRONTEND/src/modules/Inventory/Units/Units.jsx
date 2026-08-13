@@ -69,11 +69,6 @@ export default function Units() {
       const rawList = response.data ?? []
       const normalized = rawList.map(normalizeUnit)
 
-      // Sort units alphabetically by name
-      normalized.sort((a, b) =>
-        a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
-      )
-
       setUnits(normalized)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to load units data.')

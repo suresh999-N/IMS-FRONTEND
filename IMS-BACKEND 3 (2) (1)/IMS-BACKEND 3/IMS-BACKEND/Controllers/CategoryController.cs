@@ -28,7 +28,7 @@ namespace IMSBackend.Controllers
                 .Include(category => category.SubCategories.Where(subCategory => !subCategory.IsDeleted))
                 .AsNoTracking()
                 .Where(category => !category.IsDeleted)
-                .OrderBy(category => category.Name)
+                .OrderByDescending(category => category.CategoryId)
                 .ToListAsync(cancellationToken);
             var totalSubCategories = await _context.SubCategories
                 .AsNoTracking()

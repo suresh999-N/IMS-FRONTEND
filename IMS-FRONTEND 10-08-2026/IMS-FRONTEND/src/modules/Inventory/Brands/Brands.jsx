@@ -594,7 +594,7 @@ export default function Brands() {
             columns={columns}
             loading={isLoading}
             defaultPageSize={20}
-            defaultSortKey="name"
+            defaultSortKey=""
             showSearch={!hasSelectedBrands}
             searchPlaceholder="Search brands by name or description..."
             emptyMessage="No brands found."

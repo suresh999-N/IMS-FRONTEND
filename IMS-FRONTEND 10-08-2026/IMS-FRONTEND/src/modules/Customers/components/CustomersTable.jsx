@@ -526,8 +526,7 @@ export default function CustomersTable({
         searchPlaceholder="Search customers by name, company..."
         emptyMessage="No customers found."
         defaultPageSize={20}
-        defaultSortKey="name"
-        defaultSortDirection="asc"
+        defaultSortKey=""
         columnStorageKey={COLUMN_STORAGE_KEY}
         defaultVisibleColumnKeys={DEFAULT_VISIBLE_COLUMNS}
         lockedColumnKeys={LOCKED_COLUMNS}

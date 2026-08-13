@@ -25,7 +25,7 @@ namespace IMSBackend.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            return Ok(_context.StockTransfers.AsNoTracking().ToList());
+            return Ok(_context.StockTransfers.AsNoTracking().OrderByDescending(x => x.TransferId).ToList());
         }
 
         [HttpGet("{id}")]

@@ -108,6 +108,7 @@ namespace IMSBackend.Controllers
                 .Include(v => v.VariantAttributes)
                     .ThenInclude(va => va.AttributeValue)
                 .AsNoTracking()
+                .OrderByDescending(v => v.VariantId)
                 .ToListAsync(cancellationToken);
 
             return Ok(ApiResponse<List<ProductVariant>>.Ok(

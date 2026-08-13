@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using IMSBackend.Data;
 using IMSBackend.DTOs;
 using IMSBackend.Models;
@@ -22,7 +22,7 @@ namespace IMSBackend.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            return Ok(_context.StockAdjustments.ToList());
+            return Ok(_context.StockAdjustments.OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.AdjustmentId).ToList());
         }
 
         // =========================

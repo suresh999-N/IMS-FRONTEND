@@ -593,10 +593,10 @@ namespace IMSBackend.Controllers
                 ("city", "asc") => query.OrderBy(x => x.City),
                 ("city", "desc") => query.OrderByDescending(x => x.City),
 
-                ("createdat", "asc") => query.OrderBy(x => x.CreatedAt),
-                ("createdat", "desc") => query.OrderByDescending(x => x.CreatedAt),
+                ("createdat", "asc") => query.OrderBy(x => x.CreatedAt).ThenBy(x => x.CustomerId),
+                ("createdat", "desc") => query.OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.CustomerId),
 
-                _ => query.OrderByDescending(x => x.CustomerId)
+                _ => query.OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.CustomerId)
             };
 
             // ================= PAGINATION =================

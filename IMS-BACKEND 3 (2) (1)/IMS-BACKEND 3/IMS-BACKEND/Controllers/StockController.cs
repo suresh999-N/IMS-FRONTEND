@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using IMSBackend.Data;
 using IMSBackend.DTOs;
 using IMSBackend.Models;
@@ -52,13 +52,10 @@ namespace IMSBackend.Controllers
                     stock.Quantity,
                     stock.ReservedQuantity,
                     stock.AvailableQuantity
-                }).ToList();
+                }).OrderByDescending(x => x.StockId).ToList();
 
             return Ok(stocks);
         }
-
-        // =========================
-        // 🔹 GET BY ID
         // =========================
         [HttpGet("{id}")]
         public IActionResult GetById(int id)

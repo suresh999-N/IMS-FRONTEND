@@ -94,7 +94,7 @@ namespace IMSBackend.Controllers
 
                     LineTotal = receiptItem != null ? receiptItem.LineTotal : null
                 }
-            ).ToListAsync();
+            ).OrderByDescending(x => x.GrnId).ToListAsync();
 
             var result = data
                 .GroupBy(x => x.GrnId)

@@ -65,8 +65,8 @@ namespace IMSBackend.Controllers
                                 ? "partial"
                                 : "pending"),
                     purchaseOrder.TotalAmount,
-                    purchaseOrder.Notes
-                    ,
+                    purchaseOrder.Notes,
+                    purchaseOrder.CreatedAt,
                     SourceIndentId = _context.PurchaseIndents
                         .AsNoTracking()
                         .Where(indent =>
@@ -86,7 +86,7 @@ namespace IMSBackend.Controllers
                         .Select(indent => indent.IndentNumber)
                         .FirstOrDefault()
                 }
-            ).ToListAsync();
+            ).OrderByDescending(x => x.CreatedAt ?? DateTime.MinValue).ThenByDescending(x => x.PoId).ToListAsync();
 
             return Ok(data);
         }

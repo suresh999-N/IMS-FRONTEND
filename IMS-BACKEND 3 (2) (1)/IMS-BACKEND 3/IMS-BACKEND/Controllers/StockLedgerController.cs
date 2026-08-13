@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using IMSBackend.Data;
 using IMSBackend.DTOs;
 using IMSBackend.Models;
@@ -55,7 +55,7 @@ namespace IMSBackend.Controllers
                         ? "Not set"
                         : ledger.TransactionType,
                     ledger.CreatedAt
-                }).ToList();
+                }).OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.LedgerId).ToList();
 
             return Ok(ledgers);
         }

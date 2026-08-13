@@ -171,8 +171,7 @@ export default function PurchasesTable({
         columns={columns}
         loading={loading}
         defaultPageSize={20}
-        defaultSortKey="orderDate"
-        defaultSortDirection="desc"
+        defaultSortKey=""
         splitToolbar
         toolbarContent={(
           <FilterBar className="purchases-page__table-actions">

@@ -590,8 +590,7 @@ export default function WarehousesTable({
         searchPlaceholder="Search warehouses..."
         emptyMessage={emptyMessage}
         defaultPageSize={20}
-        defaultSortKey="name"
-        defaultSortDirection="asc"
+        defaultSortKey=""
         showSearch={!hasSelectedWarehouses}
         fitExplicitColumnsToContainer
         splitToolbar

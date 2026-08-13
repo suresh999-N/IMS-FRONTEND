@@ -397,8 +397,7 @@ export default function PurchaseIndentsTable({
         columns={columns}
         loading={loading}
         defaultPageSize={20}
-        defaultSortKey="indentDate"
-        defaultSortDirection="desc"
+        defaultSortKey=""
         splitToolbar
         toolbarContent={selectionToolbar}
         enableRowSelection={true}

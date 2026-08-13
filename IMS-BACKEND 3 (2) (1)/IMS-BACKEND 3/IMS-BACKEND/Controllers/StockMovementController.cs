@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using IMSBackend.Data;
 using IMSBackend.DTOs;
 using IMSBackend.Models;
@@ -60,7 +60,7 @@ namespace IMSBackend.Controllers
                         : movement.ReferenceType,
                     movement.Notes,
                     movement.CreatedAt
-                }).ToList();
+                }).OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.MovementId).ToList();
 
             return Ok(movements);
         }

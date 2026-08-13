@@ -1171,7 +1171,7 @@ export default function SubCategories() {
             columns={columns}
             loading={isLoading}
             defaultPageSize={20}
-            defaultSortKey="name"
+            defaultSortKey=""
             showSearch={!hasSelectedSubCategories}
             searchPlaceholder="Search subcategories by name, category, or status..."
             emptyMessage="No subcategories found."

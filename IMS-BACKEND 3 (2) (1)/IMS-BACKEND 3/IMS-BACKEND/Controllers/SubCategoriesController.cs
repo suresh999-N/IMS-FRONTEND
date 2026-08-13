@@ -1,4 +1,4 @@
-﻿using IMSBackend.Data;
+using IMSBackend.Data;
 using IMSBackend.Models;
 using IMSBackend.Services;
 using Microsoft.AspNetCore.Mvc;
