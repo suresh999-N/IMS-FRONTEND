@@ -1,343 +1,420 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, Pencil, Plus, RefreshCw, Search, Trash2, AlertCircle, MoreVertical } from 'lucide-react'
-import PageHeader from '../../../components/common/PageHeader'
+import { Check, Eye, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react'
+import { ActionMenu, DataTable, FilterBar } from '../../../components/erp'
 import StateBlock from '../../../components/common/StateBlock'
 import { showToast } from '../../../components/common/toast'
 import FormModal from '../../../layouts/FormModal'
-import { getPurchaseReturns, deletePurchaseReturn } from '../../../api/purchaseReturnApi'
-import { getSuppliers } from '../../../api/suppliersApi'
-import { apiRequest } from '../../../api/apiClient'
-import { API_ENDPOINTS } from '../../../api/endpoints'
+import {
+  deletePurchaseReturn,
+  getPurchaseReturns,
+  getPurchaseReturnSuppliers,
+} from '../../../api/purchaseReturnApi'
 import { formatCurrency, formatDate } from '../../../utils/helpers'
 import './PurchaseReturns.css'
 
-export default function PurchaseReturns({ data = {}, actions = {} }) {
+const getArrayFromResponse = (response) => {
+  if (Array.isArray(response)) return response
+  if (Array.isArray(response?.data)) return response.data
+  if (Array.isArray(response?.data?.items)) return response.data.items
+  if (Array.isArray(response?.items)) return response.items
+  return null
+}
+
+const getSupplierId = (supplier) =>
+  supplier?.id ?? supplier?.supplierId ?? supplier?.supplier_id
+
+const getSupplierName = (supplier) =>
+  supplier?.name ?? supplier?.supplierName ?? supplier?.supplier_name ?? (getSupplierId(supplier) ? `Supplier #${getSupplierId(supplier)}` : '-')
+
+const getReturnId = (item) =>
+  item?.purchaseReturnId ?? item?.returnId ?? item?.return_id ?? item?.id
+
+const getReturnNumberDisplay = (item) => {
+  const num = item?.returnNumber ?? item?.return_number
+  if (num) return String(num).startsWith('#') ? num : `#${num}`
+  const retId = getReturnId(item)
+  return retId ? `#PRR-${String(retId).padStart(6, '0')}` : '-'
+}
+
+export default function PurchaseReturns() {
   const navigate = useNavigate()
 
   const [returns, setReturns] = useState([])
-  const [suppliersMap, setSuppliersMap] = useState({})
-  const [grnsMap, setGrnsMap] = useState({})
-  const [suppliersList, setSuppliersList] = useState([])
-
+  const [suppliers, setSuppliers] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [error, setError] = useState('')
   const [supplierFilter, setSupplierFilter] = useState('')
 
-  // State for delete modal & 3-dots action menu
+  const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [deleteTargetId, setDeleteTargetId] = useState(null)
   const [deleting, setDeleting] = useState(false)
-  const [activeMenuId, setActiveMenuId] = useState(null)
 
-  // Close 3-dots menu on outside click
-  useEffect(() => {
-    const handleOutsideClick = () => setActiveMenuId(null)
-    document.addEventListener('click', handleOutsideClick)
-    return () => document.removeEventListener('click', handleOutsideClick)
-  }, [])
-
+  // Fetch Purchase Returns & Suppliers from Backend API
   const fetchData = useCallback(async () => {
     setLoading(true)
-    setError(null)
+    setError('')
     try {
-      const [returnsRes, suppliersRes, grnsRes] = await Promise.allSettled([
+      const [returnsResponse, suppliersResponse] = await Promise.all([
         getPurchaseReturns(),
-        getSuppliers(),
-        apiRequest(API_ENDPOINTS.goodsReceipts.list),
+        getPurchaseReturnSuppliers(),
       ])
 
-      // Handle Suppliers lookup
-      const supList = suppliersRes.status === 'fulfilled' && suppliersRes.value?.success
-        ? suppliersRes.value.data ?? []
-        : (Array.isArray(data.suppliers) ? data.suppliers : [])
-      setSuppliersList(supList)
-      const supMap = {}
-      supList.forEach((s) => {
-        const id = String(s.id ?? s.supplierId ?? s.supplier_id)
-        supMap[id] = s.name || s.supplierName || `Supplier #${id}`
-      })
-      setSuppliersMap(supMap)
+      const returnsData = getArrayFromResponse(returnsResponse)
+      const suppliersData = getArrayFromResponse(suppliersResponse)
 
-      // Handle GRNs lookup
-      const grnList = grnsRes.status === 'fulfilled' && grnsRes.value?.success
-        ? (Array.isArray(grnsRes.value.data) ? grnsRes.value.data : grnsRes.value.data?.items ?? [])
-        : []
-      const grnMap = {}
-      grnList.forEach((g) => {
-        const id = String(g.id ?? g.grnId ?? g.grn_id)
-        grnMap[id] = g.grnNumber || g.number || `GRN-${id}`
-      })
-      setGrnsMap(grnMap)
-
-      // Handle Purchase Returns (Combine API results and local returns)
-      const apiList = (returnsRes.status === 'fulfilled' && returnsRes.value?.success)
-        ? (returnsRes.value.data ?? [])
-        : []
-      const localList = Array.isArray(data.purchaseReturns) ? data.purchaseReturns : []
-
-      const mergedMap = new Map()
-      localList.forEach((item) => {
-        const key = String(item.returnId || item.id || '')
-        if (key) mergedMap.set(key, item)
-      })
-      apiList.forEach((item) => {
-        const key = String(item.returnId || item.id || '')
-        if (key) mergedMap.set(key, item)
-      })
-
-      const combinedReturns = Array.from(mergedMap.values())
-      setReturns(combinedReturns)
-    } catch (err) {
-      if (Array.isArray(data.purchaseReturns) && data.purchaseReturns.length > 0) {
-        setReturns(data.purchaseReturns)
-      } else {
-        setError(err instanceof Error ? err.message : 'An error occurred while fetching purchase returns.')
+      if (returnsData === null) {
+        throw new Error('Purchase Returns API returned an unexpected response format.')
       }
+
+      setReturns(returnsData.filter(Boolean))
+      setSuppliers(suppliersData || [])
+    } catch (err) {
+      setReturns([])
+      setSuppliers([])
+      setError(
+        err?.response?.data?.message ||
+        err?.response?.data?.title ||
+        err?.message ||
+        'Failed to load Purchase Returns.'
+      )
     } finally {
       setLoading(false)
     }
-  }, [data.suppliers, data.purchaseReturns])
+  }, [])
 
   useEffect(() => {
     fetchData()
   }, [fetchData])
 
-  const filteredReturns = useMemo(() => {
-    return returns.filter((item) => {
-      const returnIdStr = String(item.returnId || item.id || '').toLowerCase()
-      const supplierName = (suppliersMap[String(item.supplierId)] || item.supplierName || '').toLowerCase()
-      const grnStr = (grnsMap[String(item.grnId)] || item.grnNumber || item.grnId || '').toLowerCase()
-      const reasonStr = String(item.reason || '').toLowerCase()
-
-      const matchesSearch = !searchQuery ||
-        returnIdStr.includes(searchQuery.toLowerCase()) ||
-        supplierName.includes(searchQuery.toLowerCase()) ||
-        grnStr.includes(searchQuery.toLowerCase()) ||
-        reasonStr.includes(searchQuery.toLowerCase())
-
-      const matchesSupplier = !supplierFilter || String(item.supplierId) === String(supplierFilter)
-
-      return matchesSearch && matchesSupplier
+  // Supplier Lookup Map
+  const suppliersMap = useMemo(() => {
+    const map = {}
+    suppliers.forEach((supplier) => {
+      const id = getSupplierId(supplier)
+      if (id !== null && id !== undefined && id !== '') {
+        map[String(id)] = getSupplierName(supplier)
+      }
     })
-  }, [returns, searchQuery, supplierFilter, suppliersMap, grnsMap])
+    return map
+  }, [suppliers])
 
+  // Filter Returns based on Supplier Filter
+  const filteredReturns = useMemo(() => {
+    const list = Array.isArray(returns) ? returns.filter(Boolean) : []
+    if (!supplierFilter) return list
+    return list.filter((item) => String(item.supplierId ?? item.supplier_id ?? '') === String(supplierFilter))
+  }, [returns, supplierFilter])
+
+  // Header Metrics Summary
+  const stats = useMemo(() => {
+    const list = Array.isArray(returns) ? returns.filter(Boolean) : []
+    const total = list.length
+    const uniqueSuppliers = new Set(
+      list.map((item) => item.supplierId || item.supplier_id).filter(Boolean)
+    ).size
+    const totalAmount = list.reduce(
+      (sum, item) => sum + Number(item.totalAmount || item.total_amount || item.totalReturnAmount || 0),
+      0
+    )
+
+    return {
+      total,
+      suppliers: uniqueSuppliers,
+      totalAmount,
+    }
+  }, [returns])
+
+  // Delete Handler
   const handleDeleteConfirm = async () => {
-    if (!deleteTargetId) return
+    if (!deleteTargetId || deleting) return
     setDeleting(true)
     try {
-      const res = await deletePurchaseReturn(deleteTargetId)
-      if (res && res.success) {
-        actions.deletePurchaseReturn?.(deleteTargetId)
-        showToast('Purchase return deleted successfully.', 'success')
-        setReturns((prev) => prev.filter((r) => String(r.id) !== String(deleteTargetId) && String(r.returnId) !== String(deleteTargetId)))
-      } else if (typeof actions.deletePurchaseReturn === 'function') {
-        actions.deletePurchaseReturn(deleteTargetId)
-        showToast('Purchase return deleted successfully.', 'success')
-        setReturns((prev) => prev.filter((r) => String(r.id) !== String(deleteTargetId) && String(r.returnId) !== String(deleteTargetId)))
-      } else {
-        showToast(res?.error || 'Failed to delete purchase return.', 'error')
-      }
+      await deletePurchaseReturn(deleteTargetId)
+      setReturns((prev) => prev.filter((item) => String(getReturnId(item)) !== String(deleteTargetId)))
+      showToast('Purchase return deleted successfully.', 'success')
     } catch (err) {
-      if (typeof actions.deletePurchaseReturn === 'function') {
-        actions.deletePurchaseReturn(deleteTargetId)
-        showToast('Purchase return deleted successfully.', 'success')
-        setReturns((prev) => prev.filter((r) => String(r.id) !== String(deleteTargetId) && String(r.returnId) !== String(deleteTargetId)))
-      } else {
-        showToast(err instanceof Error ? err.message : 'Failed to delete purchase return.', 'error')
-      }
+      showToast(
+        err?.response?.data?.message || err?.message || 'Failed to delete purchase return.',
+        'error'
+      )
     } finally {
       setDeleting(false)
       setDeleteTargetId(null)
     }
   }
 
-  return (
-    <main className="purchase-returns-page">
-      <PageHeader
-        title="Purchase Returns"
-        subtitle="Manage and track goods returned to suppliers."
-        primaryAction={{
-          icon: Plus,
-          label: 'Create Purchase Return',
-          onClick: () => navigate('/inventory/purchase-returns/create'),
-        }}
-      />
-
-      {/* Toolbar / Filters */}
-      <section className="purchase-returns-toolbar card">
-        <div className="toolbar-search">
-          <Search size={16} className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search by Return ID, Supplier, GRN or Reason..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+  // DataTable Column Definitions matching Purchase Indents UI
+  const columns = useMemo(() => [
+    {
+      key: 'returnNumber',
+      label: 'Return ID',
+      sortable: true,
+      mobilePrimary: true,
+      tableWidth: 170,
+      style: { width: 170, minWidth: 170 },
+      headerStyle: { width: 170, minWidth: 170 },
+      searchValue: (row) => {
+        const supId = row.supplierId ?? row.supplier_id
+        const supName = suppliersMap[String(supId ?? '')] || row.supplierName || ''
+        const grnNum = row.grnNumber || (row.grnId ? `GRN-${row.grnId}` : '')
+        return `${getReturnNumberDisplay(row)} ${supName} ${grnNum} ${row.reason || ''}`
+      },
+      render: (row) => {
+        const retId = getReturnId(row)
+        return (
+          <span className="font-semibold text-primary" style={{ cursor: 'pointer' }} onClick={() => navigate(`/inventory/purchase-returns/${retId}`)}>
+            {getReturnNumberDisplay(row)}
+          </span>
+        )
+      },
+    },
+    {
+      key: 'supplierName',
+      label: 'Supplier',
+      sortable: true,
+      tableWidth: 220,
+      style: { width: 220, minWidth: 220 },
+      headerStyle: { width: 220, minWidth: 220 },
+      render: (row) => {
+        const supId = row.supplierId ?? row.supplier_id
+        return suppliersMap[String(supId ?? '')] ?? row.supplierName ?? row.supplier_name ?? (supId ? `Supplier #${supId}` : '-')
+      },
+    },
+    {
+      key: 'grnNumber',
+      label: 'GRN',
+      sortable: true,
+      tableWidth: 150,
+      style: { width: 150, minWidth: 150 },
+      headerStyle: { width: 150, minWidth: 150 },
+      render: (row) => {
+        const grnId = row.grnId ?? row.grn_id
+        const grnNum = row.grnNumber || row.grn_number || (grnId ? `GRN-${grnId}` : '-')
+        return <span className="grn-badge">{grnNum}</span>
+      },
+    },
+    {
+      key: 'returnDate',
+      label: 'Return Date',
+      sortable: true,
+      tableWidth: 140,
+      style: { width: 140, minWidth: 140 },
+      headerStyle: { width: 140, minWidth: 140 },
+      render: (row) => {
+        const rDate = row.returnDate ?? row.return_date
+        return rDate ? formatDate(rDate) : '-'
+      },
+    },
+    {
+      key: 'totalAmount',
+      label: 'Total Amount',
+      sortable: true,
+      tableWidth: 160,
+      style: { width: 160, minWidth: 160 },
+      headerStyle: { width: 160, minWidth: 160 },
+      render: (row) => {
+        const amt = Number(row.totalAmount ?? row.total_amount ?? row.totalReturnAmount ?? 0)
+        return (
+          <span className="font-semibold" style={{ color: '#1e293b' }}>
+            {formatCurrency(amt)}
+          </span>
+        )
+      },
+    },
+    {
+      key: 'reason',
+      label: 'Reason',
+      sortable: true,
+      tableWidth: 240,
+      style: { width: 240, minWidth: 240 },
+      headerStyle: { width: 240, minWidth: 240 },
+      render: (row) => (
+        <span className="reason-cell" title={row.reason || ''}>
+          {row.reason ? (row.reason.length > 45 ? `${row.reason.slice(0, 45)}...` : row.reason) : '-'}
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      searchable: false,
+      hideable: false,
+      className: 'purchases-page__col-actions',
+      tableWidth: 80,
+      style: { width: 80, minWidth: 80, maxWidth: 80 },
+      headerStyle: { width: 80, minWidth: 80, maxWidth: 80 },
+      render: (row) => {
+        const retId = getReturnId(row)
+        return (
+          <ActionMenu
+            iconOnly
+            label={`Actions for ${getReturnNumberDisplay(row)}`}
+            menuKey={retId}
+            className="purchases-page__row-actions"
+            actions={[
+              {
+                key: 'view',
+                label: 'View Details',
+                icon: Eye,
+                onClick: () => navigate(`/inventory/purchase-returns/${retId}`),
+              },
+              {
+                key: 'edit',
+                label: 'Edit',
+                icon: Pencil,
+                onClick: () => navigate(`/inventory/purchase-returns/edit/${retId}`),
+              },
+              {
+                key: 'delete',
+                label: 'Delete',
+                icon: Trash2,
+                tone: 'danger',
+                onClick: () => setDeleteTargetId(retId),
+              },
+            ]}
           />
-          {searchQuery && (
-            <button className="clear-search-btn" onClick={() => setSearchQuery('')} type="button">
-              Clear
-            </button>
-          )}
-        </div>
+        )
+      },
+    },
+  ], [navigate, suppliersMap])
 
-        <div className="toolbar-filters">
-          <div className="filter-group">
-            <label htmlFor="supplier-select">Supplier:</label>
-            <select
-              id="supplier-select"
-              value={supplierFilter}
-              onChange={(e) => setSupplierFilter(e.target.value)}
-            >
-              <option value="">All Suppliers</option>
-              {suppliersList.map((s) => {
-                const sId = String(s.id ?? s.supplierId ?? s.supplier_id)
-                return (
-                  <option key={sId} value={sId}>
-                    {s.name || s.supplierName || `Supplier #${sId}`}
-                  </option>
-                )
-              })}
-            </select>
-          </div>
+  const hasSelection = selectedRowKeys.length > 0
 
-          {(searchQuery || supplierFilter) && (
-            <button
-              className="erp-button erp-button--secondary"
-              type="button"
-              onClick={() => {
-                setSearchQuery('')
-                setSupplierFilter('')
-              }}
-            >
-              Reset Filters
-            </button>
-          )}
-        </div>
-      </section>
+  // Selection toolbar matching Purchase Indents
+  const selectionToolbar = hasSelection ? (
+    <FilterBar className="resource-center__product-style-selection-actions" ariaLabel="Selected purchase returns actions">
+      <div className="resource-center__product-style-selection-summary" aria-live="polite">
+        <Check size={15} />
+        <strong>{selectedRowKeys.length} selected</strong>
+      </div>
+      <button
+        type="button"
+        className="button button-secondary resource-center__product-style-selection-button"
+        onClick={() => setSelectedRowKeys([])}
+      >
+        Clear Selection
+      </button>
+    </FilterBar>
+  ) : (
+    <FilterBar className="purchases-page__table-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="filter-group" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <select
+          id="supplier-filter-select"
+          value={supplierFilter}
+          onChange={(e) => setSupplierFilter(e.target.value)}
+          style={{
+            height: '38px',
+            padding: '0 32px 0 12px',
+            border: '1px solid #cbd5e1',
+            borderRadius: '8px',
+            fontSize: '13px',
+            fontWeight: '500',
+            color: '#334155',
+            backgroundColor: '#ffffff',
+            cursor: 'pointer',
+          }}
+        >
+          <option value="">All Suppliers</option>
+          {suppliers.map((supplier) => {
+            const supplierId = getSupplierId(supplier)
+            if (!supplierId) return null
+            return (
+              <option key={String(supplierId)} value={String(supplierId)}>
+                {getSupplierName(supplier)}
+              </option>
+            )
+          })}
+        </select>
+      </div>
 
-      {/* Content Area */}
-      {loading ? (
-        <StateBlock state="loading" message="Loading purchase returns..." />
-      ) : error ? (
-        <div className="purchase-returns-error-card card">
-          <AlertCircle size={24} className="error-icon" />
-          <div>
-            <h3>Unable to load Purchase Returns</h3>
-            <p>{error}</p>
+      <button
+        type="button"
+        className="button button-secondary"
+        onClick={fetchData}
+        disabled={loading}
+      >
+        <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+        Refresh
+      </button>
+    </FilterBar>
+  )
+
+  if (error) {
+    return (
+      <main className="purchase-returns-page">
+        <PageHeader title="Purchase Returns" />
+        <div className="card purchase-returns-error-card" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <RefreshCw size={24} style={{ color: '#ef4444' }} />
+          <div style={{ flex: 1 }}>
+            <h3 style={{ margin: '0 0 4px 0' }}>Unable to load Purchase Returns</h3>
+            <p style={{ margin: 0, color: '#64748b' }}>{String(error)}</p>
           </div>
           <button className="erp-button erp-button--primary" onClick={fetchData} type="button">
-            <RefreshCw size={14} /> Retry
+            Retry
           </button>
         </div>
-      ) : filteredReturns.length === 0 ? (
-        <div className="purchase-returns-empty card">
-          <p className="empty-title">No purchase returns found</p>
-          <p className="empty-subtitle">
-            {searchQuery || supplierFilter
-              ? 'No returns match your filter criteria.'
-              : 'Click "Create Purchase Return" to record your first return.'}
-          </p>
-          {!searchQuery && !supplierFilter && (
-            <button
-              className="erp-button erp-button--primary"
-              onClick={() => navigate('/inventory/purchase-returns/create')}
-              type="button"
-            >
-              <Plus size={14} /> Create Purchase Return
-            </button>
-          )}
+      </main>
+    )
+  }
+
+  return (
+    <main className="purchase-returns-page">
+      {/* Compact Header matching Purchase Indents */}
+      <header className="purchases-page__compact-header">
+        <div className="purchases-page__compact-main">
+          <h1>Purchase Returns</h1>
+          <div className="purchases-page__metrics">
+            <span className="purchases-page__metric purchases-page__metric--info">
+              {stats.total} Returns
+            </span>
+            <span className="purchases-page__metric purchases-page__metric--warning">
+              {stats.suppliers} Suppliers
+            </span>
+            <span className="purchases-page__metric purchases-page__metric--success">
+              {formatCurrency(stats.totalAmount)} Total Returned
+            </span>
+          </div>
         </div>
-      ) : (
-        <section className="card purchase-returns-table-container">
-          <table className="purchase-returns-table">
-            <thead>
-              <tr>
-                <th>Return ID</th>
-                <th>Supplier</th>
-                <th>GRN</th>
-                <th>Return Date</th>
-                <th className="text-right">Total Amount</th>
-                <th>Reason</th>
-                <th className="text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredReturns.map((row) => {
-                const retId = row.returnId || row.id
-                const supplierName = suppliersMap[String(row.supplierId)] || row.supplierName || `Supplier #${row.supplierId}`
-                const grnName = grnsMap[String(row.grnId)] || row.grnNumber || (row.grnId ? `GRN-${row.grnId}` : '-')
+        <button
+          type="button"
+          className="button button-primary"
+          onClick={() => navigate('/inventory/purchase-returns/create')}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+        >
+          <Plus size={16} />
+          Create Purchase Return
+        </button>
+      </header>
 
-                return (
-                  <tr key={retId}>
-                    <td className="font-semibold text-primary">#{retId}</td>
-                    <td>{supplierName}</td>
-                    <td>
-                      <span className="grn-badge">{grnName}</span>
-                    </td>
-                    <td>{row.returnDate ? formatDate(row.returnDate) : '-'}</td>
-                    <td className="text-right font-semibold">{formatCurrency(row.totalAmount || 0)}</td>
-                    <td className="reason-cell" title={row.reason}>
-                      {row.reason ? (row.reason.length > 50 ? `${row.reason.slice(0, 50)}...` : row.reason) : '-'}
-                    </td>
-                    <td className="text-right actions-cell">
-                      <div className="actions-dropdown-container">
-                        <button
-                          className={`action-menu-btn ${activeMenuId === retId ? 'active' : ''}`}
-                          type="button"
-                          title="Actions"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setActiveMenuId((prev) => (prev === retId ? null : retId))
-                          }}
-                        >
-                          <MoreVertical size={18} />
-                        </button>
-                        {activeMenuId === retId && (
-                          <div className="action-dropdown-menu" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              type="button"
-                              className="action-dropdown-item"
-                              onClick={() => {
-                                setActiveMenuId(null)
-                                navigate(`/inventory/purchase-returns/${retId}`)
-                              }}
-                            >
-                              <Eye size={15} /> View Details
-                            </button>
-                            <button
-                              type="button"
-                              className="action-dropdown-item"
-                              onClick={() => {
-                                setActiveMenuId(null)
-                                navigate(`/inventory/purchase-returns/edit/${retId}`)
-                              }}
-                            >
-                              <Pencil size={15} /> Edit
-                            </button>
-                            <button
-                              type="button"
-                              className="action-dropdown-item danger-item"
-                              onClick={() => {
-                                setActiveMenuId(null)
-                                setDeleteTargetId(retId)
-                              }}
-                            >
-                              <Trash2 size={15} /> Delete
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </section>
-      )}
+      {/* Main DataTable Card matching Purchase Indents UI */}
+      <div className="card purchases-page__table-card">
+        <DataTable
+          className="purchases-page__table"
+          rows={filteredReturns}
+          columns={columns}
+          loading={loading}
+          defaultPageSize={20}
+          defaultSortKey="returnDate"
+          defaultSortDirection="desc"
+          splitToolbar
+          toolbarContent={selectionToolbar}
+          enableRowSelection={true}
+          hideSelectionSummary={true}
+          selectedRowKeys={selectedRowKeys}
+          onSelectionChange={setSelectedRowKeys}
+          keyField="purchaseReturnId"
+          showSearch={!hasSelection}
+          showColumnControls={!hasSelection}
+          columnStorageKey="ims.purchase-returns.visibleColumns.v1"
+          defaultVisibleColumnKeys={['returnNumber', 'supplierName', 'grnNumber', 'returnDate', 'totalAmount', 'reason', 'actions']}
+          fitExplicitColumnsToContainer={false}
+          searchPlaceholder="Search by Return ID, Supplier, GRN, or Reason..."
+          emptyMessage="No purchase returns found."
+        />
+      </div>
 
-      {/* Confirmation Modal for Delete */}
+      {/* Delete Confirmation Modal */}
       {deleteTargetId && (
         <FormModal
           isOpen={Boolean(deleteTargetId)}
@@ -345,7 +422,7 @@ export default function PurchaseReturns({ data = {}, actions = {} }) {
           onClose={() => setDeleteTargetId(null)}
         >
           <div className="delete-confirm-content">
-            <p>This action will permanently remove this purchase return and its associated items.</p>
+            <p>This action will permanently delete this purchase return and its associated items.</p>
             <p className="delete-warning">Return ID: #{deleteTargetId}</p>
 
             <div className="form-modal-actions">

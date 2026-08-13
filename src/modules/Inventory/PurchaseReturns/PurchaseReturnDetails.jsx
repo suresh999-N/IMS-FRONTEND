@@ -1,335 +1,520 @@
-import { useCallback, useEffect, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
+
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Pencil, Trash2, AlertCircle, RefreshCw } from 'lucide-react'
+
+import {
+  AlertCircle,
+  ArrowLeft,
+  Pencil,
+  RefreshCw,
+} from 'lucide-react'
+
 import PageHeader from '../../../components/common/PageHeader'
 import StateBlock from '../../../components/common/StateBlock'
-import { showToast } from '../../../components/common/toast'
-import FormModal from '../../../layouts/FormModal'
-import { getPurchaseReturnById, deletePurchaseReturn } from '../../../api/purchaseReturnApi'
-import { getSuppliers } from '../../../api/suppliersApi'
-import { getProductCatalog } from '../../../api/productApi'
-import { apiRequest } from '../../../api/apiClient'
-import { API_ENDPOINTS } from '../../../api/endpoints'
-import { formatCurrency, formatDate } from '../../../utils/helpers'
+
+import {
+  getPurchaseReturnById,
+} from '../../../api/purchaseReturnApi'
+
+import {
+  formatCurrency,
+  formatDate,
+} from '../../../utils/helpers'
+
 import './PurchaseReturns.css'
 
-export default function PurchaseReturnDetails({ data = {}, actions = {} }) {
+const getNumber = (...values) => {
+  for (const value of values) {
+    if (
+      value !== null &&
+      value !== undefined &&
+      value !== ''
+    ) {
+      const number = Number(value)
+
+      if (Number.isFinite(number)) {
+        return number
+      }
+    }
+  }
+
+  return 0
+}
+
+const getResponseData = (response) => {
+  if (
+    response?.data !== undefined &&
+    !Array.isArray(response?.data)
+  ) {
+    return response.data
+  }
+
+  return response
+}
+
+const getItems = (record) => {
+  if (Array.isArray(record?.items)) {
+    return record.items
+  }
+
+  if (Array.isArray(record?.returnItems)) {
+    return record.returnItems
+  }
+
+  if (Array.isArray(record?.purchaseReturnItems)) {
+    return record.purchaseReturnItems
+  }
+
+  return []
+}
+
+const getSupplierName = (record) => {
+  return (
+    record?.supplierName ??
+    record?.supplier_name ??
+    record?.supplier?.name ??
+    (record?.supplierId
+      ? `Supplier #${record.supplierId}`
+      : '-')
+  )
+}
+
+const getGrnNumber = (record) => {
+  return (
+    record?.grnNumber ??
+    record?.grn_number ??
+    record?.grn?.grnNumber ??
+    record?.grn?.grn_number ??
+    (record?.grnId
+      ? `GRN-${record.grnId}`
+      : '-')
+  )
+}
+
+const getProductName = (item) => {
+  return (
+    item?.productName ??
+    item?.product_name ??
+    item?.product?.name ??
+    item?.name ??
+    (item?.productId
+      ? `Product #${item.productId}`
+      : '-')
+  )
+}
+
+const getVariantName = (item) => {
+  return (
+    item?.variantName ??
+    item?.variant_name ??
+    item?.variant?.name ??
+    item?.sku ??
+    '-'
+  )
+}
+
+const getItemQuantity = (item) => {
+  return getNumber(
+    item?.returnQuantity,
+    item?.return_quantity,
+    item?.quantity,
+  )
+}
+
+const getItemPrice = (item) => {
+  return getNumber(
+    item?.unitPrice,
+    item?.unit_price,
+    item?.price,
+    item?.unitCost,
+    item?.unit_cost,
+  )
+}
+
+export default function PurchaseReturnDetails() {
   const navigate = useNavigate()
   const { id } = useParams()
 
-  const [returnDetails, setReturnDetails] = useState(null)
-  const [supplierName, setSupplierName] = useState('')
-  const [grnNumber, setGrnNumber] = useState('')
-  const [productsMap, setProductsMap] = useState({})
-  const [variantsMap, setVariantsMap] = useState({})
-
+  const [record, setRecord] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState('')
 
-  // Delete modal state
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  const loadDetails = useCallback(async () => {
+    if (!id) {
+      setError(
+        'Purchase return ID is missing.',
+      )
+      setLoading(false)
+      return
+    }
 
-  const fetchDetails = useCallback(async () => {
-    if (!id) return
     setLoading(true)
-    setError(null)
+    setError('')
+
     try {
-      const [detailsRes, suppliersRes, grnsRes, productsRes, variantsRes] = await Promise.allSettled([
-        getPurchaseReturnById(id),
-        getSuppliers(),
-        apiRequest(API_ENDPOINTS.goodsReceipts.list),
-        getProductCatalog(),
-        apiRequest(API_ENDPOINTS.productVariants.list),
-      ])
+      const response =
+        await getPurchaseReturnById(id)
 
-      // Load products map
-      const prodMap = {}
-      const prodList = productsRes.status === 'fulfilled' && productsRes.value?.success
-        ? (productsRes.value.data ?? [])
-        : (Array.isArray(data.products) ? data.products : [])
-      prodList.forEach((p) => {
-        const pId = String(p.id ?? p.productId ?? p.product_id)
-        prodMap[pId] = p.name || p.productName || `Product #${pId}`
-      })
-      setProductsMap(prodMap)
+      const data =
+        getResponseData(response)
 
-      // Load variants map
-      const varMap = {}
-      if (variantsRes.status === 'fulfilled' && variantsRes.value?.success) {
-        const rawVars = Array.isArray(variantsRes.value.data) ? variantsRes.value.data : variantsRes.value.data?.items ?? []
-        rawVars.forEach((v) => {
-          const vId = String(v.id ?? v.variantId ?? v.variant_id)
-          varMap[vId] = v.name || v.variantName || v.sku || `Variant #${vId}`
-        })
-      }
-      setVariantsMap(varMap)
-
-      // Resolve Record from API or local data
-      let rec = null
-      if (detailsRes.status === 'fulfilled' && detailsRes.value?.success && detailsRes.value.data) {
-        rec = detailsRes.value.data
-      } else if (Array.isArray(data.purchaseReturns)) {
-        rec = data.purchaseReturns.find((r) => String(r.id) === String(id) || String(r.returnId) === String(id))
+      if (!data) {
+        throw new Error(
+          'Purchase return was not found.',
+        )
       }
 
-      if (rec) {
-        setReturnDetails(rec)
-
-        // Resolve supplier name
-        const supList = suppliersRes.status === 'fulfilled' && suppliersRes.value?.success
-          ? (suppliersRes.value.data ?? [])
-          : (Array.isArray(data.suppliers) ? data.suppliers : [])
-        const foundSup = supList.find((s) => String(s.id ?? s.supplierId ?? s.supplier_id) === String(rec.supplierId || rec.supplier_id))
-        setSupplierName(foundSup?.name || rec.supplierName || `Supplier #${rec.supplierId || rec.supplier_id}`)
-
-        // Resolve GRN number
-        const grnList = grnsRes.status === 'fulfilled' && grnsRes.value?.success
-          ? (Array.isArray(grnsRes.value.data) ? grnsRes.value.data : grnsRes.value.data?.items ?? [])
-          : []
-        const foundGrn = grnList.find((g) => String(g.id ?? g.grnId ?? g.grn_id) === String(rec.grnId || rec.grn_id))
-        setGrnNumber(foundGrn?.grnNumber || foundGrn?.number || rec.grnNumber || (rec.grnId ? `GRN-${rec.grnId}` : '-'))
-      } else {
-        setError('Purchase return record not found.')
-      }
+      setRecord(data)
     } catch (err) {
-      if (Array.isArray(data.purchaseReturns)) {
-        const rec = data.purchaseReturns.find((r) => String(r.id) === String(id) || String(r.returnId) === String(id))
-        if (rec) {
-          setReturnDetails(rec)
-        } else {
-          setError(err instanceof Error ? err.message : 'Error fetching details.')
-        }
-      } else {
-        setError(err instanceof Error ? err.message : 'Error fetching details.')
-      }
+      console.error(
+        'Purchase Return Details API error:',
+        err,
+      )
+
+      setRecord(null)
+
+      setError(
+        err?.response?.data?.message ||
+        err?.response?.data?.title ||
+        err?.message ||
+        'Failed to load purchase return details.',
+      )
     } finally {
       setLoading(false)
     }
-  }, [id, data.purchaseReturns, data.suppliers, data.products])
+  }, [id])
 
   useEffect(() => {
-    fetchDetails()
-  }, [fetchDetails])
+    loadDetails()
+  }, [loadDetails])
 
-  const handleDelete = async () => {
-    setDeleting(true)
-    try {
-      const res = await deletePurchaseReturn(id)
-      if (res && res.success) {
-        actions.deletePurchaseReturn?.(id)
-        showToast('Purchase return deleted successfully.', 'success')
-        navigate('/inventory/purchase-returns')
-      } else if (typeof actions.deletePurchaseReturn === 'function') {
-        actions.deletePurchaseReturn(id)
-        showToast('Purchase return deleted successfully.', 'success')
-        navigate('/inventory/purchase-returns')
-      } else {
-        showToast(res?.error || 'Failed to delete purchase return.', 'error')
-      }
-    } catch (err) {
-      if (typeof actions.deletePurchaseReturn === 'function') {
-        actions.deletePurchaseReturn(id)
-        showToast('Purchase return deleted successfully.', 'success')
-        navigate('/inventory/purchase-returns')
-      } else {
-        showToast(err instanceof Error ? err.message : 'Delete error occurred.', 'error')
-      }
-    } finally {
-      setDeleting(false)
-      setShowDeleteModal(false)
-    }
-  }
+  const items = useMemo(() => {
+    return getItems(record)
+  }, [record])
+
+  const calculatedTotal = useMemo(() => {
+    return items.reduce((sum, item) => {
+      const quantity =
+        getItemQuantity(item)
+
+      const price =
+        getItemPrice(item)
+
+      return sum + quantity * price
+    }, 0)
+  }, [items])
+
+  const totalAmount = getNumber(
+    record?.totalAmount,
+    record?.total_amount,
+    record?.totalReturnAmount,
+    calculatedTotal,
+  )
+
+  const returnId =
+    record?.purchaseReturnId ??
+    record?.returnId ??
+    record?.id ??
+    id
+
+  const displayId =
+    record?.returnNumber ??
+    record?.return_number ??
+    (returnId ? `#${returnId}` : '')
+
+  const supplierId =
+    record?.supplierId ??
+    record?.supplier_id
+
+  const grnId =
+    record?.grnId ??
+    record?.grn_id
+
+  const returnDate =
+    record?.returnDate ??
+    record?.return_date
+
+  const reason =
+    record?.reason ?? '-'
 
   if (loading) {
-    return <StateBlock state="loading" message="Loading return details..." />
-  }
-
-  if (error || !returnDetails) {
     return (
-      <main className="purchase-return-details-page">
+      <>
         <PageHeader
-          title="Purchase Return Details"
+          title={`Purchase Return #${id}`}
+          subtitle="View purchase return details."
           primaryAction={{
             icon: ArrowLeft,
             label: 'Back to Returns',
-            onClick: () => navigate('/inventory/purchase-returns'),
+            onClick: () =>
+              navigate(
+                '/inventory/purchase-returns',
+              ),
             variant: 'secondary',
           }}
         />
-        <div className="card purchase-returns-error-card">
-          <AlertCircle size={24} className="error-icon" />
-          <div>
-            <h3>Record Not Found</h3>
-            <p>{error || 'The requested purchase return could not be retrieved.'}</p>
-          </div>
-          <button className="erp-button erp-button--primary" onClick={fetchDetails} type="button">
-            <RefreshCw size={14} /> Retry
-          </button>
-        </div>
-      </main>
+
+        <StateBlock
+          state="loading"
+          message="Loading purchase return details..."
+        />
+      </>
     )
   }
 
-  const retId = returnDetails.returnId || returnDetails.id
+  if (error) {
+    return (
+      <>
+        <PageHeader
+          title={`Purchase Return #${id}`}
+          subtitle="View purchase return details."
+          primaryAction={{
+            icon: ArrowLeft,
+            label: 'Back to Returns',
+            onClick: () =>
+              navigate(
+                '/inventory/purchase-returns',
+              ),
+            variant: 'secondary',
+          }}
+        />
+
+        <div className="purchase-returns-error-card card">
+          <AlertCircle
+            size={24}
+            className="error-icon"
+          />
+
+          <div>
+            <h3>
+              Unable to load Purchase Return
+            </h3>
+
+            <p>{error}</p>
+          </div>
+
+          <button
+            type="button"
+            className="erp-button erp-button--primary"
+            onClick={loadDetails}
+          >
+            <RefreshCw size={14} />
+            Retry
+          </button>
+        </div>
+      </>
+    )
+  }
 
   return (
-    <main className="purchase-return-details-page">
+    <>
       <PageHeader
-        title={`Purchase Return #${retId}`}
-        subtitle="Complete details of returned purchase transaction."
+        title={`Purchase Return ${displayId.startsWith('#') ? displayId : `#${displayId}`}`}
+        subtitle="View purchase return details."
         primaryAction={{
           icon: ArrowLeft,
           label: 'Back to Returns',
-          onClick: () => navigate('/inventory/purchase-returns'),
+          onClick: () =>
+            navigate(
+              '/inventory/purchase-returns',
+            ),
           variant: 'secondary',
         }}
       />
 
-      {/* Header Info Summary Card */}
-      <section className="card details-header-card">
-        <div className="details-header-top">
-          <div>
-            <span className="details-badge">Return ID</span>
-            <h2 className="details-id-title">#{retId}</h2>
-          </div>
-          <div className="details-action-buttons">
-            <button
-              className="erp-button erp-button--secondary"
-              type="button"
-              onClick={() => navigate(`/inventory/purchase-returns/edit/${retId}`)}
-            >
-              <Pencil size={15} /> Edit
-            </button>
-            <button
-              className="erp-button erp-button--danger"
-              type="button"
-              onClick={() => setShowDeleteModal(true)}
-            >
-              <Trash2 size={15} /> Delete
-            </button>
-          </div>
+      <section className="card form-section-card">
+        <div className="section-header-row">
+          <h3 className="section-title">
+            Return Details
+          </h3>
+
+          <button
+            type="button"
+            className="erp-button erp-button--secondary"
+            onClick={() =>
+              navigate(
+                `/inventory/purchase-returns/edit/${returnId}`,
+              )
+            }
+          >
+            <Pencil size={14} />
+            Edit
+          </button>
         </div>
 
-        <div className="details-grid">
-          <div className="details-item">
-            <span className="label">Supplier</span>
-            <span className="value font-semibold">{supplierName || '-'}</span>
-          </div>
+        <div className="form-grid">
+          <div className="form-field">
+            <label>Return ID</label>
 
-          <div className="details-item">
-            <span className="label">Goods Receipt / GRN</span>
-            <span className="value grn-badge">{grnNumber || `-`}</span>
-          </div>
-
-          <div className="details-item">
-            <span className="label">Return Date</span>
-            <span className="value">
-              {returnDetails.returnDate ? formatDate(returnDetails.returnDate) : '-'}
-            </span>
-          </div>
-
-          <div className="details-item">
-            <span className="label">Total Amount</span>
-            <span className="value font-semibold text-primary">
-              {formatCurrency(returnDetails.totalAmount || 0)}
-            </span>
-          </div>
-
-          <div className="details-item full-width">
-            <span className="label">Reason for Return</span>
-            <span className="value reason-text">
-              {returnDetails.reason || 'No reason provided.'}
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* Return Items Table Card */}
-      <section className="card details-items-card">
-        <h3 className="section-title">Return Line Items</h3>
-
-        {(!returnDetails.items || returnDetails.items.length === 0) ? (
-          <p className="no-items-text">No item lines found for this return.</p>
-        ) : (
-          <div className="items-table-container">
-            <table className="purchase-returns-table">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Variant</th>
-                  <th className="text-right">Received Quantity</th>
-                  <th className="text-right">Return Quantity</th>
-                  <th className="text-right">Price</th>
-                  <th className="text-right">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {returnDetails.items.map((line, idx) => {
-                  const prodName = productsMap[String(line.productId || line.product_id)] || line.productName || `Product #${line.productId || line.product_id}`
-                  const varName = (line.variantId || line.variant_id) ? (variantsMap[String(line.variantId || line.variant_id)] || line.variantName || `Variant #${line.variantId || line.variant_id}`) : '-'
-                  const receivedQty = Number(line.receivedQuantity ?? line.quantity ?? line.returnQuantity ?? 0)
-                  const returnQty = Number(line.returnQuantity ?? line.quantity ?? 0)
-                  const price = Number(line.price || 0)
-                  const lineTotal = returnQty * price
-
-                  return (
-                    <tr key={line.id || idx}>
-                      <td className="font-semibold">{prodName}</td>
-                      <td>{varName}</td>
-                      <td className="text-right">{receivedQty.toFixed(2)}</td>
-                      <td className="text-right font-semibold text-primary">{returnQty.toFixed(2)}</td>
-                      <td className="text-right">{formatCurrency(price)}</td>
-                      <td className="text-right font-semibold">{formatCurrency(lineTotal)}</td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colSpan={5} className="text-right font-semibold">Total Return Amount:</td>
-                  <td className="text-right font-semibold text-primary" style={{ fontSize: '1.05rem' }}>
-                    {formatCurrency(returnDetails.totalAmount || 0)}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        )}
-      </section>
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <FormModal
-          isOpen={showDeleteModal}
-          title="Delete Purchase Return?"
-          onClose={() => setShowDeleteModal(false)}
-        >
-          <div className="delete-confirm-content">
-            <p>This action will permanently remove this purchase return and its associated items.</p>
-            <p className="delete-warning">Return ID: #{retId}</p>
-
-            <div className="form-modal-actions">
-              <button
-                className="erp-button erp-button--secondary"
-                type="button"
-                disabled={deleting}
-                onClick={() => setShowDeleteModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="erp-button erp-button--danger"
-                type="button"
-                disabled={deleting}
-                onClick={handleDelete}
-              >
-                {deleting ? 'Deleting...' : 'Delete'}
-              </button>
+            <div className="detail-value">
+              {displayId}
             </div>
           </div>
-        </FormModal>
-      )}
-    </main>
+
+          <div className="form-field">
+            <label>Supplier</label>
+
+            <div className="detail-value">
+              {getSupplierName(record)}
+            </div>
+
+            {supplierId && (
+              <small>
+                Supplier ID: {supplierId}
+              </small>
+            )}
+          </div>
+
+          <div className="form-field">
+            <label>
+              Goods Receipt / GRN
+            </label>
+
+            <div className="detail-value">
+              {getGrnNumber(record)}
+            </div>
+
+            {grnId && (
+              <small>
+                GRN ID: {grnId}
+              </small>
+            )}
+          </div>
+
+          <div className="form-field">
+            <label>Return Date</label>
+
+            <div className="detail-value">
+              {returnDate
+                ? formatDate(returnDate)
+                : '-'}
+            </div>
+          </div>
+
+          <div className="form-field full-width">
+            <label>
+              Reason for Return
+            </label>
+
+            <div className="detail-value">
+              {reason}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="card form-section-card">
+        <div className="section-header-row">
+          <h3 className="section-title">
+            Returned Items
+          </h3>
+        </div>
+
+        <div className="items-table-container">
+          <table className="items-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Variant</th>
+                <th>Return Qty</th>
+                <th>Unit Price</th>
+                <th className="text-right">
+                  Total
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {items.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="text-center"
+                  >
+                    No return items found.
+                  </td>
+                </tr>
+              ) : (
+                items.map((item, index) => {
+                  const quantity =
+                    getItemQuantity(item)
+
+                  const price =
+                    getItemPrice(item)
+
+                  const lineTotal =
+                    quantity * price
+
+                  const itemKey =
+                    item?.id ??
+                    item?.returnItemId ??
+                    `${item?.productId ?? 'product'}-${item?.variantId ?? 'variant'}-${index}`
+
+                  return (
+                    <tr key={itemKey}>
+                      <td>
+                        <div className="font-semibold">
+                          {getProductName(
+                            item,
+                          )}
+                        </div>
+
+                        {item?.productId && (
+                          <small>
+                            Product ID:{' '}
+                            {item.productId}
+                          </small>
+                        )}
+                      </td>
+
+                      <td>
+                        {getVariantName(
+                          item,
+                        )}
+                      </td>
+
+                      <td>
+                        {quantity}
+                      </td>
+
+                      <td>
+                        {formatCurrency(
+                          price,
+                        )}
+                      </td>
+
+                      <td className="text-right font-semibold">
+                        {formatCurrency(
+                          lineTotal,
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="return-totals-summary">
+          <div className="total-amount-box">
+            <span className="total-label">
+              Total Return Amount:
+            </span>
+
+            <span className="total-value">
+              {formatCurrency(
+                totalAmount,
+              )}
+            </span>
+          </div>
+        </div>
+      </section>
+    </>
   )
 }

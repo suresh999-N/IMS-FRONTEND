@@ -1,273 +1,352 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Plus, Save, Trash2, AlertCircle } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Info, PackageSearch, Save } from 'lucide-react'
 import PageHeader from '../../../components/common/PageHeader'
 import StateBlock from '../../../components/common/StateBlock'
 import { showToast } from '../../../components/common/toast'
-import { createPurchaseReturn, getPurchaseReturnById, updatePurchaseReturn } from '../../../api/purchaseReturnApi'
-import { getSuppliers } from '../../../api/suppliersApi'
-import { getProductCatalog } from '../../../api/productApi'
-import { apiRequest } from '../../../api/apiClient'
-import { API_ENDPOINTS } from '../../../api/endpoints'
+import {
+  createPurchaseReturn,
+  getPurchaseReturnById,
+  getPurchaseReturnGrnItems,
+  getPurchaseReturnGrns,
+  getPurchaseReturnSuppliers,
+  updatePurchaseReturn,
+} from '../../../api/purchaseReturnApi'
 import { formatCurrency } from '../../../utils/helpers'
 import './PurchaseReturns.css'
 
-export default function CreatePurchaseReturn({ mode = 'create', data = {}, actions = {}, onSavePurchaseReturn }) {
+const getArrayFromResponse = (response) => {
+  if (Array.isArray(response)) return response
+  if (Array.isArray(response?.data)) return response.data
+  if (Array.isArray(response?.data?.items)) return response.data.items
+  if (Array.isArray(response?.items)) return response.items
+  return null
+}
+
+const getResponseData = (response) => {
+  if (response?.data !== undefined && !Array.isArray(response?.data)) {
+    return response.data
+  }
+  return response
+}
+
+const getId = (item) => item?.id ?? item?.supplierId ?? item?.supplier_id
+const getSupplierName = (supplier) =>
+  supplier?.name ?? supplier?.supplierName ?? supplier?.supplier_name ?? (getId(supplier) ? `Supplier #${getId(supplier)}` : '-')
+
+const getGrnId = (grn) => grn?.id ?? grn?.grnId ?? grn?.grn_id
+const getGrnNumber = (grn) =>
+  grn?.grnNumber ?? grn?.grn_number ?? grn?.number ?? (getGrnId(grn) ? `GRN-${getGrnId(grn)}` : '-')
+
+const getProductId = (item) => item?.productId ?? item?.product_id
+const getVariantId = (item) => item?.variantId ?? item?.variant_id
+const getProductName = (item) =>
+  item?.productName ?? item?.product_name ?? item?.name ?? (getProductId(item) ? `Product #${getProductId(item)}` : '-')
+const getVariantName = (item) =>
+  item?.variantName ?? item?.variant_name ?? item?.variant?.name ?? item?.sku ?? (getVariantId(item) ? `Variant #${getVariantId(item)}` : '')
+
+const getNumber = (...values) => {
+  for (const value of values) {
+    if (value !== null && value !== undefined && value !== '') {
+      const number = Number(value)
+      if (Number.isFinite(number)) return number
+    }
+  }
+  return 0
+}
+
+const normalizeGrnItem = (line, index = 0) => {
+  const receivedQuantity = getNumber(
+    line?.receivedQuantity,
+    line?.quantityReceived,
+    line?.received_quantity,
+    line?.quantity,
+  )
+
+  const previouslyReturnedQuantity = getNumber(
+    line?.previouslyReturnedQuantity,
+    line?.returnedQuantity,
+    line?.alreadyReturnedQuantity,
+    line?.previously_returned_quantity,
+    line?.already_returned_quantity,
+  )
+
+  const explicitReturnableQuantity =
+    line?.returnableQuantity ??
+    line?.availableReturnQuantity ??
+    line?.remainingQuantity ??
+    line?.returnable_quantity ??
+    line?.available_return_quantity ??
+    line?.remaining_quantity
+
+  const calculatedReturnableQuantity = Math.max(0, receivedQuantity - previouslyReturnedQuantity)
+
+  const returnableQuantity =
+    explicitReturnableQuantity !== undefined &&
+    explicitReturnableQuantity !== null &&
+    explicitReturnableQuantity !== ''
+      ? Math.max(0, getNumber(explicitReturnableQuantity))
+      : calculatedReturnableQuantity
+
+  return {
+    id: `${Date.now()}-${index}-${Math.random()}`,
+    productId: String(getProductId(line) ?? ''),
+    variantId: String(getVariantId(line) ?? ''),
+    productName: getProductName(line),
+    variantName: getVariantName(line),
+    receivedQuantity: String(receivedQuantity),
+    previouslyReturnedQuantity: String(previouslyReturnedQuantity),
+    returnableQuantity: String(returnableQuantity),
+    returnQuantity: '0',
+    price: String(
+      getNumber(
+        line?.unitPrice,
+        line?.price,
+        line?.unitCost,
+        line?.purchasePrice,
+        line?.unit_price,
+        line?.unit_cost,
+      )
+    ),
+  }
+}
+
+export default function CreatePurchaseReturn() {
   const navigate = useNavigate()
   const { id } = useParams()
-  const isEditMode = mode === 'edit' || Boolean(id)
+  const isEditMode = Boolean(id)
 
-  // Master Data
   const [suppliers, setSuppliers] = useState([])
   const [allGrns, setAllGrns] = useState([])
-  const [products, setProducts] = useState([])
-  const [productVariants, setProductVariants] = useState([])
+  const [items, setItems] = useState([])
 
-  // Header State
   const [supplierId, setSupplierId] = useState('')
   const [grnId, setGrnId] = useState('')
   const [returnDate, setReturnDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [reason, setReason] = useState('')
 
-  // Items State
-  // item: { id, productId, variantId, receivedQuantity, returnQuantity, price }
-  const [items, setItems] = useState(() => [
-    { id: Date.now(), productId: '', variantId: '', receivedQuantity: '1', returnQuantity: '1', price: '0' },
-  ])
-
-  // UI States
   const [loading, setLoading] = useState(true)
+  const [loadingGrnItems, setLoadingGrnItems] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
   const [validationErrors, setValidationErrors] = useState({})
 
-  // Fetch Master Data & Edit Record
-  const initData = useCallback(async () => {
+  // Load Reference Data
+  const loadReferenceData = useCallback(async () => {
     setLoading(true)
+    setError('')
+
     try {
-      const [suppliersRes, grnsRes, productsRes, variantsRes] = await Promise.allSettled([
-        getSuppliers(),
-        apiRequest(API_ENDPOINTS.goodsReceipts.list),
-        getProductCatalog(),
-        apiRequest(API_ENDPOINTS.productVariants.list),
-      ])
+      const suppliersResponse = await getPurchaseReturnSuppliers()
+      const supplierData = getArrayFromResponse(suppliersResponse)
 
-      if (suppliersRes.status === 'fulfilled' && suppliersRes.value?.success) {
-        setSuppliers(suppliersRes.value.data ?? [])
-      } else if (Array.isArray(data.suppliers) && data.suppliers.length > 0) {
-        setSuppliers(data.suppliers)
+      if (supplierData === null) {
+        throw new Error('Supplier API returned an unexpected response format.')
       }
 
-      if (grnsRes.status === 'fulfilled' && grnsRes.value?.success) {
-        const rawGrns = Array.isArray(grnsRes.value.data) ? grnsRes.value.data : grnsRes.value.data?.items ?? []
-        setAllGrns(rawGrns)
-      }
+      setSuppliers(supplierData)
 
-      if (productsRes.status === 'fulfilled' && productsRes.value?.success) {
-        setProducts(productsRes.value.data ?? [])
-      } else if (Array.isArray(data.products) && data.products.length > 0) {
-        setProducts(data.products)
-      }
+      if (isEditMode) {
+        const response = await getPurchaseReturnById(id)
+        const record = getResponseData(response)
 
-      if (variantsRes.status === 'fulfilled' && variantsRes.value?.success) {
-        const rawVariants = Array.isArray(variantsRes.value.data) ? variantsRes.value.data : variantsRes.value.data?.items ?? []
-        setProductVariants(rawVariants)
-      }
-
-      // If Edit mode, load record from API or local fallback data
-      if (isEditMode && id) {
-        let rec = null
-        const returnRes = await getPurchaseReturnById(id)
-        if (returnRes.success && returnRes.data) {
-          rec = returnRes.data
-        } else if (Array.isArray(data.purchaseReturns)) {
-          rec = data.purchaseReturns.find((r) => String(r.id) === String(id) || String(r.returnId) === String(id))
+        if (!record) {
+          throw new Error('Purchase return record not found.')
         }
 
-        if (rec) {
-          setSupplierId(String(rec.supplierId || rec.supplier_id || ''))
-          setGrnId(String(rec.grnId || rec.grn_id || ''))
-          if (rec.returnDate || rec.return_date) {
-            setReturnDate(String(rec.returnDate || rec.return_date).slice(0, 10))
-          }
-          setReason(rec.reason || '')
+        const recordSupplierId = record?.supplierId ?? record?.supplier_id ?? ''
+        const recordGrnId = record?.grnId ?? record?.grn_id ?? ''
 
-          if (Array.isArray(rec.items) && rec.items.length > 0) {
-            setItems(
-              rec.items.map((line, index) => ({
-                id: line.id || index + 1,
-                productId: String(line.productId || line.product_id || ''),
-                variantId: line.variantId || line.variant_id ? String(line.variantId || line.variant_id) : '',
-                receivedQuantity: String(line.receivedQuantity ?? line.quantity ?? line.returnQuantity ?? '1'),
-                returnQuantity: String(line.returnQuantity ?? line.quantity ?? '1'),
-                price: String(line.price ?? '0'),
-              }))
-            )
-          }
-        } else {
-          showToast('Failed to load purchase return for editing.', 'error')
+        setSupplierId(String(recordSupplierId))
+        setGrnId(String(recordGrnId))
+
+        if (recordSupplierId) {
+          const grnsResponse = await getPurchaseReturnGrns(recordSupplierId)
+          const grnData = getArrayFromResponse(grnsResponse)
+          setAllGrns(grnData || [])
+        }
+
+        const dateValue = record?.returnDate ?? record?.return_date
+        if (dateValue) {
+          setReturnDate(String(dateValue).slice(0, 10))
+        }
+
+        setReason(record?.reason ?? '')
+
+        const recordItems = Array.isArray(record?.items)
+          ? record.items
+          : Array.isArray(record?.returnItems)
+          ? record.returnItems
+          : []
+
+        if (recordItems.length) {
+          setItems(
+            recordItems.map((line, index) => ({
+              ...normalizeGrnItem(line, index),
+              returnQuantity: String(getNumber(line?.returnQuantity, line?.quantity, line?.return_quantity)),
+            }))
+          )
         }
       }
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Error loading reference data.', 'error')
+      setError(
+        err?.response?.data?.message ||
+        err?.response?.data?.title ||
+        err?.message ||
+        'Failed to load purchase return data.'
+      )
     } finally {
       setLoading(false)
     }
-  }, [id, isEditMode, data.suppliers, data.products, data.purchaseReturns])
+  }, [id, isEditMode])
 
   useEffect(() => {
-    initData()
-  }, [initData])
+    loadReferenceData()
+  }, [loadReferenceData])
 
-  // Filter GRNs based on selected supplier
+  // Filter GRNs by Supplier
   const availableGrns = useMemo(() => {
     if (!supplierId) return []
-    return allGrns.filter((g) => {
-      const gSupId = String(g.supplierId ?? g.supplier_id ?? '')
-      return gSupId === String(supplierId)
+    return allGrns.filter((grn) => {
+      const grnSupplierId = grn?.supplierId ?? grn?.supplier_id ?? grn?.supplier?.id
+      return String(grnSupplierId ?? '') === String(supplierId)
     })
   }, [allGrns, supplierId])
 
-  // Handle Supplier Selection
-  const handleSupplierChange = (e) => {
-    const selectedSup = e.target.value
-    setSupplierId(selectedSup)
-    setGrnId('') // Reset GRN when supplier changes
-  }
+  // Total Return Amount Calculation
+  const totalReturnAmount = useMemo(
+    () =>
+      items.reduce(
+        (sum, item) => sum + getNumber(item.returnQuantity) * getNumber(item.price),
+        0
+      ),
+    [items]
+  )
 
-  // Handle GRN Selection - Auto load products from selected GRN if available
-  const handleGrnChange = (e) => {
-    const selectedGrnId = e.target.value
-    setGrnId(selectedGrnId)
+  // Load GRN Items
+  const loadGrnItems = useCallback(async (selectedGrnId) => {
+    if (!selectedGrnId) {
+      setItems([])
+      return
+    }
 
-    if (!selectedGrnId) return
+    setLoadingGrnItems(true)
+    setValidationErrors((prev) => ({ ...prev, grnItems: undefined }))
 
-    const grnRecord = allGrns.find(
-      (g) => String(g.id ?? g.grnId ?? g.grn_id) === String(selectedGrnId)
-    )
+    try {
+      const response = await getPurchaseReturnGrnItems(selectedGrnId)
+      const rawItems = getArrayFromResponse(response)
 
-    if (!grnRecord) return
+      if (rawItems === null) {
+        throw new Error('GRN items API returned an unexpected response format.')
+      }
 
-    const grnLineItems = Array.isArray(grnRecord.items)
-      ? grnRecord.items
-      : Array.isArray(grnRecord.goodsReceiptItems)
-      ? grnRecord.goodsReceiptItems
-      : Array.isArray(grnRecord.lineItems)
-      ? grnRecord.lineItems
-      : []
+      if (!rawItems.length) {
+        throw new Error('No returnable items found for the selected GRN.')
+      }
 
-    if (grnLineItems.length > 0) {
-      const loadedItems = grnLineItems.map((line, idx) => {
-        const rQty = String(line.quantityReceived ?? line.quantity ?? '1')
-        return {
-          id: Date.now() + idx,
-          productId: String(line.productId ?? line.product_id ?? ''),
-          variantId: line.variantId ?? line.variant_id ? String(line.variantId ?? line.variant_id) : '',
-          receivedQuantity: rQty,
-          returnQuantity: rQty,
-          price: String(line.unitPrice ?? line.price ?? line.unitCost ?? '0'),
-        }
-      })
-      setItems(loadedItems)
+      const normalizedItems = rawItems
+        .map(normalizeGrnItem)
+        .filter((item) => getNumber(item.returnableQuantity) > 0)
+
+      if (!normalizedItems.length) {
+        throw new Error('All items in this GRN have already been returned.')
+      }
+
+      setItems(normalizedItems)
+    } catch (err) {
+      setItems([])
+      setValidationErrors((prev) => ({
+        ...prev,
+        grnItems: err?.response?.data?.message || err?.message || 'Failed to load GRN returnable items.',
+      }))
+    } finally {
+      setLoadingGrnItems(false)
+    }
+  }, [])
+
+  // Handle Supplier Change
+  const handleSupplierChange = async (event) => {
+    const selectedSupplierId = event.target.value
+    setSupplierId(selectedSupplierId)
+    setGrnId('')
+    setItems([])
+    setAllGrns([])
+    setValidationErrors({})
+
+    if (selectedSupplierId) {
+      try {
+        const response = await getPurchaseReturnGrns(selectedSupplierId)
+        const grnData = getArrayFromResponse(response)
+        setAllGrns(grnData || [])
+      } catch (err) {
+        showToast('Failed to load Goods Receipts for selected supplier.', 'error')
+      }
     }
   }
 
-  // Item Table Handlers
-  const handleAddItem = () => {
-    setItems((prev) => [
-      ...prev,
-      { id: Date.now(), productId: '', variantId: '', receivedQuantity: '1', returnQuantity: '1', price: '0' },
-    ])
+  // Handle GRN Change
+  const handleGrnChange = async (event) => {
+    const selectedGrnId = event.target.value
+    setGrnId(selectedGrnId)
+    setItems([])
+    setValidationErrors({})
+
+    if (selectedGrnId) {
+      await loadGrnItems(selectedGrnId)
+    }
   }
 
-  const handleRemoveItem = (index) => {
-    setItems((prev) => prev.filter((_, idx) => idx !== index))
+  // Handle Return Quantity Input
+  const handleReturnQuantityChange = (index, value) => {
+    setItems((previous) =>
+      previous.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, returnQuantity: value } : item
+      )
+    )
+    setValidationErrors((prev) => ({ ...prev, itemErrors: undefined }))
   }
 
-  const handleItemChange = (index, field, value) => {
-    setItems((prev) => {
-      const updated = [...prev]
-      const currentItem = { ...updated[index], [field]: value }
-
-      // If product changes, default price from catalog if available & reset variant
-      if (field === 'productId') {
-        currentItem.variantId = ''
-        const selectedProd = products.find(
-          (p) => String(p.id ?? p.productId ?? p.product_id) === String(value)
-        )
-        if (selectedProd && selectedProd.cost) {
-          currentItem.price = String(selectedProd.cost)
-        }
-      }
-
-      updated[index] = currentItem
-      return updated
-    })
-  }
-
-  // Calculate Total Return Amount (Return Quantity * Price)
-  const totalReturnAmount = useMemo(() => {
-    return items.reduce((sum, item) => {
-      const qty = Number(item.returnQuantity) || 0
-      const price = Number(item.price) || 0
-      return sum + qty * price
-    }, 0)
-  }, [items])
-
-  // Form Validation
+  // Validation
   const validateForm = () => {
     const errors = {}
+    if (!supplierId) errors.supplierId = 'Supplier is required.'
+    if (!grnId) errors.grnId = 'Goods Receipt / GRN is required.'
+    if (!returnDate) errors.returnDate = 'Return date is required.'
+    if (!reason.trim()) errors.reason = 'Reason for return is required.'
+    if (!items.length) errors.items = 'No returnable items available for this GRN.'
 
-    if (!supplierId) {
-      errors.supplierId = 'Supplier is required.'
-    }
+    const itemErrors = []
+    items.forEach((item, index) => {
+      const rowErrors = {}
+      const returnQuantity = getNumber(item.returnQuantity)
+      const returnableQuantity = getNumber(item.returnableQuantity)
+      const price = getNumber(item.price)
 
-    if (!grnId) {
-      errors.grnId = 'Goods Receipt / GRN is required.'
-    }
-
-    if (!returnDate) {
-      errors.returnDate = 'Return Date is required.'
-    }
-
-    if (!reason.trim()) {
-      errors.reason = 'Reason for return is required.'
-    }
-
-    if (items.length === 0) {
-      errors.items = 'At least one return item is required.'
-    } else {
-      const itemErrors = []
-      items.forEach((item, index) => {
-        const errs = {}
-        if (!item.productId) {
-          errs.productId = 'Product required.'
-        }
-        const returnQtyNum = Number(item.returnQuantity)
-        if (isNaN(returnQtyNum) || returnQtyNum <= 0) {
-          errs.returnQuantity = 'Return Qty must be > 0.'
-        }
-        const priceNum = Number(item.price)
-        if (isNaN(priceNum) || priceNum < 0) {
-          errs.price = 'Price cannot be negative.'
-        }
-        if (Object.keys(errs).length > 0) {
-          itemErrors[index] = errs
-        }
-      })
-      if (itemErrors.length > 0) {
-        errors.itemErrors = itemErrors
+      if (returnQuantity <= 0) {
+        rowErrors.returnQuantity = 'Return quantity must be greater than 0.'
       }
-    }
+      if (returnQuantity > returnableQuantity) {
+        rowErrors.returnQuantity = `Cannot return more than ${returnableQuantity}.`
+      }
+      if (price < 0) {
+        rowErrors.price = 'Unit price cannot be negative.'
+      }
 
+      if (Object.keys(rowErrors).length) {
+        itemErrors[index] = rowErrors
+      }
+    })
+
+    if (itemErrors.length) errors.itemErrors = itemErrors
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
   }
 
-  // Submit Handler for "Save Return"
-  const handleSubmit = async (e) => {
-    if (e && e.preventDefault) {
-      e.preventDefault()
-    }
+  // Submit Handler
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    if (submitting) return
 
     if (!validateForm()) {
       showToast('Please resolve validation errors before submitting.', 'error')
@@ -276,71 +355,56 @@ export default function CreatePurchaseReturn({ mode = 'create', data = {}, actio
 
     setSubmitting(true)
     try {
-      const selectedSupplier = suppliers.find((s) => String(s.id ?? s.supplierId ?? s.supplier_id) === String(supplierId))
-      const selectedGrn = allGrns.find((g) => String(g.id ?? g.grnId ?? g.grn_id) === String(grnId))
-
-      const targetId = isEditMode && id ? id : undefined
-
       const payload = {
-        id: targetId,
-        returnId: targetId,
-        supplierId,
-        supplier_id: Number(supplierId) || supplierId,
-        supplierName: selectedSupplier?.name || selectedSupplier?.supplierName || (supplierId ? `Supplier #${supplierId}` : ''),
-        grnId,
-        grn_id: Number(grnId) || grnId,
-        grnNumber: selectedGrn?.grnNumber || selectedGrn?.number || (grnId ? `GRN-${grnId}` : '-'),
-        returnDate: new Date(returnDate).toISOString(),
-        return_date: new Date(returnDate).toISOString(),
-        totalAmount: totalReturnAmount,
-        total_amount: totalReturnAmount,
-        reason,
+        supplierId: Number(supplierId),
+        grnId: Number(grnId),
+        returnDate,
+        reason: reason.trim(),
         items: items.map((item) => ({
-          productId: item.productId,
-          product_id: Number(item.productId) || item.productId,
-          variantId: item.variantId || null,
-          variant_id: item.variantId ? Number(item.variantId) : null,
-          receivedQuantity: Number(item.receivedQuantity || 0),
-          returnQuantity: Number(item.returnQuantity || 0),
-          quantity: Number(item.returnQuantity || 0),
-          price: Number(item.price || 0),
+          productId: Number(item.productId),
+          variantId: item.variantId ? Number(item.variantId) : null,
+          returnQuantity: Number(item.returnQuantity),
         })),
       }
 
-      const saveFn = onSavePurchaseReturn || actions?.savePurchaseReturn
-
-      // Always update local state first so created/edited return immediately reflects in the table
-      if (typeof saveFn === 'function') {
-        saveFn(payload)
-      }
-
-      // Perform API call
-      try {
-        if (isEditMode && id) {
-          await updatePurchaseReturn(id, payload)
-        } else {
-          await createPurchaseReturn(payload)
-        }
-      } catch (apiErr) {
-        // API offline or missing endpoint; local store is updated
+      if (isEditMode) {
+        await updatePurchaseReturn(id, payload)
+      } else {
+        await createPurchaseReturn(payload)
       }
 
       showToast(
-        isEditMode
-          ? 'Purchase return updated successfully.'
-          : 'Purchase return created successfully.',
+        isEditMode ? 'Purchase return updated successfully.' : 'Purchase return created successfully.',
         'success'
       )
       navigate('/inventory/purchase-returns')
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Submission error occurred.', 'error')
+      showToast(err?.response?.data?.message || err?.message || 'Failed to save purchase return.', 'error')
     } finally {
       setSubmitting(false)
     }
   }
 
   if (loading) {
-    return <StateBlock state="loading" message="Loading form data..." />
+    return <StateBlock state="loading" message="Loading purchase return data..." />
+  }
+
+  if (error) {
+    return (
+      <main className="create-purchase-return-page">
+        <PageHeader title={isEditMode ? `Edit Purchase Return #${id}` : 'Create Purchase Return'} />
+        <div className="card purchase-returns-error-card" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <AlertCircle size={24} className="error-icon" style={{ color: '#dc2626' }} />
+          <div style={{ flex: 1 }}>
+            <h3 style={{ margin: '0 0 4px 0' }}>Unable to load Purchase Return</h3>
+            <p style={{ margin: 0, color: '#64748b' }}>{error}</p>
+          </div>
+          <button type="button" className="erp-button erp-button--primary" onClick={loadReferenceData}>
+            Retry
+          </button>
+        </div>
+      </main>
+    )
   }
 
   return (
@@ -349,8 +413,8 @@ export default function CreatePurchaseReturn({ mode = 'create', data = {}, actio
         title={isEditMode ? `Edit Purchase Return #${id}` : 'Create Purchase Return'}
         subtitle={
           isEditMode
-            ? 'Update goods return transaction details.'
-            : 'Return damaged or incorrect goods to the supplier against a GRN.'
+            ? 'Update the supplier goods return transaction.'
+            : 'Return defective or excess goods to the supplier against a GRN.'
         }
         primaryAction={{
           icon: ArrowLeft,
@@ -361,9 +425,14 @@ export default function CreatePurchaseReturn({ mode = 'create', data = {}, actio
       />
 
       <form onSubmit={handleSubmit} noValidate>
-        {/* Header Fields Section */}
+        {/* Step 1: Header Details */}
         <section className="card form-section-card">
-          <h3 className="section-title">Return Header Details</h3>
+          <div className="section-header-title-container">
+            <span className="section-step-badge">1</span>
+            <h3 className="section-title-text">Return Header Details</h3>
+            <span className="section-subtitle-text">Select supplier and GRN to load returnable items</span>
+          </div>
+
           <div className="form-grid">
             {/* Supplier Field */}
             <div className="form-field">
@@ -374,24 +443,30 @@ export default function CreatePurchaseReturn({ mode = 'create', data = {}, actio
                 id="supplierId"
                 value={supplierId}
                 onChange={handleSupplierChange}
+                disabled={isEditMode}
                 className={validationErrors.supplierId ? 'input-error' : ''}
               >
                 <option value="">-- Select Supplier --</option>
-                {suppliers.map((sup) => {
-                  const sId = String(sup.id ?? sup.supplierId ?? sup.supplier_id)
+                {suppliers.map((supplier) => {
+                  const supplierValue = String(getId(supplier) ?? '')
+                  if (!supplierValue) return null
                   return (
-                    <option key={sId} value={sId}>
-                      {sup.name || sup.supplierName || `Supplier #${sId}`}
+                    <option key={supplierValue} value={supplierValue}>
+                      {getSupplierName(supplier)}
                     </option>
                   )
                 })}
               </select>
-              {validationErrors.supplierId && (
+              {validationErrors.supplierId ? (
                 <span className="field-error">{validationErrors.supplierId}</span>
+              ) : (
+                <div className="field-hint-pill">
+                  <Info size={13} /> Select supplier first
+                </div>
               )}
             </div>
 
-            {/* GRN Field (Filtered by Supplier) */}
+            {/* GRN Field */}
             <div className="form-field">
               <label htmlFor="grnId">
                 Goods Receipt / GRN <span className="required-star">*</span>
@@ -400,33 +475,30 @@ export default function CreatePurchaseReturn({ mode = 'create', data = {}, actio
                 id="grnId"
                 value={grnId}
                 onChange={handleGrnChange}
-                disabled={!supplierId}
+                disabled={!supplierId || isEditMode}
                 className={validationErrors.grnId ? 'input-error' : ''}
               >
                 <option value="">
                   {!supplierId
                     ? '-- Select Supplier First --'
                     : availableGrns.length === 0
-                    ? 'No GRNs available for supplier'
+                    ? 'No eligible GRNs available'
                     : '-- Select GRN --'}
                 </option>
                 {availableGrns.map((grn) => {
-                  const gId = String(grn.id ?? grn.grnId ?? grn.grn_id)
-                  const gNum = grn.grnNumber || grn.number || `GRN-${gId}`
-                  const gDate = grn.receivedDate || grn.date ? ` (${String(grn.receivedDate || grn.date).slice(0, 10)})` : ''
+                  const value = String(getGrnId(grn) ?? '')
+                  if (!value) return null
+                  const date = grn?.receivedDate ?? grn?.received_date ?? grn?.date
                   return (
-                    <option key={gId} value={gId}>
-                      {gNum} {gDate}
+                    <option key={value} value={value}>
+                      {getGrnNumber(grn)}
+                      {date ? ` (${String(date).slice(0, 10)})` : ''}
                     </option>
                   )
                 })}
               </select>
-              {validationErrors.grnId && (
-                <span className="field-error">{validationErrors.grnId}</span>
-              )}
-              {!supplierId && (
-                <span className="field-hint">Select a supplier to filter matching GRNs.</span>
-              )}
+              {validationErrors.grnId && <span className="field-error">{validationErrors.grnId}</span>}
+              {validationErrors.grnItems && <span className="field-error">{validationErrors.grnItems}</span>}
             </div>
 
             {/* Return Date Field */}
@@ -446,15 +518,15 @@ export default function CreatePurchaseReturn({ mode = 'create', data = {}, actio
               )}
             </div>
 
-            {/* Reason Field (Mandatory) */}
-            <div className="form-field full-width">
+            {/* Reason Field */}
+            <div className="form-field">
               <label htmlFor="reason">
                 Reason for Return <span className="required-star">*</span>
               </label>
-              <textarea
+              <input
                 id="reason"
-                rows={3}
-                placeholder="Enter mandatory details explaining why items are being returned (e.g., Damaged during transit, wrong specification)..."
+                type="text"
+                placeholder="Enter mandatory reason for returning goods..."
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 className={validationErrors.reason ? 'input-error' : ''}
@@ -466,172 +538,100 @@ export default function CreatePurchaseReturn({ mode = 'create', data = {}, actio
           </div>
         </section>
 
-        {/* Return Items Card */}
+        {/* Step 2: Line Items */}
         <section className="card form-section-card">
-          <div className="section-header-row">
-            <h3 className="section-title">Returned Items</h3>
-            <button
-              type="button"
-              className="erp-button erp-button--secondary add-row-btn"
-              onClick={handleAddItem}
-            >
-              <Plus size={14} /> Add Item Row
-            </button>
+          <div className="section-header-title-container">
+            <span className="section-step-badge">2</span>
+            <h3 className="section-title-text">Returned Line Items</h3>
+            <span className="section-subtitle-text">Adjust quantity for items returned to supplier</span>
           </div>
 
           {validationErrors.items && (
             <div className="form-global-error">
-              <AlertCircle size={15} /> {validationErrors.items}
+              <AlertCircle size={16} /> {validationErrors.items}
             </div>
           )}
 
-          <div className="items-table-container">
-            <table className="items-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '25%' }}>Product *</th>
-                  <th style={{ width: '20%' }}>Variant</th>
-                  <th style={{ width: '15%' }}>Received Quantity</th>
-                  <th style={{ width: '15%' }}>Return Quantity *</th>
-                  <th style={{ width: '15%' }}>Price *</th>
-                  <th style={{ width: '10%' }} className="text-right">Total</th>
-                  <th style={{ width: '5%' }}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item, index) => {
-                  const itemErr = validationErrors.itemErrors?.[index] || {}
-                  // Filter variants matching the selected product
-                  const matchingVariants = productVariants.filter((v) => {
-                    const vPId = String(v.productId ?? v.product_id ?? '')
-                    return vPId && vPId === String(item.productId)
-                  })
-
-                  const lineTotal = (Number(item.returnQuantity) || 0) * (Number(item.price) || 0)
-
-                  return (
-                    <tr key={item.id}>
-                      {/* Product */}
-                      <td>
-                        <select
-                          value={item.productId}
-                          onChange={(e) => handleItemChange(index, 'productId', e.target.value)}
-                          className={itemErr.productId ? 'input-error' : ''}
-                        >
-                          <option value="">-- Select Product --</option>
-                          {products.map((p) => {
-                            const pId = String(p.id ?? p.productId ?? p.product_id)
-                            return (
-                              <option key={pId} value={pId}>
-                                {p.name || p.productName || `Product #${pId}`}
-                              </option>
-                            )
-                          })}
-                        </select>
-                        {itemErr.productId && (
-                          <span className="field-error">{itemErr.productId}</span>
-                        )}
-                      </td>
-
-                      {/* Variant */}
-                      <td>
-                        <select
-                          value={item.variantId || ''}
-                          onChange={(e) => handleItemChange(index, 'variantId', e.target.value)}
-                          disabled={!item.productId || matchingVariants.length === 0}
-                        >
-                          <option value="">
-                            {matchingVariants.length > 0 ? '-- Select Variant --' : 'No Variants'}
-                          </option>
-                          {matchingVariants.map((v) => {
-                            const vId = String(v.id ?? v.variantId ?? v.variant_id)
-                            return (
-                              <option key={vId} value={vId}>
-                                {v.name || v.variantName || v.sku || `Variant #${vId}`}
-                              </option>
-                            )
-                          })}
-                        </select>
-                      </td>
-
-                      {/* Received Quantity (Renamed from Quantity) */}
-                      <td>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          readOnly
-                          placeholder="0.00"
-                          value={item.receivedQuantity}
-                          className="input-readonly"
-                          style={{ backgroundColor: '#f8fafc', color: '#64748b' }}
-                        />
-                      </td>
-
-                      {/* Return Quantity (New Column) */}
-                      <td>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0.01"
-                          placeholder="0.00"
-                          value={item.returnQuantity}
-                          onChange={(e) => handleItemChange(index, 'returnQuantity', e.target.value)}
-                          className={itemErr.returnQuantity ? 'input-error' : ''}
-                        />
-                        {itemErr.returnQuantity && (
-                          <span className="field-error">{itemErr.returnQuantity}</span>
-                        )}
-                      </td>
-
-                      {/* Price (Decimal) */}
-                      <td>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="0.00"
-                          value={item.price}
-                          onChange={(e) => handleItemChange(index, 'price', e.target.value)}
-                          className={itemErr.price ? 'input-error' : ''}
-                        />
-                        {itemErr.price && (
-                          <span className="field-error">{itemErr.price}</span>
-                        )}
-                      </td>
-
-                      {/* Calculated Total */}
-                      <td className="text-right font-semibold">
-                        {formatCurrency(lineTotal)}
-                      </td>
-
-                      {/* Remove Action */}
-                      <td className="text-center">
-                        {items.length > 1 && (
-                          <button
-                            type="button"
-                            className="icon-action-btn delete-icon"
-                            title="Remove Line Item"
-                            onClick={() => handleRemoveItem(index)}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Total Amount Footer */}
-          <div className="return-totals-summary">
-            <div className="total-amount-box">
-              <span className="total-label">Total Return Amount:</span>
-              <span className="total-value">{formatCurrency(totalReturnAmount)}</span>
+          {loadingGrnItems ? (
+            <StateBlock state="loading" message="Loading returnable items from GRN..." />
+          ) : items.length === 0 ? (
+            <div className="empty-items-notice-card">
+              <PackageSearch size={36} className="empty-icon" />
+              <p className="empty-title">No Line Items Loaded</p>
+              <p className="empty-desc">
+                {grnId
+                  ? 'No returnable items found for the selected GRN.'
+                  : 'Select a Supplier and GRN above to automatically populate returnable items.'}
+              </p>
             </div>
-          </div>
+          ) : (
+            <div className="items-table-container">
+              <table className="items-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '26%' }}>Product *</th>
+                    <th style={{ width: '16%' }}>Variant</th>
+                    <th style={{ width: '13%' }}>Received Qty</th>
+                    <th style={{ width: '15%' }}>Previously Returned</th>
+                    <th style={{ width: '13%' }}>Returnable Qty</th>
+                    <th style={{ width: '13%' }}>Return Qty *</th>
+                    <th style={{ width: '12%' }}>Unit Price</th>
+                    <th style={{ width: '12%' }} className="text-right">Line Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item, index) => {
+                    const itemErr = validationErrors.itemErrors?.[index] || {}
+                    const lineTotal = getNumber(item.returnQuantity) * getNumber(item.price)
+
+                    return (
+                      <tr key={item.id}>
+                        <td className="font-semibold">{item.productName || `Product #${item.productId}`}</td>
+                        <td>{item.variantName || (item.variantId ? `Variant #${item.variantId}` : '-')}</td>
+                        <td>
+                          <input type="number" readOnly value={item.receivedQuantity} className="input-readonly" />
+                        </td>
+                        <td>
+                          <input type="number" readOnly value={item.previouslyReturnedQuantity} className="input-readonly" />
+                        </td>
+                        <td>
+                          <input type="number" readOnly value={item.returnableQuantity} className="input-readonly" />
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max={item.returnableQuantity}
+                            placeholder="0.00"
+                            value={item.returnQuantity}
+                            onChange={(e) => handleReturnQuantityChange(index, e.target.value)}
+                            className={itemErr.returnQuantity ? 'input-error' : ''}
+                          />
+                          {itemErr.returnQuantity && (
+                            <span className="field-error">{itemErr.returnQuantity}</span>
+                          )}
+                        </td>
+                        <td>
+                          <input type="number" step="0.01" readOnly value={item.price} className="input-readonly" />
+                        </td>
+                        <td className="text-right font-semibold">{formatCurrency(lineTotal)}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {items.length > 0 && (
+            <div className="return-totals-summary">
+              <div className="total-amount-box">
+                <span className="total-label">Total Return Amount:</span>
+                <span className="total-value">{formatCurrency(totalReturnAmount)}</span>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Submit Actions */}
@@ -641,16 +641,25 @@ export default function CreatePurchaseReturn({ mode = 'create', data = {}, actio
             className="erp-button erp-button--secondary"
             onClick={() => navigate('/inventory/purchase-returns')}
             disabled={submitting}
+            style={{ height: '40px', padding: '0 20px', borderRadius: '8px', fontWeight: 600 }}
           >
             Cancel
           </button>
           <button
             type="submit"
             className="erp-button erp-button--primary"
-            disabled={submitting}
-            onClick={handleSubmit}
+            disabled={submitting || loadingGrnItems}
+            style={{
+              height: '40px',
+              padding: '0 24px',
+              borderRadius: '8px',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
           >
-            <Save size={15} /> {submitting ? 'Saving...' : isEditMode ? 'Update Return' : 'Save Return'}
+            <Save size={16} /> {submitting ? 'Saving Return...' : isEditMode ? 'Update Return' : 'Save Return'}
           </button>
         </div>
       </form>
