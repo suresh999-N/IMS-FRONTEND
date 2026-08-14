@@ -11,7 +11,7 @@ import {
   AUTH_TOKEN_KEY,
   AUTH_UNAUTHORIZED_EVENT,
 } from "../api/apiClient";
-import { validateCurrentSession } from "../api/authApi";
+import { resolveUserId, validateCurrentSession } from "../api/authApi";
 import { API_ENDPOINTS } from "../api/endpoints";
 import { canAccess } from "../utils/permissions";
 import { useLocalStorage } from "./useLocalStorage";
@@ -40,7 +40,7 @@ function normalizeSessionPermissions(value) {
 
 export function AuthProvider({ children, roles = [] }) {
   const [user, setUser] = useLocalStorage(AUTH_USER_KEY, null);
-  const authenticatedUserId = user?.id ?? null;
+  const authenticatedUserId = resolveUserId(user);
 
   useEffect(() => {
     function handleUnauthorized() {
@@ -131,9 +131,10 @@ export function AuthProvider({ children, roles = [] }) {
       const data = result.data ?? {};
       const token = data?.token ?? data?.accessToken ?? "";
       const apiUser = data?.user ?? data ?? {};
+      const resolvedId = resolveUserId(apiUser);
       const userData = {
-        id: apiUser.id ?? apiUser._id ?? null,
-        name: apiUser.name ?? "",
+        id: resolvedId,
+        name: apiUser.name ?? apiUser.fullName ?? apiUser.username ?? "",
         email: apiUser.email ?? emailOrPhone.trim(),
         role: apiUser.role ?? "User",
         permissions: normalizeSessionPermissions(data?.permissions),

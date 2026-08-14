@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { LogOut, MonitorOff, X } from "lucide-react";
-import { logoutAllDevices, logoutCurrentSession } from "../../api/authApi";
+import { logoutAllDevices, logoutCurrentSession, resolveUserId } from "../../api/authApi";
 import loginLeftPanel from "../../assets/auth/login-left-panel.png";
 import "./LogoutConfirm.css";
 
@@ -63,7 +63,7 @@ function LogoutConfirm({ settingsData, user, onCancel, onLogout }) {
   const lang = settingsData?.language || "english";
   const l = logoutText[lang] || logoutText.english;
 
-  const userId = user?.id ?? user?.userId;
+  const userId = resolveUserId(user);
   const loading = Boolean(loadingType);
 
   useEffect(() => {

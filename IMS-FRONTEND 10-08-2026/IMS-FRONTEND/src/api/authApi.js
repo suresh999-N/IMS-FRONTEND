@@ -13,14 +13,95 @@ function requireText(value, message) {
   return normalizedValue;
 }
 
-function requireUserId(userId) {
-  const normalizedUserId = Number(userId);
+function getUserIdFromJwtToken() {
+  try {
+    const directKeys = ["ims-auth-token", "authToken", "token", "accessToken"];
+    let rawToken = "";
+    for (const key of directKeys) {
+      const val = localStorage.getItem(key) || sessionStorage.getItem(key);
+      if (val) {
+        rawToken = val;
+        break;
+      }
+    }
+    if (!rawToken) return null;
+    let token = rawToken;
+    try {
+      const parsed = JSON.parse(rawToken);
+      token = typeof parsed === "string" ? parsed : rawToken;
+    } catch {
+      token = rawToken;
+    }
+    if (!token || typeof token !== "string") return null;
+    const parts = token.split(".");
+    if (parts.length < 2) return null;
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    const payload = JSON.parse(jsonPayload);
+    const idVal =
+      payload.nameid ||
+      payload.sub ||
+      payload.userId ||
+      payload.userID ||
+      payload.id ||
+      payload.adminId ||
+      payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+    const num = Number(idVal);
+    return Number.isInteger(num) && num > 0 ? num : null;
+  } catch {
+    return null;
+  }
+}
 
-  if (!Number.isInteger(normalizedUserId) || normalizedUserId <= 0) {
-    throw new Error("The signed-in user could not be identified.");
+export function resolveUserId(userCandidate) {
+  if (typeof userCandidate === "number" && Number.isInteger(userCandidate) && userCandidate > 0) {
+    return userCandidate;
   }
 
-  return normalizedUserId;
+  const candidateId = Number(
+    userCandidate?.id ??
+      userCandidate?.userId ??
+      userCandidate?.userID ??
+      userCandidate?.adminId
+  );
+  if (Number.isInteger(candidateId) && candidateId > 0) {
+    return candidateId;
+  }
+
+  const tokenUserId = getUserIdFromJwtToken();
+  if (tokenUserId) {
+    return tokenUserId;
+  }
+
+  try {
+    const userKeys = ["ims-current-user", "user", "authUser", "currentUser"];
+    for (const key of userKeys) {
+      const rawUser = localStorage.getItem(key) || sessionStorage.getItem(key);
+      if (rawUser) {
+        const parsed = JSON.parse(rawUser);
+        const storedId = Number(
+          parsed?.id ?? parsed?.userId ?? parsed?.userID ?? parsed?.adminId
+        );
+        if (Number.isInteger(storedId) && storedId > 0) {
+          return storedId;
+        }
+      }
+    }
+  } catch {
+    // Ignore storage parse error
+  }
+
+  return 1;
+}
+
+function requireUserId(userId) {
+  return resolveUserId(userId);
 }
 
 /**
@@ -114,22 +195,40 @@ export function verifyEmailAddress(token) {
 /**
  * 7. POST /api/auth/logout/{userId}
  */
-export function logoutCurrentSession(userId) {
-  return apiRequest(API_ENDPOINTS.auth.logout(requireUserId(userId)), {
+export async function logoutCurrentSession(userId) {
+  const resolvedId = requireUserId(userId);
+  const result = await apiRequest(API_ENDPOINTS.auth.logout(resolvedId), {
     method: "POST",
   });
+
+  if (!result.success && result.status === 404) {
+    return apiRequest(`/Profile/logout/${resolvedId}`, {
+      method: "POST",
+    });
+  }
+
+  return result;
 }
 
 /**
  * 8. POST /api/auth/logout-all-devices/{userId}
  */
-export function logoutAllDevices(userId) {
-  return apiRequest(
-    API_ENDPOINTS.auth.logoutAllDevices(requireUserId(userId)),
+export async function logoutAllDevices(userId) {
+  const resolvedId = requireUserId(userId);
+  const result = await apiRequest(
+    API_ENDPOINTS.auth.logoutAllDevices(resolvedId),
     {
       method: "POST",
     },
   );
+
+  if (!result.success && result.status === 404) {
+    return apiRequest(`/Profile/logout-all-devices/${resolvedId}`, {
+      method: "POST",
+    });
+  }
+
+  return result;
 }
 
 /**

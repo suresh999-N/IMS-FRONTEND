@@ -34,6 +34,7 @@ import {
   getReportsData,
 } from '../../api/businessApi'
 import { getCategories } from '../../api/productApi'
+import { getWarehouses } from '../../api/warehousesApi'
 import ResponsiveChart from '../../components/charts/ResponsiveChart'
 import DatePicker from '../../components/DatePicker'
 import { DataTable, ExportMenu, StatisticsCard, StatusBadge } from '../../components/erp'
@@ -195,55 +196,52 @@ function rowValue(row, keys) {
 function matchesWarehouseFilter(row, filterWarehouseId, warehousesList = [], stockList = []) {
   if (!filterWarehouseId || filterWarehouseId === 'all') return true
 
-  const targetId = String(filterWarehouseId).toLowerCase()
+  const targetId = String(filterWarehouseId).toLowerCase().trim()
   const selectedWarehouse = warehousesList.find(
-    (w) => String(w.id).toLowerCase() === targetId || String(w.warehouseId || '').toLowerCase() === targetId,
+    (w) => String(w.id).toLowerCase().trim() === targetId || String(w.warehouseId || '').toLowerCase().trim() === targetId,
   )
-  const targetName = selectedWarehouse ? String(selectedWarehouse.name || selectedWarehouse.warehouseName || '').toLowerCase() : ''
+  const targetName = selectedWarehouse ? String(selectedWarehouse.name || selectedWarehouse.warehouseName || '').toLowerCase().trim() : targetId
 
-  const rowWhId = String(row.warehouseId ?? row.warehouse_id ?? row.whId ?? '').toLowerCase()
-  const rowWhName = String(row.warehouse ?? row.warehouseName ?? row.location ?? row.whName ?? '').toLowerCase()
+  const rawWhObj = row.warehouse || row.Warehouse || row.location || row.Location
+  const rowWhId = String(row.warehouseId ?? row.warehouse_id ?? row.whId ?? row.locationId ?? (typeof rawWhObj === 'object' ? rawWhObj?.id || rawWhObj?.warehouseId : '') ?? '').toLowerCase().trim()
+  const rowWhName = String(typeof rawWhObj === 'object' ? rawWhObj?.name || rawWhObj?.warehouseName || '' : (rawWhObj || row.warehouseName || row.location || row.whName || '')).toLowerCase().trim()
 
   if (rowWhId && rowWhId === targetId) return true
-  if (rowWhName && targetName && rowWhName === targetName) return true
-  if (rowWhName && rowWhName === targetId) return true
-  if (targetName && rowWhId && targetId && (rowWhId.includes(targetId) || targetId.includes(rowWhId))) return true
+  if (rowWhName && targetName && (rowWhName === targetName || rowWhName.includes(targetName) || targetName.includes(rowWhName))) return true
+  if (rowWhName && (rowWhName === targetId || rowWhName.includes(targetId) || targetId.includes(rowWhName))) return true
+  if (targetName && rowWhId && (rowWhId.includes(targetId) || targetId.includes(rowWhId))) return true
 
   const items = row.items || row.products || row.orderItems || row.lines
   if (Array.isArray(items) && items.length > 0) {
     const hasItemMatch = items.some((item) => {
-      const itemWhId = String(item.warehouseId ?? item.warehouse_id ?? '').toLowerCase()
-      const itemWhName = String(item.warehouse ?? item.warehouseName ?? item.location ?? '').toLowerCase()
+      const itemWhId = String(item.warehouseId ?? item.warehouse_id ?? '').toLowerCase().trim()
+      const itemWhName = String(item.warehouse ?? item.warehouseName ?? item.location ?? '').toLowerCase().trim()
       if (itemWhId && itemWhId === targetId) return true
-      if (itemWhName && targetName && itemWhName === targetName) return true
-      if (itemWhName && itemWhName === targetId) return true
+      if (itemWhName && targetName && (itemWhName === targetName || itemWhName.includes(targetName) || targetName.includes(itemWhName))) return true
+      if (itemWhName && (itemWhName === targetId || itemWhName.includes(targetId) || targetId.includes(itemWhName))) return true
       return false
     })
     if (hasItemMatch) return true
   }
 
-  const prodName = String(row.productName || row.product || row.name || '').toLowerCase()
-  const prodId = String(row.productId || '').toLowerCase()
+  const prodName = String(row.productName || row.product || row.name || '').toLowerCase().trim()
+  const prodId = String(row.productId || '').toLowerCase().trim()
 
   if (stockList.length > 0 && (prodName || prodId)) {
     const foundStock = stockList.find(
-      (s) => (prodId && String(s.productId || s.id).toLowerCase() === prodId) ||
-             (prodName && String(s.productName || s.product || s.name).toLowerCase() === prodName),
+      (s) => (prodId && String(s.productId || s.id).toLowerCase().trim() === prodId) ||
+             (prodName && String(s.productName || s.product || s.name).toLowerCase().trim() === prodName),
     )
     if (foundStock) {
-      const stockWhId = String(foundStock.warehouseId || '').toLowerCase()
-      const stockWhName = String(foundStock.warehouseName || foundStock.warehouse || '').toLowerCase()
+      const stockWhId = String(foundStock.warehouseId || '').toLowerCase().trim()
+      const stockWhName = String(foundStock.warehouseName || foundStock.warehouse || '').toLowerCase().trim()
       if (stockWhId && stockWhId === targetId) return true
-      if (stockWhName && targetName && stockWhName === targetName) return true
-      if (stockWhName && stockWhName === targetId) return true
-      if (stockWhId || stockWhName) return false
+      if (stockWhName && targetName && (stockWhName === targetName || stockWhName.includes(targetName) || targetName.includes(stockWhName))) return true
+      if (stockWhName && (stockWhName === targetId || stockWhName.includes(targetId) || targetId.includes(stockWhName))) return true
     }
   }
 
-  const hasAnyWhProp = Boolean(rowWhId || rowWhName)
-  if (hasAnyWhProp) return false
-
-  return true
+  return false
 }
 
 function matchesEntityFilter(row, filterId, nameKeys, idKeys, entityList = []) {
@@ -976,6 +974,11 @@ export default function Reports({ data = {} }) {
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(false)
   const [categoriesError, setCategoriesError] = useState('')
 
+  // Warehouses loading states
+  const [warehouses, setWarehouses] = useState([])
+  const [isWarehousesLoading, setIsWarehousesLoading] = useState(false)
+  const [warehousesError, setWarehousesError] = useState('')
+
   // Load categories
   useEffect(() => {
     let isMounted = true
@@ -1000,6 +1003,36 @@ export default function Reports({ data = {} }) {
     }
 
     fetchCategories()
+
+    return () => {
+      isMounted = false
+    }
+  }, [retryTrigger])
+
+  // Load warehouses
+  useEffect(() => {
+    let isMounted = true
+
+    async function fetchWarehouses() {
+      setIsWarehousesLoading(true)
+      setWarehousesError('')
+      try {
+        const response = await getWarehouses()
+        if (!isMounted) return
+        if (response.success) {
+          setWarehouses(response.data || [])
+        } else {
+          setWarehousesError(response.error || 'Failed to load warehouses')
+        }
+      } catch (err) {
+        if (!isMounted) return
+        setWarehousesError('Failed to load warehouses')
+      } finally {
+        if (isMounted) setIsWarehousesLoading(false)
+      }
+    }
+
+    fetchWarehouses()
 
     return () => {
       isMounted = false
@@ -1047,6 +1080,7 @@ export default function Reports({ data = {} }) {
   function handleRetry() {
     setError('')
     setCategoriesError('')
+    setWarehousesError('')
     setRetryTrigger((prev) => prev + 1)
   }
 
@@ -1077,11 +1111,11 @@ export default function Reports({ data = {} }) {
     purchases: reports.purchases || [],
     customers: reports.customerBalances || [],
     suppliers: reports.errors?.length ? [] : (data.suppliers || []),
-    warehouses: reports.errors?.length ? [] : (data.warehouses || []),
+    warehouses: warehouses.length > 0 ? warehouses : (reports.errors?.length ? [] : (data.warehouses || [])),
     returns: reports.errors?.length ? [] : (data.returns || []),
     invoices: reports.invoices || [],
     accountingInvoices: reports.invoices || [],
-  }), [data, reports])
+  }), [data, reports, warehouses])
 
   const erpReports = useMemo(() => {
     const inventoryValuation = buildInventoryValuationReport(projectData)
@@ -1150,12 +1184,37 @@ export default function Reports({ data = {} }) {
   }
 
   const warehousesList = useMemo(() => {
-    const raw = projectData.warehouses || []
-    return getUniqueById(raw, (w) => w.warehouseId || w.id).map((w) => ({
+    const raw = warehouses.length > 0 ? warehouses : (projectData.warehouses || [])
+    const listFromState = getUniqueById(raw, (w) => w.warehouseId || w.id).map((w) => ({
       id: w.warehouseId || w.id,
       name: w.name || w.warehouseName || 'Unknown Warehouse',
     }))
-  }, [projectData.warehouses])
+
+    if (listFromState.length > 0) {
+      return listFromState
+    }
+
+    const fallbackMap = new Map()
+    const allReportRows = [
+      ...(reports.stock || []),
+      ...(reports.sales || []),
+      ...(reports.purchases || []),
+    ]
+    allReportRows.forEach((row) => {
+      const rawWhObj = row.warehouse || row.Warehouse || row.location || row.Location
+      const whId = String(row.warehouseId ?? row.warehouse_id ?? row.whId ?? row.locationId ?? (typeof rawWhObj === 'object' ? rawWhObj?.id || rawWhObj?.warehouseId : '') ?? '').trim()
+      const whName = String(typeof rawWhObj === 'object' ? rawWhObj?.name || rawWhObj?.warehouseName || '' : (rawWhObj || row.warehouseName || row.location || row.whName || '')).trim()
+
+      if (whId || whName) {
+        const id = whId || whName
+        if (!fallbackMap.has(id.toLowerCase())) {
+          fallbackMap.set(id.toLowerCase(), { id, name: whName || whId })
+        }
+      }
+    })
+
+    return [...fallbackMap.values()]
+  }, [warehouses, projectData.warehouses, reports.stock, reports.sales, reports.purchases])
 
   const productsList = useMemo(() => {
     const raw = projectData.products || []
@@ -1770,12 +1829,13 @@ export default function Reports({ data = {} }) {
 
         {/* Row 1, Col 4: Warehouse */}
         <label className="reports-page__filter-field">
-          <span>Warehouse</span>
+          <span>Warehouse {warehousesError ? '(Error)' : isWarehousesLoading ? '...' : ''}</span>
           <ReportsFilterSelect
             name="warehouse"
             value={filters.warehouse}
             onChange={handleFilterChange}
             options={warehouseOptions}
+            disabled={isWarehousesLoading}
           />
         </label>
 

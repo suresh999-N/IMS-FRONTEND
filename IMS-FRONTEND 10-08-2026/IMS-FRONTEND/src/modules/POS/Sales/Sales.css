@@ -643,6 +643,55 @@
   gap: 16px;
 }
 
+.invoice-form__single-header-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.invoice-form__single-header-top {
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 10px;
+}
+
+.invoice-form__single-header-top h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.invoice-form__single-header-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.invoice-form__grid-col-span-2 {
+  grid-column: span 2;
+}
+
+@media (max-width: 1200px) {
+  .invoice-form__single-header-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .invoice-form__single-header-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  .invoice-form__grid-col-span-2 {
+    grid-column: span 1;
+  }
+}
+
 .invoice-form__metadata-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -820,10 +869,13 @@
   border-color: #e2e8f0;
 }
 
-/* Metadata input styling overrides to prevent touch-target tall input height */
+/* Metadata & Single Header Card input styling overrides to prevent touch-target tall input height */
 .invoice-form__metadata-card input,
 .invoice-form__metadata-card select,
-.invoice-form__metadata-card textarea {
+.invoice-form__metadata-card textarea,
+.invoice-form__single-header-card input,
+.invoice-form__single-header-card select,
+.invoice-form__single-header-card textarea {
   min-height: 0 !important;
   height: 36px;
   padding: 6px 10px;
@@ -835,14 +887,18 @@
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.invoice-form__metadata-card textarea {
+.invoice-form__metadata-card textarea,
+.invoice-form__single-header-card textarea {
   height: auto;
   min-height: 42px !important;
 }
 
 .invoice-form__metadata-card input:focus,
 .invoice-form__metadata-card select:focus,
-.invoice-form__metadata-card textarea:focus {
+.invoice-form__metadata-card textarea:focus,
+.invoice-form__single-header-card input:focus,
+.invoice-form__single-header-card select:focus,
+.invoice-form__single-header-card textarea:focus {
   border-color: #059669;
   box-shadow: 0 0 0 1px #059669;
   outline: none;

@@ -13,7 +13,8 @@ import {
   updateSalesReturn,
 } from '../../../api/salesReturnApi'
 import { getCustomers } from '../../../api/customersApi'
-import { formatCurrency } from '../../../utils/helpers'
+import { getWarehouses } from '../../../api/warehousesApi'
+import { DEFAULT_WAREHOUSES, formatCurrency } from '../../../utils/helpers'
 import './SalesReturns.css'
 
 export default function CreateSalesReturn({ mode = 'create' }) {
@@ -24,9 +25,11 @@ export default function CreateSalesReturn({ mode = 'create' }) {
   // Master Data
   const [customers, setCustomers] = useState([])
   const [availableInvoices, setAvailableInvoices] = useState([])
+  const [warehouses, setWarehouses] = useState([])
 
   // Header State
   const [customerId, setCustomerId] = useState('')
+  const [warehouseId, setWarehouseId] = useState('all')
   const [invoiceId, setInvoiceId] = useState('')
   const [returnDate, setReturnDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [reason, setReason] = useState('')
@@ -46,6 +49,18 @@ export default function CreateSalesReturn({ mode = 'create' }) {
   const initData = useCallback(async () => {
     setLoading(true)
     try {
+      // Load warehouses
+      try {
+        const whRes = await getWarehouses()
+        if (whRes && whRes.success && Array.isArray(whRes.data) && whRes.data.length > 0) {
+          setWarehouses(whRes.data)
+        } else {
+          setWarehouses(DEFAULT_WAREHOUSES)
+        }
+      } catch {
+        setWarehouses(DEFAULT_WAREHOUSES)
+      }
+
       // Load customers strictly from API
       let custData = []
       const customersRes = await getSalesReturnCustomers()
@@ -382,6 +397,27 @@ export default function CreateSalesReturn({ mode = 'create' }) {
               {validationErrors.customerId && (
                 <span className="field-error">{validationErrors.customerId}</span>
               )}
+            </div>
+
+            {/* Warehouse Dropdown Field */}
+            <div className="form-field">
+              <label htmlFor="warehouseId">Warehouse</label>
+              <select
+                id="warehouseId"
+                value={warehouseId}
+                onChange={(e) => setWarehouseId(e.target.value)}
+              >
+                <option value="all">All Warehouses</option>
+                {warehouses.map((wh) => {
+                  const wId = String(wh.id ?? wh.warehouseId ?? wh.WarehouseId ?? '')
+                  const wName = wh.name ?? wh.warehouseName ?? wh.Name ?? `Warehouse #${wId}`
+                  return (
+                    <option key={wId} value={wId}>
+                      {wName}
+                    </option>
+                  )
+                })}
+              </select>
             </div>
 
             {/* Invoice Field (Loaded from Backend for selected Customer) */}

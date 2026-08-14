@@ -9,8 +9,9 @@ import {
   LoaderCircle,
 } from 'lucide-react'
 import { createInvoice, getInvoices } from '../../../api/businessApi'
+import { getWarehouses } from '../../../api/warehousesApi'
 import { showToast } from '../../../components/common/toast'
-import { formatCurrency, getToday } from '../../../utils/helpers'
+import { DEFAULT_WAREHOUSES, formatCurrency, getToday } from '../../../utils/helpers'
 
 const defaultItem = {
   productId: '',
@@ -170,6 +171,7 @@ function buildInitialDraft(initialInvoiceNo) {
   const today = getToday()
   return {
     customerId: '',
+    warehouseId: 'all',
     invoiceNo: initialInvoiceNo || `INV-${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(Math.floor(1000 + Math.random() * 9000))}`,
     invoiceDate: today,
     dueDate: getDueDateFromTerms(today, 'Net 15 Days'),
@@ -196,6 +198,7 @@ function toApiId(value, type) {
 function InvoiceForm({
   customers,
   products,
+  warehouses: propWarehouses = [],
   onSubmit,
   onCancel,
   isSubmitting,
@@ -206,6 +209,27 @@ function InvoiceForm({
   const [formError, setFormError] = useState('')
   const [isEditingAddress, setIsEditingAddress] = useState(false)
   const [customAddress, setCustomAddress] = useState('')
+  const [warehousesList, setWarehousesList] = useState(propWarehouses)
+
+  useEffect(() => {
+    if (Array.isArray(propWarehouses) && propWarehouses.length > 0) {
+      setWarehousesList(propWarehouses)
+      return
+    }
+    async function fetchWarehouses() {
+      try {
+        const res = await getWarehouses()
+        if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+          setWarehousesList(res.data)
+        } else {
+          setWarehousesList(DEFAULT_WAREHOUSES)
+        }
+      } catch {
+        setWarehousesList(DEFAULT_WAREHOUSES)
+      }
+    }
+    fetchWarehouses()
+  }, [propWarehouses])
 
   const productOptions = useMemo(
     () => products,
@@ -526,10 +550,14 @@ function InvoiceForm({
         </div>
       ) : null}
 
-      <div className="invoice-form__header-sections">
-        {/* Customer Details Card */}
-        <div className="invoice-form__metadata-card">
-          <h3>Customer Details</h3>
+      {/* Single Header Details Container */}
+      <div className="invoice-form__single-header-card">
+        <div className="invoice-form__single-header-top">
+          <h3>Customer, Invoice &amp; Warehouse Details</h3>
+        </div>
+
+        <div className="invoice-form__single-header-grid">
+          {/* Customer Field */}
           <label className={`field ${errors.customerId ? 'field--error' : ''}`}>
             <span>Customer *</span>
             <select
@@ -547,7 +575,132 @@ function InvoiceForm({
             {errors.customerId ? <span className="field-error">{errors.customerId}</span> : null}
           </label>
 
-          <div>
+          {/* Warehouse Dropdown Field */}
+          <label className="field">
+            <span>Warehouse</span>
+            <select
+              value={draft.warehouseId || 'all'}
+              onChange={(e) => updateField('warehouseId', e.target.value)}
+              disabled={isSubmitting}
+            >
+              <option value="all">All Warehouses</option>
+              {warehousesList.map((wh) => {
+                const wId = String(wh.id ?? wh.warehouseId ?? wh.WarehouseId ?? '')
+                const wName = wh.name ?? wh.warehouseName ?? wh.Name ?? `Warehouse #${wId}`
+                return (
+                  <option key={wId} value={wId}>
+                    {wName}
+                  </option>
+                )
+              })}
+            </select>
+          </label>
+
+          {/* Invoice No. Field */}
+          <label className={`field ${errors.invoiceNo ? 'field--error' : ''}`}>
+            <span>Invoice No. *</span>
+            <input
+              type="text"
+              value={draft.invoiceNo}
+              onChange={(e) => updateField('invoiceNo', e.target.value)}
+              disabled={isSubmitting}
+            />
+            {errors.invoiceNo ? <span className="field-error">{errors.invoiceNo}</span> : null}
+          </label>
+
+          {/* Invoice Date Field */}
+          <label className={`field ${errors.invoiceDate ? 'field--error' : ''}`}>
+            <span>Invoice Date *</span>
+            <input
+              type="date"
+              value={draft.invoiceDate}
+              onChange={handleInvoiceDateChange}
+              disabled={isSubmitting}
+            />
+            {errors.invoiceDate ? <span className="field-error">{errors.invoiceDate}</span> : null}
+          </label>
+
+          {/* Due Date Field */}
+          <label className={`field ${errors.dueDate ? 'field--error' : ''}`}>
+            <span>Due Date</span>
+            <input
+              type="date"
+              value={draft.dueDate}
+              onChange={(e) => updateField('dueDate', e.target.value)}
+              disabled={isSubmitting}
+            />
+            {errors.dueDate ? <span className="field-error">{errors.dueDate}</span> : null}
+          </label>
+
+          {/* Sales Person Field */}
+          <label className="field">
+            <span>Sales Person</span>
+            <select
+              value={draft.salesPerson}
+              onChange={(e) => updateField('salesPerson', e.target.value)}
+              disabled={isSubmitting}
+            >
+              <option value="Ravi Kiran">Ravi Kiran</option>
+              <option value="Anil Kumar">Anil Kumar</option>
+              <option value="Suresh Raina">Suresh Raina</option>
+              <option value="Meera Jasmine">Meera Jasmine</option>
+            </select>
+          </label>
+
+          {/* Payment Terms Field */}
+          <label className="field">
+            <span>Payment Terms</span>
+            <select
+              value={draft.paymentTerms}
+              onChange={handlePaymentTermsChange}
+              disabled={isSubmitting}
+            >
+              <option value="Net 15 Days">Net 15 Days</option>
+              <option value="Net 30 Days">Net 30 Days</option>
+              <option value="Net 60 Days">Net 60 Days</option>
+              <option value="Due on Receipt">Due on Receipt</option>
+            </select>
+          </label>
+
+          {/* Currency Field */}
+          <label className="field">
+            <span>Currency</span>
+            <select
+              value={draft.currency}
+              onChange={(e) => updateField('currency', e.target.value)}
+              disabled={isSubmitting}
+            >
+              <option value="INR - Indian Rupee">INR - Indian Rupee</option>
+              <option value="USD - US Dollar">USD - US Dollar</option>
+              <option value="EUR - Euro">EUR - Euro</option>
+            </select>
+          </label>
+
+          {/* Reference Field */}
+          <label className="field">
+            <span>Reference</span>
+            <input
+              type="text"
+              placeholder="Enter reference (optional)"
+              value={draft.reference}
+              onChange={(e) => updateField('reference', e.target.value)}
+              disabled={isSubmitting}
+            />
+          </label>
+
+          {/* GSTIN Field */}
+          <label className="field">
+            <span>GSTIN</span>
+            <input
+              type="text"
+              value={selectedCustomer?.gstNumber || 'N/A'}
+              disabled
+              style={{ background: '#f1f5f9', color: '#64748b' }}
+            />
+          </label>
+
+          {/* Billing Address Field */}
+          <div className="invoice-form__grid-col-span-2">
             <span style={{ fontSize: '12px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
               Billing Address
             </span>
@@ -608,126 +761,26 @@ function InvoiceForm({
             </div>
           </div>
 
-          <label className="field">
-            <span>GSTIN</span>
-            <input
-              type="text"
-              value={selectedCustomer?.gstNumber || 'N/A'}
-              disabled
-              style={{ background: '#f1f5f9', color: '#64748b' }}
-            />
-          </label>
-        </div>
-
-        {/* Invoice Details Card */}
-        <div className="invoice-form__metadata-card">
-          <h3>Invoice Details</h3>
-          <label className={`field ${errors.invoiceNo ? 'field--error' : ''}`}>
-            <span>Invoice No. *</span>
-            <input
-              type="text"
-              value={draft.invoiceNo}
-              onChange={(e) => updateField('invoiceNo', e.target.value)}
-              disabled={isSubmitting}
-            />
-            {errors.invoiceNo ? <span className="field-error">{errors.invoiceNo}</span> : null}
-          </label>
-
-          <label className={`field ${errors.invoiceDate ? 'field--error' : ''}`}>
-            <span>Invoice Date *</span>
-            <input
-              type="date"
-              value={draft.invoiceDate}
-              onChange={handleInvoiceDateChange}
-              disabled={isSubmitting}
-            />
-            {errors.invoiceDate ? <span className="field-error">{errors.invoiceDate}</span> : null}
-          </label>
-
-          <label className={`field ${errors.dueDate ? 'field--error' : ''}`}>
-            <span>Due Date</span>
-            <input
-              type="date"
-              value={draft.dueDate}
-              onChange={(e) => updateField('dueDate', e.target.value)}
-              disabled={isSubmitting}
-            />
-            {errors.dueDate ? <span className="field-error">{errors.dueDate}</span> : null}
-          </label>
-
-          <label className="field">
-            <span>Sales Person</span>
-            <select
-              value={draft.salesPerson}
-              onChange={(e) => updateField('salesPerson', e.target.value)}
-              disabled={isSubmitting}
-            >
-              <option value="Ravi Kiran">Ravi Kiran</option>
-              <option value="Anil Kumar">Anil Kumar</option>
-              <option value="Suresh Raina">Suresh Raina</option>
-              <option value="Meera Jasmine">Meera Jasmine</option>
-            </select>
-          </label>
-        </div>
-
-        {/* Other Details Card */}
-        <div className="invoice-form__metadata-card">
-          <h3>Other Details</h3>
-          <label className="field">
-            <span>Payment Terms</span>
-            <select
-              value={draft.paymentTerms}
-              onChange={handlePaymentTermsChange}
-              disabled={isSubmitting}
-            >
-              <option value="Net 15 Days">Net 15 Days</option>
-              <option value="Net 30 Days">Net 30 Days</option>
-              <option value="Net 60 Days">Net 60 Days</option>
-              <option value="Due on Receipt">Due on Receipt</option>
-            </select>
-          </label>
-
-          <label className="field">
-            <span>Currency</span>
-            <select
-              value={draft.currency}
-              onChange={(e) => updateField('currency', e.target.value)}
-              disabled={isSubmitting}
-            >
-              <option value="INR - Indian Rupee">INR - Indian Rupee</option>
-              <option value="USD - US Dollar">USD - US Dollar</option>
-              <option value="EUR - Euro">EUR - Euro</option>
-            </select>
-          </label>
-
-          <label className="field">
-            <span>Reference</span>
-            <input
-              type="text"
-              placeholder="Enter reference (optional)"
-              value={draft.reference}
-              onChange={(e) => updateField('reference', e.target.value)}
-              disabled={isSubmitting}
-            />
-          </label>
-
-          <label className="field">
-            <span>Notes</span>
-            <textarea
-              placeholder="Enter notes (optional)"
-              value={draft.notes}
-              onChange={(e) => updateField('notes', e.target.value)}
-              disabled={isSubmitting}
-              style={{
-                minHeight: '38px',
-                resize: 'vertical',
-                fontSize: '13px',
-                padding: '6px 8px',
-                border: '1px solid #cbd5e1',
-                borderRadius: '4px'
-              }}
-            />
-          </label>
+          {/* Notes Field */}
+          <div className="invoice-form__grid-col-span-2">
+            <label className="field" style={{ marginBottom: 0 }}>
+              <span>Notes</span>
+              <textarea
+                placeholder="Enter notes (optional)"
+                value={draft.notes}
+                onChange={(e) => updateField('notes', e.target.value)}
+                disabled={isSubmitting}
+                style={{
+                  minHeight: '84px',
+                  resize: 'vertical',
+                  fontSize: '13px',
+                  padding: '6px 8px',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '4px'
+                }}
+              />
+            </label>
+          </div>
         </div>
       </div>
 
@@ -954,7 +1007,7 @@ function InvoiceForm({
   )
 }
 
-export default function CreateInvoiceScreen({ customers = [], products = [] }) {
+export default function CreateInvoiceScreen({ customers = [], products = [], warehouses = [] }) {
   const navigate = useNavigate()
   const [isSaving, setIsSaving] = useState(false)
   const [isLoadingInvoices, setIsLoadingInvoices] = useState(true)
@@ -1067,6 +1120,7 @@ export default function CreateInvoiceScreen({ customers = [], products = [] }) {
           isSubmitting={isSaving}
           initialInvoiceNo={nextInvoiceNo}
           products={productOptions}
+          warehouses={warehouses}
         />
       </div>
     </div>
