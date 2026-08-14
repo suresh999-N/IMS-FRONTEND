@@ -1170,7 +1170,14 @@ export const RESOURCE_CONFIGS = {
       roles: 'items',
     },
     fields: [
-      { name: 'name', label: 'Name', required: true, minLength: 2 },
+      {
+        name: 'name',
+        label: 'Name',
+        required: true,
+        minLength: 2,
+        pattern: /^(?=.*[\p{L}a-zA-Z])[a-zA-Z\s\.\-'\p{L}\p{M}]+$/u,
+        patternMessage: 'Name can only contain letters, spaces, dots, hyphens, and apostrophes, and must contain at least one letter.'
+      },
       { name: 'email', label: 'Mail', type: 'email', required: true },
       { name: 'phoneNumber', label: 'Phone No', type: 'tel', required: true, minLength: 10, maxLength: 10 },
       { name: 'password', label: 'Password', type: 'password', requiredOnCreate: true, minLength: 8, createOnly: true, helperText: 'At least 8 chars with uppercase, lowercase, number & symbol' },

@@ -258,6 +258,9 @@ function getStatusErrorMessage(status, payload) {
     404: 'We could not find that record.',
     409: 'This record conflicts with existing data.',
     500: 'We are having trouble loading data right now.',
+    502: 'Unable to connect to the server.',
+    503: 'Unable to connect to the server.',
+    504: 'Unable to connect to the server.',
   }
  
   const message = getErrorMessage(payload, fallbackByStatus[status] || 'The request could not be completed. Please try again.')
@@ -274,12 +277,24 @@ export function sanitizeApiError(message, status = 0) {
       : 'The request could not be completed. Please try again.'
   }
  
+  // Detect HTML or ngrok error/tunnel details and return a clean generic error instead of technical/infra details
+  if (
+    /<[a-z][\s\S]*>/i.test(rawMessage) ||
+    rawMessage.toLowerCase().includes('<!doctype html') ||
+    rawMessage.toLowerCase().includes('ngrok') ||
+    rawMessage.toLowerCase().includes('tunnel') ||
+    rawMessage.toLowerCase().includes('502 bad gateway') ||
+    rawMessage.toLowerCase().includes('err_ngrok_')
+  ) {
+    return 'Unable to connect to the server.'
+  }
+ 
   if (/vite_api_base_url|backend server|ims api|failed to fetch|networkerror|load failed/i.test(rawMessage)) {
     return 'Unable to connect to the server.'
   }
  
   if (/timeout|aborted/i.test(rawMessage)) {
-    return 'The server is taking longer than expected. Please try again.'
+    return 'Unable to connect to the server.'
   }
  
   if (/stack trace|exception|system\.|microsoft\.|sql|database|unknown column|unknown table|mysql|syntax near|nullable object|object reference/i.test(rawMessage)) {
@@ -495,7 +510,7 @@ export async function apiRequest(endpoint, options = {}) {
       url: requestUrl,
       method,
       message: didTimeOut
-        ? 'The server is taking longer than expected. Please try again.'
+        ? 'Unable to connect to the server.'
         : isNetworkFailure
           ? 'Unable to connect to the server.'
           : '',
@@ -505,14 +520,14 @@ export async function apiRequest(endpoint, options = {}) {
       success: false,
       data: null,
       error: didTimeOut
-        ? 'The server is taking longer than expected. Please try again.'
+        ? 'Unable to connect to the server.'
         : isCancelled
           ? 'Request cancelled.'
         : isNetworkFailure
           ? 'Unable to connect to the server.'
           : error instanceof Error
             ? sanitizeApiError(error.message)
-            : 'Network request failed. Please try again.',
+            : 'Unable to connect to the server.',
       message: null,
       errors: null,
       traceId: null,

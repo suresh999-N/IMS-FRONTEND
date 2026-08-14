@@ -1934,3 +1934,9 @@ button.redm-btn--primary:has(.lucide-plus):focus-visible {
   background: #047857 !important;
   color: #ffffff !important;
 }
+
+/* Hide Edge browser's native password reveal button project-wide */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none !important;
+}

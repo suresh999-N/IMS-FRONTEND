@@ -64,7 +64,7 @@ export default function ForgotPassword() {
         },
       })
     } catch {
-      setError('Connection issue. Please try again.')
+      setError('Unable to connect to the server.')
     } finally {
       setLoading(false)
     }

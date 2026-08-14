@@ -1059,7 +1059,7 @@ export default function CreatePurchaseReturn() {
 
           <div>
             <h3>
-              Unable to load Purchase Return
+              We could not load this workspace
             </h3>
 
             <p>{error}</p>

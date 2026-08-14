@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import "./ChangePassword.css";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '').replace(/\/api$/, '');
@@ -256,6 +257,10 @@ function ChangePassword({ settingsData, onClose }) {
   const [apiError, setApiError] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const lang = settingsData?.language || "english";
   const p = passwordText[lang] || passwordText.english;
 
@@ -415,40 +420,73 @@ function ChangePassword({ settingsData, onClose }) {
 
             <div className="password-group">
               <label>{p.currentPassword}</label>
-              <input
-                type="password"
-                name="currentPassword"
-                value={passwordData.currentPassword}
-                onChange={handleChange}
-                placeholder={p.currentPlaceholder}
-                disabled={saving}
-              />
+              <div className="password-input-wrapper">
+                <input
+                  type={showCurrentPassword ? "text" : "password"}
+                  name="currentPassword"
+                  value={passwordData.currentPassword}
+                  onChange={handleChange}
+                  placeholder={p.currentPlaceholder}
+                  disabled={saving}
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowCurrentPassword((prev) => !prev)}
+                  aria-label={showCurrentPassword ? "Hide password" : "Show password"}
+                  disabled={saving}
+                >
+                  {showCurrentPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              </div>
               {errors.currentPassword && <small>{errors.currentPassword}</small>}
             </div>
 
             <div className="password-group">
               <label>{p.newPassword}</label>
-              <input
-                type="password"
-                name="newPassword"
-                value={passwordData.newPassword}
-                onChange={handleChange}
-                placeholder={p.newPlaceholder}
-                disabled={saving}
-              />
+              <div className="password-input-wrapper">
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  name="newPassword"
+                  value={passwordData.newPassword}
+                  onChange={handleChange}
+                  placeholder={p.newPlaceholder}
+                  disabled={saving}
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowNewPassword((prev) => !prev)}
+                  aria-label={showNewPassword ? "Hide password" : "Show password"}
+                  disabled={saving}
+                >
+                  {showNewPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              </div>
               {errors.newPassword && <small>{errors.newPassword}</small>}
             </div>
 
             <div className="password-group">
               <label>{p.confirmPassword}</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={passwordData.confirmPassword}
-                onChange={handleChange}
-                placeholder={p.confirmPlaceholder}
-                disabled={saving}
-              />
+              <div className="password-input-wrapper">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  value={passwordData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder={p.confirmPlaceholder}
+                  disabled={saving}
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  disabled={saving}
+                >
+                  {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              </div>
               {errors.confirmPassword && <small>{errors.confirmPassword}</small>}
             </div>
           </div>

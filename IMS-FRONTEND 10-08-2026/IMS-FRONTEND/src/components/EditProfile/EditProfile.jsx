@@ -35,6 +35,7 @@ const editText = {
     photoUploadFailed: "Profile photo upload failed.",
     photoRemoveFailed: "Profile photo remove failed.",
     fullNameRequired: "Full name is required",
+    fullNameInvalid: "Full name can only contain letters, spaces, dots, hyphens, and apostrophes, and must contain at least one letter",
     emailRequired: "Email is required",
     emailInvalid: "Enter valid email address",
     phoneRequired: "Phone number is required",
@@ -71,6 +72,7 @@ const editText = {
     photoUploadFailed: "ప్రొఫైల్ ఫోటో అప్‌లోడ్ కాలేదు.",
     photoRemoveFailed: "ప్రొఫైల్ ఫోటో తొలగించలేకపోయాం.",
     fullNameRequired: "పూర్తి పేరు అవసరం",
+    fullNameInvalid: "పూర్తి పేరులో అక్షరాలు, గుర్తులు మరియు ఖాళీలు మాత్రమే ఉండాలి, మరియు కనీసం ఒక అక్షరం ఉండాలి",
     emailRequired: "ఇమెయిల్ అవసరం",
     emailInvalid: "సరైన ఇమెయిల్ అడ్రస్ ఇవ్వండి",
     phoneRequired: "ఫోన్ నంబర్ అవసరం",
@@ -107,6 +109,7 @@ const editText = {
     photoUploadFailed: "Profile photo upload failed.",
     photoRemoveFailed: "Profile photo remove failed.",
     fullNameRequired: "Full name required है",
+    fullNameInvalid: "पूरा नाम में केवल अक्षर, रिक्त स्थान और मानक वर्ण होने चाहिए, और कम से कम एक अक्षर होना चाहिए",
     emailRequired: "Email required है",
     emailInvalid: "Valid email address enter करें",
     phoneRequired: "Phone number required है",
@@ -849,6 +852,8 @@ function EditProfile({ adminProfile, settingsData, onClose, onSaveProfile }) {
 
     if (!formData.fullName.trim()) {
       newErrors.fullName = e.fullNameRequired;
+    } else if (!/^(?=.*[\p{L}a-zA-Z])[a-zA-Z\s\.\-'\p{L}\p{M}]+$/u.test(formData.fullName)) {
+      newErrors.fullName = e.fullNameInvalid;
     }
 
     if (!formData.email.trim()) {

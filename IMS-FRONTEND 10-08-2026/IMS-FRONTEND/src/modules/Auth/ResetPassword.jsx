@@ -72,7 +72,7 @@ export default function ResetPassword() {
 
       navigate('/login', { replace: true })
     } catch {
-      setError('Connection issue. Please try again.')
+      setError('Unable to connect to the server.')
     } finally {
       setLoading(false)
     }

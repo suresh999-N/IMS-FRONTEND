@@ -316,7 +316,7 @@ export default function SalesReturns() {
         <div className="card sales-returns-error-card" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
           <RefreshCw size={24} style={{ color: '#ef4444' }} />
           <div style={{ flex: 1 }}>
-            <h3 style={{ margin: '0 0 4px 0' }}>Unable to load Sales Returns</h3>
+            <h3 style={{ margin: '0 0 4px 0' }}>We could not load this workspace</h3>
             <p style={{ margin: 0, color: '#64748b' }}>{String(error)}</p>
           </div>
           <button className="erp-button erp-button--primary" onClick={fetchData} type="button">

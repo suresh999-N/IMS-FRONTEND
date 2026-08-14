@@ -488,6 +488,10 @@ function getFieldError(field, value, mode, context = {}) {
     return ''
   }
 
+  if (field.pattern && !field.pattern.test(value)) {
+    return field.patternMessage || `${label} is invalid.`
+  }
+
   if (field.type === 'number' || field.type === 'currency' || field.valueType === 'number') {
     const numericValue = Number(value)
 

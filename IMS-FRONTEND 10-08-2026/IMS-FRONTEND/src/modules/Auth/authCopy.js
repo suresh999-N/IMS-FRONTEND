@@ -3,20 +3,29 @@ export function getAuthErrorMessage(message, fallback = 'We could not complete t
   const normalizedText = text.toLowerCase()
 
   if (!text) return fallback
+
+  // Check credential failures first to avoid matching "invalid" as "valid" under email checks
+  if (normalizedText.includes('invalid') && normalizedText.includes('password')) {
+    if (normalizedText.includes('remaining') || normalizedText.includes('attempt') || normalizedText.includes('lock')) {
+      return text
+    }
+    return 'Check your email and password.'
+  }
+
   if (normalizedText.includes('email') && normalizedText.includes('valid')) {
     return 'Enter a valid work email.'
   }
   if (normalizedText.includes('password') && normalizedText.includes('required')) {
     return 'Enter your password.'
   }
-  if (normalizedText.includes('invalid') && normalizedText.includes('password')) {
-    return 'Check your email and password.'
-  }
   if (normalizedText.includes('invalid') && normalizedText.includes('otp')) {
     return 'Enter the 6-digit code.'
   }
   if (normalizedText.includes('token')) {
     return 'We could not start your session. Please sign in again.'
+  }
+  if (normalizedText.includes('phone') && (normalizedText.includes('already') || normalizedText.includes('exists'))) {
+    return 'An account with this phone number already exists.'
   }
   if (normalizedText.includes('already') || normalizedText.includes('exists')) {
     return 'An account with this email already exists.'
@@ -27,8 +36,8 @@ export function getAuthErrorMessage(message, fallback = 'We could not complete t
   if (normalizedText.includes('expired')) {
     return 'Your reset session has expired. Request a new code.'
   }
-  if (normalizedText.includes('network') || normalizedText.includes('server')) {
-    return 'Connection issue. Please try again.'
+  if (normalizedText.includes('network') || normalizedText.includes('server') || normalizedText.includes('connect')) {
+    return 'Unable to connect to the server.'
   }
   if (text.length > 120) return fallback
 
