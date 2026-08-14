@@ -66,6 +66,9 @@ export default function BusinessInsights({ insights = [] }) {
           <Lightbulb size={18} />
           <strong>No insights yet</strong>
           <p>Insights will appear as dashboard activity grows.</p>
+          <Link className="dashboard-empty__button" to="/reports">
+            View Reports
+          </Link>
         </div>
       )}
     </section>

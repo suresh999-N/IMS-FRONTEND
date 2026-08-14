@@ -18,6 +18,7 @@ import {
   resendVerificationEmail,
   verifyEmailAddress,
   verifyOtp,
+  verifyEmailOtp,
 } from "../../api/authApi";
 import {
   getEmailError,
@@ -225,6 +226,7 @@ export default function VerifyEmail() {
 
   async function handleVerifyOtpSubmit(event) {
     event.preventDefault();
+    if (otpLoading) return;
     setOtpError("");
 
     const code = otpCode.trim();
@@ -238,16 +240,8 @@ export default function VerifyEmail() {
     try {
       setOtpLoading(true);
       
-      // Try GET /api/auth/verify-email?token=code
-      let response = await verifyEmailAddress(code);
-
-      // If GET token verification fails and email is present, try fallback to POST /api/auth/verify-otp
-      if (!response.success && currentEmail) {
-        const otpResponse = await verifyOtp(currentEmail, code);
-        if (otpResponse.success) {
-          response = otpResponse;
-        }
-      }
+      // Call POST /api/auth/verify-email-otp
+      const response = await verifyEmailOtp(currentEmail, code);
 
       const responseMessage = response.message || response.error || "";
 
@@ -273,6 +267,7 @@ export default function VerifyEmail() {
   }
 
   async function handleResend() {
+    if (resendState.status === "loading") return;
     const targetEmail = sanitizeEmailInput(userEmail || initialEmail).toLowerCase().trim();
     const emailError = getEmailError(targetEmail, { required: true });
     if (emailError) {

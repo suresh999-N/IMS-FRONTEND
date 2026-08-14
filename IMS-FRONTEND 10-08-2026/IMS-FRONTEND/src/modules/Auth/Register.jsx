@@ -60,6 +60,7 @@ export default function Register() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (loading) return;
     setError("");
 
     if (
@@ -69,6 +70,11 @@ export default function Register() {
       !formData.password
     ) {
       setError("Complete the required fields.");
+      return;
+    }
+
+    if (!/^(?=.*[\p{L}a-zA-Z])[a-zA-Z\s\.\-'\p{L}\p{M}]+$/u.test(formData.name)) {
+      setError("Full name can only contain letters, spaces, dots, hyphens, and apostrophes, and must contain at least one letter.");
       return;
     }
 
@@ -122,7 +128,7 @@ export default function Register() {
         { replace: true },
       );
     } catch {
-      setError("Connection issue. Please try again.");
+      setError("Unable to connect to the server.");
     } finally {
       setLoading(false);
     }

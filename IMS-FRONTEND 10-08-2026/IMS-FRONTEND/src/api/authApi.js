@@ -264,6 +264,19 @@ export function verifyOtp(email, otp) {
 }
 
 /**
+ * 11b. POST /api/auth/verify-email-otp
+ */
+export function verifyEmailOtp(email, otp) {
+  return apiRequest(API_ENDPOINTS.auth.verifyEmailOtp, {
+    method: "POST",
+    body: {
+      email: requireText(email, "The email address is missing."),
+      otp: requireText(otp, "The OTP code is missing."),
+    },
+  });
+}
+
+/**
  * 12. POST /api/auth/resend-login-otp
  */
 export function resendLoginOtp(email) {

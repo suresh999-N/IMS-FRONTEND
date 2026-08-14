@@ -41,7 +41,7 @@ export default function LowStockWidget({ items = [], isLoading }) {
                 <strong>{item.name}</strong>
                 <span>Stock: {item.stock} - Reorder Level: {item.reorderLevel}</span>
               </div>
-              <span className="low-stock-row__badge">
+              <span className={`low-stock-row__badge ${Number(item.stock) <= 0 ? 'is-critical' : ''}`}>
                 {item.status || (Number(item.stock) <= 0 ? 'Critical' : 'Low Stock')}
               </span>
             </Link>
@@ -54,6 +54,10 @@ export default function LowStockWidget({ items = [], isLoading }) {
         <div className="dashboard-empty dashboard-empty--success">
           <CheckCircle2 size={18} strokeWidth={2.5} />
           <strong>No low-stock products found</strong>
+          <p>All items in your catalog are healthy and above reorder levels.</p>
+          <Link className="dashboard-empty__button" to="/inventory/products">
+            Manage Catalog
+          </Link>
         </div>
       )}
     </section>

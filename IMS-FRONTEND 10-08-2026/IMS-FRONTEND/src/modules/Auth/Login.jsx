@@ -48,6 +48,7 @@ export default function Login() {
  
   async function handleSubmit(event) {
     event.preventDefault()
+    if (loading) return
     setError('')
  
     const identifier = formData.email.trim()
@@ -86,7 +87,7 @@ export default function Login() {
  
       navigate('/dashboard', { replace: true })
     } catch {
-      setError('Connection issue. Please try again.')
+      setError('Unable to connect to the server.')
     } finally {
       setLoading(false)
     }

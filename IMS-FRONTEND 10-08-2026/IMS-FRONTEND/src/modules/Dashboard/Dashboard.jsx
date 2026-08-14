@@ -279,7 +279,7 @@ function buildInsights({
   return insights
 }
 
-function CompactList({ title, subtitle, items = [], emptyTitle, emptyText, viewAllTo, renderItem }) {
+function CompactList({ title, subtitle, items = [], emptyTitle, emptyText, viewAllTo, renderItem, ctaText, ctaTo }) {
   const safeItems = Array.isArray(items) ? items : []
   return (
     <section className="dashboard-panel compact-list">
@@ -302,6 +302,11 @@ function CompactList({ title, subtitle, items = [], emptyTitle, emptyText, viewA
           <Boxes size={22} />
           <strong>{emptyTitle}</strong>
           <p>{emptyText}</p>
+          {ctaText && ctaTo && (
+            <Link className="dashboard-empty__button" to={ctaTo}>
+              {ctaText}
+            </Link>
+          )}
         </div>
       )}
     </section>
@@ -355,9 +360,13 @@ export default function Dashboard() {
 
   useEffect(() => {
     let timer = null
-    if (!isLoading && dashboard.lowStock && dashboard.lowStock.length > 0) {
+    const currentIds = (dashboard.lowStock || []).map(p => p.productId || p.id).sort().join(',')
+    const dismissedIds = sessionStorage.getItem('ims-low-stock-alert-dismissed-ids')
+
+    if (!isLoading && dashboard.lowStock && dashboard.lowStock.length > 0 && currentIds !== dismissedIds) {
       timer = setTimeout(() => {
         setShowLowStockModal(true)
+        sessionStorage.setItem('ims-low-stock-alert-dismissed-ids', currentIds)
       }, 1500)
     }
     return () => {
@@ -536,6 +545,8 @@ export default function Dashboard() {
               emptyTitle="No recent sales"
               emptyText="Recent invoice activity will appear here."
               viewAllTo="/pos/sales"
+              ctaText="Create Invoice"
+              ctaTo="/pos/sales/create"
               renderItem={(sale) => {
                 const status = getInvoiceStatus(sale)
                 const tone = getInvoiceStatusTone(status)
@@ -573,7 +584,11 @@ export default function Dashboard() {
       {showLowStockModal && (
         <LowStockAlert
           lowStockProducts={dashboard.lowStock}
-          onClose={() => setShowLowStockModal(false)}
+          onClose={() => {
+            setShowLowStockModal(false)
+            const currentIds = (dashboard.lowStock || []).map(p => p.productId || p.id).sort().join(',')
+            sessionStorage.setItem('ims-low-stock-alert-dismissed-ids', currentIds)
+          }}
         />
       )}
     </div>

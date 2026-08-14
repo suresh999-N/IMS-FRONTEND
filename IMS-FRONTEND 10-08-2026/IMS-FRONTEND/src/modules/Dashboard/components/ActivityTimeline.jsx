@@ -234,6 +234,9 @@ export default function ActivityTimeline({ activities = [], isLoading }) {
           <Activity size={22} />
           <strong>No recent activity yet</strong>
           <p>Product, customer, purchase and sales events will appear here.</p>
+          <Link className="dashboard-empty__button" to="/administration/audit-logs">
+            View Audit Logs
+          </Link>
         </div>
       )}
     </section>
