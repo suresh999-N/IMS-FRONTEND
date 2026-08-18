@@ -234,6 +234,83 @@
   margin-top: 4px;
 }
 
+/* Style DatePicker inside details section to match indent-input */
+.indent-details-date-picker.field {
+  margin-bottom: 0 !important;
+}
+
+.indent-details-date-picker label {
+  display: none !important;
+}
+
+.indent-details-date-picker .input-with-icon {
+  height: 40px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  background-color: #ffffff !important;
+  padding: 0 10px 0 0 !important;
+  box-sizing: border-box !important;
+  transition: all 130ms ease !important;
+}
+
+.indent-details-date-picker .input-with-icon:focus-within {
+  border-color: var(--primary, #059669) !important;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.08) !important;
+}
+
+.indent-details-date-picker .input-with-icon input {
+  height: 38px !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 8px 12px !important;
+  font-size: 13.5px !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+.indent-details-date-picker .input-with-icon input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.indent-field-group--error .indent-details-date-picker .input-with-icon {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+}
+
+/* Style DatePicker inside table cells */
+.indent-table-date-picker.field {
+  margin-bottom: 0 !important;
+}
+
+.indent-table-date-picker label {
+  display: none !important;
+}
+
+.indent-table-date-picker .input-with-icon {
+  height: 36px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  background-color: #ffffff !important;
+  padding: 0 6px 0 0 !important;
+  box-sizing: border-box !important;
+}
+
+.indent-table-date-picker .input-with-icon:focus-within {
+  border-color: var(--primary, #059669) !important;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.08) !important;
+}
+
+.indent-table-date-picker .input-with-icon input {
+  height: 34px !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 6px 10px !important;
+  font-size: 13px !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
 /* Items Card Table styling */
 .indent-items-header {
   display: flex;

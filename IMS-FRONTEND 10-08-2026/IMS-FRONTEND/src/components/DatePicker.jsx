@@ -11,7 +11,7 @@ function formatDisplayDate(value) {
     return String(value ?? '')
   }
 
-  return `${match[3]}/${match[2]}/${match[1]}`
+  return `${match[3]}-${match[2]}-${match[1]}`
 }
 
 function parseDisplayDate(value) {
@@ -22,7 +22,7 @@ function parseDisplayDate(value) {
     return trimmedValue
   }
 
-  const displayMatch = trimmedValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
+  const displayMatch = trimmedValue.match(/^(\d{2})[\/\-](\d{2})[\/\-](\d{4})$/)
 
   if (!displayMatch) {
     return ''
@@ -87,7 +87,7 @@ export default function DatePicker(props) {
     onBlur,
     name,
     label,
-    placeholder = 'DD/MM/YYYY',
+    placeholder = 'DD-MM-YYYY',
     className = '',
     icon = CalendarDays,
     ...restProps

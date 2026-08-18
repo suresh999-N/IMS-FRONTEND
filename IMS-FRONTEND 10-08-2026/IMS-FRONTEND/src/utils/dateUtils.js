@@ -134,3 +134,117 @@ export function compareDateOnly(first, second) {
   if (d1 > d2) return 1
   return 0
 }
+
+/**
+ * Safely parses any date/timestamp representation (string, Date object, numeric epoch) into a valid Date object.
+ * Does not force UTC suffixes on local ISO date-time strings.
+ * @param {string|Date|number|null|undefined} value
+ * @returns {Date|null}
+ */
+export function parseDateValue(value) {
+  if (value === null || value === undefined || value === '') {
+    return null
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value
+  }
+
+  const strVal = String(value).trim()
+  if (!strVal) {
+    return null
+  }
+
+  // Handle epoch timestamps (numeric)
+  if (/^\d+$/.test(strVal)) {
+    const num = Number(strVal)
+    const ms = strVal.length === 10 ? num * 1000 : num
+    const date = new Date(ms)
+    return Number.isNaN(date.getTime()) ? null : date
+  }
+
+  // Parse ISO string or date string directly without modifying timezone
+  const date = new Date(strVal)
+  if (!Number.isNaN(date.getTime())) {
+    return date
+  }
+
+  // Fallback for space-separated date-time strings (e.g. "2026-08-14 17:00:00")
+  const normalized = strVal.replace(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}(?::\d{2})?)/, '$1T$2')
+  const fallbackDate = new Date(normalized)
+  return Number.isNaN(fallbackDate.getTime()) ? null : fallbackDate
+}
+
+/**
+ * Calculates human-readable relative time (e.g. "Just now", "5 min ago", "2 hours ago", "in 10 min").
+ * Accurately determines past ("ago") vs future ("from now") relative times.
+ * @param {string|Date|number|null|undefined} value
+ * @returns {string}
+ */
+export function formatRelativeTime(value) {
+  if (!value) {
+    return 'Recently'
+  }
+
+  const date = parseDateValue(value)
+  if (!date) {
+    return 'Recently'
+  }
+
+  const now = Date.now()
+  let diffMs = now - date.getTime()
+
+  // Handle future-leaning timestamps caused by server clock skew or UTC/local timezone mismatch
+  if (diffMs < 0) {
+    const absDiffMinutes = Math.abs(diffMs) / 60000
+
+    // If within 5 minutes into the future, treat as server clock skew for a recent action -> "Just now"
+    if (absDiffMinutes <= 5) {
+      return 'Just now'
+    }
+
+    // Account for timezone offset mismatch (e.g. server timestamp in local time tagged as UTC)
+    const tzOffsetMs = new Date().getTimezoneOffset() * 60000
+    const adjustedTime = date.getTime() + tzOffsetMs
+    const adjustedDiffMs = now - adjustedTime
+
+    if (adjustedDiffMs >= 0) {
+      diffMs = adjustedDiffMs
+    } else {
+      const adjustedAbsMins = Math.abs(adjustedDiffMs) / 60000
+      if (adjustedAbsMins <= 15) {
+        return 'Just now'
+      }
+      diffMs = adjustedDiffMs
+    }
+  }
+
+  const diffSeconds = Math.round(diffMs / 1000)
+  const diffMinutes = Math.round(diffMs / 60000)
+  const absMinutes = Math.abs(diffMinutes)
+  const isFuture = diffMs < -60000
+
+  const suffix = isFuture ? 'from now' : 'ago'
+
+  if (!isFuture && diffSeconds >= -60 && diffSeconds < 45) {
+    return 'Just now'
+  }
+
+  if (absMinutes < 60) {
+    const mins = Math.max(1, absMinutes)
+    return `${mins} min ${suffix}`
+  }
+
+  const absHours = Math.round(absMinutes / 60)
+  if (absHours < 24) {
+    return `${absHours} ${absHours === 1 ? 'hour' : 'hours'} ${suffix}`
+  }
+
+  const absDays = Math.round(absHours / 24)
+  if (absDays < 30) {
+    return `${absDays} ${absDays === 1 ? 'day' : 'days'} ${suffix}`
+  }
+
+  const absMonths = Math.round(absDays / 30)
+  return `${absMonths}mo ${suffix}`
+}

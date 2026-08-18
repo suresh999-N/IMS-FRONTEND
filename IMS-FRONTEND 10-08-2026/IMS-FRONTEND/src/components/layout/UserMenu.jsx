@@ -1,4 +1,4 @@
-import { LogOut, UserRound } from "lucide-react";
+import { ChevronDown, LogOut, UserRound } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import PortalDropdown from "./PortalDropdown";
@@ -278,6 +278,8 @@ export default function UserMenu({ user, onLogout }) {
             <strong>{name}</strong>
             <span>{role}</span>
           </span>
+
+          <ChevronDown size={14} className="app-user-button__chevron" />
         </button>
 
         {isOpen ? (

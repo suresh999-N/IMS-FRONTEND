@@ -1,19 +1,29 @@
 import { useRef } from 'react'
-import { ChevronLeft, Menu, X } from 'lucide-react'
-import imsPackageIcon from '../../assets/brand/ims-package-icon.png'
+import { ChevronLeft, ChevronUp, Menu, User, X } from 'lucide-react'
+import imsSidebarIcon from '../../assets/brand/ims-sidebar-icon.png'
 import SidebarItem from './SidebarItem'
 import SidebarSection from './SidebarSection'
 
 const SECTIONS = [
-  { key: 'admin', title: 'Admin' },
+  { key: 'admin', title: 'Administration' },
   { key: 'masters', title: 'Masters' },
   { key: 'inventory', title: 'Inventory' },
   { key: 'pos', title: 'POS' },
-  { key: 'management', title: 'Management' },
   { key: 'billing', title: 'Billing' },
+  { key: 'management', title: 'Reports' },
 ]
 
+function getInitials(value) {
+  const parts = String(value || 'IMS')
+    .split(/[\s@._-]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+
+  return parts.map((part) => part.charAt(0).toUpperCase()).join('') || 'B'
+}
+
 export default function Sidebar({
+  user,
   visibleItems,
   isCollapsed,
   isDrawerOpen,
@@ -28,6 +38,9 @@ export default function Sidebar({
 }) {
   const navRef = useRef(null)
   const dashboardItems = visibleItems.filter((item) => item.category === 'dashboard')
+  const userName = user?.name || user?.email?.split('@')[0] || 'Bhargava'
+  const userRole = user?.role || 'Admin'
+  const userInitials = getInitials(userName)
 
   function getVisibleNavItems() {
     if (!navRef.current) {
@@ -132,12 +145,14 @@ export default function Sidebar({
       onTouchMove={onTouchMove}
     >
       <div className="app-sidebar__brand">
-        <div className="app-sidebar__brand-mark" aria-hidden="true">
-          <img src={imsPackageIcon} alt="" />
-        </div>
-        <div className="app-sidebar__brand-copy">
-          <strong>IMS</strong>
-          <span>Inventory Management System</span>
+        <div className="app-sidebar__brand-badge">
+          <div className="app-sidebar__brand-mark" aria-hidden="true">
+            <img src={imsSidebarIcon} alt="IMS" />
+          </div>
+          <div className="app-sidebar__brand-copy">
+            <strong>IMS</strong>
+            <span>Inventory Management System</span>
+          </div>
         </div>
         <button
           type="button"

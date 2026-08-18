@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { getNameError } from "../../validators/nameValidator";
 import "./EditProfile.css";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '').replace(/\/api$/, '');
@@ -850,10 +851,9 @@ function EditProfile({ adminProfile, settingsData, onClose, onSaveProfile }) {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = e.fullNameRequired;
-    } else if (!/^(?=.*[\p{L}a-zA-Z])[a-zA-Z\s\.\-'\p{L}\p{M}]+$/u.test(formData.fullName)) {
-      newErrors.fullName = e.fullNameInvalid;
+    const fullNameError = getNameError(formData.fullName, { required: true, label: e.fullName });
+    if (fullNameError) {
+      newErrors.fullName = fullNameError;
     }
 
     if (!formData.email.trim()) {

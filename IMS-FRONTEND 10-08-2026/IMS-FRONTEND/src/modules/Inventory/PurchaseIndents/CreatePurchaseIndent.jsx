@@ -16,6 +16,7 @@ import { apiRequest, IMS_DATA_MUTATION_EVENT } from '../../../api/apiClient'
 import { getSuppliers } from '../../../api/suppliersApi'
 import { showToast } from '../../../components/common/toast'
 import SearchableSelect from '../../../components/SearchableSelect'
+import DatePicker from '../../../components/DatePicker'
 import { getToday } from '../../../utils/helpers'
 import './PurchaseIndents.css'
 
@@ -796,13 +797,13 @@ function PurchaseIndentForm({
           {/* Indent Date */}
           <div className={`indent-field-group ${errors.indentDate ? 'indent-field-group--error' : ''}`}>
             <label>Indent Date <span className="required">*</span></label>
-            <input
-              type="date"
-              className="indent-input"
+            <DatePicker
+              name="indentDate"
               data-field-key="indentDate"
               value={draft.indentDate}
               onChange={(e) => updateField('indentDate', e.target.value)}
               disabled={isSubmitting}
+              className="indent-details-date-picker"
             />
             {errors.indentDate && <span className="indent-field-error">{errors.indentDate}</span>}
           </div>
@@ -810,13 +811,13 @@ function PurchaseIndentForm({
           {/* Required Date */}
           <div className={`indent-field-group ${errors.expectedDeliveryDate ? 'indent-field-group--error' : ''}`}>
             <label>Required Date <span className="required">*</span></label>
-            <input
-              type="date"
-              className="indent-input"
+            <DatePicker
+              name="expectedDeliveryDate"
               data-field-key="expectedDeliveryDate"
               value={draft.expectedDeliveryDate}
               onChange={(e) => updateField('expectedDeliveryDate', e.target.value)}
               disabled={isSubmitting}
+              className="indent-details-date-picker"
             />
             {errors.expectedDeliveryDate && <span className="indent-field-error">{errors.expectedDeliveryDate}</span>}
           </div>
@@ -1067,12 +1068,12 @@ function PurchaseIndentForm({
 
                     {/* Required Date */}
                     <td>
-                      <input
-                        type="date"
-                        className="indent-table-input"
+                      <DatePicker
+                        name={`item_required_date_${index}`}
                         value={item.requiredDate || draft.expectedDeliveryDate || getToday()}
                         onChange={(e) => handleItemFieldChange(index, 'requiredDate', e.target.value)}
                         disabled={isSubmitting}
+                        className="indent-table-date-picker"
                       />
                     </td>
 

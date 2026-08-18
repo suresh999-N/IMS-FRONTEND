@@ -24,6 +24,11 @@ import {
   sanitizeEmailInput,
 } from "../../validators/emailValidator";
 import {
+  getNameError,
+  nameInputProps,
+  sanitizeNameInput,
+} from "../../validators/nameValidator";
+import {
   getPhoneError,
   phoneInputProps,
   sanitizePhoneInput,
@@ -73,8 +78,9 @@ export default function Register() {
       return;
     }
 
-    if (!/^(?=.*[\p{L}a-zA-Z])[a-zA-Z\s\.\-'\p{L}\p{M}]+$/u.test(formData.name)) {
-      setError("Full name can only contain letters, spaces, dots, hyphens, and apostrophes, and must contain at least one letter.");
+    const nameError = getNameError(formData.name, { required: true, label: "Full Name" });
+    if (nameError) {
+      setError(nameError);
       return;
     }
 

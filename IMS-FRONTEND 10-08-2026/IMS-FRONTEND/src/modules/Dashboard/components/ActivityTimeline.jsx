@@ -11,48 +11,7 @@ import {
 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import SkeletonCard from './SkeletonCard'
-
-function formatRelativeTime(value) {
-  if (!value) {
-    return 'Recently'
-  }
-
-  const rawValue = String(value).trim()
-  const timestamp = /^\d{4}-\d{2}-\d{2}T/.test(rawValue) && !/[zZ]|[+-]\d{2}:\d{2}$/.test(rawValue)
-    ? `${rawValue}Z`
-    : rawValue
-  const date = new Date(timestamp)
-
-  if (Number.isNaN(date.getTime())) {
-    return 'Recently'
-  }
-
-  const diffMs = Date.now() - date.getTime()
-  const diffMinutes = Math.round(diffMs / 60000)
-  const absMinutes = Math.abs(diffMinutes)
-  const suffix = diffMinutes >= 0 ? 'ago' : 'from now'
-
-  if (diffMinutes >= 0 && absMinutes < 1) {
-    return 'Just now'
-  }
-
-  if (absMinutes < 60) {
-    return `${Math.max(1, absMinutes)} min ${suffix}`
-  }
-
-  const absHours = Math.round(absMinutes / 60)
-  if (absHours < 24) {
-    return `${absHours} ${absHours === 1 ? 'hour' : 'hours'} ${suffix}`
-  }
-
-  const absDays = Math.round(absHours / 24)
-  if (absDays < 30) {
-    return `${absDays} ${absDays === 1 ? 'day' : 'days'} ${suffix}`
-  }
-
-  const absMonths = Math.round(absDays / 30)
-  return `${absMonths}mo ${suffix}`
-}
+import { formatRelativeTime } from '../../../utils/helpers'
 
 function toneForActivity(type = '') {
   const value = String(type).toLowerCase()

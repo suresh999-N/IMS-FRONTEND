@@ -981,8 +981,40 @@ function getGoodsReceiptDetailItems(record = {}) {
   ]) || getFirstReferenceValue(record, ['warehouseId', 'WarehouseId'])
 
   const receiptDate = getFirstReferenceValue(record, ['receiptDate', 'ReceiptDate', 'createdAt', 'CreatedAt'])
-  const supplierInvoiceNo = getFirstReferenceValue(record, ['supplierInvoiceNo', 'SupplierInvoiceNo', 'supplierInvoiceNumber', 'SupplierInvoiceNumber', 'invoiceNumber', 'InvoiceNumber', 'invoiceNo', 'InvoiceNo', 'invoice', 'Invoice'])
-  const supplierInvoiceDate = getFirstReferenceValue(record, ['supplierInvoiceDate', 'SupplierInvoiceDate', 'invoiceDate', 'InvoiceDate'])
+  const supplierInvoiceNo = getFirstReferenceValue(record, [
+    'supplierInvoiceNo',
+    'SupplierInvoiceNo',
+    'supplierInvoiceNumber',
+    'SupplierInvoiceNumber',
+    'invoiceNumber',
+    'InvoiceNumber',
+    'invoiceNo',
+    'InvoiceNo',
+    'invoice',
+    'Invoice',
+    'supplierInvoice',
+    'SupplierInvoice',
+    'suppInvNo',
+    'SuppInvNo',
+    'vendorInvoiceNo',
+    'VendorInvoiceNo',
+    'billNo',
+    'BillNo',
+    'referenceNo',
+    'ReferenceNo',
+  ])
+  const supplierInvoiceDate = getFirstReferenceValue(record, [
+    'supplierInvoiceDate',
+    'SupplierInvoiceDate',
+    'invoiceDate',
+    'InvoiceDate',
+    'suppInvDate',
+    'SuppInvDate',
+    'vendorInvoiceDate',
+    'VendorInvoiceDate',
+    'billDate',
+    'BillDate',
+  ])
   const createdBy = getFirstReferenceValue(record, ['createdBy', 'CreatedBy', 'createdByName', 'CreatedByName', 'user', 'User'])
 
   return [
@@ -999,15 +1031,13 @@ function getGoodsReceiptDetailItems(record = {}) {
     {
       key: 'supplierInvoiceNo',
       label: 'Supplier Invoice No',
-      value: supplierInvoiceNo,
-      optional: true,
+      value: String(supplierInvoiceNo ?? '').trim() || 'N/A',
       icon: FileSpreadsheet,
     },
     {
       key: 'supplierInvoiceDate',
       label: 'Supplier Invoice Date',
-      value: supplierInvoiceDate ? formatDate(supplierInvoiceDate) : '',
-      optional: true,
+      value: supplierInvoiceDate ? formatDate(supplierInvoiceDate) : 'N/A',
       icon: CalendarDays,
     },
     {
@@ -3078,12 +3108,60 @@ function ResourcePage({ config, navigationContent = null }) {
       const rawLineTotal = Number(matchedRxItem?.lineTotal ?? matchedRxItem?.totalAmount ?? 0)
       const lineTotal = rawLineTotal > 0 ? rawLineTotal : (taxableAmount + taxAmount)
 
+      const unitCandidates = [
+        matchedRxItem?.unitName,
+        matchedRxItem?.unit,
+        matchedRxItem?.uom,
+        matchedRxItem?.uomName,
+        matchedRxItem?.unitSymbol,
+        matchedRxItem?.unitOfMeasure,
+        matchedRxItem?.UnitName,
+        matchedRxItem?.Unit,
+        poIt?.unitName,
+        poIt?.unit,
+        poIt?.uom,
+        poIt?.uomName,
+        poIt?.unitSymbol,
+        poIt?.unitOfMeasure,
+        poIt?.UnitName,
+        poIt?.Unit,
+        matchedCatalogProduct?.unitName,
+        matchedCatalogProduct?.unit,
+        matchedCatalogProduct?.uom,
+        matchedCatalogProduct?.unitSymbol,
+        matchedCatalogProduct?.uomName,
+        matchedCatalogProduct?.unitOfMeasure,
+        matchedCatalogProduct?.unit?.unitName,
+        matchedCatalogProduct?.unit?.name,
+        matchedCatalogProduct?.unit?.symbol,
+        matchedCatalogProduct?.UnitName,
+        matchedCatalogProduct?.Unit,
+        matchedCatalogProduct?.Uom,
+      ]
+
+      let resolvedUnit = ''
+      for (const candidate of unitCandidates) {
+        if (typeof candidate === 'object' && candidate !== null) {
+          const nested = candidate.unitName || candidate.name || candidate.symbol || candidate.label
+          if (nested && String(nested).trim()) {
+            resolvedUnit = String(nested).trim()
+            break
+          }
+        } else {
+          const textVal = String(candidate ?? '').trim()
+          if (textVal && textVal !== '-' && textVal.toLowerCase() !== 'undefined' && textVal.toLowerCase() !== 'null') {
+            resolvedUnit = textVal
+            break
+          }
+        }
+      }
+
       return {
         ...poIt,
         ...matchedRxItem,
         productName: poIt.productName || poIt.product || poIt.name || matchedRxItem?.productName || (pId ? `Product #${pId}` : `Product #${idx + 1}`),
         variantName: poIt.variantName || poIt.variant || matchedRxItem?.variantName || '-',
-        unitName: poIt.unitName || poIt.unit || matchedRxItem?.unitName || 'Nos',
+        unitName: resolvedUnit || matchedRxItem?.unitName || poIt.unitName || 'Nos',
         orderedQuantity: orderedQty,
         receivedQuantity: receivedQty,
         unitPrice,

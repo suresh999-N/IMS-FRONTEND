@@ -286,7 +286,7 @@ function getHumanNameError(value, label, { required = true, min = 3, max = 100 }
   if (!nextValue) return required ? `${label} is required.` : ''
   if (nextValue.length < min) return `${label} must be at least ${min} characters.`
   if (nextValue.length > max) return `${label} cannot exceed ${max} characters.`
-  if (!/[A-Za-z]/.test(nextValue)) return `${label} must contain letters.`
+  if (!/[A-Za-z]/.test(nextValue) || /^\d+$/.test(nextValue)) return `${label} must contain alphabetic characters and cannot contain only numbers.`
   if (/\s{2,}/.test(nextValue)) return `${label} cannot contain repeated spaces.`
   if (/([.'-])\1{1,}/.test(nextValue)) return `${label} contains repeated punctuation.`
   return /^[A-Za-z .'-]+$/.test(nextValue)
@@ -299,7 +299,7 @@ function getContactNameError(value) {
   if (!nextValue) return 'Contact name is required.'
   if (nextValue.length < 2) return 'Contact name must be at least 2 characters.'
   if (nextValue.length > INPUT_LIMITS.contactName) return `Contact name cannot exceed ${INPUT_LIMITS.contactName} characters.`
-  if (!/[A-Za-z]/.test(nextValue)) return 'Contact name must contain letters.'
+  if (!/[A-Za-z]/.test(nextValue) || /^\d+$/.test(nextValue)) return 'Contact name must contain alphabetic characters and cannot contain only numbers.'
   if (/\s{2,}/.test(nextValue)) return 'Contact name cannot contain repeated spaces.'
   return /^[A-Za-z ]+$/.test(nextValue)
     ? ''
@@ -313,7 +313,7 @@ function getBusinessNameError(value, label, { required = true, min = 3, max = 15
   if (!nextValue) return required ? `${label} is required.` : ''
   if (nextValue.length < min) return `${label} must be at least ${min} characters.`
   if (nextValue.length > max) return `${label} cannot exceed ${max} characters.`
-  if (!/[A-Za-z]/.test(nextValue)) return `${label} must contain letters.`
+  if (!/[A-Za-z]/.test(nextValue) || /^\d+$/.test(nextValue)) return `${label} must contain alphabetic characters and cannot contain only numbers.`
   if (!allowedPattern.test(nextValue)) {
     return allowAmpersand
       ? `${label} can contain letters, numbers, spaces, periods, ampersands, apostrophes, and hyphens only.`

@@ -179,9 +179,13 @@ export default function SidebarItem({ item, isCollapsed }) {
         data-sidebar-item-link="true"
       >
         <span className="app-sidebar__link-icon" aria-hidden="true">
-          <Icon size={18} />
+          <Icon size={20} />
         </span>
         <span className="app-sidebar__link-label">{item.label}</span>
+
+        {isCurrentlyActive && !hasChildren && !isCollapsed && (
+          <span className="app-sidebar__active-dot" aria-hidden="true" />
+        )}
 
         {hasChildren && !isCollapsed && (
           <span

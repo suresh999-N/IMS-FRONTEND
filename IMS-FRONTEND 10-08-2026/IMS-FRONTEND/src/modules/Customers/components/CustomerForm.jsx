@@ -431,7 +431,9 @@ function getNameError(value, label, { required = true, min = 3 } = {}) {
   const cleanValue = collapseSpaces(value)
   if (!cleanValue) return required ? `${label} is required.` : ''
   if (cleanValue.length < min) return `${label} must be at least ${min} characters.`
-  if (!/[A-Za-z]/.test(cleanValue)) return `${label} must include letters.`
+  if (!/[A-Za-z]/.test(cleanValue) || /^\d+$/.test(cleanValue)) {
+    return `${label} must contain alphabetic characters and cannot contain only numbers.`
+  }
   if (!/^[A-Za-z0-9 .'-]+$/.test(cleanValue)) return `${label} contains invalid characters.`
   return ''
 }
@@ -441,7 +443,9 @@ function getPlaceNameError(value, label) {
   if (!cleanValue) return `${label} is required.`
   if (cleanValue.length < 2) return `${label} must be at least 2 characters.`
   if (cleanValue.length > 100) return `${label} cannot exceed 100 characters.`
-  if (!/[A-Za-z]/.test(cleanValue)) return `${label} must contain letters.`
+  if (!/[A-Za-z]/.test(cleanValue) || /^\d+$/.test(cleanValue)) {
+    return `${label} must contain alphabetic characters and cannot contain only numbers.`
+  }
   return /^[A-Za-z .'-]+$/.test(cleanValue)
     ? ''
     : `${label} can contain letters, spaces, periods, apostrophes, and hyphens only.`
@@ -463,7 +467,7 @@ function getBankNameError(value) {
   if (!cleanValue) return 'Bank name is required.'
   if (cleanValue.length < 2) return 'Bank name must be at least 2 characters.'
   if (cleanValue.length > 100) return 'Bank name cannot exceed 100 characters.'
-  if (!/[A-Za-z]/.test(cleanValue)) return 'Bank name must contain letters.'
+  if (!/[A-Za-z]/.test(cleanValue) || /^\d+$/.test(cleanValue)) return 'Bank name must contain alphabetic characters and cannot contain only numbers.'
   return /^[A-Za-z0-9 .&'-]+$/.test(cleanValue) ? '' : 'Bank name contains invalid characters.'
 }
 
@@ -479,7 +483,7 @@ function getBranchError(value) {
   if (!branch) return ''
   if (branch.length < 2) return 'Branch name must be at least 2 characters.'
   if (branch.length > 100) return 'Branch name cannot exceed 100 characters.'
-  if (!/[A-Za-z]/.test(branch)) return 'Branch name must contain letters.'
+  if (!/[A-Za-z]/.test(branch) || /^\d+$/.test(branch)) return 'Branch name must contain alphabetic characters and cannot contain only numbers.'
   return /^[A-Za-z0-9 .,/&'-]+$/.test(branch)
     ? ''
     : 'Branch can contain letters, numbers, spaces, periods, commas, slashes, and hyphens only.'
@@ -497,7 +501,9 @@ function getContactNameError(value) {
   const cleanValue = collapseSpaces(value)
   if (!cleanValue) return 'Contact name is required.'
   if (cleanValue.length < 2) return 'Contact name must be at least 2 characters.'
-  if (!/[A-Za-z]/.test(cleanValue)) return 'Contact name must include letters.'
+  if (!/[A-Za-z]/.test(cleanValue) || /^\d+$/.test(cleanValue)) {
+    return 'Contact name must contain alphabetic characters and cannot contain only numbers.'
+  }
   if (!/^[A-Za-z &.-]+$/.test(cleanValue)) {
     return 'Contact name can contain only letters, spaces, &, -, and .'
   }
@@ -509,7 +515,9 @@ function getCustomerNameError(value) {
   if (!cleanValue) return 'Customer name is required.'
   if (cleanValue.length < 2) return 'Customer name must be at least 2 characters.'
   if (cleanValue.length > 100) return 'Customer name cannot exceed 100 characters.'
-  if (!/[A-Za-z]/.test(cleanValue)) return 'Customer name must include letters.'
+  if (!/[A-Za-z]/.test(cleanValue) || /^\d+$/.test(cleanValue)) {
+    return 'Customer name must contain alphabetic characters and cannot contain only numbers.'
+  }
   if (!/^[A-Za-z &.-]+$/.test(cleanValue)) {
     return 'Customer name can contain only letters, spaces, &, -, and .'
   }

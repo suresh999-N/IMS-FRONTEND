@@ -130,8 +130,12 @@ function getManagerNameError(value) {
     return 'Manager name must be at least 3 characters.'
   }
 
-  if (!/^[A-Za-z ]+$/.test(cleanValue)) {
-    return 'Use letters and spaces only.'
+  if (/^\d+$/.test(cleanValue) || !/[A-Za-z]/.test(cleanValue)) {
+    return 'Manager name must contain alphabetic characters and cannot contain only numbers.'
+  }
+
+  if (!/^[A-Za-z .'-]+$/.test(cleanValue)) {
+    return 'Use letters, spaces, hyphens, and apostrophes only.'
   }
 
   return ''
@@ -377,7 +381,7 @@ export default function WarehouseForm({
             placeholder="Operations Manager"
             error={getVisibleError('managerName')}
             maxLength={maxLengths.managerName}
-            onKeyDown={handleRestrictedKeyDown(/^[A-Za-z ]$/)}
+            onKeyDown={handleRestrictedKeyDown(/^[A-Za-z .'-]$/)}
             disabled={isSubmitting}
           />
 

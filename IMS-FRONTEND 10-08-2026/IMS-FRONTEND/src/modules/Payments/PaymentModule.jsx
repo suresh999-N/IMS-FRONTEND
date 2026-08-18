@@ -2498,7 +2498,17 @@ export default function CustomerPaymentModule({
       label: partyLabel,
       className: 'payments-col-party',
       sortable: true,
-      render: (payment) => payment.partyName || '-',
+      render: (payment) => {
+        if (payment.partyName && payment.partyName !== '-') return payment.partyName
+        const partyId = payment.customerId || payment.supplierId || payment.partyId
+        if (partyId && Array.isArray(parties)) {
+          const matched = parties.find((p) => String(p.id) === String(partyId) || String(p.customerId) === String(partyId) || String(p.supplierId) === String(partyId))
+          if (matched) {
+            return matched.name || matched.companyName || matched.company || matched.customerName || matched.supplierName || '-'
+          }
+        }
+        return payment.partyName || '-'
+      },
     },
     ...(isSupplier
       ? [{

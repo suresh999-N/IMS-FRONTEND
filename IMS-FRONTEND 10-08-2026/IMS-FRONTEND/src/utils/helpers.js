@@ -8,9 +8,11 @@ import {
   compareDateOnly,
   formatDateForDisplay,
   formatDateTimeForDisplay,
+  formatRelativeTime,
   getLocalTodayDate,
   isValidDateValue,
   normaliseDateOnlyPayload,
+  parseDateValue,
   toDateInputValue,
 } from './dateUtils'
 
@@ -263,9 +265,11 @@ export {
   compareDateOnly,
   formatDateForDisplay,
   formatDateTimeForDisplay,
+  formatRelativeTime,
   getLocalTodayDate,
   isValidDateValue,
   normaliseDateOnlyPayload,
+  parseDateValue,
   toDateInputValue,
 }
 

@@ -2,6 +2,7 @@ import { Plus, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import QuantityInput from '../../../../components/QuantityInput'
 import SearchableSelect from '../../../../components/SearchableSelect'
+import DatePicker from '../../../../components/DatePicker'
 import { createId, getNumberError, getRequiredError, getToday } from '../../../../utils/helpers'
 
 function createLineItem() {
@@ -227,15 +228,14 @@ export default function PurchaseIndentForm({
           {/* Request Date */}
           <div className={`indent-field-group ${touched.indentDate && errors.indentDate ? 'indent-field-group--error' : ''}`}>
             <label htmlFor="pi-indent-date">Request date <span className="required">*</span></label>
-            <input
+            <DatePicker
               id="pi-indent-date"
               name="indentDate"
-              type="date"
-              className="indent-input"
               value={formData.indentDate}
               onChange={handleChange}
               onBlur={handleBlur}
               disabled={isSubmitting}
+              className="indent-details-date-picker"
             />
             {touched.indentDate && errors.indentDate && (
               <span className="indent-field-error">{errors.indentDate}</span>

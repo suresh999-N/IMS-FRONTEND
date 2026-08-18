@@ -7,11 +7,6 @@ import { getSuppliers } from './api/suppliersApi'
 import { getWarehouses } from './api/warehousesApi'
 import { getUsers } from './api/usersApi.js'
 import { getRolesWithPermissions, ROLES_UPDATED_EVENT } from './api/rolesApi'
-import customersData from './data/customers.json'
-import productsData from './data/products.json'
-import stockData from './data/stock.json'
-import suppliersData from './data/suppliers.json'
-
 import AppNetworkStatus from './components/common/AppNetworkStatus'
 import ToastViewport from './components/common/ToastViewport'
 import { AuthProvider, useAuth } from './hooks/useAuth'
@@ -36,12 +31,12 @@ import {
 const PRODUCT_CATALOG_UPDATED_EVENT = 'ims:product-catalog-updated'
 
 const initialData = buildInitialState({
-  products: productsData,
-  customers: customersData,
-  suppliers: suppliersData,
+  products: [],
+  customers: [],
+  suppliers: [],
   users: [],
   roles: [],
-  stock: stockData,
+  stock: [],
 })
 
 function toNumber(value) {
@@ -159,8 +154,9 @@ function ApiDataBootstrap({ onDataLoaded }) {
       })
     }
 
-    // Do not eagerly fire 11 simultaneous requests on mount.
-    // Pages load their own data on demand. Listen only for cross-component update events.
+    // Eagerly fetch live API data on boot so app starts with real backend database state
+    loadApiData()
+
     window.addEventListener(PRODUCT_CATALOG_UPDATED_EVENT, loadApiData)
     window.addEventListener(STOCK_DATA_UPDATED_EVENT, loadApiData)
     window.addEventListener(ROLES_UPDATED_EVENT, loadApiData)

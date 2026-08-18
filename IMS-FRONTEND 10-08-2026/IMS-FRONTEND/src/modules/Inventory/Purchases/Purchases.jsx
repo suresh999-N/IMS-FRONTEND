@@ -7,7 +7,7 @@ import {
   getPurchaseOrders,
   updatePurchaseOrder,
 } from '../../../api/businessApi'
-import { updatePurchaseIndent } from '../../../api/purchaseIndentsApi'
+import { getPurchaseIndents, updatePurchaseIndent } from '../../../api/purchaseIndentsApi'
 import { apiRequest } from '../../../api/apiClient'
 import { API_ENDPOINTS } from '../../../api/endpoints'
 import { showToast } from '../../../components/common/toast'
@@ -215,11 +215,57 @@ function calculatePOStatus(purchase, matchingGrns) {
   return 'Partially Received'
 }
 
-function enrichPurchaseOrders(orders, productsCatalog, goodsReceipts = []) {
+function enrichPurchaseOrders(orders, productsCatalog = [], goodsReceipts = [], purchaseIndents = []) {
   if (!Array.isArray(orders)) return []
 
   return orders.map((purchase) => {
-    // Resolve lines
+    // Resolve matching GRNs
+    const matchingGrns = getMatchingGrns(purchase, goodsReceipts)
+
+    // Resolve matching source Purchase Indent
+    const sourceIndentRef = String(
+      purchase?.sourceIndentId ||
+      purchase?.indentId ||
+      purchase?.indentNumber ||
+      purchase?.indentNo ||
+      purchase?.sourceIndent ||
+      ''
+    ).trim().toLowerCase()
+
+    const matchingIndent = (purchaseIndents || []).find((ind) => {
+      const indId = String(ind?.id || ind?.indentId || '').trim().toLowerCase()
+      const indNum = String(ind?.indentNumber || ind?.indentNo || '').trim().toLowerCase()
+      return sourceIndentRef && ((indId && sourceIndentRef === indId) || (indNum && sourceIndentRef === indNum))
+    })
+
+    // Resolve Department
+    const departmentCandidates = [
+      purchase.departmentName,
+      purchase.department,
+      purchase.DepartmentName,
+      purchase.Department,
+      purchase.dept,
+      purchase.deptName,
+      matchingGrns[0]?.departmentName,
+      matchingGrns[0]?.department,
+      matchingGrns[0]?.DepartmentName,
+      matchingGrns[0]?.Department,
+      matchingIndent?.department,
+      matchingIndent?.departmentName,
+      matchingIndent?.Department,
+      matchingIndent?.DepartmentName,
+    ]
+
+    let resolvedDepartment = ''
+    for (const candidate of departmentCandidates) {
+      const textVal = String(candidate ?? '').trim()
+      if (textVal && textVal !== '-' && textVal.toLowerCase() !== 'undefined' && textVal.toLowerCase() !== 'null') {
+        resolvedDepartment = textVal
+        break
+      }
+    }
+
+    // Resolve lines and units
     const rawItems = Array.isArray(purchase.items) && purchase.items.length > 0
       ? purchase.items
       : [{
@@ -227,7 +273,7 @@ function enrichPurchaseOrders(orders, productsCatalog, goodsReceipts = []) {
           productName: purchase.productName || purchase.product,
           variantId: purchase.variantId,
           variantName: purchase.variantName,
-          unitName: purchase.unitName,
+          unitName: purchase.unitName || purchase.unit || purchase.uom,
           quantity: purchase.quantity ?? purchase.totalQuantity,
           price: purchase.price ?? purchase.unitPrice,
           total: purchase.totalAmount,
@@ -236,19 +282,80 @@ function enrichPurchaseOrders(orders, productsCatalog, goodsReceipts = []) {
 
     const enrichedItems = rawItems.map((item) => {
       let price = Number(item.price ?? item.unitPrice ?? 0)
-      if (price <= 0 && item.productId) {
-        // Look up price in catalog
-        const catalogProd = (productsCatalog || []).find(
-          (p) => String(p.id) === String(item.productId) ||
-                 String(p.productId) === String(item.productId)
+      const productId = item.productId || purchase.productId
+
+      // Catalog product lookup
+      const catalogProd = (productsCatalog || []).find(
+        (p) => String(p.id ?? p.productId ?? p.ProductId ?? '') === String(productId ?? '')
+      )
+
+      if (price <= 0 && catalogProd) {
+        price = Number(catalogProd.cost || catalogProd.costPrice || catalogProd.purchasePrice || catalogProd.price || 0)
+      }
+
+      // Matching GRN item lookup
+      let matchingGrnItem = null
+      for (const grn of matchingGrns) {
+        const grnItems = Array.isArray(grn.items) && grn.items.length > 0 ? grn.items : [grn]
+        matchingGrnItem = grnItems.find(
+          (gi) => String(gi.productId || gi.id || '') === String(productId || '')
         )
-        if (catalogProd) {
-          price = Number(catalogProd.cost || catalogProd.costPrice || catalogProd.purchasePrice || catalogProd.price || 0)
+        if (matchingGrnItem) break
+      }
+
+      // Unit candidates
+      const unitCandidates = [
+        item.unitName,
+        item.unit,
+        item.uom,
+        item.uomName,
+        item.unitSymbol,
+        item.unitOfMeasure,
+        item.UnitName,
+        item.Unit,
+        item.Uom,
+        item.UOM,
+        matchingGrnItem?.unitName,
+        matchingGrnItem?.unit,
+        matchingGrnItem?.uom,
+        matchingGrnItem?.unitSymbol,
+        matchingGrnItem?.uomName,
+        matchingGrnItem?.unitOfMeasure,
+        catalogProd?.unitName,
+        catalogProd?.unit,
+        catalogProd?.uom,
+        catalogProd?.unitSymbol,
+        catalogProd?.uomName,
+        catalogProd?.unitOfMeasure,
+        catalogProd?.unit?.unitName,
+        catalogProd?.unit?.name,
+        catalogProd?.unit?.symbol,
+        catalogProd?.UnitName,
+        catalogProd?.Unit,
+        catalogProd?.Uom,
+      ]
+
+      let resolvedUnit = ''
+      for (const candidate of unitCandidates) {
+        if (typeof candidate === 'object' && candidate !== null) {
+          const nested = candidate.unitName || candidate.name || candidate.symbol || candidate.label
+          if (nested && String(nested).trim()) {
+            resolvedUnit = String(nested).trim()
+            break
+          }
+        } else {
+          const textVal = String(candidate ?? '').trim()
+          if (textVal && textVal !== '-' && textVal.toLowerCase() !== 'undefined' && textVal.toLowerCase() !== 'null') {
+            resolvedUnit = textVal
+            break
+          }
         }
       }
+
       const quantity = Number(item.quantity || 0)
       return {
         ...item,
+        unitName: resolvedUnit || item.unitName || item.unit || 'Nos',
         price,
         unitPrice: price,
         total: Number(item.total || 0) || (quantity * price),
@@ -256,12 +363,12 @@ function enrichPurchaseOrders(orders, productsCatalog, goodsReceipts = []) {
     })
 
     const totalAmount = enrichedItems.reduce((sum, line) => sum + (Number(line.total) || 0), 0)
-
-    const matchingGrns = getMatchingGrns(purchase, goodsReceipts)
     const calculatedStatus = calculatePOStatus(purchase, matchingGrns)
 
     return {
       ...purchase,
+      departmentName: resolvedDepartment,
+      department: resolvedDepartment || purchase.department,
       items: enrichedItems,
       totalAmount: purchase.totalAmount > 0 ? purchase.totalAmount : totalAmount,
       grandTotal: purchase.grandTotal > 0 ? purchase.grandTotal : totalAmount,
@@ -355,9 +462,10 @@ export default function Purchases({
     setIsLoading(true)
     setError('')
 
-    const [poRes, grnRes] = await Promise.all([
+    const [poRes, grnRes, indentRes] = await Promise.all([
       getPurchaseOrders(),
       apiRequest(API_ENDPOINTS.goodsReceipts.list),
+      getPurchaseIndents(1, 100),
     ])
 
     if (!poRes.success) {
@@ -368,7 +476,8 @@ export default function Purchases({
     }
 
     const goodsReceipts = grnRes?.success ? (grnRes.data ?? []) : []
-    setPurchaseOrders(enrichPurchaseOrders(poRes.data ?? [], products, goodsReceipts))
+    const purchaseIndents = indentRes?.success ? (indentRes.data?.items ?? indentRes.data ?? []) : []
+    setPurchaseOrders(enrichPurchaseOrders(poRes.data ?? [], products, goodsReceipts, purchaseIndents))
     setIsLoading(false)
   }
 
@@ -379,9 +488,10 @@ export default function Purchases({
       setIsLoading(true)
       setError('')
 
-      const [poRes, grnRes] = await Promise.all([
+      const [poRes, grnRes, indentRes] = await Promise.all([
         getPurchaseOrders(),
         apiRequest(API_ENDPOINTS.goodsReceipts.list),
+        getPurchaseIndents(1, 100),
       ])
 
       if (!isMounted) {
@@ -393,7 +503,8 @@ export default function Purchases({
         setPurchaseOrders([])
       } else {
         const goodsReceipts = grnRes?.success ? (grnRes.data ?? []) : []
-        setPurchaseOrders(enrichPurchaseOrders(poRes.data ?? [], products, goodsReceipts))
+        const purchaseIndents = indentRes?.success ? (indentRes.data?.items ?? indentRes.data ?? []) : []
+        setPurchaseOrders(enrichPurchaseOrders(poRes.data ?? [], products, goodsReceipts, purchaseIndents))
       }
 
       setIsLoading(false)
@@ -656,7 +767,7 @@ export default function Purchases({
               <div className="purchase-details__grid">
                 <DetailField label="Supplier" value={getSafeText(viewTarget.supplierName || viewTarget.supplier, 'Supplier not assigned')} />
                 <DetailField label="Warehouse" value={getSafeText(viewTarget.warehouseName || viewTarget.warehouse, 'Warehouse not assigned')} />
-                <DetailField label="Department" value={getSafeText(viewTarget.departmentName || viewTarget.department, 'Department not assigned')} />
+                <DetailField label="Department" value={getSafeText(viewTarget.departmentName || viewTarget.department || viewTarget.DepartmentName || viewTarget.Department, 'Department not assigned')} />
                 <DetailField label="Source Indent" value={getSafeText(viewTarget.indentNumber || viewTarget.sourceIndentId, 'Not linked to an indent')} />
                 <DetailField label="Order Date" value={formatSafeDate(viewTarget.orderDate)} />
                 <DetailField label="Expected Date" value={formatSafeDate(viewTarget.expectedDate)} />
@@ -689,7 +800,7 @@ export default function Purchases({
                           <td style={{ textAlign: 'center' }}>{index + 1}</td>
                           <td>{getSafeText(line.productName || line.product || viewTarget.productName)}</td>
                           <td>{getSafeText(line.variantName || viewTarget.variantName, 'Default variant')}</td>
-                          <td>{getSafeText(line.unitName || line.unit || viewTarget.unitName, 'Unit not set')}</td>
+                          <td>{getSafeText(line.unitName || line.unit || line.uom || line.unitSymbol || line.uomName || viewTarget.unitName, 'Nos')}</td>
                           <td style={{ textAlign: 'right', fontWeight: 700 }}>{quantity || 0}</td>
                           <td style={{ textAlign: 'right' }}>{formatCurrency(price)}</td>
                           <td style={{ textAlign: 'right', fontWeight: 700 }}>{formatCurrency(total)}</td>

@@ -31,7 +31,8 @@ export default function SidebarSection({
         data-sidebar-section-key={sectionKey}
         data-sidebar-section-open={String(isOpen)}
       >
-        <span className="app-sidebar__section-label">{title}</span>
+        <span className="app-sidebar__section-label">{String(title).toUpperCase()}</span>
+        <span className="app-sidebar__section-line" aria-hidden="true" />
         <ChevronDown
           size={14}
           className={`app-sidebar__section-chevron ${isExpanded ? 'is-open' : ''}`}

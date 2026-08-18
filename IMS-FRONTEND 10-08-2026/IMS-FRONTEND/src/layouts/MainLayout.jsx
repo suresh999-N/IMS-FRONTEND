@@ -153,6 +153,7 @@ export default function MainLayout() {
       />
 
       <Sidebar
+        user={user}
         visibleItems={visibleItems}
         isCollapsed={isSidebarCollapsed}
         isDrawerOpen={isDrawerOpen}
