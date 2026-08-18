@@ -487,6 +487,7 @@ export function normalizeInvoice(item) {
     totalAmount: number(item?.totalAmount ?? item?.TotalAmount),
     paidAmount: number(item?.paidAmount ?? item?.PaidAmount),
     balanceAmount: number(item?.balanceAmount ?? item?.BalanceAmount),
+    paymentMethod: text(item?.paymentMethod ?? item?.PaymentMethod ?? item?.payment_method ?? 'N/A'),
     returnedAmount: number(item?.returnedAmount ?? item?.ReturnedAmount),
     adjustedOutstanding: number(item?.adjustedOutstanding ?? item?.AdjustedOutstanding ?? item?.balanceAmount ?? item?.BalanceAmount),
     returnStatus: text(item?.returnStatus ?? item?.ReturnStatus),

@@ -177,7 +177,7 @@ function buildInitialDraft(initialInvoiceNo) {
     dueDate: getDueDateFromTerms(today, 'Net 15 Days'),
     salesPerson: 'Ravi Kiran',
     paymentTerms: 'Net 15 Days',
-    currency: 'INR - Indian Rupee',
+    paymentMethod: 'Cash',
     reference: '',
     notes: '',
     paidAmount: '',
@@ -498,6 +498,7 @@ function InvoiceForm({
         invoiceDate: draft.invoiceDate || null,
         dueDate: draft.dueDate || null,
         paidAmount: amountPaid,
+        paymentMethod: draft.paymentMethod || 'Cash',
         referenceNumber: draft.reference || null,
         items: calculatedTotals.items.map((item) => {
           const qty = toNumber(item.quantity)
@@ -662,17 +663,19 @@ function InvoiceForm({
             </select>
           </label>
 
-          {/* Currency Field */}
+          {/* Payment Method Field */}
           <label className="field">
-            <span>Currency</span>
+            <span>Payment Method</span>
             <select
-              value={draft.currency}
-              onChange={(e) => updateField('currency', e.target.value)}
+              value={draft.paymentMethod}
+              onChange={(e) => updateField('paymentMethod', e.target.value)}
               disabled={isSubmitting}
             >
-              <option value="INR - Indian Rupee">INR - Indian Rupee</option>
-              <option value="USD - US Dollar">USD - US Dollar</option>
-              <option value="EUR - Euro">EUR - Euro</option>
+              <option value="Cash">Cash</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="UPI">UPI</option>
+              <option value="Card">Card</option>
+              <option value="Cheque">Cheque</option>
             </select>
           </label>
 

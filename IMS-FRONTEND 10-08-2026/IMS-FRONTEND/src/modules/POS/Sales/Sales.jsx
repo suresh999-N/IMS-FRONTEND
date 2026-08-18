@@ -490,6 +490,19 @@ export default function Sales({ customers = [] }) {
       ),
     },
     {
+      key: 'paymentMethod',
+      label: 'Payment Method',
+      sortable: true,
+      tableWidth: 140,
+      style: { width: 140, minWidth: 120 },
+      headerStyle: { width: 140, minWidth: 120 },
+      render: (invoice) => (
+        <span style={{ fontWeight: 600 }}>
+          {invoice.paymentMethod || 'N/A'}
+        </span>
+      ),
+    },
+    {
       key: 'status',
       label: 'Status',
       sortable: true,
@@ -706,7 +719,7 @@ export default function Sales({ customers = [] }) {
             </FilterBar>
           )}
           columnStorageKey="ims.sales.visibleColumns.compact.v3"
-          defaultVisibleColumnKeys={['invoiceNumber', 'customerName', 'invoiceDate', 'itemCount', 'totalAmount', 'paidAmount', 'status', 'actions']}
+          defaultVisibleColumnKeys={['invoiceNumber', 'customerName', 'invoiceDate', 'itemCount', 'totalAmount', 'paidAmount', 'paymentMethod', 'status', 'actions']}
           fitExplicitColumnsToContainer
           enableRowSelection
           selectedRowKeys={selectedInvoiceIds}

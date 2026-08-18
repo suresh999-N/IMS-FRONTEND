@@ -1157,7 +1157,7 @@ export const RESOURCE_CONFIGS = {
     permissionKey: 'users',
     title: 'Users',
     subtitle: 'Manage backend users and account activation state.',
-    entityName: 'Staff',
+    entityName: 'Employee',
     icon: Users,
     endpoint: API_ENDPOINTS.users.list,
     byId: API_ENDPOINTS.users.byId,
@@ -1208,7 +1208,16 @@ export const RESOURCE_CONFIGS = {
       { key: 'name', label: 'Name', sortable: true },
       { key: 'email', label: 'Email', sortable: true },
       { key: 'phoneNumber', label: 'Phone No', sortable: true },
-      { key: 'role', label: 'Role', format: 'status', sortable: true },
+      {
+        key: 'role',
+        label: 'Role',
+        format: 'status',
+        sortable: true,
+        render: (row) => {
+          const roleValue = readResourceValue(row, 'role')
+          return String(roleValue).toLowerCase() === 'user' ? 'New Employee' : roleValue
+        },
+      },
       { key: 'emailVerificationStatus', label: 'Verification', format: 'status', sortable: true },
       { key: 'isActive', label: 'Active', format: 'boolean', sortable: true },
     ],
@@ -1234,6 +1243,12 @@ export const RESOURCE_CONFIGS = {
     endpoint: API_ENDPOINTS.roles.list,
     byId: API_ENDPOINTS.roles.byId,
     idFields: ['roleId'],
+    referenceEndpoints: {
+      users: API_ENDPOINTS.users.list,
+    },
+    referenceListKeys: {
+      users: 'users',
+    },
     fields: [
       { name: 'roleName', label: 'Role Name', required: true, minLength: 2 },
       { name: 'description', label: 'Description', type: 'textarea' },
@@ -1241,6 +1256,18 @@ export const RESOURCE_CONFIGS = {
     columns: [
       { key: 'roleName', label: 'Role', sortable: true },
       { key: 'description', label: 'Description', sortable: true },
+      {
+        key: 'usersCount',
+        label: 'Users',
+        sortable: true,
+        render: (row, referenceData) => {
+          const usersList = referenceData?.users ?? []
+          const count = usersList.filter(
+            (u) => String(u.role).toLowerCase() === String(row.roleName).toLowerCase()
+          ).length
+          return count
+        },
+      },
       { key: 'createdAt', label: 'Created', format: 'date', sortable: true },
     ],
   },

@@ -4,6 +4,8 @@
   max-height: calc(100vh - 48px) !important;
   display: flex !important;
   flex-direction: column !important;
+  margin: auto !important;
+  box-sizing: border-box !important;
 }
 
 /* Modal Body container overrides */

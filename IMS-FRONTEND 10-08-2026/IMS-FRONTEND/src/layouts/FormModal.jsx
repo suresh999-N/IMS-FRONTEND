@@ -71,7 +71,9 @@ export default function FormModal({
       }
     }
 
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
     document.body.style.overflow = 'hidden'
+    document.body.style.paddingRight = `${scrollbarWidth}px`
     mainElements.forEach((el) => {
       el.style.overflow = 'hidden'
     })
@@ -84,6 +86,7 @@ export default function FormModal({
 
     return () => {
       document.body.style.overflow = previousOverflow
+      document.body.style.paddingRight = ''
       mainElements.forEach((el, index) => {
         el.style.overflow = originalMainOverflows[index] || ''
       })

@@ -691,11 +691,10 @@ function notifyCatalogStructureUpdate(config, action) {
 }
 
 function formatCellValue(row, column, referenceData) {
-  if (typeof column.render === 'function') {
-    return column.render(row, referenceData)
-  }
-
-  const value = readResourceValue(row, column.key)
+  const hasRender = typeof column.render === 'function'
+  const value = hasRender
+    ? column.render(row, referenceData)
+    : readResourceValue(row, column.key)
 
   if (column.format === 'currency') {
     return formatCurrency(Number(value || 0))
@@ -706,7 +705,7 @@ function formatCellValue(row, column, referenceData) {
   }
 
   if (column.format === 'boolean') {
-    return value ? 'Yes' : 'No'
+    return value === true || String(value).toLowerCase() === 'true' ? 'Yes' : 'No'
   }
 
   if (column.format === 'status') {
@@ -715,6 +714,10 @@ function formatCellValue(row, column, referenceData) {
         {formatStatusLabel(value)}
       </StatusBadge>
     )
+  }
+
+  if (hasRender) {
+    return value
   }
 
   if (value === undefined || value === null || value === '') {
@@ -1716,6 +1719,8 @@ function ResourcePage({ config, navigationContent = null }) {
   const [selectedProductStyleRowIds, setSelectedProductStyleRowIds] = useState([])
   const [usersStatusFilter, setUsersStatusFilter] = useState('all')
   const [runningRowActionKey, setRunningRowActionKey] = useState('')
+  const [viewingRolePermissions, setViewingRolePermissions] = useState([])
+  const [isViewingRolePermissionsLoading, setIsViewingRolePermissionsLoading] = useState(false)
 
   const canCreate = (config.canCreate ?? true) && hasPermission(config.permissionKey, 'create')
   const canUpdate = (config.canUpdate ?? true) && hasPermission(config.permissionKey, 'edit')
@@ -1880,6 +1885,41 @@ function ResourcePage({ config, navigationContent = null }) {
   useEffect(() => {
     loadRows({ showLoading: !listResource.hasCache?.(config) })
   }, [config, loadRows])
+
+  useEffect(() => {
+    let active = true
+    if (isRolesPage && viewingRecord?.roleId) {
+      setIsViewingRolePermissionsLoading(true)
+      setViewingRolePermissions([])
+      apiRequest(API_ENDPOINTS.permissions.byRole(viewingRecord.roleId))
+        .then((response) => {
+          if (active) {
+            if (response.success) {
+              setViewingRolePermissions(response.data?.permissions || [])
+            } else {
+              setViewingRolePermissions([])
+            }
+          }
+        })
+        .catch(() => {
+          if (active) {
+            setViewingRolePermissions([])
+          }
+        })
+        .finally(() => {
+          if (active) {
+            setIsViewingRolePermissionsLoading(false)
+          }
+        })
+    } else {
+      setViewingRolePermissions([])
+      setIsViewingRolePermissionsLoading(false)
+    }
+
+    return () => {
+      active = false
+    }
+  }, [isRolesPage, viewingRecord])
 
   const summary = useMemo(() => {
     const statusCounts = rows.reduce((result, row) => {
@@ -3455,17 +3495,17 @@ function ResourcePage({ config, navigationContent = null }) {
                   const val = readResourceValue(viewingRecord, col.key, '')
                   let displayVal = typeof col.render === 'function' ? col.render(viewingRecord, referenceData) : val
                   if (col.format === 'currency' || col.key === 'price') {
-                    displayVal = formatCurrency(val)
+                    displayVal = formatCurrency(Number(displayVal || 0))
                   } else if (col.format === 'date' || col.key?.toLowerCase().includes('date')) {
-                    displayVal = val ? formatDate(val) : 'N/A'
+                    displayVal = displayVal ? formatDate(displayVal) : 'N/A'
                   } else if (col.format === 'status') {
                     displayVal = (
-                      <StatusBadge type={getStatusType ? getStatusType(val) : 'info'}>
-                        {formatStatusLabel ? formatStatusLabel(val) : val}
+                      <StatusBadge type={getStatusType ? getStatusType(displayVal) : 'info'}>
+                        {formatStatusLabel ? formatStatusLabel(displayVal) : displayVal}
                       </StatusBadge>
                     )
                   } else if (col.format === 'boolean') {
-                    displayVal = val === true || val === 'true' ? 'Yes' : 'No'
+                    displayVal = displayVal === true || displayVal === 'true' ? 'Yes' : 'No'
                   }
                   return (
                     <div className="admin-details-item" key={col.key}>
@@ -3493,6 +3533,84 @@ function ResourcePage({ config, navigationContent = null }) {
                 return null
               })}
             </div>
+
+            {isRolesPage && (
+              <div className="admin-details-role-extensions" style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '4px' }}>
+                <div className="admin-details-item admin-details-item--full">
+                  <span className="admin-details-label">Employees with this Role</span>
+                  <div className="admin-details-value" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px' }}>
+                    {(() => {
+                      const roleUsers = (referenceData.users ?? []).filter(
+                        (u) => String(u.role).toLowerCase() === String(viewingRecord.roleName).toLowerCase()
+                      )
+                      if (roleUsers.length === 0) {
+                        return <span style={{ color: '#64748b', fontWeight: 'normal', fontSize: '0.875rem' }}>No employees assigned to this role.</span>
+                      }
+                      return roleUsers.map((u) => (
+                        <span
+                          key={u.id}
+                          style={{
+                            background: '#e0f2fe',
+                            color: '#0369a1',
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            fontSize: '0.85rem',
+                            fontWeight: '600',
+                            border: '1px solid rgba(14, 165, 183, 0.2)'
+                          }}
+                        >
+                          {u.name} ({u.email})
+                        </span>
+                      ))
+                    })()}
+                  </div>
+                </div>
+
+                <div className="admin-details-item admin-details-item--full">
+                  <span className="admin-details-label">Permissions</span>
+                  {isViewingRolePermissionsLoading ? (
+                    <div style={{ padding: '12px 0', fontSize: '0.875rem', color: '#64748b' }}>Loading permissions...</div>
+                  ) : viewingRolePermissions.length === 0 ? (
+                    <div style={{ padding: '12px 0', fontSize: '0.875rem', color: '#64748b' }}>No permissions configured.</div>
+                  ) : (
+                    <div className="admin-details-permissions-table-wrapper" style={{ marginTop: '8px', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                        <thead>
+                          <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                            <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: '700', color: '#475569' }}>Module</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'center', fontWeight: '700', color: '#475569', width: '60px' }}>View</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'center', fontWeight: '700', color: '#475569', width: '60px' }}>Add</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'center', fontWeight: '700', color: '#475569', width: '60px' }}>Edit</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'center', fontWeight: '700', color: '#475569', width: '60px' }}>Delete</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {viewingRolePermissions.map((perm) => (
+                            <tr key={perm.permissionId} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                              <td style={{ padding: '8px 12px', color: '#0f172a', fontWeight: '600' }}>
+                                {perm.moduleName || perm.moduleKey}
+                              </td>
+                              <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                                {perm.canView ? <span style={{ color: '#16a34a', fontWeight: 'bold' }}>✓</span> : <span style={{ color: '#cbd5e1' }}>-</span>}
+                              </td>
+                              <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                                {perm.canAdd ? <span style={{ color: '#16a34a', fontWeight: 'bold' }}>✓</span> : <span style={{ color: '#cbd5e1' }}>-</span>}
+                              </td>
+                              <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                                {perm.canEdit ? <span style={{ color: '#16a34a', fontWeight: 'bold' }}>✓</span> : <span style={{ color: '#cbd5e1' }}>-</span>}
+                              </td>
+                              <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                                {perm.canDelete ? <span style={{ color: '#b91c1c', fontWeight: 'bold' }}>✓</span> : <span style={{ color: '#cbd5e1' }}>-</span>}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="admin-details-footer">
               {canUpdate ? (
