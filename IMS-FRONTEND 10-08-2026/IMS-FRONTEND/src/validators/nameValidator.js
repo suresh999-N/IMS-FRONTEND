@@ -61,8 +61,8 @@ export function getNameError(value, options = {}) {
   }
 
   // Reject single words longer than 15 characters (person names don't have single words > 15 chars)
-  const words = cleanValue.split(/[\s'-]+/)
-  if (words.some(word => word.length > 15)) {
+  const nameWords = cleanValue.split(/[\s'-]+/)
+  if (nameWords.some(word => word.length > 15)) {
     return `${label} cannot contain words longer than 15 characters.`
   }
 
