@@ -63,6 +63,10 @@ import {
   phoneInputProps,
   sanitizePhoneInput,
 } from '../../../validators/phoneValidator'
+import {
+  getNameError,
+  sanitizeNameInput,
+} from '../../../validators/nameValidator'
 import { RESOURCE_CONFIGS, RESOURCE_HUBS } from '../../ResourceCenter/resourceConfigs'
 import './Roles.css'
 import '../Users/Users.css'
@@ -460,6 +464,11 @@ function getFieldError(field, value, mode, context = {}) {
   if (field.type === 'email') {
     const emailErr = getEmailError(value, { required: Boolean(isRequired) })
     if (emailErr) return emailErr
+  }
+
+  if (field.name === 'name' || field.name === 'fullName') {
+    const nameErr = getNameError(value, { required: Boolean(isRequired), label })
+    if (nameErr) return nameErr
   }
 
   if (field.type === 'number' || field.type === 'currency' || field.valueType === 'number') {
@@ -1434,6 +1443,8 @@ function ResourceForm({
       nextValue = sanitizeEmailInput(value)
     } else if (field?.name === 'phoneNumber' || field?.name === 'phone' || field?.type === 'tel') {
       nextValue = sanitizePhoneInput(value, 10)
+    } else if (field?.name === 'name' || field?.name === 'fullName') {
+      nextValue = sanitizeNameInput(value)
     }
     updateField(name, nextValue)
   }
@@ -1642,6 +1653,7 @@ function ResourceForm({
         error={error}
         min={field.min}
         max={dynamicMax ?? field.max}
+        maxLength={field.maxLength}
         readOnly={field.readOnly}
         step={field.type === 'number' ? 'any' : undefined}
         helperText={helperText}
