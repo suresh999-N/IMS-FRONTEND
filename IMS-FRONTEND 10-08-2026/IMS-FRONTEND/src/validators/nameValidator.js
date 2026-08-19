@@ -23,7 +23,14 @@ export function sanitizeNameInput(value, maxLength = NAME_MAX_LENGTH) {
 
 export function getNameError(value, options = {}) {
   const opts = typeof options === 'string' ? { label: options } : options
-  const { required = true, label = 'Name', min = 2, max = NAME_MAX_LENGTH, allowAmpersand = false } = opts
+  const {
+    required = true,
+    label = 'Name',
+    min = 2,
+    max = NAME_MAX_LENGTH,
+    allowAmpersand = false,
+    allowNumbers = false,
+  } = opts
   const cleanValue = sanitizeNameInput(value, max).trim()
 
   if (!cleanValue) {
@@ -38,9 +45,14 @@ export function getNameError(value, options = {}) {
     return `${label} cannot exceed ${max} characters.`
   }
 
-  // Reject numeric-only strings and strings without alphabetic characters
-  if (/^\d+$/.test(cleanValue) || !/[A-Za-z]/.test(cleanValue)) {
-    return `${label} must contain alphabetic characters and cannot contain only numbers.`
+  // Reject numeric characters when allowNumbers is false (default for name fields)
+  if (!allowNumbers && /\d/.test(cleanValue)) {
+    return `${label} must contain alphabetic characters only and cannot contain numbers.`
+  }
+
+  // Reject strings without alphabetic characters
+  if (!/[A-Za-z]/.test(cleanValue)) {
+    return `${label} must contain alphabetic characters.`
   }
 
   // Reject 3 or more consecutive identical characters (e.g. "aaa")
@@ -55,12 +67,39 @@ export function getNameError(value, options = {}) {
   }
 
   // General valid characters for person names: letters, spaces, hyphens (-), apostrophes ('), periods (.)
-  const pattern = allowAmpersand 
+  const pattern = (allowNumbers || allowAmpersand)
     ? /^(?=.*[\p{L}a-zA-Z])[\p{L}a-zA-Z0-9 .&'-]+$/u
     : /^(?=.*[\p{L}a-zA-Z])[\p{L}a-zA-Z .'-]+$/u
-
   if (!pattern.test(cleanValue)) {
     return `${label} can contain letters, spaces, hyphens, and apostrophes only.`
+  }
+
+  // Gibberish / keyboard mashing validation
+  const lower = cleanValue.toLowerCase()
+
+  // Reject 4 or more repeated identical characters (e.g., "aaaa", "zzzz")
+  if (/(.)\1{3,}/i.test(cleanValue)) {
+    return `Enter a valid ${label.toLowerCase()}.`
+  }
+
+  // Reject repeated character blocks (e.g., "asdfasdf", "ababab")
+  if (/(.{2,4})\1{2,}/i.test(cleanValue)) {
+    return `Enter a valid ${label.toLowerCase()}.`
+  }
+
+  // Keyboard row walks
+  const keyboardWalks = ['qwerty', 'asdfgh', 'zxcvbn', 'qwertz', 'azerty', 'yuiop', 'ghjkl', 'fghjk', 'xcvbn']
+  if (keyboardWalks.some((walk) => lower.includes(walk))) {
+    return `Enter a valid ${label.toLowerCase()}.`
+  }
+
+  // Reject words with 5+ characters that have no vowels
+  const words = cleanValue.split(/\s+/)
+  for (const word of words) {
+    const lettersOnly = word.replace(/[^A-Za-z]/g, '')
+    if (lettersOnly.length >= 5 && !/[aeiouyAEIOUY]/.test(lettersOnly)) {
+      return `Enter a valid ${label.toLowerCase()}.`
+    }
   }
 
   return ''

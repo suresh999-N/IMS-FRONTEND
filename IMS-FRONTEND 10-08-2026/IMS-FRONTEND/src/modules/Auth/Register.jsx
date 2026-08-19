@@ -36,6 +36,21 @@ import {
 import { getAuthErrorMessage } from "./authCopy";
 import "./Auth.css";
 
+export function getPasswordError(password) {
+  if (!password) return "Password is required.";
+  if (password.length < 8) return "Password must be at least 8 characters.";
+  if (!/[A-Z]/.test(password)) return "Password must include at least one uppercase letter.";
+  if (!/[a-z]/.test(password)) return "Password must include at least one lowercase letter.";
+  if (!/[0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) return "Password must include at least one number or symbol.";
+  return "";
+}
+
+export function getConfirmPasswordError(password, confirmPassword) {
+  if (!confirmPassword) return "Confirm password is required.";
+  if (password !== confirmPassword) return "Passwords do not match.";
+  return "";
+}
+
 export default function Register() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -45,13 +60,42 @@ export default function Register() {
     password: "",
     confirmPassword: "",
   });
+  const [touched, setTouched] = useState({
+    name: false,
+    email: false,
+    phoneNumber: false,
+    password: false,
+    confirmPassword: false,
+  });
+  const [serverFieldErrors, setServerFieldErrors] = useState({});
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Compute field errors dynamically
+  const nameError = getNameError(formData.name, { required: true, label: "Full Name" });
+  const emailError = getEmailError(formData.email, { required: true });
+  const phoneError = getPhoneError(formData.phoneNumber, "Mobile number");
+  const passwordError = getPasswordError(formData.password);
+  const confirmPasswordError = getConfirmPasswordError(formData.password, formData.confirmPassword);
+
+  const isFormValid =
+    formData.name.trim() !== "" &&
+    formData.email.trim() !== "" &&
+    formData.phoneNumber.trim() !== "" &&
+    formData.password !== "" &&
+    formData.confirmPassword !== "" &&
+    !nameError &&
+    !emailError &&
+    !phoneError &&
+    !passwordError &&
+    !confirmPasswordError;
+
   function handleChange(event) {
     const { name, value } = event.target;
+    setError("");
+    setServerFieldErrors((prev) => ({ ...prev, [name]: "" }));
     setFormData((prev) => ({
       ...prev,
       [name]:
@@ -65,46 +109,27 @@ export default function Register() {
     }));
   }
 
+  function handleBlur(event) {
+    const { name } = event.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     if (loading) return;
     setError("");
 
-    if (
-      !formData.name.trim() ||
-      !formData.email.trim() ||
-      !formData.phoneNumber ||
-      !formData.password
-    ) {
-      setError("Complete the required fields.");
-      return;
-    }
+    setTouched({
+      name: true,
+      email: true,
+      phoneNumber: true,
+      password: true,
+      confirmPassword: true,
+    });
 
-    const nameError = getNameError(formData.name, { required: true, label: "Full Name" });
-    if (nameError) {
-      setError(nameError);
-      return;
-    }
-
-    const emailError = getEmailError(formData.email, { required: true });
-    if (emailError) {
-      setError(emailError);
-      return;
-    }
-
-    const phoneError = getPhoneError(formData.phoneNumber, "Mobile number");
-    if (phoneError) {
-      setError(phoneError);
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      setError("Use at least 8 characters.");
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
+    if (!isFormValid) {
+      const firstError = nameError || emailError || phoneError || passwordError || confirmPasswordError;
+      setError(firstError || "Complete all required fields accurately.");
       return;
     }
 
@@ -122,12 +147,33 @@ export default function Register() {
       });
 
       if (!result.success) {
-        setError(
-          getAuthErrorMessage(
-            result.error,
-            "We could not create the account. Try again.",
-          ),
-        );
+        const rawErrors = result.errors || {};
+        const fieldErrorMap = {};
+        const messages = [];
+
+        if (typeof rawErrors === "object" && rawErrors !== null) {
+          Object.entries(rawErrors).forEach(([key, val]) => {
+            const msg = Array.isArray(val) ? val.join(" ") : String(val);
+            if (!msg) return;
+            messages.push(msg);
+            const lowerKey = key.toLowerCase();
+            if (lowerKey.includes("name")) fieldErrorMap.name = msg;
+            if (lowerKey.includes("email")) fieldErrorMap.email = msg;
+            if (lowerKey.includes("phone")) fieldErrorMap.phoneNumber = msg;
+            if (lowerKey.includes("password")) fieldErrorMap.password = msg;
+          });
+        }
+
+        setServerFieldErrors(fieldErrorMap);
+
+        const specificError = messages.length > 0
+          ? messages.join(" ")
+          : getAuthErrorMessage(
+              result.error || result.message,
+              "We could not create the account. Review the form and try again.",
+            );
+
+        setError(specificError);
         return;
       }
 
@@ -141,6 +187,12 @@ export default function Register() {
       setLoading(false);
     }
   }
+
+  const nameDisplayError = serverFieldErrors.name || (touched.name && nameError);
+  const emailDisplayError = serverFieldErrors.email || (touched.email && emailError);
+  const phoneDisplayError = serverFieldErrors.phoneNumber || (touched.phoneNumber && phoneError);
+  const passwordDisplayError = serverFieldErrors.password || (touched.password && passwordError);
+  const confirmPasswordDisplayError = touched.confirmPassword && confirmPasswordError;
 
   return (
     <div
@@ -195,28 +247,32 @@ export default function Register() {
             {error || "\u00A0"}
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             <label className="auth-login-label" htmlFor="register-name">
               Full Name
             </label>
-            <div className="input-box">
+            <div className={`input-box ${nameDisplayError ? "input-box--error" : ""}`}>
               <User size={16} />
               <input
                 id="register-name"
-                type="text"
+                {...nameInputProps}
                 name="name"
                 placeholder="Full name"
                 value={formData.name}
                 onChange={handleChange}
                 maxLength={50}
+                onBlur={handleBlur}
                 autoComplete="name"
               />
             </div>
+            {nameDisplayError && (
+              <span className="field-error-text">{nameDisplayError}</span>
+            )}
 
             <label className="auth-login-label" htmlFor="register-email">
               Email Address
             </label>
-            <div className="input-box">
+            <div className={`input-box ${emailDisplayError ? "input-box--error" : ""}`}>
               <Mail size={16} />
               <input
                 id="register-email"
@@ -225,13 +281,17 @@ export default function Register() {
                 placeholder="Email address"
                 value={formData.email}
                 onChange={handleChange}
+                onBlur={handleBlur}
               />
             </div>
+            {emailDisplayError && (
+              <span className="field-error-text">{emailDisplayError}</span>
+            )}
 
             <label className="auth-login-label" htmlFor="register-phone">
               Mobile Number
             </label>
-            <div className="input-box">
+            <div className={`input-box ${phoneDisplayError ? "input-box--error" : ""}`}>
               <Phone size={16} />
               <input
                 id="register-phone"
@@ -240,15 +300,18 @@ export default function Register() {
                 placeholder="10-digit mobile number"
                 value={formData.phoneNumber}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 autoComplete="tel"
-                required
               />
             </div>
+            {phoneDisplayError && (
+              <span className="field-error-text">{phoneDisplayError}</span>
+            )}
 
             <label className="auth-login-label" htmlFor="register-password">
               Password
             </label>
-            <div className="input-box">
+            <div className={`input-box ${passwordDisplayError ? "input-box--error" : ""}`}>
               <LockKeyhole size={16} />
               <input
                 id="register-password"
@@ -257,18 +320,26 @@ export default function Register() {
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 autoComplete="new-password"
-                required
               />
               <button
                 type="button"
                 className="auth-login-password-toggle"
-                onClick={() => setShowPassword((current) => !current)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowPassword((current) => !current);
+                }}
                 aria-label={showPassword ? "Hide password" : "Show password"}
+                tabIndex={-1}
               >
                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
             </div>
+            {passwordDisplayError && (
+              <span className="field-error-text">{passwordDisplayError}</span>
+            )}
 
             <label
               className="auth-login-label"
@@ -276,7 +347,7 @@ export default function Register() {
             >
               Confirm Password
             </label>
-            <div className="input-box">
+            <div className={`input-box ${confirmPasswordDisplayError ? "input-box--error" : ""}`}>
               <LockKeyhole size={16} />
               <input
                 id="register-confirm-password"
@@ -285,27 +356,35 @@ export default function Register() {
                 placeholder="Confirm password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 autoComplete="new-password"
-                required
               />
               <button
                 type="button"
                 className="auth-login-password-toggle"
-                onClick={() => setShowConfirmPassword((current) => !current)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowConfirmPassword((current) => !current);
+                }}
                 aria-label={
                   showConfirmPassword ? "Hide password" : "Show password"
                 }
+                tabIndex={-1}
               >
                 {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
             </div>
+            {confirmPasswordDisplayError && (
+              <span className="field-error-text">{confirmPasswordDisplayError}</span>
+            )}
 
             <div className="links auth-register-login-link">
               <span>Already have an account?</span>
               <Link to="/login">Login</Link>
             </div>
 
-            <button type="submit" disabled={loading}>
+            <button type="submit" disabled={!isFormValid || loading}>
               <UserPlus size={18} />
               {loading ? "Creating..." : "Create account"}
             </button>

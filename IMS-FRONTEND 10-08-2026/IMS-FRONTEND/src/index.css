@@ -81,6 +81,18 @@ textarea {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Disable Edge, IE, Chrome, and WebKit native password reveal/clear buttons to prevent duplicate/inverted eye icons */
+input::-ms-reveal,
+input::-ms-clear,
+input::-webkit-contacts-auto-fill-button,
+input::-webkit-credentials-auto-fill-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 button {
   min-height: var(--touch-target);
   min-width: var(--touch-target);

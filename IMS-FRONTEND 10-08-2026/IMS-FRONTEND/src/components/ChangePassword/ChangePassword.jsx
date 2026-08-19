@@ -432,9 +432,14 @@ function ChangePassword({ settingsData, onClose }) {
                 <button
                   type="button"
                   className="password-toggle-btn"
-                  onClick={() => setShowCurrentPassword((prev) => !prev)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowCurrentPassword((prev) => !prev);
+                  }}
                   aria-label={showCurrentPassword ? "Hide password" : "Show password"}
                   disabled={saving}
+                  tabIndex={-1}
                 >
                   {showCurrentPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
@@ -456,9 +461,14 @@ function ChangePassword({ settingsData, onClose }) {
                 <button
                   type="button"
                   className="password-toggle-btn"
-                  onClick={() => setShowNewPassword((prev) => !prev)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowNewPassword((prev) => !prev);
+                  }}
                   aria-label={showNewPassword ? "Hide password" : "Show password"}
                   disabled={saving}
+                  tabIndex={-1}
                 >
                   {showNewPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
@@ -480,9 +490,14 @@ function ChangePassword({ settingsData, onClose }) {
                 <button
                   type="button"
                   className="password-toggle-btn"
-                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowConfirmPassword((prev) => !prev);
+                  }}
                   aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                   disabled={saving}
+                  tabIndex={-1}
                 >
                   {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>

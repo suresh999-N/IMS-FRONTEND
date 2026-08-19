@@ -1,6 +1,6 @@
+import { useMemo, useState } from "react";
 import { Download } from "lucide-react";
 import {
-  ActionMenu,
   DataTable,
   FilterBar,
   StatusBadge,
@@ -25,6 +25,18 @@ export default function NotificationsTable({
   loading,
   onMarkRead,
 }) {
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+
+  const filteredNotifications = useMemo(() => {
+    return (notifications || []).filter((item) => {
+      if (statusFilter === "unread" && item.isRead) return false;
+      if (statusFilter === "read" && !item.isRead) return false;
+      if (typeFilter !== "all" && String(item.type || "").toLowerCase() !== typeFilter.toLowerCase()) return false;
+      return true;
+    });
+  }, [notifications, statusFilter, typeFilter]);
+
   const columns = [
     {
       key: "notification",
@@ -82,25 +94,29 @@ export default function NotificationsTable({
       label: "Status",
       sortable: false,
       className: "notifications-col-status",
-      render: (row) => (
-        <div className="notifications-table__status-cell">
-          <StatusBadge type={row.isRead ? "success" : "warning"}>
-            {row.isRead ? "Read" : "Unread"}
-          </StatusBadge>
-          {!row.isRead && (
-            <button
-              type="button"
-              className="button button-text notifications-table__mark-read"
-              onClick={(e) => {
-                e.stopPropagation();
-                onMarkRead(row.notificationId || row.id);
-              }}
-            >
-              Mark Read
-            </button>
-          )}
-        </div>
-      ),
+      render: (row) => {
+        const targetId = row.id ?? row.notificationId ?? row.NotificationId;
+
+        return (
+          <div className="notifications-table__status-cell">
+            <StatusBadge type={row.isRead ? "success" : "warning"}>
+              {row.isRead ? "Read" : "Unread"}
+            </StatusBadge>
+            {!row.isRead && (
+              <button
+                type="button"
+                className="button button-text notifications-table__mark-read"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMarkRead(targetId);
+                }}
+              >
+                Mark Read
+              </button>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: "createdAt",
@@ -119,21 +135,25 @@ export default function NotificationsTable({
   const toolbarContent = (
     <FilterBar>
       <div className="notifications-table__toolbar-actions">
-        <select className="input-field" defaultValue="">
-          <option value="">All Statuses</option>
+        <select
+          className="input-field"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="all">All Statuses</option>
           <option value="unread">Unread</option>
           <option value="read">Read</option>
         </select>
-        <select className="input-field" defaultValue="">
-          <option value="">All Types</option>
+        <select
+          className="input-field"
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+        >
+          <option value="all">All Types</option>
           <option value="critical">Critical</option>
           <option value="warning">Warning</option>
           <option value="info">Info</option>
         </select>
-        <button type="button" className="button button-secondary">
-          <Download size={15} />
-          Export
-        </button>
       </div>
     </FilterBar>
   );
@@ -142,7 +162,7 @@ export default function NotificationsTable({
     <div className="card notifications-page__table-card">
       <DataTable
         className="notifications-data-table"
-        rows={notifications}
+        rows={filteredNotifications}
         columns={columns}
         loading={loading}
         searchKeys={["title", "type", "message"]}

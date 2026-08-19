@@ -800,52 +800,80 @@ export default function GlobalSearch() {
     }
   }
 
-  const overlay = isOpen && (canSearch || showDiscovery) ? (
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus()
+      }, 10)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen])
+
+  const overlay = isOpen ? (
     <div className="global-search__portal" ref={portalRef}>
-      {isOpen ? (
-        <div
-          className="global-search__backdrop"
-          aria-hidden="true"
-          onMouseDown={() => {
-            setIsOpen(false)
-            setActiveIndex(-1)
-          }}
-        />
-      ) : null}
-      <SearchDropdown
-        activeIndex={activeIndex}
-        error={error}
-        getOptionId={getOptionId}
-        groupedResults={groupedResults}
-        isLoading={isLoading}
-        listboxId={listboxId}
-        onActivate={setActiveIndex}
-        onClearRecentSearches={clearRecentSearches}
-        onNavigate={navigateToResult}
-        quickAccessCounts={quickAccessCounts}
-        query={normalizedQuery}
-        recentSearches={recentSearches}
-        showDiscovery={showDiscovery}
+      <div
+        className="global-search__backdrop"
+        aria-hidden="true"
+        onMouseDown={() => {
+          setIsOpen(false)
+          setActiveIndex(-1)
+        }}
       />
+      <div className="global-search__modal" role="dialog" aria-modal="true" aria-label="IMS command palette search">
+        <div className="global-search__modal-header">
+          <SearchInput
+            activeOptionId={activeOptionId}
+            inputRef={inputRef}
+            isLoading={isLoading}
+            isOpen={isOpen}
+            listboxId={listboxId}
+            onChange={(event) => {
+              setQuery(event.target.value)
+              setIsOpen(true)
+            }}
+            onFocus={() => setIsOpen(true)}
+            onKeyDown={handleKeyDown}
+            query={query}
+          />
+        </div>
+        <SearchDropdown
+          activeIndex={activeIndex}
+          error={error}
+          getOptionId={getOptionId}
+          groupedResults={groupedResults}
+          isLoading={isLoading}
+          listboxId={listboxId}
+          onActivate={setActiveIndex}
+          onClearRecentSearches={clearRecentSearches}
+          onNavigate={navigateToResult}
+          quickAccessCounts={quickAccessCounts}
+          query={normalizedQuery}
+          recentSearches={recentSearches}
+          showDiscovery={showDiscovery}
+        />
+      </div>
     </div>
   ) : null
 
   return (
     <div className={`global-search ${isOpen ? 'is-open' : ''}`} ref={rootRef}>
-      <SearchInput
-        activeOptionId={activeOptionId}
-        inputRef={inputRef}
-        isLoading={isLoading}
-        isOpen={isOpen}
-        listboxId={listboxId}
-        onChange={(event) => {
-          setQuery(event.target.value)
-          setIsOpen(true)
-        }}
-        onFocus={() => setIsOpen(true)}
-        onKeyDown={handleKeyDown}
-        query={query}
-      />
+      <form
+        className="app-header__search global-search__trigger"
+        role="search"
+        onClick={() => setIsOpen(true)}
+        onSubmit={(event) => event.preventDefault()}
+      >
+        <Search size={17} aria-hidden="true" />
+        <input
+          type="text"
+          value={query}
+          placeholder="Search anything in IMS..."
+          aria-label="Global search trigger"
+          readOnly
+          onFocus={() => setIsOpen(true)}
+        />
+        <kbd>Ctrl K</kbd>
+      </form>
 
       {isPortalReady && overlay ? createPortal(overlay, document.body) : null}
     </div>

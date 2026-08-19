@@ -1,6 +1,8 @@
 import {
   BarChart3,
   Boxes,
+  Eye,
+  EyeOff,
   LineChart,
   LockKeyhole,
   PackageCheck,
@@ -24,6 +26,8 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -144,12 +148,25 @@ export default function ResetPassword() {
               <LockKeyhole size={16} />
               <input
                 id="reset-password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="New password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 autoComplete="new-password"
               />
+              <button
+                type="button"
+                className="auth-login-password-toggle"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setShowPassword((prev) => !prev)
+                }}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
             </div>
 
             <label className="auth-login-label" htmlFor="reset-confirm-password">Confirm Password</label>
@@ -157,12 +174,25 @@ export default function ResetPassword() {
               <LockKeyhole size={16} />
               <input
                 id="reset-confirm-password"
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="Confirm password"
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
                 autoComplete="new-password"
               />
+              <button
+                type="button"
+                className="auth-login-password-toggle"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setShowConfirmPassword((prev) => !prev)
+                }}
+                aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                tabIndex={-1}
+              >
+                {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
             </div>
 
             <div className="links" style={{ marginBottom: '1rem' }}>

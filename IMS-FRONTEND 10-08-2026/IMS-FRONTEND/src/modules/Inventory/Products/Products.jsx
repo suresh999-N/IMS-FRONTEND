@@ -32,26 +32,62 @@ import './Products.css'
 
 const PRODUCT_CATALOG_UPDATED_EVENT = 'ims:product-catalog-updated'
 
-function ProductsHeader({ canCreate, summary, onAdd }) {
+function ProductsHeader({ canCreate, summary, activeStatusFilter, onFilterStatus, onAdd }) {
   const metrics = [
-    { key: 'total', label: 'Products', value: formatCompactCount(summary.total), tone: 'success' },
-    { key: 'lowStock', label: 'Low Stock', value: formatCompactCount(summary.lowStock), tone: 'warning' },
-    { key: 'outOfStock', label: 'Out Of Stock', value: formatCompactCount(summary.outOfStock), tone: 'danger' },
-    { key: 'inventoryValue', label: 'Value', value: summary.inventoryValueLabel, tone: 'info' },
+    {
+      key: 'total',
+      filterValue: 'all',
+      label: 'Products',
+      value: formatCompactCount(summary.total),
+      tone: 'success',
+      isActive: activeStatusFilter === 'all',
+      title: 'Show all products',
+    },
+    {
+      key: 'lowStock',
+      filterValue: 'Low Stock',
+      label: 'Low Stock',
+      value: formatCompactCount(summary.lowStock),
+      tone: 'warning',
+      isActive: activeStatusFilter === 'Low Stock',
+      title: 'Filter low-stock products',
+    },
+    {
+      key: 'outOfStock',
+      filterValue: 'Out Of Stock',
+      label: 'Out Of Stock',
+      value: formatCompactCount(summary.outOfStock),
+      tone: 'danger',
+      isActive: activeStatusFilter === 'Out Of Stock',
+      title: 'Filter out-of-stock products',
+    },
+    {
+      key: 'inventoryValue',
+      filterValue: 'Active',
+      label: 'Value',
+      value: summary.inventoryValueLabel,
+      tone: 'info',
+      isActive: activeStatusFilter === 'Active',
+      title: 'Filter active inventory products',
+    },
   ]
 
   return (
     <header className="resource-center__inventory-header" aria-label="Products summary">
       <div className="resource-center__inventory-header-main">
         <h1>Products</h1>
-        <div className="resource-center__inventory-metrics" aria-label="Inventory metrics">
+        <div className="resource-center__inventory-metrics" role="region" aria-label="Inventory metrics filter controls">
           {metrics.map((metric) => (
-            <span
+            <button
+              type="button"
               key={metric.key}
-              className={`resource-center__inventory-metric resource-center__inventory-metric--${metric.tone}`}
+              onClick={() => onFilterStatus?.(metric.filterValue)}
+              className={`resource-center__inventory-metric resource-center__inventory-metric--${metric.tone} ${metric.isActive ? 'is-active' : ''}`}
+              title={metric.title}
+              aria-pressed={metric.isActive}
             >
               {metric.key === 'inventoryValue' ? '' : `${metric.value} `}{metric.label}
-            </span>
+            </button>
           ))}
         </div>
       </div>
@@ -921,6 +957,13 @@ export default function Products({
     }))
   }
 
+  function handleMetricFilterClick(targetStatus) {
+    setFilters((currentValue) => ({
+      ...currentValue,
+      status: currentValue.status === targetStatus && targetStatus !== 'all' ? 'all' : targetStatus,
+    }))
+  }
+
   const productSummary = useMemo(() => {
     const activeInventoryProducts = products.filter((product) => !isProductArchived(product))
     const value = activeInventoryProducts.reduce(
@@ -943,6 +986,8 @@ export default function Products({
         <ProductsHeader
           canCreate={canCreate}
           summary={productSummary}
+          activeStatusFilter={filters.status}
+          onFilterStatus={handleMetricFilterClick}
           onAdd={handleOpenCreate}
         />
 
