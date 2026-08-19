@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getNameError } from "../../validators/nameValidator";
+import { getNameError, sanitizeNameInput } from "../../validators/nameValidator";
 import "./EditProfile.css";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '').replace(/\/api$/, '');
@@ -842,6 +842,14 @@ function EditProfile({ adminProfile, settingsData, onClose, onSaveProfile }) {
       return;
     }
 
+    if (name === "fullName") {
+      setFormData((previousData) => ({
+        ...previousData,
+        fullName: sanitizeNameInput(value),
+      }));
+      return;
+    }
+
     setFormData((previousData) => ({
       ...previousData,
       [name]: value,
@@ -1126,6 +1134,7 @@ function EditProfile({ adminProfile, settingsData, onClose, onSaveProfile }) {
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleChange}
+                maxLength={50}
                 disabled={isBusy}
               />
               {errors.fullName && <small>{errors.fullName}</small>}
