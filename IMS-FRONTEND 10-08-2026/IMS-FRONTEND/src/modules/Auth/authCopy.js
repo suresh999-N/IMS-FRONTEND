@@ -4,6 +4,26 @@ export function getAuthErrorMessage(message, fallback = 'We could not complete t
 
   if (!text) return fallback
 
+  // If text is a specific field validation error message, preserve it directly!
+  if (
+    normalizedText.includes('name') ||
+    normalizedText.includes('email') ||
+    normalizedText.includes('phone') ||
+    normalizedText.includes('password') ||
+    normalizedText.includes('match')
+  ) {
+    if (normalizedText.includes('already') || normalizedText.includes('exists')) {
+      if (normalizedText.includes('phone')) return 'An account with this phone number already exists.'
+      return 'An account with this email already exists.'
+    }
+    if (normalizedText.includes('not found') || normalizedText.includes('no user')) {
+      return 'No account matches that email.'
+    }
+    if (text.length <= 150) {
+      return text
+    }
+  }
+
   // Check credential failures first to avoid matching "invalid" as "valid" under email checks
   if (normalizedText.includes('invalid') && normalizedText.includes('password')) {
     if (normalizedText.includes('remaining') || normalizedText.includes('attempt') || normalizedText.includes('lock')) {
@@ -13,7 +33,7 @@ export function getAuthErrorMessage(message, fallback = 'We could not complete t
   }
 
   if (normalizedText.includes('email') && normalizedText.includes('valid')) {
-    return 'Enter a valid work email.'
+    return 'Enter a valid email address.'
   }
   if (normalizedText.includes('password') && normalizedText.includes('required')) {
     return 'Enter your password.'
@@ -39,7 +59,7 @@ export function getAuthErrorMessage(message, fallback = 'We could not complete t
   if (normalizedText.includes('network') || normalizedText.includes('server') || normalizedText.includes('connect')) {
     return 'Unable to connect to the server.'
   }
-  if (text.length > 120) return fallback
+  if (text.length > 150) return fallback
 
   return text
 }

@@ -31,6 +31,7 @@ import {
   exportSalesReportPdf,
   exportStockReport,
   exportStockReportPdf,
+  getReportFilterOptions,
   getReportsData,
 } from '../../api/businessApi'
 import { getCategories } from '../../api/productApi'
@@ -971,35 +972,50 @@ export default function Reports({ data = {} }) {
     })
   }
 
+  // API Filter options state
+  const [filterOptionsData, setFilterOptionsData] = useState({
+    warehouses: [],
+    categories: [],
+    products: [],
+    customers: [],
+    suppliers: [],
+  })
+
   // Categories loading states
   const [categories, setCategories] = useState([])
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(false)
   const [categoriesError, setCategoriesError] = useState('')
 
-  // Load categories
+  // Load filter options & categories
   useEffect(() => {
     let isMounted = true
 
-    async function fetchCategories() {
+    async function loadFilterOptions() {
       setIsCategoriesLoading(true)
       setCategoriesError('')
       try {
-        const response = await getCategories()
+        const [catRes, filtersRes] = await Promise.allSettled([
+          getCategories(),
+          getReportFilterOptions(),
+        ])
+
         if (!isMounted) return
-        if (response.success) {
-          setCategories(response.data || [])
-        } else {
-          setCategoriesError(response.error || 'Failed to load categories')
+
+        if (catRes.status === 'fulfilled' && catRes.value?.success) {
+          setCategories(catRes.value.data || [])
+        }
+        if (filtersRes.status === 'fulfilled' && filtersRes.value) {
+          setFilterOptionsData(filtersRes.value)
         }
       } catch (err) {
         if (!isMounted) return
-        setCategoriesError('Failed to load categories')
+        setCategoriesError('Failed to load filter options')
       } finally {
         if (isMounted) setIsCategoriesLoading(false)
       }
     }
 
-    fetchCategories()
+    loadFilterOptions()
 
     return () => {
       isMounted = false
@@ -1118,24 +1134,24 @@ export default function Reports({ data = {} }) {
   }, [projectData])
 
   const allRowsByReport = useMemo(() => ({
-    sales: reports.sales,
-    purchases: reports.purchases,
-    invoices: reports.invoices,
-    stock: reports.stock,
-    customerBalances: reports.customerBalances,
-    inventoryValuation: erpReports.inventoryValuation,
-    lowStock: erpReports.lowStock,
-    fastMoving: erpReports.fastMoving,
-    slowMoving: erpReports.slowMoving,
-    topCustomers: erpReports.topCustomers,
-    topSuppliers: erpReports.topSuppliers,
-    profitability: erpReports.profitability,
-    customerOutstanding: erpReports.customerOutstanding,
-    supplierOutstanding: erpReports.supplierOutstanding,
-    gstReport: erpReports.gstReport,
-    warehousePerformance: erpReports.warehousePerformance,
+    sales: reports.sales || [],
+    purchases: reports.purchases || [],
+    invoices: reports.invoices || [],
+    stock: reports.stock || [],
+    customerBalances: reports.customerBalances || [],
+    inventoryValuation: reports.inventoryValuation?.length ? reports.inventoryValuation : erpReports.inventoryValuation,
+    lowStock: reports.lowStock?.length ? reports.lowStock : erpReports.lowStock,
+    fastMoving: reports.fastMoving?.length ? reports.fastMoving : erpReports.fastMoving,
+    slowMoving: reports.slowMoving?.length ? reports.slowMoving : erpReports.slowMoving,
+    topCustomers: reports.topCustomers?.length ? reports.topCustomers : erpReports.topCustomers,
+    topSuppliers: reports.topSuppliers?.length ? reports.topSuppliers : erpReports.topSuppliers,
+    profitability: reports.profitability?.length ? reports.profitability : erpReports.profitability,
+    customerOutstanding: reports.customerOutstanding?.length ? reports.customerOutstanding : erpReports.customerOutstanding,
+    supplierOutstanding: reports.supplierOutstanding?.length ? reports.supplierOutstanding : erpReports.supplierOutstanding,
+    gstReport: reports.gstReport?.length ? reports.gstReport : erpReports.gstReport,
+    warehousePerformance: reports.warehousePerformance?.length ? reports.warehousePerformance : erpReports.warehousePerformance,
     scheduledReports: erpReports.scheduledReports,
-    forecasting: erpReports.forecasting,
+    forecasting: reports.forecasting?.length ? reports.forecasting : erpReports.forecasting,
   }), [erpReports, reports])
 
   // Clean, unique lists of options from data to map IDs to labels
@@ -1150,44 +1166,49 @@ export default function Reports({ data = {} }) {
   }
 
   const warehousesList = useMemo(() => {
+    if (filterOptionsData.warehouses.length > 0) return filterOptionsData.warehouses
     const raw = projectData.warehouses || []
     return getUniqueById(raw, (w) => w.warehouseId || w.id).map((w) => ({
       id: w.warehouseId || w.id,
       name: w.name || w.warehouseName || 'Unknown Warehouse',
     }))
-  }, [projectData.warehouses])
+  }, [filterOptionsData.warehouses, projectData.warehouses])
 
   const productsList = useMemo(() => {
+    if (filterOptionsData.products.length > 0) return filterOptionsData.products
     const raw = projectData.products || []
     return getUniqueById(raw, (p) => p.productId || p.id).map((p) => ({
       id: p.productId || p.id,
       name: p.name || p.productName || p.product || 'Unknown Product',
     }))
-  }, [projectData.products])
+  }, [filterOptionsData.products, projectData.products])
 
   const customersList = useMemo(() => {
+    if (filterOptionsData.customers.length > 0) return filterOptionsData.customers
     const raw = projectData.customers || []
     return getUniqueById(raw, (c) => c.customerId || c.id).map((c) => ({
       id: c.customerId || c.id,
       name: c.name || c.customerName || c.customer || 'Unknown Customer',
     }))
-  }, [projectData.customers])
+  }, [filterOptionsData.customers, projectData.customers])
 
   const suppliersList = useMemo(() => {
+    if (filterOptionsData.suppliers.length > 0) return filterOptionsData.suppliers
     const raw = projectData.suppliers || []
     return getUniqueById(raw, (s) => s.supplierId || s.id).map((s) => ({
       id: s.supplierId || s.id,
       name: s.name || s.supplierName || s.supplier || 'Unknown Supplier',
     }))
-  }, [projectData.suppliers])
+  }, [filterOptionsData.suppliers, projectData.suppliers])
 
   const categoriesList = useMemo(() => {
+    if (filterOptionsData.categories.length > 0) return filterOptionsData.categories
     const raw = categories || []
     return getUniqueById(raw, (c) => c.id).map((c) => ({
       id: c.id,
       name: c.name || 'Unknown Category',
     }))
-  }, [categories])
+  }, [filterOptionsData.categories, categories])
 
   const filteredReports = useMemo(() => {
     return Object.fromEntries(
@@ -1206,17 +1227,18 @@ export default function Reports({ data = {} }) {
   }, [allRowsByReport, filters, categoriesList, warehousesList, productsList, customersList, suppliersList, reports.stock])
 
   const summary = useMemo(() => {
-    const salesTotal = filteredReports.sales.reduce((total, row) => total + numeric(row.totalAmount || row.amount || row.grandTotal || row.total), 0)
-    const purchaseTotal = filteredReports.purchases.reduce((total, row) => total + numeric(row.totalAmount || row.amount || row.grandTotal || row.total), 0)
+    const apiSummary = reports.summary || {}
+    const salesTotal = apiSummary.totalSales != null ? numeric(apiSummary.totalSales) : filteredReports.sales.reduce((total, row) => total + numeric(row.totalAmount || row.amount || row.grandTotal || row.total), 0)
+    const purchaseTotal = apiSummary.totalPurchases != null ? numeric(apiSummary.totalPurchases) : filteredReports.purchases.reduce((total, row) => total + numeric(row.totalAmount || row.amount || row.grandTotal || row.total), 0)
     const balanceTotal = filteredReports.customerBalances.reduce((total, row) => total + numeric(row.outstandingBalance || row.balance || row.balanceAmount), 0)
     const stockAvailable = filteredReports.stock.reduce((total, row) => total + numeric(row.availableQuantity || row.availableStock || row.quantity), 0)
 
-    const totalInventoryValue = filteredReports.inventoryValuation.reduce((total, row) => total + numeric(row.totalStockValue), 0)
-    const lowStockItems = filteredReports.lowStock.filter((row) => row.status === 'Critical' || row.status === 'Warning').length
-    const outstandingReceivables = balanceTotal || filteredReports.customerOutstanding.reduce((total, row) => total + numeric(row.balanceAmount), 0)
-    const outstandingPayables = filteredReports.supplierOutstanding.reduce((total, row) => total + numeric(row.balanceAmount), 0)
-    const grossProfit = salesTotal - purchaseTotal
-    const topSellingItem = filteredReports.fastMoving[0]?.productName || 'No sales yet'
+    const totalInventoryValue = apiSummary.totalInventoryValue != null ? numeric(apiSummary.totalInventoryValue) : filteredReports.inventoryValuation.reduce((total, row) => total + numeric(row.totalStockValue), 0)
+    const lowStockItems = apiSummary.lowStockItems != null ? numeric(apiSummary.lowStockItems) : filteredReports.lowStock.filter((row) => row.status === 'Critical' || row.status === 'Warning').length
+    const outstandingReceivables = apiSummary.outstandingReceivables != null ? numeric(apiSummary.outstandingReceivables) : (balanceTotal || filteredReports.customerOutstanding.reduce((total, row) => total + numeric(row.balanceAmount), 0))
+    const outstandingPayables = apiSummary.outstandingPayables != null ? numeric(apiSummary.outstandingPayables) : filteredReports.supplierOutstanding.reduce((total, row) => total + numeric(row.balanceAmount), 0)
+    const grossProfit = apiSummary.grossProfit != null ? numeric(apiSummary.grossProfit) : (salesTotal - purchaseTotal)
+    const topSellingItem = apiSummary.topSellingItem || filteredReports.fastMoving[0]?.productName || 'No sales yet'
 
     return {
       salesTotal,
@@ -1230,7 +1252,7 @@ export default function Reports({ data = {} }) {
       grossProfit,
       topSellingItem,
     }
-  }, [filteredReports])
+  }, [filteredReports, reports.summary])
 
   const filterOptions = useMemo(() => ({
     statuses: [...new Set(Object.values(allRowsByReport).flat().map(getEffectiveStatus).filter(Boolean))],
@@ -1271,8 +1293,8 @@ export default function Reports({ data = {} }) {
   ], [filterOptions.statuses])
 
   const transactionTrend = useMemo(
-    () => buildTrendRows(filteredReports.sales, filteredReports.purchases),
-    [filteredReports.purchases, filteredReports.sales],
+    () => (reports.transactionTrend?.length ? reports.transactionTrend : buildTrendRows(filteredReports.sales, filteredReports.purchases)),
+    [reports.transactionTrend, filteredReports.purchases, filteredReports.sales],
   )
 
   // Real month-over-month KPI trends computed from actual data
@@ -1340,11 +1362,11 @@ export default function Reports({ data = {} }) {
   }, [filteredReports, summary])
 
   const stockChartData = useMemo(
-    () => filteredReports.stock.slice(0, 8).map((row) => ({
+    () => (reports.stockAvailability?.length ? reports.stockAvailability : filteredReports.stock.slice(0, 8).map((row) => ({
       product: row.product || row.productName || row.name || 'Stock item',
       available: numeric(row.availableQuantity || row.availableStock || row.quantity),
-    })),
-    [filteredReports.stock],
+    }))),
+    [reports.stockAvailability, filteredReports.stock],
   )
 
   const topCustomersChartData = useMemo(

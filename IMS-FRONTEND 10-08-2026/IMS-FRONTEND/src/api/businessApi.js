@@ -498,7 +498,7 @@ export function normalizeInvoice(item) {
 }
 
 export function normalizeReportRow(item, reportType, index = 0) {
-  const id = idOf(item, ['id', 'soId', 'poId', 'invoiceId', 'stockId', 'customerId', 'SoId', 'PoId', 'InvoiceId', 'StockId', 'CustomerId'])
+  const id = idOf(item, ['id', 'soId', 'poId', 'invoiceId', 'stockId', 'customerId', 'supplierId', 'productId', 'Id', 'SoId', 'PoId', 'InvoiceId', 'StockId', 'CustomerId', 'SupplierId', 'ProductId'])
   return {
     ...item,
     id: id || `${reportType}-${index}`,
@@ -508,26 +508,205 @@ export function normalizeReportRow(item, reportType, index = 0) {
     invoiceId: idOf(item, ['invoiceId', 'InvoiceId']),
     stockId: idOf(item, ['stockId', 'StockId']),
     customerId: idOf(item, ['customerId', 'CustomerId']),
+    supplierId: idOf(item, ['supplierId', 'SupplierId']),
+    productId: idOf(item, ['productId', 'ProductId']),
     warehouseId: idOf(item, ['warehouseId', 'WarehouseId', 'warehouse_id', 'whId', 'locationId']),
     name: text(item?.name ?? item?.Name),
     customer: text(item?.customer ?? item?.Customer ?? item?.customerName ?? item?.CustomerName),
+    customerName: text(item?.customerName ?? item?.CustomerName ?? item?.customer ?? item?.Customer),
     supplier: text(item?.supplier ?? item?.Supplier ?? item?.supplierName ?? item?.SupplierName),
-    product: text(item?.product ?? item?.Product ?? item?.name ?? item?.Name),
+    supplierName: text(item?.supplierName ?? item?.SupplierName ?? item?.supplier ?? item?.Supplier),
+    product: text(item?.product ?? item?.Product ?? item?.productName ?? item?.ProductName ?? item?.name ?? item?.Name),
+    productName: text(item?.productName ?? item?.ProductName ?? item?.product ?? item?.Product ?? item?.name ?? item?.Name),
+    sku: text(item?.sku ?? item?.SKU ?? item?.code ?? item?.Code),
+    category: text(item?.category ?? item?.Category ?? item?.categoryName ?? item?.CategoryName),
     warehouse: text(item?.warehouse ?? item?.Warehouse ?? item?.warehouseName ?? item?.WarehouseName ?? item?.location ?? item?.Location),
+    warehouseName: text(item?.warehouseName ?? item?.WarehouseName ?? item?.warehouse ?? item?.Warehouse ?? item?.location ?? item?.Location),
     soNumber: text(item?.soNumber ?? item?.SoNumber),
     poNumber: text(item?.poNumber ?? item?.PoNumber),
     invoiceNumber: text(item?.invoiceNumber ?? item?.InvoiceNumber),
+    billNumber: text(item?.billNumber ?? item?.BillNumber ?? item?.poNumber ?? item?.PoNumber),
     orderDate: dateOnly(item?.orderDate ?? item?.OrderDate),
     invoiceDate: dateOnly(item?.invoiceDate ?? item?.InvoiceDate),
-    totalAmount: number(item?.totalAmount ?? item?.TotalAmount),
+    billDate: dateOnly(item?.billDate ?? item?.BillDate ?? item?.orderDate ?? item?.OrderDate),
+    dueDate: dateOnly(item?.dueDate ?? item?.DueDate),
+    lastPurchaseDate: dateOnly(item?.lastPurchaseDate ?? item?.LastPurchaseDate),
+    lastSoldDate: dateOnly(item?.lastSoldDate ?? item?.LastSoldDate),
+    totalAmount: number(item?.totalAmount ?? item?.TotalAmount ?? item?.amount ?? item?.Amount ?? item?.grandTotal ?? item?.GrandTotal),
+    invoiceAmount: number(item?.invoiceAmount ?? item?.InvoiceAmount ?? item?.totalAmount ?? item?.TotalAmount),
+    billAmount: number(item?.billAmount ?? item?.BillAmount ?? item?.totalAmount ?? item?.TotalAmount),
     paidAmount: number(item?.paidAmount ?? item?.PaidAmount),
     balanceAmount: number(item?.balanceAmount ?? item?.BalanceAmount),
     quantity: number(item?.quantity ?? item?.Quantity),
+    quantityAvailable: number(item?.quantityAvailable ?? item?.QuantityAvailable ?? item?.availableQuantity ?? item?.AvailableQuantity ?? item?.availableStock ?? item?.AvailableStock ?? item?.quantity ?? item?.Quantity),
+    availableQuantity: number(item?.availableQuantity ?? item?.AvailableQuantity ?? item?.quantityAvailable ?? item?.QuantityAvailable ?? item?.availableStock ?? item?.AvailableStock ?? item?.quantity ?? item?.Quantity),
+    availableStock: number(item?.availableStock ?? item?.AvailableStock ?? item?.availableQuantity ?? item?.AvailableQuantity ?? item?.quantityAvailable ?? item?.QuantityAvailable ?? item?.quantity ?? item?.Quantity),
     reservedQuantity: number(item?.reservedQuantity ?? item?.ReservedQuantity),
-    availableQuantity: number(item?.availableQuantity ?? item?.AvailableQuantity),
+    minimumStockLevel: number(item?.minimumStockLevel ?? item?.MinimumStockLevel ?? item?.reorderLevel ?? item?.ReorderLevel ?? item?.minStock ?? 10),
+    reorderQuantity: number(item?.reorderQuantity ?? item?.ReorderQuantity ?? item?.reorderQty ?? 20),
+    averageCost: number(item?.averageCost ?? item?.AverageCost ?? item?.costPrice ?? item?.CostPrice ?? item?.unitCost ?? item?.UnitCost),
+    totalStockValue: number(item?.totalStockValue ?? item?.TotalStockValue ?? item?.stockValue ?? item?.StockValue),
+    stockValue: number(item?.stockValue ?? item?.StockValue ?? item?.totalStockValue ?? item?.TotalStockValue),
+    unitsSold: number(item?.unitsSold ?? item?.UnitsSold ?? item?.totalSold ?? item?.TotalSold),
+    salesValue: number(item?.salesValue ?? item?.SalesValue ?? item?.totalSalesValue ?? item?.TotalSalesValue),
+    totalSalesValue: number(item?.totalSalesValue ?? item?.TotalSalesValue ?? item?.salesValue ?? item?.SalesValue),
+    costValue: number(item?.costValue ?? item?.CostValue),
+    grossProfit: number(item?.grossProfit ?? item?.GrossProfit),
+    profitMargin: number(item?.profitMargin ?? item?.ProfitMargin),
+    stockLeft: number(item?.stockLeft ?? item?.StockLeft ?? item?.availableStock ?? item?.AvailableStock),
+    daysSinceLastSale: number(item?.daysSinceLastSale ?? item?.DaysSinceLastSale),
+    totalOrders: number(item?.totalOrders ?? item?.TotalOrders),
+    totalPurchases: number(item?.totalPurchases ?? item?.TotalPurchases),
+    purchaseValue: number(item?.purchaseValue ?? item?.PurchaseValue),
+    outstandingAmount: number(item?.outstandingAmount ?? item?.OutstandingAmount ?? item?.outstandingBalance ?? item?.OutstandingBalance),
+    outstandingPayable: number(item?.outstandingPayable ?? item?.OutstandingPayable ?? item?.outstandingBalance ?? item?.OutstandingBalance),
     creditLimit: number(item?.creditLimit ?? item?.CreditLimit),
     outstandingBalance: number(item?.outstandingBalance ?? item?.OutstandingBalance),
-    status: normalizeStatus(item?.status ?? item?.Status, 'Open'),
+    month: text(item?.month ?? item?.Month),
+    taxableSales: number(item?.taxableSales ?? item?.TaxableSales),
+    outputGst: number(item?.outputGst ?? item?.OutputGst),
+    taxablePurchases: number(item?.taxablePurchases ?? item?.TaxablePurchases),
+    inputGst: number(item?.inputGst ?? item?.InputGst),
+    netGstPayable: number(item?.netGstPayable ?? item?.NetGstPayable),
+    totalProducts: number(item?.totalProducts ?? item?.TotalProducts),
+    lowStockItems: number(item?.lowStockItems ?? item?.LowStockItems),
+    damagedItems: number(item?.damagedItems ?? item?.DamagedItems),
+    salesDispatches: number(item?.salesDispatches ?? item?.SalesDispatches),
+    purchaseReceipts: number(item?.purchaseReceipts ?? item?.PurchaseReceipts),
+    insight: text(item?.insight ?? item?.Insight),
+    prediction: text(item?.prediction ?? item?.Prediction),
+    priority: text(item?.priority ?? item?.Priority),
+    agingStatus: text(item?.agingStatus ?? item?.AgingStatus) || '0-30 Days',
+    movementStatus: text(item?.movementStatus ?? item?.MovementStatus) || 'Normal',
+    status: normalizeStatus(item?.status ?? item?.Status, 'Active'),
+  }
+}
+
+export async function getReportFilterOptions() {
+  const endpoints = API_ENDPOINTS.reports
+
+  const [warehouses, categories, products, customers, suppliers] = await Promise.allSettled([
+    apiRequest(endpoints.filtersWarehouses),
+    apiRequest(endpoints.filtersCategories),
+    apiRequest(endpoints.filtersProducts),
+    apiRequest(endpoints.filtersCustomers),
+    apiRequest(endpoints.filtersSuppliers),
+  ])
+
+  const extractList = (result) => {
+    if (result.status === 'fulfilled' && result.value?.success) {
+      return getResponseList(result.value)
+    }
+    return []
+  }
+
+  return {
+    warehouses: extractList(warehouses).map((item) => ({
+      id: idOf(item, ['id', 'warehouseId', 'Id', 'WarehouseId']),
+      name: text(item?.name ?? item?.Name ?? item?.warehouseName ?? item?.WarehouseName ?? item?.label ?? item?.Label),
+    })).filter((w) => w.id && w.name),
+    categories: extractList(categories).map((item) => ({
+      id: idOf(item, ['id', 'categoryId', 'Id', 'CategoryId']),
+      name: text(item?.name ?? item?.Name ?? item?.categoryName ?? item?.CategoryName ?? item?.label ?? item?.Label),
+    })).filter((c) => c.id && c.name),
+    products: extractList(products).map((item) => ({
+      id: idOf(item, ['id', 'productId', 'Id', 'ProductId']),
+      name: text(item?.name ?? item?.Name ?? item?.productName ?? item?.ProductName ?? item?.label ?? item?.Label),
+    })).filter((p) => p.id && p.name),
+    customers: extractList(customers).map((item) => ({
+      id: idOf(item, ['id', 'customerId', 'Id', 'CustomerId']),
+      name: text(item?.name ?? item?.Name ?? item?.customerName ?? item?.CustomerName ?? item?.label ?? item?.Label),
+    })).filter((c) => c.id && c.name),
+    suppliers: extractList(suppliers).map((item) => ({
+      id: idOf(item, ['id', 'supplierId', 'Id', 'SupplierId']),
+      name: text(item?.name ?? item?.Name ?? item?.supplierName ?? item?.SupplierName ?? item?.label ?? item?.Label),
+    })).filter((s) => s.id && s.name),
+  }
+}
+
+export async function getReportsData(query = {}) {
+  const endpoints = API_ENDPOINTS.reports
+
+  const [
+    sales, purchases, invoices, stock, customerBalances,
+    inventoryValuation, lowStock, fastMoving, slowMoving,
+    topCustomers, topSuppliers, profitability,
+    customerOutstanding, supplierOutstanding, gstTax,
+    warehousePerformance, forecasting, summary,
+    transactionTrend, stockAvailability,
+  ] = await Promise.allSettled([
+    apiRequest(endpoints.sales, { query }),
+    apiRequest(endpoints.purchases, { query }),
+    apiRequest(endpoints.invoices, { query }),
+    apiRequest(endpoints.stock, { query }),
+    apiRequest(endpoints.customerBalances, { query }),
+    apiRequest(endpoints.inventoryValuation, { query }),
+    apiRequest(endpoints.lowStock, { query }),
+    apiRequest(endpoints.fastMoving, { query }),
+    apiRequest(endpoints.slowMoving, { query }),
+    apiRequest(endpoints.topCustomers, { query }),
+    apiRequest(endpoints.topSuppliers, { query }),
+    apiRequest(endpoints.profitability, { query }),
+    apiRequest(endpoints.customerOutstanding, { query }),
+    apiRequest(endpoints.supplierOutstanding, { query }),
+    apiRequest(endpoints.gstTax, { query }),
+    apiRequest(endpoints.warehousePerformance, { query }),
+    apiRequest(endpoints.forecasting, { query }),
+    apiRequest(endpoints.summary, { query }),
+    apiRequest(endpoints.transactionTrend, { query }),
+    apiRequest(endpoints.stockAvailability, { query }),
+  ])
+
+  const extractList = (res, type) => {
+    if (res.status === 'fulfilled' && res.value?.success) {
+      return getResponseList(res.value).map((item, index) => normalizeReportRow(item, type, index))
+    }
+    return []
+  }
+
+  const extractData = (res) => {
+    if (res.status === 'fulfilled' && res.value?.success) {
+      return getResponseData(res.value, {}) ?? {}
+    }
+    return null
+  }
+
+  const allResponses = [
+    sales, purchases, invoices, stock, customerBalances,
+    inventoryValuation, lowStock, fastMoving, slowMoving,
+    topCustomers, topSuppliers, profitability,
+    customerOutstanding, supplierOutstanding, gstTax,
+    warehousePerformance, forecasting, summary,
+    transactionTrend, stockAvailability,
+  ]
+
+  const errors = allResponses
+    .filter((res) => res.status === 'fulfilled' && !res.value?.success && res.value?.status !== 404)
+    .map((res) => res.value?.error)
+    .filter(Boolean)
+
+  return {
+    sales: extractList(sales, 'sales'),
+    purchases: extractList(purchases, 'purchases'),
+    invoices: extractList(invoices, 'invoices'),
+    stock: extractList(stock, 'stock'),
+    customerBalances: extractList(customerBalances, 'customerBalances'),
+    inventoryValuation: extractList(inventoryValuation, 'inventoryValuation'),
+    lowStock: extractList(lowStock, 'lowStock'),
+    fastMoving: extractList(fastMoving, 'fastMoving'),
+    slowMoving: extractList(slowMoving, 'slowMoving'),
+    topCustomers: extractList(topCustomers, 'topCustomers'),
+    topSuppliers: extractList(topSuppliers, 'topSuppliers'),
+    profitability: extractList(profitability, 'profitability'),
+    customerOutstanding: extractList(customerOutstanding, 'customerOutstanding'),
+    supplierOutstanding: extractList(supplierOutstanding, 'supplierOutstanding'),
+    gstReport: extractList(gstTax, 'gstTax'),
+    warehousePerformance: extractList(warehousePerformance, 'warehousePerformance'),
+    forecasting: extractList(forecasting, 'forecasting'),
+    summary: extractData(summary),
+    transactionTrend: extractList(transactionTrend, 'transactionTrend'),
+    stockAvailability: extractList(stockAvailability, 'stockAvailability'),
+    errors,
   }
 }
 
@@ -806,24 +985,6 @@ export function deleteSupplierPayment(id) {
   return apiRequest(API_ENDPOINTS.supplierPayments.byId(id), { method: 'DELETE' })
 }
 
-export async function getReportsData(query = {}) {
-  const [sales, purchases, invoices, stock, balances] = await Promise.all([
-    apiRequest(API_ENDPOINTS.reports.sales, { query }),
-    apiRequest(API_ENDPOINTS.reports.purchases, { query }),
-    apiRequest(API_ENDPOINTS.reports.invoices, { query }),
-    apiRequest(API_ENDPOINTS.reports.stock, { query }),
-    apiRequest(API_ENDPOINTS.reports.customerBalances, { query }),
-  ])
-
-  return {
-    sales: sales.success ? getResponseList(sales).map((item, index) => normalizeReportRow(item, 'sales', index)) : [],
-    purchases: purchases.success ? getResponseList(purchases).map((item, index) => normalizeReportRow(item, 'purchases', index)) : [],
-    invoices: invoices.success ? getResponseList(invoices).map((item, index) => normalizeReportRow(item, 'invoices', index)) : [],
-    stock: stock.success ? getResponseList(stock).map((item, index) => normalizeReportRow(item, 'stock', index)) : [],
-    customerBalances: balances.success ? getResponseList(balances).map((item, index) => normalizeReportRow(item, 'customerBalances', index)) : [],
-    errors: [sales, purchases, invoices, stock, balances].filter((response) => !response.success).map((response) => response.error).filter(Boolean),
-  }
-}
 
 export async function exportSalesReport() {
   return exportReportFile(API_ENDPOINTS.reports.exportSales, 'SalesReport.xlsx')
