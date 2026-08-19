@@ -5,12 +5,12 @@ import SidebarItem from './SidebarItem'
 import SidebarSection from './SidebarSection'
 
 const SECTIONS = [
-  { key: 'admin', title: 'Administration' },
+  { key: 'admin', title: 'Admin' },
   { key: 'masters', title: 'Masters' },
   { key: 'inventory', title: 'Inventory' },
   { key: 'pos', title: 'POS' },
+  { key: 'management', title: 'Management' },
   { key: 'billing', title: 'Billing' },
-  { key: 'management', title: 'Reports' },
 ]
 
 function getInitials(value) {
