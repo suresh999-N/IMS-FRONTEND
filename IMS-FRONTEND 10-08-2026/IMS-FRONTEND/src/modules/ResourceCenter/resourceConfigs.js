@@ -1188,8 +1188,9 @@ export const RESOURCE_CONFIGS = {
         label: 'Name',
         required: true,
         minLength: 2,
-        pattern: /^(?=.*[\p{L}a-zA-Z])[a-zA-Z\s\.\-'\p{L}\p{M}]+$/u,
-        patternMessage: 'Name can only contain letters, spaces, dots, hyphens, and apostrophes, and must contain at least one letter.'
+        maxLength: 50,
+        pattern: /^(?!.*([\p{L}a-zA-Z])\1\1)(?=.*[\p{L}a-zA-Z])[\p{L}a-zA-Z]{1,15}(?:[ .'-][\p{L}a-zA-Z]{1,15})*$/u,
+        patternMessage: 'Name can only contain letters, spaces, dots, hyphens, and apostrophes. Single words cannot exceed 15 characters, and characters cannot be repeated consecutively more than twice.'
       },
       { name: 'email', label: 'Mail', type: 'email', required: true },
       { name: 'phoneNumber', label: 'Phone No', type: 'tel', required: true, minLength: 10, maxLength: 10 },

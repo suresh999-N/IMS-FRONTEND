@@ -5,7 +5,7 @@ namespace IMSBackend.DTOs
     public class RegisterDto
     {
         [Required]
-        [MaxLength(120)]
+        [MaxLength(50)]
         public string Name { get; set; } = string.Empty;
 
         [Required]

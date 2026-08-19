@@ -1,4 +1,4 @@
-export const NAME_MAX_LENGTH = 100
+export const NAME_MAX_LENGTH = 50
 
 export function stripUnsafeNameText(value) {
   return Array.from(String(value ?? '')).filter((character) => {
@@ -43,8 +43,22 @@ export function getNameError(value, options = {}) {
     return `${label} must contain alphabetic characters and cannot contain only numbers.`
   }
 
+  // Reject 3 or more consecutive identical characters (e.g. "aaa")
+  if (/([\p{L}a-zA-Z])\1\1/u.test(cleanValue)) {
+    return `${label} contains invalid repeated characters.`
+  }
+
+  // Reject single words longer than 15 characters (person names don't have single words > 15 chars)
+  const words = cleanValue.split(/[\s'-]+/)
+  if (words.some(word => word.length > 15)) {
+    return `${label} cannot contain words longer than 15 characters.`
+  }
+
   // General valid characters for person names: letters, spaces, hyphens (-), apostrophes ('), periods (.)
-  const pattern = allowAmpersand ? /^[A-Za-z0-9 .&'-]+$/ : /^[A-Za-z .'-]+$/
+  const pattern = allowAmpersand 
+    ? /^(?=.*[\p{L}a-zA-Z])[\p{L}a-zA-Z0-9 .&'-]+$/u
+    : /^(?=.*[\p{L}a-zA-Z])[\p{L}a-zA-Z .'-]+$/u
+
   if (!pattern.test(cleanValue)) {
     return `${label} can contain letters, spaces, hyphens, and apostrophes only.`
   }

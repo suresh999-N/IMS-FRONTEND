@@ -59,7 +59,9 @@ export default function Register() {
           ? sanitizeEmailInput(value)
           : name === "phoneNumber"
             ? sanitizePhoneInput(value)
-            : value,
+            : name === "name"
+              ? sanitizeNameInput(value)
+              : value,
     }));
   }
 
@@ -206,6 +208,7 @@ export default function Register() {
                 placeholder="Full name"
                 value={formData.name}
                 onChange={handleChange}
+                maxLength={50}
                 autoComplete="name"
               />
             </div>
