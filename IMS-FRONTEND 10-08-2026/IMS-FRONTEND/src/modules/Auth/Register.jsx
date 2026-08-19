@@ -179,18 +179,15 @@ export default function Register() {
         return;
       }
 
-      // Automatically log the user in and navigate to dashboard
       const userEmail = sanitizeEmailInput(formData.email);
-      const loginRes = await login({
-        emailOrPhone: userEmail,
-        password: formData.password,
-      });
+      try {
+        localStorage.removeItem("ims-email-verification-completed");
+      } catch {}
 
-      if (loginRes.success) {
-        navigate("/dashboard", { replace: true });
-      } else {
-        navigate("/dashboard", { replace: true });
-      }
+      navigate(
+        `/verify-email?email=${encodeURIComponent(userEmail)}`,
+        { replace: true },
+      );
     } catch (err) {
       const msg = err?.message || ''
       if (/network|fetch|timeout|aborted|ERR_/i.test(msg)) {
