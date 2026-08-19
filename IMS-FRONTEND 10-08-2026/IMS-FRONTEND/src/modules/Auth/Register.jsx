@@ -181,8 +181,13 @@ export default function Register() {
         `/verify-email?email=${encodeURIComponent(sanitizeEmailInput(formData.email))}`,
         { replace: true },
       );
-    } catch {
-      setError("Unable to connect to the server.");
+    } catch (err) {
+      const msg = err?.message || ''
+      if (/network|fetch|timeout|aborted|ERR_/i.test(msg)) {
+        setError("Unable to connect to the server. Please check your internet connection and try again.")
+      } else {
+        setError("Something went wrong while creating your account. Please try again.")
+      }
     } finally {
       setLoading(false);
     }
@@ -384,7 +389,7 @@ export default function Register() {
               <Link to="/login">Login</Link>
             </div>
 
-            <button type="submit" disabled={loading}>
+            <button type="submit" disabled={loading || (Object.values(touched).every(Boolean) && !isFormValid)}>
               <UserPlus size={18} />
               {loading ? "Creating..." : "Create account"}
             </button>
