@@ -15,7 +15,8 @@ namespace IMSBackend.DTOs
 
         [Required]
         [Phone]
-        [MaxLength(15)]
+        [MaxLength(10)]
+        [RegularExpression(@"^[6-9]\d{9}$", ErrorMessage = "Mobile number must start with 6, 7, 8, or 9 and be exactly 10 digits.")]
         public string PhoneNumber { get; set; } = string.Empty;
 
         [Required]

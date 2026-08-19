@@ -32,6 +32,22 @@ export function getPhoneError(value, label = 'Phone') {
     return 'Phone number must contain exactly 10 digits.'
   }
 
+  // Indian mobile numbers must start with 6, 7, 8, or 9
+  if (!/^[6-9]/.test(phone)) {
+    return 'Mobile number must start with 6, 7, 8, or 9.'
+  }
+
+  // Reject all-same-digit numbers (e.g. 9999999999)
+  if (/^(\d)\1{9}$/.test(phone)) {
+    return 'Please enter a valid mobile number.'
+  }
+
+  // Reject sequential patterns (e.g. 6789012345, 9876543210)
+  const SEQUENTIAL_PATTERNS = ['0123456789', '9876543210']
+  if (SEQUENTIAL_PATTERNS.some((seq) => seq.includes(phone.slice(0, 6)))) {
+    return 'Please enter a valid mobile number.'
+  }
+
   return ''
 }
 

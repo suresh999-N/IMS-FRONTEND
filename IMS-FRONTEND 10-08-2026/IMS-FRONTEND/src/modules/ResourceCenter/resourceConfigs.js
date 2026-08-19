@@ -1193,7 +1193,7 @@ export const RESOURCE_CONFIGS = {
         patternMessage: 'Name can only contain letters, spaces, dots, hyphens, and apostrophes. Single words cannot exceed 15 characters, and characters cannot be repeated consecutively more than twice.'
       },
       { name: 'email', label: 'Mail', type: 'email', required: true },
-      { name: 'phoneNumber', label: 'Phone No', type: 'tel', required: true, minLength: 10, maxLength: 10 },
+      { name: 'phoneNumber', label: 'Phone No', type: 'tel', required: true, minLength: 10, maxLength: 10, validation: { pattern: /^[6-9]\d{9}$/, message: 'Mobile number must start with 6, 7, 8, or 9 and be exactly 10 digits.' } },
       { name: 'password', label: 'Password', type: 'password', requiredOnCreate: true, minLength: 8, createOnly: true, helperText: 'At least 8 chars with uppercase, lowercase, number & symbol' },
       { name: 'confirmPassword', label: 'Confirm Password', type: 'password', requiredOnCreate: true, createOnly: true },
       {
