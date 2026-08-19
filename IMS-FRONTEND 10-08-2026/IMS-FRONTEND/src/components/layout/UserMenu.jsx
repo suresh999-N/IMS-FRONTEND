@@ -203,6 +203,19 @@ export default function UserMenu({ user, onLogout }) {
 
     setAdminProfile(finalProfile);
     localStorage.setItem("imsAdminProfile", JSON.stringify(finalProfile));
+
+    const currentUserRaw = localStorage.getItem("ims-current-user");
+    if (currentUserRaw) {
+      try {
+        const currentUser = JSON.parse(currentUserRaw);
+        currentUser.name = finalProfile.fullName || finalProfile.name || currentUser.name;
+        currentUser.email = finalProfile.email || currentUser.email;
+        localStorage.setItem("ims-current-user", JSON.stringify(currentUser));
+        window.dispatchEvent(new Event("storage"));
+      } catch (e) {
+        console.error("Error updating current user local storage:", e);
+      }
+    }
   }
 
   function handleUpdateSettings(updatedSettings) {

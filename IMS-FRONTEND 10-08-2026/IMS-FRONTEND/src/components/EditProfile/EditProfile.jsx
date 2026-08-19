@@ -1036,6 +1036,7 @@ function EditProfile({ adminProfile, settingsData, onClose, onSaveProfile }) {
 
       setTimeout(() => {
         onClose();
+        window.location.reload();
       }, 900);
     } catch (error) {
       console.error("Profile update error:", error);
