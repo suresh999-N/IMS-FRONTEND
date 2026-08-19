@@ -67,6 +67,11 @@ namespace IMSBackend.Controllers
                     invoice.TotalAmount,
                     invoice.PaidAmount,
                     invoice.BalanceAmount,
+                    PaymentMethod = _context.CustomerPayments
+                        .Where(p => p.InvoiceId == invoice.InvoiceId && !p.IsCancelled)
+                        .OrderBy(p => p.PaymentId)
+                        .Select(p => p.PaymentMethod)
+                        .FirstOrDefault() ?? "N/A",
                     ReturnedAmount = _context.SalesReturns
                         .Where(returnItem =>
                             returnItem.InvoiceId == invoice.InvoiceId &&
@@ -968,6 +973,11 @@ namespace IMSBackend.Controllers
                 invoice.TotalAmount,
                 invoice.PaidAmount,
                 invoice.BalanceAmount,
+                PaymentMethod = _context.CustomerPayments
+                    .Where(p => p.InvoiceId == invoice.InvoiceId && !p.IsCancelled)
+                    .OrderBy(p => p.PaymentId)
+                    .Select(p => p.PaymentMethod)
+                    .FirstOrDefault() ?? "N/A",
                 ReturnedAmount = returnedAmount,
                 AdjustedOutstanding = Math.Max(0m, invoice.BalanceAmount),
                 ReturnStatus = returnedAmount <= 0

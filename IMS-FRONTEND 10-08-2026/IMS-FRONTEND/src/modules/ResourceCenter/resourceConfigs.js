@@ -454,9 +454,15 @@ export const RESOURCE_CONFIGS = {
     idFields: ['adjustmentId'],
     referenceEndpoints: {
       warehouses: API_ENDPOINTS.warehouses.list,
+      products: API_ENDPOINTS.products.list,
+      productVariants: API_ENDPOINTS.productVariants.list,
+      stockAdjustmentItems: API_ENDPOINTS.stockAdjustmentItems.list,
     },
     referenceListKeys: {
       warehouses: 'warehouses',
+      products: 'products',
+      productVariants: 'productVariants',
+      stockAdjustmentItems: 'stockAdjustmentItems',
     },
     fields: [
       {
@@ -481,10 +487,15 @@ export const RESOURCE_CONFIGS = {
         options: [
           { value: 'increase', label: 'Increase' },
           { value: 'decrease', label: 'Decrease' },
-          { value: 'recount', label: 'Recount' },
         ],
       },
       { name: 'reason', label: 'Reason *', type: 'textarea', required: true, minLength: 3 },
+      {
+        name: 'items',
+        label: 'Adjustment Items *',
+        type: 'lineItems',
+        required: true,
+      },
     ],
     columns: [
       {
@@ -628,10 +639,14 @@ export const RESOURCE_CONFIGS = {
     referenceEndpoints: {
       warehouses: API_ENDPOINTS.warehouses.list,
       products: API_ENDPOINTS.products.list,
+      productVariants: API_ENDPOINTS.productVariants.list,
+      stockTransferItems: API_ENDPOINTS.stockTransferItems.list,
     },
     referenceListKeys: {
       warehouses: 'warehouses',
       products: 'products',
+      productVariants: 'productVariants',
+      stockTransferItems: 'stockTransferItems',
     },
     fields: [
       {
@@ -660,30 +675,14 @@ export const RESOURCE_CONFIGS = {
         placeholder: 'Select warehouse',
         searchPlaceholder: 'Search warehouses...',
       },
-      {
-        name: 'productId',
-        label: 'Product *',
-        type: 'searchableSelect',
-        valueType: 'number',
-        required: true,
-        min: 1,
-        optionsFrom: 'products',
-        optionValue: ['productId', 'id'],
-        optionLabel: ['name', 'productName', 'title'],
-        placeholder: 'Select product',
-        searchPlaceholder: 'Search products...',
-      },
-      {
-        name: 'quantity',
-        label: 'Quantity *',
-        type: 'number',
-        required: true,
-        min: 1,
-        defaultValue: 1,
-        placeholder: 'Enter quantity',
-      },
       { name: 'transferDate', label: 'Transfer Date *', type: 'date', required: true, defaultValue: getToday },
       { name: 'status', label: 'Status *', type: 'select', options: documentStatusOptions, defaultValue: 'pending' },
+      {
+        name: 'items',
+        label: 'Transfer Items *',
+        type: 'lineItems',
+        required: true,
+      },
     ],
     columns: [
       {
@@ -837,9 +836,17 @@ export const RESOURCE_CONFIGS = {
     idFields: ['auditId'],
     referenceEndpoints: {
       warehouses: API_ENDPOINTS.warehouses.list,
+      products: API_ENDPOINTS.products.list,
+      productVariants: API_ENDPOINTS.productVariants.list,
+      bins: API_ENDPOINTS.bins.list,
+      stockAuditItems: API_ENDPOINTS.stockAuditItems.list,
     },
     referenceListKeys: {
       warehouses: 'warehouses',
+      products: 'products',
+      productVariants: 'productVariants',
+      bins: 'bins',
+      stockAuditItems: 'stockAuditItems',
     },
     fields: [
       {
@@ -871,6 +878,12 @@ export const RESOURCE_CONFIGS = {
       { name: 'createdBy', label: 'Created By', type: 'text' },
       { name: 'approvedBy', label: 'Approved By', type: 'text' },
       { name: 'notes', label: 'Notes', type: 'textarea' },
+      {
+        name: 'items',
+        label: 'Audit Items *',
+        type: 'lineItems',
+        required: true,
+      },
     ],
     columns: [
       {
@@ -1280,11 +1293,8 @@ export const RESOURCE_HUBS = {
     'stockMovements',
     'stockLedger',
     'stockAdjustments',
-    'stockAdjustmentItems',
     'stockTransfers',
-    'stockTransferItems',
     'stockAudits',
-    'stockAuditItems',
   ],
   receiving: ['goodsReceipts'],
   accounting: ['invoices'],

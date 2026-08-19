@@ -276,12 +276,60 @@ function getResourceFieldClassName(config, field) {
   return `${baseClass} resource-form__field--full`
 }
 
-function getRecordFieldValue(record, field) {
+function getRecordFieldValue(record, field, referenceData = {}) {
   const value = readResourceValue(
     record,
     field.name,
     readResourceValue(record, field.apiKey, undefined),
   )
+
+  if (field.type === 'lineItems') {
+    if (field.name === 'items') {
+      if (Array.isArray(referenceData.stockAdjustmentItems) && record.adjustmentId !== undefined) {
+        const adjId = record.adjustmentId ?? record.id
+        return referenceData.stockAdjustmentItems
+          .filter((item) => String(item.adjustmentId) === String(adjId))
+          .map((item) => ({
+            productId: String(item.productId || ''),
+            variantId: String(item.variantId || ''),
+            quantity: String(item.quantity || '0'),
+            price: '0',
+          }))
+      }
+      if (Array.isArray(referenceData.stockTransferItems) && record.transferId !== undefined) {
+        const transId = record.transferId ?? record.id
+        return referenceData.stockTransferItems
+          .filter((item) => String(item.transferId) === String(transId))
+          .map((item) => ({
+            productId: String(item.productId || ''),
+            variantId: String(item.variantId || ''),
+            quantity: String(item.quantity || '0'),
+            price: '0',
+          }))
+      }
+      if (Array.isArray(referenceData.stockAuditItems) && record.auditId !== undefined) {
+        const aId = record.auditId ?? record.id
+        return referenceData.stockAuditItems
+          .filter((item) => String(item.auditId) === String(aId))
+          .map((item) => ({
+            productId: String(item.productId || ''),
+            variantId: String(item.variantId || ''),
+            binId: String(item.binId || ''),
+            systemQuantity: String(item.systemQuantity ?? '0'),
+            physicalQuantity: String(item.physicalQuantity ?? '0'),
+          }))
+      }
+    }
+    const items = value || readResourceValue(record, 'invoiceItems', [])
+    return Array.isArray(items)
+      ? items.map((item) => ({
+        productId: readResourceValue(item, 'productId', ''),
+        variantId: readResourceValue(item, 'variantId', ''),
+        quantity: readResourceValue(item, 'quantity', ''),
+        price: readResourceValue(item, 'price', ''),
+      }))
+      : getDefaultValue(field)
+  }
 
   if (value === undefined || value === null) {
     return getDefaultValue(field)
@@ -293,18 +341,6 @@ function getRecordFieldValue(record, field) {
 
   if (field.type === 'date') {
     return String(value).slice(0, 10)
-  }
-
-  if (field.type === 'lineItems') {
-    const items = value || readResourceValue(record, 'invoiceItems', [])
-    return Array.isArray(items)
-      ? items.map((item) => ({
-        productId: readResourceValue(item, 'productId', ''),
-        variantId: readResourceValue(item, 'variantId', ''),
-        quantity: readResourceValue(item, 'quantity', ''),
-        price: readResourceValue(item, 'price', ''),
-      }))
-      : getDefaultValue(field)
   }
 
   return String(value)
@@ -324,9 +360,9 @@ function getActiveFields(config, mode) {
   })
 }
 
-function buildInitialForm(config, record, mode) {
+function buildInitialForm(config, record, mode, referenceData = {}) {
   return getActiveFields(config, mode).reduce((result, field) => {
-    result[field.name] = record ? getRecordFieldValue(record, field) : getDefaultValue(field)
+    result[field.name] = record ? getRecordFieldValue(record, field, referenceData) : getDefaultValue(field)
     return result
   }, {})
 }
@@ -1122,10 +1158,17 @@ function downloadBlob(blob, filename) {
   URL.revokeObjectURL(url)
 }
 
-function LineItemsField({ field, value, error, onChange }) {
+function LineItemsField({ field, value, error, onChange, referenceData = {}, config = {} }) {
+  const isStockAdjustments = config.key === 'stockAdjustments' || config.key === 'stockTransfers'
+  const isStockAudits = config.key === 'stockAudits'
+  
+  const defaultItem = isStockAudits
+    ? { productId: '', variantId: '', binId: '', systemQuantity: '0', physicalQuantity: '0' }
+    : { productId: '', variantId: '', quantity: '1', price: '0' }
+
   const items = Array.isArray(value) && value.length > 0
     ? value
-    : [{ productId: '', variantId: '', quantity: '1', price: '' }]
+    : [defaultItem]
 
   function updateLine(index, key, nextValue) {
     onChange(items.map((item, itemIndex) =>
@@ -1134,11 +1177,233 @@ function LineItemsField({ field, value, error, onChange }) {
   }
 
   function addLine() {
-    onChange([...items, { productId: '', variantId: '', quantity: '1', price: '' }])
+    onChange([...items, defaultItem])
   }
 
   function removeLine(index) {
     onChange(items.filter((_, itemIndex) => itemIndex !== index))
+  }
+
+  if (isStockAudits) {
+    const productsList = referenceData.products ?? []
+    const binsList = referenceData.bins ?? []
+    return (
+      <div className={`field resource-form__line-field ${error ? 'field--error' : ''}`}>
+        <label>{field.label}</label>
+        <div className="resource-form__line-items">
+          <div className="resource-form__line-heading" aria-hidden="true" style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 2fr 1.2fr 1.2fr 40px', gap: '8px', marginBottom: '8px', fontWeight: 'bold' }}>
+            <span>Product *</span>
+            <span>Variant</span>
+            <span>Bin *</span>
+            <span>System Qty *</span>
+            <span>Physical Qty *</span>
+            <span />
+          </div>
+
+          {items.map((item, index) => {
+            const filteredVariants = (referenceData.productVariants ?? []).filter(
+              (v) => String(v.productId) === String(item.productId)
+            )
+
+            return (
+              <div className="resource-form__line-row" key={`${index}-${items.length}`} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 2fr 1.2fr 1.2fr 40px', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+                <select
+                  value={item.productId}
+                  onChange={(event) => {
+                    const nextProdId = event.target.value
+                    onChange(items.map((it, idx) =>
+                      idx === index ? { ...it, productId: nextProdId, variantId: '' } : it
+                    ))
+                  }}
+                  required
+                  aria-label={`Line ${index + 1} product`}
+                  className="select-input"
+                  style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #dbe4f0', padding: '0 8px' }}
+                >
+                  <option value="">Select product...</option>
+                  {productsList.map((p) => (
+                    <option key={p.id ?? p.productId} value={p.productId ?? p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={item.variantId}
+                  onChange={(event) => updateLine(index, 'variantId', event.target.value)}
+                  aria-label={`Line ${index + 1} variant`}
+                  className="select-input"
+                  style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #dbe4f0', padding: '0 8px' }}
+                  disabled={!item.productId}
+                >
+                  <option value="">Default / No Variant</option>
+                  {filteredVariants.map((v) => (
+                    <option key={v.id ?? v.variantId} value={v.variantId ?? v.id}>
+                      {v.variantName ? `${v.variantName} (${v.sku || ''})` : v.sku || 'Variant'}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={item.binId}
+                  onChange={(event) => updateLine(index, 'binId', event.target.value)}
+                  required
+                  aria-label={`Line ${index + 1} bin`}
+                  className="select-input"
+                  style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #dbe4f0', padding: '0 8px' }}
+                >
+                  <option value="">Select bin...</option>
+                  {binsList.map((b) => (
+                    <option key={b.id ?? b.binId} value={b.binId ?? b.id}>
+                      {b.binCode || b.code || b.name || `Bin #${b.binId ?? b.id}`}
+                    </option>
+                  ))}
+                </select>
+
+                <input
+                  type="number"
+                  min="0"
+                  value={item.systemQuantity}
+                  onChange={(event) => updateLine(index, 'systemQuantity', event.target.value)}
+                  required
+                  aria-label={`Line ${index + 1} system quantity`}
+                  style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #dbe4f0', padding: '0 8px' }}
+                />
+
+                <input
+                  type="number"
+                  min="0"
+                  value={item.physicalQuantity}
+                  onChange={(event) => updateLine(index, 'physicalQuantity', event.target.value)}
+                  required
+                  aria-label={`Line ${index + 1} physical quantity`}
+                  style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #dbe4f0', padding: '0 8px' }}
+                />
+
+                <button
+                  type="button"
+                  className="button button-secondary resource-form__icon-button"
+                  onClick={() => removeLine(index)}
+                  disabled={items.length === 1}
+                  aria-label={`Remove line ${index + 1}`}
+                  title="Remove line"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', padding: 0 }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )
+          })}
+        </div>
+        <button
+          type="button"
+          className="button button-secondary resource-form__add-button"
+          onClick={addLine}
+          style={{ marginTop: '8px' }}
+        >
+          Add Item
+        </button>
+      </div>
+    )
+  }
+
+  if (isStockAdjustments) {
+    const productsList = referenceData.products ?? []
+    return (
+      <div className={`field resource-form__line-field ${error ? 'field--error' : ''}`}>
+        <label>{field.label}</label>
+        <div className="resource-form__line-items">
+          <div className="resource-form__line-heading" aria-hidden="true" style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 40px', gap: '8px', marginBottom: '8px', fontWeight: 'bold' }}>
+            <span>Product *</span>
+            <span>Variant</span>
+            <span>Quantity *</span>
+            <span />
+          </div>
+
+          {items.map((item, index) => {
+            const filteredVariants = (referenceData.productVariants ?? []).filter(
+              (v) => String(v.productId) === String(item.productId)
+            )
+
+            return (
+              <div className="resource-form__line-row" key={`${index}-${items.length}`} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 40px', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+                <select
+                  value={item.productId}
+                  onChange={(event) => {
+                    const nextProdId = event.target.value
+                    // Clear variant if product changes
+                    onChange(items.map((it, idx) =>
+                      idx === index ? { ...it, productId: nextProdId, variantId: '' } : it
+                    ))
+                  }}
+                  required
+                  aria-label={`Line ${index + 1} product`}
+                  className="select-input"
+                  style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #dbe4f0', padding: '0 8px' }}
+                >
+                  <option value="">Select product...</option>
+                  {productsList.map((p) => (
+                    <option key={p.id ?? p.productId} value={p.productId ?? p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={item.variantId}
+                  onChange={(event) => updateLine(index, 'variantId', event.target.value)}
+                  aria-label={`Line ${index + 1} variant`}
+                  className="select-input"
+                  style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #dbe4f0', padding: '0 8px' }}
+                  disabled={!item.productId}
+                >
+                  <option value="">Default / No Variant</option>
+                  {filteredVariants.map((v) => (
+                    <option key={v.id ?? v.variantId} value={v.variantId ?? v.id}>
+                      {v.variantName ? `${v.variantName} (${v.sku || ''})` : v.sku || 'Variant'}
+                    </option>
+                  ))}
+                </select>
+
+                <input
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={item.quantity}
+                  onChange={(event) => updateLine(index, 'quantity', event.target.value)}
+                  required
+                  aria-label={`Line ${index + 1} quantity`}
+                  style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #dbe4f0', padding: '0 8px' }}
+                />
+
+                <button
+                  type="button"
+                  className="button button-secondary resource-form__icon-button"
+                  onClick={() => removeLine(index)}
+                  disabled={items.length === 1}
+                  aria-label={`Remove line ${index + 1}`}
+                  title="Remove line"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', padding: 0 }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )
+          })}
+
+          <button
+            type="button"
+            className="button button-secondary resource-form__add-line"
+            onClick={addLine}
+            style={{ marginTop: '8px' }}
+          >
+            <Plus size={16} />
+            Add Line
+          </button>
+        </div>
+        {error ? <span className="field-error">{error}</span> : null}
+      </div>
+    )
   }
 
   return (
@@ -1231,10 +1496,10 @@ function ResourceForm({
   const isSubCategoriesForm = config.key === 'subCategories'
   const fields = useMemo(() => getActiveFields(config, mode), [config, mode])
   const [formData, setFormData] = useState(() => ({
-    ...buildInitialForm(config, record, mode),
+    ...buildInitialForm(config, record, mode, referenceData),
     ...(isSubCategoriesForm && mode === 'create' && isRecord(draftData?.values) ? draftData.values : {}),
   }))
-  const [baselineData] = useState(() => buildInitialForm(config, record, mode))
+  const [baselineData] = useState(() => buildInitialForm(config, record, mode, referenceData))
   const [touched, setTouched] = useState({})
   const [submitAttempted, setSubmitAttempted] = useState(false)
 
@@ -1382,6 +1647,8 @@ function ResourceForm({
           value={formData[field.name]}
           error={error}
           onChange={(value) => updateField(field.name, value)}
+          referenceData={referenceData}
+          config={config}
         />
       )
     }
@@ -1593,6 +1860,9 @@ function ResourcePage({ config, navigationContent = null }) {
   const [metric, setMetric] = useState(null)
   const [editingRecord, setEditingRecord] = useState(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [viewingAdjustment, setViewingAdjustment] = useState(null)
+  const [viewingTransfer, setViewingTransfer] = useState(null)
+  const [viewingAudit, setViewingAudit] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [serverErrors, setServerErrors] = useState(null)
@@ -1906,9 +2176,164 @@ function ResourcePage({ config, navigationContent = null }) {
     setServerErrors(null)
 
     const id = editingRecord?.id
-    const response = id
-      ? await updateResource(config, id, payload, changedPayload)
-      : await createResource(config, payload)
+    let response
+
+    if (config.key === 'stockAdjustments') {
+      const { items, ...headerPayload } = payload
+      const { items: changedItems, ...changedHeaderPayload } = changedPayload
+
+      response = id
+        ? await updateResource(config, id, headerPayload, changedHeaderPayload)
+        : await createResource(config, headerPayload)
+
+      if (response.success) {
+        const adjId = id ?? response.data.adjustmentId ?? response.data.id
+
+        if (id) {
+          // Clean up old items for editing mode
+          const oldItems = (referenceData.stockAdjustmentItems ?? []).filter(
+            (item) => String(item.adjustmentId) === String(id)
+          )
+          for (const oldItem of oldItems) {
+            const itemId = oldItem.id ?? oldItem.adjustmentItemId
+            if (itemId) {
+              await apiRequest(API_ENDPOINTS.stockAdjustmentItems.byId(itemId), {
+                method: 'DELETE',
+              })
+            }
+          }
+        }
+
+        // Insert items
+        if (Array.isArray(items)) {
+          for (const item of items) {
+            if (!item.productId) continue
+            await apiRequest(API_ENDPOINTS.stockAdjustmentItems.list, {
+              method: 'POST',
+              body: {
+                adjustmentId: Number(adjId),
+                productId: Number(item.productId),
+                variantId: item.variantId ? Number(item.variantId) : null,
+                quantity: Number(item.quantity),
+              },
+            })
+          }
+        }
+      }
+    } else if (config.key === 'stockTransfers') {
+      const { items, ...headerPayload } = payload
+      const { items: changedItems, ...changedHeaderPayload } = changedPayload
+
+      if (id) {
+        response = await updateResource(config, id, headerPayload, changedHeaderPayload)
+      } else {
+        const firstItem = items?.[0] ?? { productId: '0', variantId: null, quantity: '0' }
+        const fullHeaderPayload = {
+          ...headerPayload,
+          productId: Number(firstItem.productId),
+          variantId: firstItem.variantId ? Number(firstItem.variantId) : null,
+          quantity: Number(firstItem.quantity),
+        }
+        response = await createResource(config, fullHeaderPayload)
+      }
+
+      if (response.success) {
+        const responseData = response.data?.data ?? response.data
+        const transId = id ?? responseData?.transfer?.transferId ?? responseData?.transferId ?? responseData?.id
+
+        if (id) {
+          const oldItems = (referenceData.stockTransferItems ?? []).filter(
+            (item) => String(item.transferId) === String(id)
+          )
+          for (const oldItem of oldItems) {
+            const itemId = oldItem.id ?? oldItem.transferItemId
+            if (itemId) {
+              await apiRequest(API_ENDPOINTS.stockTransferItems.byId(itemId), {
+                method: 'DELETE',
+              })
+            }
+          }
+
+          if (Array.isArray(items)) {
+            for (const item of items) {
+              if (!item.productId) continue
+              await apiRequest(API_ENDPOINTS.stockTransferItems.list, {
+                method: 'POST',
+                body: {
+                  transferId: Number(transId),
+                  productId: Number(item.productId),
+                  variantId: item.variantId ? Number(item.variantId) : null,
+                  quantity: Number(item.quantity),
+                },
+              })
+            }
+          }
+        } else {
+          if (Array.isArray(items) && items.length > 1) {
+            for (let i = 1; i < items.length; i++) {
+              const item = items[i]
+              if (!item.productId) continue
+              await apiRequest(API_ENDPOINTS.stockTransferItems.list, {
+                method: 'POST',
+                body: {
+                  transferId: Number(transId),
+                  productId: Number(item.productId),
+                  variantId: item.variantId ? Number(item.variantId) : null,
+                  quantity: Number(item.quantity),
+                },
+              })
+            }
+          }
+        }
+      }
+    } else if (config.key === 'stockAudits') {
+      const { items, ...headerPayload } = payload
+      const { items: changedItems, ...changedHeaderPayload } = changedPayload
+
+      response = id
+        ? await updateResource(config, id, headerPayload, changedHeaderPayload)
+        : await createResource(config, headerPayload)
+
+      if (response.success) {
+        const responseData = response.data?.data ?? response.data
+        const aId = id ?? responseData?.auditId ?? responseData?.id
+
+        if (id) {
+          const oldItems = (referenceData.stockAuditItems ?? []).filter(
+            (item) => String(item.auditId) === String(id)
+          )
+          for (const oldItem of oldItems) {
+            const itemId = oldItem.id ?? oldItem.auditItemId
+            if (itemId) {
+              await apiRequest(API_ENDPOINTS.stockAuditItems.byId(itemId), {
+                method: 'DELETE',
+              })
+            }
+          }
+        }
+
+        if (Array.isArray(items)) {
+          for (const item of items) {
+            if (!item.productId) continue
+            await apiRequest(API_ENDPOINTS.stockAuditItems.list, {
+              method: 'POST',
+              body: {
+                auditId: Number(aId),
+                productId: Number(item.productId),
+                variantId: item.variantId ? Number(item.variantId) : null,
+                binId: item.binId ? Number(item.binId) : null,
+                systemQuantity: Number(item.systemQuantity ?? 0),
+                physicalQuantity: Number(item.physicalQuantity ?? 0),
+              },
+            })
+          }
+        }
+      }
+    } else {
+      response = id
+        ? await updateResource(config, id, payload, changedPayload)
+        : await createResource(config, payload)
+    }
 
     setIsSaving(false)
 
@@ -2486,6 +2911,24 @@ function ResourcePage({ config, navigationContent = null }) {
               iconOnly
               label={`Actions for ${config.entityName}`}
               actions={[
+                config.key === 'stockAdjustments' ? {
+                  key: 'view',
+                  label: 'View Details',
+                  icon: FileText,
+                  onClick: () => setViewingAdjustment(row),
+                } : null,
+                config.key === 'stockTransfers' ? {
+                  key: 'view',
+                  label: 'View Details',
+                  icon: FileText,
+                  onClick: () => setViewingTransfer(row),
+                } : null,
+                config.key === 'stockAudits' ? {
+                  key: 'view',
+                  label: 'View Details',
+                  icon: FileText,
+                  onClick: () => setViewingAudit(row),
+                } : null,
                 ...(config.rowActions ?? [])
                   .filter((action) => (action.shouldShow ? action.shouldShow(row) : true))
                   .map((action) => ({
@@ -3024,6 +3467,311 @@ function ResourcePage({ config, navigationContent = null }) {
       {!isProductStylePage && isAuditLogsPage ? (
         <AuditLogsMobileFeed rows={rows} isLoading={isLoading} />
       ) : null}
+
+      {viewingAdjustment ? (() => {
+        const adjNo = `SA-${String(viewingAdjustment.adjustmentId ?? viewingAdjustment.id).padStart(6, '0')}`
+        const warehouses = referenceData.warehouses ?? []
+        const warehouse = warehouses.find(w => String(w.id ?? w.warehouseId) === String(viewingAdjustment.warehouseId))
+        const warehouseName = warehouse ? warehouse.name : (viewingAdjustment.warehouseName || `Warehouse ${viewingAdjustment.warehouseId}`)
+        
+        const adjId = viewingAdjustment.adjustmentId ?? viewingAdjustment.id
+        const itemsList = (referenceData.stockAdjustmentItems ?? []).filter(
+          (item) => String(item.adjustmentId) === String(adjId)
+        )
+
+        return (
+          <FormModal
+            title={`Stock Adjustment Details: ${adjNo}`}
+            onClose={() => setViewingAdjustment(null)}
+          >
+            <div className="adjustment-details-modal" style={{ padding: '8px' }}>
+              <div className="details-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                <div>
+                  <strong style={{ display: 'block', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>Warehouse</strong>
+                  <span style={{ fontSize: '15px', fontWeight: '500' }}>{warehouseName}</span>
+                </div>
+                <div>
+                  <strong style={{ display: 'block', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>Adjustment Type</strong>
+                  <StatusBadge type={getStatusType(viewingAdjustment.adjustmentType)}>
+                    {formatStatusLabel(viewingAdjustment.adjustmentType)}
+                  </StatusBadge>
+                </div>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <strong style={{ display: 'block', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>Reason / Notes</strong>
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5', background: '#f8fafc', padding: '10px 12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>{viewingAdjustment.reason ?? 'N/A'}</p>
+                </div>
+              </div>
+
+              <h3 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #e2e8f0', paddingBottom: '8px', marginBottom: '12px' }}>
+                Adjustment Items ({itemsList.length})
+              </h3>
+              
+              {itemsList.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '24px 0', color: '#94a3b8' }}>
+                  No items found for this adjustment.
+                </div>
+              ) : (
+                <div className="table-responsive" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                  <table className="table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                    <thead>
+                      <tr style={{ background: '#f1f5f9', borderBottom: '1px solid #cbd5e1' }}>
+                        <th style={{ textAlign: 'left', padding: '10px', color: '#475569' }}>Product</th>
+                        <th style={{ textAlign: 'left', padding: '10px', color: '#475569' }}>Variant</th>
+                        <th style={{ textAlign: 'right', padding: '10px', color: '#475569' }}>Quantity</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {itemsList.map((item, index) => {
+                        const product = (referenceData.products ?? []).find(p => String(p.id ?? p.productId) === String(item.productId))
+                        const variant = (referenceData.productVariants ?? []).find(v => String(v.id ?? v.variantId) === String(item.variantId))
+                        
+                        return (
+                          <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                            <td style={{ padding: '10px', fontWeight: '500' }}>
+                              {product ? product.name : (item.productName || `Product ID ${item.productId}`)}
+                            </td>
+                            <td style={{ padding: '10px', color: '#64748b' }}>
+                              {variant ? (variant.variantName ? `${variant.variantName} (${variant.sku || ''})` : variant.sku || 'Default') : (item.variantName || 'Default')}
+                            </td>
+                            <td style={{ padding: '10px', textAlign: 'right', fontWeight: 'bold' }}>
+                              {item.quantity}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <div className="button-row" style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => setViewingAdjustment(null)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </FormModal>
+        )
+      })() : null}
+
+      {viewingTransfer ? (() => {
+        const transNo = `TR-${String(viewingTransfer.transferId ?? viewingTransfer.id).padStart(6, '0')}`
+        const warehouses = referenceData.warehouses ?? []
+        const fromWarehouse = warehouses.find(w => String(w.id ?? w.warehouseId) === String(viewingTransfer.fromWarehouseId))
+        const toWarehouse = warehouses.find(w => String(w.id ?? w.warehouseId) === String(viewingTransfer.toWarehouseId))
+        const fromName = fromWarehouse ? fromWarehouse.name : (viewingTransfer.fromWarehouseName || `Warehouse ${viewingTransfer.fromWarehouseId}`)
+        const toName = toWarehouse ? toWarehouse.name : (viewingTransfer.toWarehouseName || `Warehouse ${viewingTransfer.toWarehouseId}`)
+        
+        const transId = viewingTransfer.transferId ?? viewingTransfer.id
+        const itemsList = (referenceData.stockTransferItems ?? []).filter(
+          (item) => String(item.transferId) === String(transId)
+        )
+
+        return (
+          <FormModal
+            title={`Stock Transfer Details: ${transNo}`}
+            onClose={() => setViewingTransfer(null)}
+          >
+            <div className="adjustment-details-modal" style={{ padding: '8px' }}>
+              <div className="details-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                <div>
+                  <strong style={{ display: 'block', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>From Warehouse</strong>
+                  <span style={{ fontSize: '15px', fontWeight: '500' }}>{fromName}</span>
+                </div>
+                <div>
+                  <strong style={{ display: 'block', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>To Warehouse</strong>
+                  <span style={{ fontSize: '15px', fontWeight: '500' }}>{toName}</span>
+                </div>
+                <div>
+                  <strong style={{ display: 'block', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>Transfer Date</strong>
+                  <span style={{ fontSize: '15px', fontWeight: '500' }}>{viewingTransfer.transferDate ? formatDate(viewingTransfer.transferDate) : 'Not set'}</span>
+                </div>
+                <div>
+                  <strong style={{ display: 'block', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>Status</strong>
+                  <StatusBadge type={getStatusType(viewingTransfer.status)}>
+                    {formatStatusLabel(viewingTransfer.status)}
+                  </StatusBadge>
+                </div>
+              </div>
+
+              <h3 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #e2e8f0', paddingBottom: '8px', marginBottom: '12px' }}>
+                Transfer Items ({itemsList.length})
+              </h3>
+              
+              {itemsList.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '24px 0', color: '#94a3b8' }}>
+                  No items found for this transfer.
+                </div>
+              ) : (
+                <div className="table-responsive" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                  <table className="table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                    <thead>
+                      <tr style={{ background: '#f1f5f9', borderBottom: '1px solid #cbd5e1' }}>
+                        <th style={{ textAlign: 'left', padding: '10px', color: '#475569' }}>Product</th>
+                        <th style={{ textAlign: 'left', padding: '10px', color: '#475569' }}>Variant</th>
+                        <th style={{ textAlign: 'right', padding: '10px', color: '#475569' }}>Quantity</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {itemsList.map((item, index) => {
+                        const product = (referenceData.products ?? []).find(p => String(p.id ?? p.productId) === String(item.productId))
+                        const variant = (referenceData.productVariants ?? []).find(v => String(v.id ?? v.variantId) === String(item.variantId))
+                        
+                        return (
+                          <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                            <td style={{ padding: '10px', fontWeight: '500' }}>
+                              {product ? product.name : (item.productName || `Product ID ${item.productId}`)}
+                            </td>
+                            <td style={{ padding: '10px', color: '#64748b' }}>
+                              {variant ? (variant.variantName ? `${variant.variantName} (${variant.sku || ''})` : variant.sku || 'Default') : (item.variantName || 'Default')}
+                            </td>
+                            <td style={{ padding: '10px', textAlign: 'right', fontWeight: 'bold' }}>
+                              {item.quantity}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <div className="button-row" style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => setViewingTransfer(null)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </FormModal>
+        )
+      })() : null}
+
+      {viewingAudit ? (() => {
+        const auditNo = viewingAudit.auditNumber || viewingAudit.auditNo || (viewingAudit.auditId ? `AUD-${String(viewingAudit.auditId).padStart(6, '0')}` : `Audit #${viewingAudit.auditId || viewingAudit.id}`)
+        const warehouses = referenceData.warehouses ?? []
+        const warehouse = warehouses.find(w => String(w.id ?? w.warehouseId) === String(viewingAudit.warehouseId))
+        const warehouseName = warehouse ? warehouse.name : (viewingAudit.warehouseName || `Warehouse ${viewingAudit.warehouseId}`)
+        
+        const transId = viewingAudit.auditId ?? viewingAudit.id
+        const itemsList = (referenceData.stockAuditItems ?? []).filter(
+          (item) => String(item.auditId) === String(transId)
+        )
+
+        return (
+          <FormModal
+            title={`Stock Audit Details: ${auditNo}`}
+            onClose={() => setViewingAudit(null)}
+          >
+            <div className="adjustment-details-modal" style={{ padding: '8px' }}>
+              <div className="details-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                <div>
+                  <strong style={{ display: 'block', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>Warehouse</strong>
+                  <span style={{ fontSize: '15px', fontWeight: '500' }}>{warehouseName}</span>
+                </div>
+                <div>
+                  <strong style={{ display: 'block', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>Audit Date</strong>
+                  <span style={{ fontSize: '15px', fontWeight: '500' }}>{viewingAudit.auditDate ? formatDate(viewingAudit.auditDate) : 'Not set'}</span>
+                </div>
+                <div>
+                  <strong style={{ display: 'block', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>Audit Type</strong>
+                  <span style={{ fontSize: '15px', fontWeight: '500' }}>{viewingAudit.auditType || 'Cycle Count'}</span>
+                </div>
+                <div>
+                  <strong style={{ display: 'block', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>Status</strong>
+                  <StatusBadge type={getStatusType(viewingAudit.status)}>
+                    {formatStatusLabel(viewingAudit.status)}
+                  </StatusBadge>
+                </div>
+                <div>
+                  <strong style={{ display: 'block', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>Created By</strong>
+                  <span style={{ fontSize: '15px', fontWeight: '500' }}>{viewingAudit.createdBy || 'N/A'}</span>
+                </div>
+                <div>
+                  <strong style={{ display: 'block', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>Approved By</strong>
+                  <span style={{ fontSize: '15px', fontWeight: '500' }}>{viewingAudit.approvedBy || 'N/A'}</span>
+                </div>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <strong style={{ display: 'block', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>Notes</strong>
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5', background: '#f8fafc', padding: '10px 12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>{viewingAudit.notes ?? 'N/A'}</p>
+                </div>
+              </div>
+
+              <h3 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #e2e8f0', paddingBottom: '8px', marginBottom: '12px' }}>
+                Audit Items ({itemsList.length})
+              </h3>
+              
+              {itemsList.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '24px 0', color: '#94a3b8' }}>
+                  No items found for this audit.
+                </div>
+              ) : (
+                <div className="table-responsive" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                  <table className="table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                    <thead>
+                      <tr style={{ background: '#f1f5f9', borderBottom: '1px solid #cbd5e1' }}>
+                        <th style={{ textAlign: 'left', padding: '10px', color: '#475569' }}>Product</th>
+                        <th style={{ textAlign: 'left', padding: '10px', color: '#475569' }}>Variant</th>
+                        <th style={{ textAlign: 'left', padding: '10px', color: '#475569' }}>Bin</th>
+                        <th style={{ textAlign: 'right', padding: '10px', color: '#475569' }}>System Qty</th>
+                        <th style={{ textAlign: 'right', padding: '10px', color: '#475569' }}>Physical Qty</th>
+                        <th style={{ textAlign: 'right', padding: '10px', color: '#475569' }}>Difference</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {itemsList.map((item, index) => {
+                        const product = (referenceData.products ?? []).find(p => String(p.id ?? p.productId) === String(item.productId))
+                        const variant = (referenceData.productVariants ?? []).find(v => String(v.id ?? v.variantId) === String(item.variantId))
+                        const bin = (referenceData.bins ?? []).find(b => String(b.id ?? b.binId) === String(item.binId))
+                        
+                        return (
+                          <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                            <td style={{ padding: '10px', fontWeight: '500' }}>
+                              {product ? product.name : (item.productName || `Product ID ${item.productId}`)}
+                            </td>
+                            <td style={{ padding: '10px', color: '#64748b' }}>
+                              {variant ? (variant.variantName ? `${variant.variantName} (${variant.sku || ''})` : variant.sku || 'Default') : (item.variantName || 'Default')}
+                            </td>
+                            <td style={{ padding: '10px', color: '#64748b' }}>
+                              {bin ? (bin.binCode || bin.code || bin.name) : `Bin ID ${item.binId}`}
+                            </td>
+                            <td style={{ padding: '10px', textAlign: 'right' }}>
+                              {item.systemQuantity}
+                            </td>
+                            <td style={{ padding: '10px', textAlign: 'right' }}>
+                              {item.physicalQuantity}
+                            </td>
+                            <td style={{ padding: '10px', textAlign: 'right', fontWeight: 'bold', color: item.difference < 0 ? '#ef4444' : item.difference > 0 ? '#22c55e' : 'inherit' }}>
+                              {item.difference > 0 ? `+${item.difference}` : item.difference}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <div className="button-row" style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => setViewingAudit(null)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </FormModal>
+        )
+      })() : null}
 
       {isFormOpen ? (
         <FormModal

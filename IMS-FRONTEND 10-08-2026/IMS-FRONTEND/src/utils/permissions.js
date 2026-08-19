@@ -310,11 +310,8 @@ export const NAV_ITEMS = [
       { key: 'stockMovements', label: 'Stock Movements', path: '/inventory/stock?tab=stockMovements' },
       { key: 'stockLedger', label: 'Stock Ledger', path: '/inventory/stock?tab=stockLedger' },
       { key: 'stockAdjustments', label: 'Stock Adjustments', path: '/inventory/stock?tab=stockAdjustments' },
-      { key: 'stockAdjustmentItems', label: 'Stock Adjustment Items', path: '/inventory/stock?tab=stockAdjustmentItems' },
       { key: 'stockTransfers', label: 'Stock Transfers', path: '/inventory/stock?tab=stockTransfers' },
-      { key: 'stockTransferItems', label: 'Stock Transfer Items', path: '/inventory/stock?tab=stockTransferItems' },
       { key: 'stockAudits', label: 'Stock Audits', path: '/inventory/stock?tab=stockAudits' },
-      { key: 'stockAuditItems', label: 'Stock Audit Items', path: '/inventory/stock?tab=stockAuditItems' },
     ],
   },
   {
