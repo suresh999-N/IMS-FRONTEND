@@ -24,37 +24,56 @@ export default function ResetPassword() {
   const [otp, setOtp] = useState(location.state?.otp || '')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [touched, setTouched] = useState({
+    otp: false,
+    password: false,
+    confirmPassword: false,
+  })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
+  // Compute dynamic validation errors
+  let otpError = ''
+  if (!otp) {
+    otpError = 'Verification code is required.'
+  } else if (!/^\d{6}$/.test(otp)) {
+    otpError = 'Enter the 6-digit code.'
+  }
+
+  let passwordError = ''
+  if (!password) {
+    passwordError = 'Password is required.'
+  } else if (password.length < 8) {
+    passwordError = 'Use at least 8 characters.'
+  }
+
+  let confirmPasswordError = ''
+  if (!confirmPassword) {
+    confirmPasswordError = 'Confirm password is required.'
+  } else if (password !== confirmPassword) {
+    confirmPasswordError = 'Passwords do not match.'
+  }
+
+  const otpDisplayError = touched.otp && otpError
+  const passwordDisplayError = touched.password && passwordError
+  const confirmPasswordDisplayError = touched.confirmPassword && confirmPasswordError
+
+  const isFormValid = !otpError && !passwordError && !confirmPasswordError
+
   async function handleSubmit(event) {
     event.preventDefault()
     setError('')
+    setTouched({ otp: true, password: true, confirmPassword: true })
 
     if (!email) {
       setError('Your reset session expired. Request a new code.')
       return
     }
 
-    if (!otp || !password || !confirmPassword) {
-      setError('Complete all fields.')
-      return
-    }
-
-    if (!/^\d{6}$/.test(otp)) {
-      setError('Enter the 6-digit code.')
-      return
-    }
-
-    if (password.length < 8) {
-      setError('Use at least 8 characters.')
-      return
-    }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.')
+    if (!isFormValid) {
+      setError(otpError || passwordError || confirmPasswordError || 'Complete all fields.')
       return
     }
 
@@ -129,7 +148,7 @@ export default function ResetPassword() {
 
           <form onSubmit={handleSubmit} autoComplete="off">
             <label className="auth-login-label" htmlFor="reset-otp">Verification Code</label>
-            <div className="input-box">
+            <div className={`input-box ${otpDisplayError ? 'input-box--error' : ''}`}>
               <ShieldCheck size={16} />
               <input
                 id="reset-otp"
@@ -137,14 +156,18 @@ export default function ResetPassword() {
                 placeholder="6-digit code"
                 value={otp}
                 onChange={(event) => setOtp(event.target.value.replace(/\D/g, ''))}
+                onBlur={() => setTouched((prev) => ({ ...prev, otp: true }))}
                 inputMode="numeric"
                 maxLength={6}
                 autoComplete="one-time-code"
               />
             </div>
+            {otpDisplayError && (
+              <span className="field-error-text">{otpDisplayError}</span>
+            )}
 
             <label className="auth-login-label" htmlFor="reset-password">New Password</label>
-            <div className="input-box">
+            <div className={`input-box ${passwordDisplayError ? 'input-box--error' : ''}`}>
               <LockKeyhole size={16} />
               <input
                 id="reset-password"
@@ -152,6 +175,7 @@ export default function ResetPassword() {
                 placeholder="New password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
+                onBlur={() => setTouched((prev) => ({ ...prev, password: true }))}
                 autoComplete="new-password"
               />
               <button
@@ -168,9 +192,12 @@ export default function ResetPassword() {
                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
             </div>
+            {passwordDisplayError && (
+              <span className="field-error-text">{passwordDisplayError}</span>
+            )}
 
             <label className="auth-login-label" htmlFor="reset-confirm-password">Confirm Password</label>
-            <div className="input-box">
+            <div className={`input-box ${confirmPasswordDisplayError ? 'input-box--error' : ''}`}>
               <LockKeyhole size={16} />
               <input
                 id="reset-confirm-password"
@@ -178,6 +205,7 @@ export default function ResetPassword() {
                 placeholder="Confirm password"
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
+                onBlur={() => setTouched((prev) => ({ ...prev, confirmPassword: true }))}
                 autoComplete="new-password"
               />
               <button
@@ -194,6 +222,9 @@ export default function ResetPassword() {
                 {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
             </div>
+            {confirmPasswordDisplayError && (
+              <span className="field-error-text">{confirmPasswordDisplayError}</span>
+            )}
 
             <div className="links" style={{ marginBottom: '1rem' }}>
               <Link to="/login">Back to login</Link>

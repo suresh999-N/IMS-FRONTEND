@@ -30,57 +30,87 @@ export default function Login() {
   const verificationMessage = location.state?.verificationMessage || ''
   const verificationNotice = location.state?.verificationNotice || ''
  
-  const [formData, setFormData] = useState({
+
+   const [formData, setFormData] = useState({
     email: location.state?.email || '',
     password: '',
   })
+  const [touched, setTouched] = useState({
+    email: false,
+    password: false,
+  })
+  const [serverFieldErrors, setServerFieldErrors] = useState({})
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+
+  // Compute validation errors dynamically
+  const identifier = formData.email.trim()
+  const isPhone = /^[0-9+\s-()]+$/.test(identifier) && identifier.replace(/\D/g, '').length >= 7
+  let emailError = ''
+  if (!identifier) {
+    emailError = 'Email address or phone number is required.'
+  } else if (!isPhone) {
+    emailError = getEmailError(identifier, { required: true })
+  } else {
+    const digitsOnly = identifier.replace(/\D/g, '')
+    if (digitsOnly.length < 10) {
+      emailError = 'Please enter a valid 10-digit phone number.'
+    }
+  }
+
+  const passwordError = formData.password ? '' : 'Password is required.'
+
+  const emailDisplayError = serverFieldErrors.email || (touched.email && emailError)
+  const passwordDisplayError = serverFieldErrors.password || (touched.password && passwordError)
+
+  const isFormValid = !emailError && !passwordError
  
   function handleChange(event) {
     const { name, value } = event.target
+    setError('')
+    setServerFieldErrors((prev) => ({ ...prev, [name]: '' }))
     setFormData((prev) => ({
       ...prev,
       [name]: name === 'email' ? (value.includes('@') ? sanitizeEmailInput(value) : value) : value,
     }))
+  }
+
+  function handleBlur(event) {
+    const { name } = event.target
+    setTouched((prev) => ({ ...prev, [name]: true }))
   }
  
   async function handleSubmit(event) {
     event.preventDefault()
     if (loading) return
     setError('')
- 
-    const identifier = formData.email.trim()
-    const isPhone = /^[0-9+\s-()]+$/.test(identifier) && identifier.replace(/\D/g, '').length >= 7
- 
-    if (!identifier || !formData.password) {
-      setError('Enter your email or phone number, and password.')
+    setServerFieldErrors({})
+    setTouched({ email: true, password: true })
+
+    if (!isFormValid) {
+      setError(emailError || passwordError || 'Enter your credentials to login.')
       return
-    }
- 
-    if (!isPhone) {
-      const emailError = getEmailError(identifier, { required: true })
-      if (emailError) {
-        setError(emailError)
-        return
-      }
-    } else {
-      const digitsOnly = identifier.replace(/\D/g, '')
-      if (digitsOnly.length < 10) {
-        setError('Please enter a valid 10-digit phone number.')
-        return
-      }
     }
  
     try {
       setLoading(true)
-     const result = await login({
-    emailOrPhone: identifier,
-    password: formData.password,
-})
+      const result = await login({
+        emailOrPhone: identifier,
+        password: formData.password,
+      })
  
       if (!result?.success) {
+        const msg = result?.message || ''
+        const lowerMsg = msg.toLowerCase()
+        const fieldErrorMap = {}
+        if (lowerMsg.includes('email') || lowerMsg.includes('user') || lowerMsg.includes('identifier')) {
+          fieldErrorMap.email = msg
+        } else if (lowerMsg.includes('password') || lowerMsg.includes('credential')) {
+          fieldErrorMap.password = msg
+        }
+        setServerFieldErrors(fieldErrorMap)
+
         setError(getAuthErrorMessage(result?.message, 'Check your credentials and password.'))
         return
       }
@@ -91,9 +121,7 @@ export default function Login() {
     } finally {
       setLoading(false)
     }
-  }
- 
-  return (
+  }return (
     <div
       className="auth-wrapper auth-wrapper--login"
       style={{ '--auth-login-left-panel': `url(${loginLeftPanel})` }}
@@ -150,7 +178,7 @@ export default function Login() {
  
           <form onSubmit={handleSubmit}>
             <label className="auth-login-label" htmlFor="login-identifier">Email Address or Phone Number</label>
-            <div className="input-box">
+            <div className={`input-box ${emailDisplayError ? 'input-box--error' : ''}`}>
               {/^[0-9+\s-()]+$/.test(formData.email) ? (
                 <Phone size={16} />
               ) : (
@@ -163,13 +191,17 @@ export default function Login() {
                 placeholder="Email or Phone Number"
                 value={formData.email}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 autoComplete="username"
                 required
               />
             </div>
+            {emailDisplayError && (
+              <span className="field-error-text">{emailDisplayError}</span>
+            )}
  
             <label className="auth-login-label" htmlFor="login-password">Password</label>
-            <div className="input-box">
+            <div className={`input-box ${passwordDisplayError ? 'input-box--error' : ''}`}>
               <LockKeyhole size={16} />
               <input
                 id="login-password"
@@ -178,6 +210,7 @@ export default function Login() {
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 autoComplete="current-password"
                 required
               />
@@ -195,6 +228,9 @@ export default function Login() {
                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
             </div>
+            {passwordDisplayError && (
+              <span className="field-error-text">{passwordDisplayError}</span>
+            )}
  
             <div className="links">
               <Link to="/register">Create account</Link>

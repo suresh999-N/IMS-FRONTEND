@@ -384,7 +384,7 @@ export default function Register() {
               <Link to="/login">Login</Link>
             </div>
 
-            <button type="submit" disabled={!isFormValid || loading}>
+            <button type="submit" disabled={loading}>
               <UserPlus size={18} />
               {loading ? "Creating..." : "Create account"}
             </button>
