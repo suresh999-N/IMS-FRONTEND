@@ -113,73 +113,34 @@ namespace IMSBackend.Controllers
                         traceId: HttpContext.TraceIdentifier));
                 }
 
-                var pendingUser = new PendingUser
+                var newUser = new User
                 {
                     Name = dto.Name.Trim(),
                     Email = email,
                     PhoneNumber = phone,
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                    Role = "User",
-
-                    // Temporary values
-                    EmailVerificationToken = Guid.NewGuid().ToString(),
-                    EmailVerificationTokenExpiry = DateTime.UtcNow.AddMinutes(10)
+                    Role = string.IsNullOrWhiteSpace(dto.Role) ? "User" : dto.Role,
+                    IsActive = true,
+                    IsEmailVerified = true,
+                    CreatedAt = DateTime.UtcNow
                 };
 
-                _context.PendingUsers.Add(pendingUser);
+                _context.Users.Add(newUser);
                 await _context.SaveChangesAsync(cancellationToken);
-
-                // Generate OTP
-                var otpCode = new Random().Next(100000, 999999).ToString();
-
-                // Save OTP
-                var otp = new Otp
-                {
-                    Email = pendingUser.Email,
-                    Code = otpCode,
-                    CreatedAt = DateTime.UtcNow,
-                    ExpiryTime = DateTime.UtcNow.AddMinutes(10),
-                    IsUsed = false,
-                    Purpose = "EmailVerification"
-                };
-
-                _context.Otps.Add(otp);
-                await _context.SaveChangesAsync(cancellationToken);
-
-                // Email body
-
-
-                var emailBody = $@"
-<h2>Email Verification</h2>
- 
-<p>Hello {pendingUser.Name},</p>
- 
-<p>Your verification OTP is:</p>
- 
-<h1 style='color:blue'>{otpCode}</h1>
- 
-<p>This OTP is valid for 10 minutes.</p>
- 
-<p>Please do not share this OTP with anyone.</p>";
-
-
-                // Send email
-                await _emailService.SendEmailAsync(
-                    pendingUser.Email,
-                    "Email Verification OTP",
-                    emailBody);
 
                 return CreatedAtAction(
                     nameof(Register),
-                    new { id = pendingUser.Id },
+                    new { id = newUser.Id },
                     ApiResponse<object>.Ok(new
                     {
-                        pendingUser.Id,
-                        pendingUser.Name,
-                        pendingUser.Email,
-                        pendingUser.Role
+                        newUser.Id,
+                        newUser.Name,
+                        newUser.Email,
+                        newUser.PhoneNumber,
+                        newUser.Role,
+                        newUser.IsActive
                     },
-                    "Registration successful. Please check your email for the verification OTP.",
+                    "Registration successful.",
                     HttpContext.TraceIdentifier));
             }
             catch (Exception ex)

@@ -33,6 +33,7 @@ import {
   phoneInputProps,
   sanitizePhoneInput,
 } from "../../validators/phoneValidator";
+import { useAuth } from "../../hooks/useAuth";
 import { getAuthErrorMessage } from "./authCopy";
 import "./Auth.css";
 
@@ -53,6 +54,7 @@ export function getConfirmPasswordError(password, confirmPassword) {
 
 export default function Register() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -177,10 +179,18 @@ export default function Register() {
         return;
       }
 
-      navigate(
-        `/verify-email?email=${encodeURIComponent(sanitizeEmailInput(formData.email))}`,
-        { replace: true },
-      );
+      // Automatically log the user in and navigate to dashboard
+      const userEmail = sanitizeEmailInput(formData.email);
+      const loginRes = await login({
+        emailOrPhone: userEmail,
+        password: formData.password,
+      });
+
+      if (loginRes.success) {
+        navigate("/dashboard", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
     } catch (err) {
       const msg = err?.message || ''
       if (/network|fetch|timeout|aborted|ERR_/i.test(msg)) {
