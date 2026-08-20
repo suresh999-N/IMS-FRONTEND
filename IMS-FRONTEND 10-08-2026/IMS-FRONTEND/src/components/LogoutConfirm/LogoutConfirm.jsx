@@ -125,11 +125,6 @@ function LogoutConfirm({ settingsData, user, onCancel, onLogout }) {
 
             {apiError && <div className="logout-api-error page-error-banner" role="alert">{apiError}</div>}
 
-            <div className="logout-info-box">
-              <strong>{l.sessionTitle}</strong>
-              <span>{l.sessionDesc}</span>
-            </div>
-
             <div className="logout-actions">
               <button
                 className="logout-confirm-btn"
