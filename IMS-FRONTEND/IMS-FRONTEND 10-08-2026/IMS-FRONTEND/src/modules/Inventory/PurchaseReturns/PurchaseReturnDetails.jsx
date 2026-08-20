@@ -292,7 +292,7 @@ export default function PurchaseReturnDetails() {
 
           <div>
             <h3>
-              We could not load this workspace
+              Unable to load Purchase Return
             </h3>
 
             <p>{error}</p>

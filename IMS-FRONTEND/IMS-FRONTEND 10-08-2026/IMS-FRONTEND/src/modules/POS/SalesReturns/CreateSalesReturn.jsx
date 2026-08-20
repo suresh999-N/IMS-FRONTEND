@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Save, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Save, AlertCircle, Info, PackageSearch } from 'lucide-react'
 import PageHeader from '../../../components/common/PageHeader'
 import StateBlock from '../../../components/common/StateBlock'
 import { showToast } from '../../../components/common/toast'
@@ -13,8 +13,7 @@ import {
   updateSalesReturn,
 } from '../../../api/salesReturnApi'
 import { getCustomers } from '../../../api/customersApi'
-import { getWarehouses } from '../../../api/warehousesApi'
-import { DEFAULT_WAREHOUSES, formatCurrency } from '../../../utils/helpers'
+import { formatCurrency } from '../../../utils/helpers'
 import './SalesReturns.css'
 
 export default function CreateSalesReturn({ mode = 'create' }) {
@@ -25,17 +24,14 @@ export default function CreateSalesReturn({ mode = 'create' }) {
   // Master Data
   const [customers, setCustomers] = useState([])
   const [availableInvoices, setAvailableInvoices] = useState([])
-  const [warehouses, setWarehouses] = useState([])
 
   // Header State
   const [customerId, setCustomerId] = useState('')
-  const [warehouseId, setWarehouseId] = useState('all')
   const [invoiceId, setInvoiceId] = useState('')
   const [returnDate, setReturnDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [reason, setReason] = useState('')
 
   // Items State
-  // item: { id, productId, productName, variantId, variantName, invoicedQuantity, remainingReturnableQuantity, returnQuantity, price }
   const [items, setItems] = useState([])
 
   // UI States
@@ -45,23 +41,10 @@ export default function CreateSalesReturn({ mode = 'create' }) {
   const [submitting, setSubmitting] = useState(false)
   const [validationErrors, setValidationErrors] = useState({})
 
-  // Fetch initial data (Customers list & Edit record if applicable)
+  // Fetch initial data
   const initData = useCallback(async () => {
     setLoading(true)
     try {
-      // Load warehouses
-      try {
-        const whRes = await getWarehouses()
-        if (whRes && whRes.success && Array.isArray(whRes.data) && whRes.data.length > 0) {
-          setWarehouses(whRes.data)
-        } else {
-          setWarehouses(DEFAULT_WAREHOUSES)
-        }
-      } catch {
-        setWarehouses(DEFAULT_WAREHOUSES)
-      }
-
-      // Load customers strictly from API
       let custData = []
       const customersRes = await getSalesReturnCustomers()
       if (customersRes && customersRes.success && Array.isArray(customersRes.data) && customersRes.data.length > 0) {
@@ -74,7 +57,6 @@ export default function CreateSalesReturn({ mode = 'create' }) {
       }
       setCustomers(custData)
 
-      // If Edit mode, load record directly from API
       if (isEditMode && id) {
         const returnRes = await getSalesReturnById(id)
         if (returnRes && returnRes.success && returnRes.data) {
@@ -90,7 +72,6 @@ export default function CreateSalesReturn({ mode = 'create' }) {
           }
           setReason(rec.reason || '')
 
-          // Load invoices for customer
           if (editCustId) {
             const invRes = await getSalesReturnInvoices(editCustId)
             if (invRes && invRes.success && Array.isArray(invRes.data)) {
@@ -98,7 +79,6 @@ export default function CreateSalesReturn({ mode = 'create' }) {
             }
           }
 
-          // Populate line items
           if (Array.isArray(rec.items) && rec.items.length > 0) {
             setItems(
               rec.items.map((line, index) => ({
@@ -129,7 +109,7 @@ export default function CreateSalesReturn({ mode = 'create' }) {
     initData()
   }, [initData])
 
-  // Handle Customer Selection -> Dynamically fetch customer invoices from backend
+  // Handle Customer Selection
   const handleCustomerChange = async (e) => {
     const selectedCust = e.target.value
     setCustomerId(selectedCust)
@@ -159,7 +139,7 @@ export default function CreateSalesReturn({ mode = 'create' }) {
     }
   }
 
-  // Handle Invoice Selection -> Dynamically fetch invoice items from backend
+  // Handle Invoice Selection
   const handleInvoiceChange = async (e) => {
     const selectedInvId = e.target.value
     setInvoiceId(selectedInvId)
@@ -219,7 +199,7 @@ export default function CreateSalesReturn({ mode = 'create' }) {
     })
   }
 
-  // Calculate Total Return Amount (Return Quantity * Price)
+  // Calculate Total Return Amount
   const totalReturnAmount = useMemo(() => {
     return items.reduce((sum, item) => {
       const qty = Number(item.returnQuantity) || 0
@@ -232,21 +212,10 @@ export default function CreateSalesReturn({ mode = 'create' }) {
   const validateForm = () => {
     const errors = {}
 
-    if (!customerId) {
-      errors.customerId = 'Customer is required.'
-    }
-
-    if (!invoiceId) {
-      errors.invoiceId = 'Invoice is required.'
-    }
-
-    if (!returnDate) {
-      errors.returnDate = 'Return Date is required.'
-    }
-
-    if (!reason.trim()) {
-      errors.reason = 'Reason for return is required.'
-    }
+    if (!customerId) errors.customerId = 'Customer is required.'
+    if (!invoiceId) errors.invoiceId = 'Invoice is required.'
+    if (!returnDate) errors.returnDate = 'Return Date is required.'
+    if (!reason.trim()) errors.reason = 'Reason for return is required.'
 
     if (items.length === 0) {
       errors.items = 'At least one return item is required.'
@@ -256,9 +225,7 @@ export default function CreateSalesReturn({ mode = 'create' }) {
 
       items.forEach((item, index) => {
         const errs = {}
-        if (!item.productId) {
-          errs.productId = 'Product required.'
-        }
+        if (!item.productId) errs.productId = 'Product required.'
         const returnQtyNum = Number(item.returnQuantity)
         if (isNaN(returnQtyNum) || returnQtyNum < 0) {
           errs.returnQuantity = 'Return Qty cannot be negative.'
@@ -270,32 +237,26 @@ export default function CreateSalesReturn({ mode = 'create' }) {
           item.remainingReturnableQuantity !== undefined &&
           returnQtyNum > Number(item.remainingReturnableQuantity)
         ) {
-          errs.returnQuantity = `Return Qty exceeds remaining eligible quantity (${item.remainingReturnableQuantity}).`
+          errs.returnQuantity = `Return Qty exceeds remaining limit (${item.remainingReturnableQuantity}).`
         }
 
-        if (Object.keys(errs).length > 0) {
-          itemErrors[index] = errs
-        }
+        if (Object.keys(errs).length > 0) itemErrors[index] = errs
       })
 
       if (!hasPositiveReturn) {
         errors.items = 'At least one item must have a return quantity greater than 0.'
       }
 
-      if (itemErrors.length > 0) {
-        errors.itemErrors = itemErrors
-      }
+      if (itemErrors.length > 0) errors.itemErrors = itemErrors
     }
 
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
   }
 
-  // Submit Handler for "Save Return"
+  // Submit Handler
   const handleSubmit = async (e) => {
-    if (e && e.preventDefault) {
-      e.preventDefault()
-    }
+    if (e && e.preventDefault) e.preventDefault()
 
     if (!validateForm()) {
       showToast('Please resolve validation errors before submitting.', 'error')
@@ -304,7 +265,6 @@ export default function CreateSalesReturn({ mode = 'create' }) {
 
     setSubmitting(true)
     try {
-      // Filter out line items with 0 return quantity
       const validItems = items.filter((item) => Number(item.returnQuantity) > 0)
 
       const payload = {
@@ -333,9 +293,7 @@ export default function CreateSalesReturn({ mode = 'create' }) {
       }
 
       showToast(
-        isEditMode
-          ? 'Sales return updated successfully.'
-          : 'Sales return created successfully.',
+        isEditMode ? 'Sales return updated successfully.' : 'Sales return created successfully.',
         'success'
       )
       navigate('/pos/returns')
@@ -357,7 +315,7 @@ export default function CreateSalesReturn({ mode = 'create' }) {
         subtitle={
           isEditMode
             ? 'Update customer product return details.'
-            : 'Return customer items against an issued invoice.'
+            : 'Record customer item returns against an issued sales invoice.'
         }
         primaryAction={{
           icon: ArrowLeft,
@@ -368,9 +326,14 @@ export default function CreateSalesReturn({ mode = 'create' }) {
       />
 
       <form onSubmit={handleSubmit} noValidate>
-        {/* Header Fields Section */}
+        {/* Step 1: Return Header Details */}
         <section className="card form-section-card">
-          <h3 className="section-title">Return Header Details</h3>
+          <div className="section-header-title-container">
+            <span className="section-step-badge">1</span>
+            <h3 className="section-title-text">Return Header Details</h3>
+            <span className="section-subtitle-text">Select customer and invoice to load returnable items</span>
+          </div>
+
           <div className="form-grid">
             {/* Customer Field */}
             <div className="form-field">
@@ -394,33 +357,16 @@ export default function CreateSalesReturn({ mode = 'create' }) {
                   )
                 })}
               </select>
-              {validationErrors.customerId && (
+              {validationErrors.customerId ? (
                 <span className="field-error">{validationErrors.customerId}</span>
+              ) : (
+                <div className="field-hint-pill">
+                  <Info size={13} /> Select customer first
+                </div>
               )}
             </div>
 
-            {/* Warehouse Dropdown Field */}
-            <div className="form-field">
-              <label htmlFor="warehouseId">Warehouse</label>
-              <select
-                id="warehouseId"
-                value={warehouseId}
-                onChange={(e) => setWarehouseId(e.target.value)}
-              >
-                <option value="all">All Warehouses</option>
-                {warehouses.map((wh) => {
-                  const wId = String(wh.id ?? wh.warehouseId ?? wh.WarehouseId ?? '')
-                  const wName = wh.name ?? wh.warehouseName ?? wh.Name ?? `Warehouse #${wId}`
-                  return (
-                    <option key={wId} value={wId}>
-                      {wName}
-                    </option>
-                  )
-                })}
-              </select>
-            </div>
-
-            {/* Invoice Field (Loaded from Backend for selected Customer) */}
+            {/* Invoice Field */}
             <div className="form-field">
               <label htmlFor="invoiceId">
                 Invoice <span className="required-star">*</span>
@@ -436,9 +382,9 @@ export default function CreateSalesReturn({ mode = 'create' }) {
                   {!customerId
                     ? '-- Select Customer First --'
                     : loadingInvoices
-                    ? 'Loading invoices...'
+                    ? 'Loading customer invoices...'
                     : availableInvoices.length === 0
-                    ? 'No Invoices available for customer'
+                    ? 'No invoices found for customer'
                     : '-- Select Invoice --'}
                 </option>
                 {availableInvoices.map((inv) => {
@@ -455,9 +401,6 @@ export default function CreateSalesReturn({ mode = 'create' }) {
               </select>
               {validationErrors.invoiceId && (
                 <span className="field-error">{validationErrors.invoiceId}</span>
-              )}
-              {!customerId && (
-                <span className="field-hint">Select a customer to load matching invoices.</span>
               )}
             </div>
 
@@ -478,7 +421,7 @@ export default function CreateSalesReturn({ mode = 'create' }) {
               )}
             </div>
 
-            {/* Reason Field (Mandatory) */}
+            {/* Reason Field */}
             <div className="form-field">
               <label htmlFor="reason">
                 Reason for Return <span className="required-star">*</span>
@@ -486,7 +429,7 @@ export default function CreateSalesReturn({ mode = 'create' }) {
               <input
                 id="reason"
                 type="text"
-                placeholder="Enter mandatory details explaining why items are being returned..."
+                placeholder="Enter mandatory reason (e.g. Damaged item)..."
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 className={validationErrors.reason ? 'input-error' : ''}
@@ -498,38 +441,44 @@ export default function CreateSalesReturn({ mode = 'create' }) {
           </div>
         </section>
 
-        {/* Return Items Card */}
+        {/* Step 2: Returned Items */}
         <section className="card form-section-card">
-          <div className="section-header-row">
-            <h3 className="section-title">Returned Items</h3>
+          <div className="section-header-title-container">
+            <span className="section-step-badge">2</span>
+            <h3 className="section-title-text">Returned Line Items</h3>
+            <span className="section-subtitle-text">Adjust quantity for items being returned to stock</span>
           </div>
 
           {validationErrors.items && (
             <div className="form-global-error">
-              <AlertCircle size={15} /> {validationErrors.items}
+              <AlertCircle size={16} /> {validationErrors.items}
             </div>
           )}
 
           {loadingItems ? (
             <StateBlock state="loading" message="Loading invoice line items..." />
           ) : items.length === 0 ? (
-            <div className="empty-items-notice" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>
-              {invoiceId
-                ? 'No line items available for the selected invoice.'
-                : 'Select an Invoice above to automatically populate returnable items.'}
+            <div className="empty-items-notice-card">
+              <PackageSearch size={36} className="empty-icon" />
+              <p className="empty-title">No Line Items Loaded</p>
+              <p className="empty-desc">
+                {invoiceId
+                  ? 'No returnable line items found for the selected invoice.'
+                  : 'Select a Customer and Invoice above to automatically populate returnable items.'}
+              </p>
             </div>
           ) : (
             <div className="items-table-container">
               <table className="items-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '30%' }}>Product *</th>
-                    <th style={{ width: '20%' }}>Variant</th>
-                    <th style={{ width: '15%' }}>Invoiced Qty</th>
-                    <th style={{ width: '15%' }}>Returnable Qty</th>
-                    <th style={{ width: '15%' }}>Return Qty *</th>
-                    <th style={{ width: '15%' }}>Price *</th>
-                    <th style={{ width: '15%' }} className="text-right">Total</th>
+                    <th style={{ width: '28%' }}>Product *</th>
+                    <th style={{ width: '18%' }}>Variant</th>
+                    <th style={{ width: '14%' }}>Invoiced Qty</th>
+                    <th style={{ width: '14%' }}>Returnable Qty</th>
+                    <th style={{ width: '14%' }}>Return Qty *</th>
+                    <th style={{ width: '12%' }}>Unit Price</th>
+                    <th style={{ width: '14%' }} className="text-right">Line Total</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -539,39 +488,14 @@ export default function CreateSalesReturn({ mode = 'create' }) {
 
                     return (
                       <tr key={item.id}>
-                        {/* Product Name */}
-                        <td className="font-semibold">
-                          {item.productName || `Product #${item.productId}`}
-                        </td>
-
-                        {/* Variant Name */}
+                        <td className="font-semibold">{item.productName || `Product #${item.productId}`}</td>
+                        <td>{item.variantName || (item.variantId ? `Variant #${item.variantId}` : '-')}</td>
                         <td>
-                          {item.variantName || (item.variantId ? `Variant #${item.variantId}` : '-')}
+                          <input type="number" readOnly value={item.invoicedQuantity} className="input-readonly" />
                         </td>
-
-                        {/* Invoiced Quantity */}
                         <td>
-                          <input
-                            type="number"
-                            readOnly
-                            value={item.invoicedQuantity}
-                            className="input-readonly"
-                            style={{ backgroundColor: '#f8fafc', color: '#64748b' }}
-                          />
+                          <input type="number" readOnly value={item.remainingReturnableQuantity} className="input-readonly" />
                         </td>
-
-                        {/* Returnable Quantity */}
-                        <td>
-                          <input
-                            type="number"
-                            readOnly
-                            value={item.remainingReturnableQuantity}
-                            className="input-readonly"
-                            style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 600 }}
-                          />
-                        </td>
-
-                        {/* Return Quantity */}
                         <td>
                           <input
                             type="number"
@@ -587,23 +511,10 @@ export default function CreateSalesReturn({ mode = 'create' }) {
                             <span className="field-error">{itemErr.returnQuantity}</span>
                           )}
                         </td>
-
-                        {/* Price (Decimal) */}
                         <td>
-                          <input
-                            type="number"
-                            step="0.01"
-                            readOnly
-                            value={item.price}
-                            className="input-readonly"
-                            style={{ backgroundColor: '#f8fafc', color: '#64748b' }}
-                          />
+                          <input type="number" step="0.01" readOnly value={item.price} className="input-readonly" />
                         </td>
-
-                        {/* Calculated Total */}
-                        <td className="text-right font-semibold">
-                          {formatCurrency(lineTotal)}
-                        </td>
+                        <td className="text-right font-semibold">{formatCurrency(lineTotal)}</td>
                       </tr>
                     )
                   })}
@@ -612,7 +523,6 @@ export default function CreateSalesReturn({ mode = 'create' }) {
             </div>
           )}
 
-          {/* Total Amount Footer */}
           {items.length > 0 && (
             <div className="return-totals-summary">
               <div className="total-amount-box">
@@ -630,6 +540,7 @@ export default function CreateSalesReturn({ mode = 'create' }) {
             className="erp-button erp-button--secondary"
             onClick={() => navigate('/pos/returns')}
             disabled={submitting}
+            style={{ height: '40px', padding: '0 20px', borderRadius: '8px', fontWeight: 600 }}
           >
             Cancel
           </button>
@@ -637,8 +548,17 @@ export default function CreateSalesReturn({ mode = 'create' }) {
             type="submit"
             className="erp-button erp-button--primary"
             disabled={submitting || loadingItems}
+            style={{
+              height: '40px',
+              padding: '0 24px',
+              borderRadius: '8px',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
           >
-            <Save size={15} /> {submitting ? 'Saving...' : isEditMode ? 'Update Return' : 'Save Return'}
+            <Save size={16} /> {submitting ? 'Saving Return...' : isEditMode ? 'Update Return' : 'Save Return'}
           </button>
         </div>
       </form>
