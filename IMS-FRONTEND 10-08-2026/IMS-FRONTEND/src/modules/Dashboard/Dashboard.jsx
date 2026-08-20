@@ -173,10 +173,10 @@ function countCreatedThisMonth(activities = [], entity) {
   }).length
 }
 
-function formatMonthlyCreatedLabel(count, entityLabel) {
+function formatMonthlyCreatedLabel(count) {
   return count > 0
-    ? `${count} New this month`
-    : `No new ${entityLabel.toLowerCase()} this month`
+    ? `+${count} this month`
+    : '0 new this month'
 }
 
 function getInvoiceStatus(sale) {
@@ -421,9 +421,26 @@ export default function Dashboard() {
         totalProducts={totalProducts}
       />
 
-      {error ? (
+      {lowStockProducts > 0 ? (
+        <div className="dashboard-alert dashboard-alert--danger page-error-banner" role="alert">
+          <AlertTriangle size={18} className="dashboard-alert__icon" />
+          <div className="dashboard-alert__content">
+            <strong>Inventory Attention Required:</strong>
+            <span>
+              {lowStockProducts} {lowStockProducts === 1 ? 'product is' : 'products are'} below the reorder threshold and require restocking.
+            </span>
+          </div>
+          <button
+            type="button"
+            className="dashboard-alert__action"
+            onClick={() => setShowLowStockModal(true)}
+          >
+            View Low Stock Items
+          </button>
+        </div>
+      ) : error ? (
         <div className="dashboard-alert page-error-banner" role="alert">
-          <AlertTriangle size={18} />
+          <AlertTriangle size={18} className="dashboard-alert__icon" />
           <span>{sanitizeApiError(error)}</span>
         </div>
       ) : null}
@@ -445,7 +462,7 @@ export default function Dashboard() {
                 title="Products"
                 value={totalProducts}
                 icon={Package}
-                trend={formatMonthlyCreatedLabel(productsCreatedThisMonth, 'products')}
+                trend={formatMonthlyCreatedLabel(productsCreatedThisMonth)}
                 description="Available SKUs"
                 to="/inventory/products"
                 tone="primary"
@@ -457,7 +474,7 @@ export default function Dashboard() {
                 title="Customers"
                 value={totalCustomers}
                 icon={Users}
-                trend={formatMonthlyCreatedLabel(customersCreatedThisMonth, 'customers')}
+                trend={formatMonthlyCreatedLabel(customersCreatedThisMonth)}
                 description="Customer records"
                 to="/people/customers"
                 tone="secondary"
@@ -469,7 +486,7 @@ export default function Dashboard() {
                 title="Suppliers"
                 value={totalSuppliers}
                 icon={Truck}
-                trend={formatMonthlyCreatedLabel(suppliersCreatedThisMonth, 'suppliers')}
+                trend={formatMonthlyCreatedLabel(suppliersCreatedThisMonth)}
                 description="Supplier records"
                 to="/people/suppliers"
                 tone="neutral"
@@ -481,7 +498,7 @@ export default function Dashboard() {
                 title="Low Stock"
                 value={lowStockProducts}
                 icon={AlertTriangle}
-                trend={`${lowStockProducts} ${lowStockProducts === 1 ? 'Item Needs' : 'Items Need'} Attention`}
+                trend={lowStockProducts > 0 ? `${lowStockProducts} ${lowStockProducts === 1 ? 'item' : 'items'} low stock` : 'All items in stock'}
                 description="Products below threshold"
                 to="/inventory/products?filter=low-stock"
                 tone={lowStockProducts > 0 ? 'warning' : 'success'}
@@ -493,7 +510,7 @@ export default function Dashboard() {
                 title="Sales"
                 value={formatCurrency(totalSales)}
                 icon={ShoppingCart}
-                trend={salesTrend?.label || `${dashboard.recentSales.length} Recent invoices`}
+                trend={salesTrend?.label || `${dashboard.recentSales.length} recent ${dashboard.recentSales.length === 1 ? 'invoice' : 'invoices'}`}
                 trendDirection={salesTrend?.direction}
                 description="Total sales"
                 to="/pos/sales"

@@ -73,7 +73,7 @@ export default function Login() {
     setTouched((prev) => ({ ...prev, [name]: true }))
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'email' ? (value.includes('@') ? sanitizeEmailInput(value) : value) : value,
+      [name]: value,
     }))
   }
 

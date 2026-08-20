@@ -156,6 +156,16 @@ export default function Sidebar({
         </div>
         <button
           type="button"
+          className="app-sidebar__collapse-toggle"
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-expanded={!isCollapsed}
+          onClick={onToggleCollapsed}
+          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {isCollapsed ? <Menu size={17} /> : <ChevronLeft size={17} />}
+        </button>
+        <button
+          type="button"
           className="app-sidebar__mobile-close"
           aria-label="Close navigation"
           onClick={onCloseDrawer}
@@ -191,21 +201,6 @@ export default function Sidebar({
           />
         ))}
       </nav>
-
-      <div className="app-sidebar__footer">
-        <button
-          type="button"
-          className="app-sidebar__collapse"
-          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          aria-expanded={!isCollapsed}
-          onClick={onToggleCollapsed}
-          data-tooltip={isCollapsed ? 'Expand' : undefined}
-          title={isCollapsed ? 'Expand sidebar' : undefined}
-        >
-          {isCollapsed ? <Menu size={17} /> : <ChevronLeft size={17} />}
-          <span>{isCollapsed ? 'Expand' : 'Collapse'}</span>
-        </button>
-      </div>
     </aside>
   )
 }

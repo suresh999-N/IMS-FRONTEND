@@ -157,13 +157,34 @@ export function AuthProvider({ children, roles = [] }) {
 
   const logout = useCallback(
     function logout() {
-      localStorage.removeItem(AUTH_TOKEN_KEY);
-      localStorage.removeItem(AUTH_USER_KEY);
-      sessionStorage.clear();
+      const keysToRemove = [
+        AUTH_TOKEN_KEY,
+        AUTH_USER_KEY,
+        "ims-auth-token",
+        "ims-current-user",
+        "token",
+        "user",
+        "authToken",
+        "imsAdminProfile",
+        "imsAdminSettings",
+        "ims-email-verification-completed",
+      ];
+
+      for (const key of keysToRemove) {
+        try {
+          localStorage.removeItem(key);
+        } catch {}
+      }
+
+      try {
+        sessionStorage.clear();
+      } catch {}
 
       setUser(null);
 
-      window.location.replace("/login");
+      if (typeof window !== "undefined") {
+        window.location.replace("/login");
+      }
     },
     [setUser],
   );

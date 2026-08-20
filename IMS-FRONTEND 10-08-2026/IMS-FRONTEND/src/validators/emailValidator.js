@@ -1,9 +1,6 @@
 export const EMAIL_MAX_LENGTH = 254
 
-const KEYBOARD_WALK_PATTERNS = [
-  'qwerty', 'asdfgh', 'zxcvbn', '123456', '234567', '345678', '456789', '567890',
-  'qwer', 'asdf', 'zxcv', 'hjkl', 'yuiop'
-]
+const EMAIL_DOMAIN_PATTERN = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i
 
 function stripUnsafeText(value) {
   return Array.from(String(value ?? '')).filter((character) => {
@@ -17,37 +14,12 @@ function stripUnsafeText(value) {
   }).join('')
 }
 
-function hasGibberishLocalPart(localPart) {
-  const clean = localPart.toLowerCase().replace(/[^a-z]/g, '')
-
-  // Reject local part with 5 or more consecutive consonants (e.g. asjfhsjk, sjfhsjk)
-  if (/[bcdfghjklmnpqrstvwxyz]{5,}/.test(clean)) {
-    return true
-  }
-
-  // Reject long local part with zero vowels
-  if (clean.length >= 6) {
-    const vowels = clean.match(/[aeiou]/g)
-    if (!vowels || vowels.length === 0) {
-      return true
-    }
-  }
-
-  // Reject random letter mash followed by 4+ digits (e.g. asjfhsjk321455, hfkjdhf321455)
-  if (/[a-z]{4,}\d{4,}/.test(localPart.toLowerCase())) {
-    return true
-  }
-
-  const lower = localPart.toLowerCase()
-  return KEYBOARD_WALK_PATTERNS.some((pattern) => lower.includes(pattern))
-}
-
 export function sanitizeEmailInput(value) {
   return stripUnsafeText(value)
     .normalize('NFKC')
     .replace(/[<>]/g, '')
     .toLowerCase()
-    .replace(/\s/g, '')
+    .trim()
     .slice(0, EMAIL_MAX_LENGTH)
 }
 
@@ -67,13 +39,9 @@ export function getEmailError(value, options = {}) {
     return 'Email cannot contain consecutive periods.'
   }
 
-  if (/([!#$%&'*+/=?^_`{|}~.-])\1{2,}/.test(email)) {
-    return 'Email contains repeated symbols.'
-  }
-
   const parts = email.split('@')
   if (parts.length !== 2) {
-    return 'Enter a valid email address (e.g. name@domain.com).'
+    return 'Enter a valid email address.'
   }
 
   const [localPart, domainPart] = parts
@@ -97,36 +65,11 @@ export function getEmailError(value, options = {}) {
     return 'Email contains invalid characters.'
   }
 
-  if (hasGibberishLocalPart(localPart)) {
-    return 'Please enter a valid email address.'
+  if (domainPart.startsWith('.') || domainPart.endsWith('.')) {
+    return 'Enter a valid email domain.'
   }
 
-  // Domain & TLD validation
-  const domainParts = domainPart.split('.')
-  if (domainParts.length < 2) {
-    return 'Email must include a valid domain extension (e.g. .com, .org).'
-  }
-
-  const tld = domainParts[domainParts.length - 1].toLowerCase()
-  if (tld.length < 2 || tld.length > 24) {
-    return 'Email contains an invalid domain extension.'
-  }
-
-  if (!/^[a-z]+$/.test(tld)) {
-    return 'Email domain extension must contain only letters.'
-  }
-
-  const domainName = domainParts.slice(0, -1).join('')
-  if (hasGibberishLocalPart(domainName)) {
-    return 'Enter a valid email domain name.'
-  }
-
-  const DOMAIN_REGEX = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*\.[a-z]{2,24}$/i
-  if (!DOMAIN_REGEX.test(domainPart)) {
-    return 'Enter a valid email domain name.'
-  }
-
-  return ''
+  return EMAIL_DOMAIN_PATTERN.test(domainPart) ? '' : 'Enter a valid email domain.'
 }
 
 export function isValidEmail(value, options = {}) {

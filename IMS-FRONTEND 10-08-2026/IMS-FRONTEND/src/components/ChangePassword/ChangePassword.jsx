@@ -281,14 +281,27 @@ function ChangePassword({ settingsData, onClose }) {
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-    setPasswordData((previousData) => ({
-      ...previousData,
+    const updatedData = {
+      ...passwordData,
       [name]: value,
-    }));
+    };
+
+    setPasswordData(updatedData);
+
+    let confirmError = "";
+    if (updatedData.confirmPassword) {
+      if (updatedData.newPassword !== updatedData.confirmPassword) {
+        confirmError = p.mismatch;
+      }
+    }
 
     setErrors((previousErrors) => ({
       ...previousErrors,
       [name]: "",
+      confirmPassword:
+        name === "newPassword" || name === "confirmPassword"
+          ? confirmError
+          : previousErrors.confirmPassword,
     }));
 
     setApiError("");
@@ -311,7 +324,7 @@ function ChangePassword({ settingsData, onClose }) {
       newErrors.newPassword = p.lowercase;
     } else if (!/[0-9]/.test(passwordData.newPassword)) {
       newErrors.newPassword = p.number;
-    } else if (!/[!@#$%^&*]/.test(passwordData.newPassword)) {
+    } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(passwordData.newPassword)) {
       newErrors.newPassword = p.special;
     }
 
@@ -464,7 +477,11 @@ function ChangePassword({ settingsData, onClose }) {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    setShowNewPassword((prev) => !prev);
+                    setShowNewPassword((prev) => {
+                      const next = !prev;
+                      setShowConfirmPassword(next);
+                      return next;
+                    });
                   }}
                   aria-label={showNewPassword ? "Hide password" : "Show password"}
                   disabled={saving}

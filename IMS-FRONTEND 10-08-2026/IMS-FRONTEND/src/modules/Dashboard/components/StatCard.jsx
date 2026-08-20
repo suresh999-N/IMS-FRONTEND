@@ -28,18 +28,21 @@ export default function StatCard({
     <Component className={`dashboard-stat dashboard-stat--${tone} ${to ? 'is-clickable' : ''}`} {...interactiveProps}>
       <div className="dashboard-stat__metric">
         <span className="dashboard-stat__icon" aria-hidden="true">
-          <Icon size={15} />
+          <Icon size={16} />
         </span>
-        <strong className="dashboard-stat__value">{value}</strong>
+        <strong className="dashboard-stat__value" title={String(value)}>{value}</strong>
       </div>
       <div className="dashboard-stat__footer">
-        <span className="dashboard-stat__label">{title}</span>
+        <span className="dashboard-stat__label" title={title}>{title}</span>
         {trend ? (
-          <span className={`dashboard-stat__trend ${trendDirection ? `is-${trendDirection}` : ''}`}>
+          <span
+            className={`dashboard-stat__trend ${trendDirection ? `is-${trendDirection}` : ''}`}
+            title={typeof trend === 'string' ? trend : undefined}
+          >
             {trend}
           </span>
         ) : null}
-        <p>{description}</p>
+        {description ? <p>{description}</p> : null}
       </div>
     </Component>
   )

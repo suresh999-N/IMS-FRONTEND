@@ -49,11 +49,7 @@ export default function Header({ user, onLogout, onOpenDrawer }) {
             <span>Quick actions</span>
           </button>
           {isQuickOpen ? (
-            <PortalDropdown anchorRef={quickButtonRef} className="app-dropdown--quick" width={260}>
-              <div className="app-dropdown__header">
-                <strong>Quick actions</strong>
-                <span>Common workflows</span>
-              </div>
+            <PortalDropdown anchorRef={quickButtonRef} className="app-dropdown--quick" width={240}>
               <Link to="/inventory/products" className="app-dropdown__item" role="menuitem" onClick={() => setIsQuickOpen(false)}>
                 <Plus size={16} />
                 <span>Add Product</span>

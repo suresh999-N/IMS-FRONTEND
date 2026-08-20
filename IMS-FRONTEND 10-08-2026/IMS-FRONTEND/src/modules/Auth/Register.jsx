@@ -33,18 +33,10 @@ import {
   phoneInputProps,
   sanitizePhoneInput,
 } from "../../validators/phoneValidator";
+import { getPasswordError } from "../../validators/passwordValidator";
 import { useAuth } from "../../hooks/useAuth";
 import { getAuthErrorMessage } from "./authCopy";
 import "./Auth.css";
-
-export function getPasswordError(password) {
-  if (!password) return "Password is required.";
-  if (password.length < 8) return "Password must be at least 8 characters.";
-  if (!/[A-Z]/.test(password)) return "Password must include at least one uppercase letter.";
-  if (!/[a-z]/.test(password)) return "Password must include at least one lowercase letter.";
-  if (!/[0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) return "Password must include at least one number or symbol.";
-  return "";
-}
 
 export function getConfirmPasswordError(password, confirmPassword) {
   if (!confirmPassword) return "Confirm password is required.";
@@ -234,7 +226,8 @@ export default function Register() {
   const emailDisplayError = serverFieldErrors.email || (touched.email && emailError);
   const phoneDisplayError = serverFieldErrors.phoneNumber || (touched.phoneNumber && phoneError);
   const passwordDisplayError = serverFieldErrors.password || (touched.password && passwordError);
-  const confirmPasswordDisplayError = touched.confirmPassword && confirmPasswordError;
+  const confirmPasswordDisplayError =
+    (touched.confirmPassword || Boolean(formData.confirmPassword)) && confirmPasswordError;
 
   return (
     <div
@@ -365,21 +358,23 @@ export default function Register() {
                 onBlur={handleBlur}
                 autoComplete="new-password"
               />
-              {formData.password ? (
-                <button
-                  type="button"
-                  className="auth-login-password-toggle"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setShowPassword((current) => !current);
-                  }}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                </button>
-              ) : null}
+              <button
+                type="button"
+                className="auth-login-password-toggle"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowPassword((current) => {
+                    const next = !current;
+                    setShowConfirmPassword(next);
+                    return next;
+                  });
+                }}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
             </div>
             {passwordDisplayError && (
               <span className="field-error-text">{passwordDisplayError}</span>
@@ -403,23 +398,25 @@ export default function Register() {
                 onBlur={handleBlur}
                 autoComplete="new-password"
               />
-              {formData.confirmPassword ? (
-                <button
-                  type="button"
-                  className="auth-login-password-toggle"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setShowConfirmPassword((current) => !current);
-                  }}
-                  aria-label={
-                    showConfirmPassword ? "Hide password" : "Show password"
-                  }
-                  tabIndex={-1}
-                >
-                  {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                </button>
-              ) : null}
+              <button
+                type="button"
+                className="auth-login-password-toggle"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowConfirmPassword((current) => {
+                    const next = !current;
+                    setShowPassword(next);
+                    return next;
+                  });
+                }}
+                aria-label={
+                  showConfirmPassword ? "Hide password" : "Show password"
+                }
+                tabIndex={-1}
+              >
+                {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
             </div>
             {confirmPasswordDisplayError && (
               <span className="field-error-text">{confirmPasswordDisplayError}</span>

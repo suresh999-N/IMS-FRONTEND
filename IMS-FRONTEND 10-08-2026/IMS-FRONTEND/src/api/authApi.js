@@ -196,39 +196,53 @@ export function verifyEmailAddress(token) {
  * 7. POST /api/auth/logout/{userId}
  */
 export async function logoutCurrentSession(userId) {
-  const resolvedId = requireUserId(userId);
-  const result = await apiRequest(API_ENDPOINTS.auth.logout(resolvedId), {
-    method: "POST",
-  });
-
-  if (!result.success && result.status === 404) {
-    return apiRequest(`/Profile/logout/${resolvedId}`, {
+  try {
+    const resolvedId = resolveUserId(userId);
+    if (!resolvedId) {
+      return { success: true, message: "Logged out locally." };
+    }
+    const result = await apiRequest(API_ENDPOINTS.auth.logout(resolvedId), {
       method: "POST",
     });
-  }
 
-  return result;
+    if (!result.success && result.status === 404) {
+      return await apiRequest(`/Profile/logout/${resolvedId}`, {
+        method: "POST",
+      });
+    }
+
+    return result;
+  } catch (error) {
+    return { success: false, error: error?.message || "Logout request failed." };
+  }
 }
 
 /**
  * 8. POST /api/auth/logout-all-devices/{userId}
  */
 export async function logoutAllDevices(userId) {
-  const resolvedId = requireUserId(userId);
-  const result = await apiRequest(
-    API_ENDPOINTS.auth.logoutAllDevices(resolvedId),
-    {
-      method: "POST",
-    },
-  );
+  try {
+    const resolvedId = resolveUserId(userId);
+    if (!resolvedId) {
+      return { success: true, message: "Logged out locally." };
+    }
+    const result = await apiRequest(
+      API_ENDPOINTS.auth.logoutAllDevices(resolvedId),
+      {
+        method: "POST",
+      },
+    );
 
-  if (!result.success && result.status === 404) {
-    return apiRequest(`/Profile/logout-all-devices/${resolvedId}`, {
-      method: "POST",
-    });
+    if (!result.success && result.status === 404) {
+      return await apiRequest(`/Profile/logout-all-devices/${resolvedId}`, {
+        method: "POST",
+      });
+    }
+
+    return result;
+  } catch (error) {
+    return { success: false, error: error?.message || "Logout all devices failed." };
   }
-
-  return result;
 }
 
 /**

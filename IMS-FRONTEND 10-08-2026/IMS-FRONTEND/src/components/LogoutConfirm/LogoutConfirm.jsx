@@ -83,18 +83,17 @@ function LogoutConfirm({ settingsData, user, onCancel, onLogout }) {
 
       const result = await logoutCurrentSession(userId);
 
-      if (!result.success) {
-        setApiError(result.error || l.failed);
-        return;
+      if (result?.success) {
+        setSuccessMessage(result.message || l.success);
+      } else {
+        console.warn("Logout endpoint non-success response, completing local logout:", result?.error);
       }
-
-      setSuccessMessage(result.message || l.success);
-      finishLogout();
     } catch (error) {
-      console.error("Logout network/fetch error:", error);
-      setApiError(error instanceof Error ? error.message : l.failed);
+      console.error("Logout network/fetch error, completing local logout:", error);
     } finally {
       setLoading(false);
+      finishLogout();
+    }
     }
   };
 

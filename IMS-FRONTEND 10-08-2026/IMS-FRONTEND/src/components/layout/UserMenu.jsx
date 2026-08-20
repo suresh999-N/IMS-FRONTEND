@@ -229,11 +229,6 @@ export default function UserMenu({ user, onLogout }) {
   }
 
   function handleConfirmLogout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("imsAdminProfile");
-
     setShowLogout(false);
 
     if (typeof onLogout === "function") {
