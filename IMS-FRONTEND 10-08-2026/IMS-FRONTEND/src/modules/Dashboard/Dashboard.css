@@ -205,12 +205,12 @@
 }
 
 .dashboard-stat {
-  min-width: 0;
-  height: 100%;
-  min-height: 104px;
+  min-height: 108px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  align-items: flex-start !important;
+  text-align: left !important;
   gap: 10px;
   padding: 14px 16px;
   color: inherit;
@@ -239,9 +239,12 @@
 }
 
 .dashboard-stat__metric {
+  width: 100%;
   min-width: 0;
   display: flex;
   align-items: center;
+  justify-content: flex-start !important;
+  text-align: left !important;
   gap: 10px;
 }
 
@@ -273,12 +276,16 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: left !important;
 }
 
 .dashboard-stat__footer {
+  width: 100%;
   min-width: 0;
   display: flex;
   flex-direction: column;
+  align-items: flex-start !important;
+  text-align: left !important;
   gap: 4px;
   margin-top: auto;
 }
@@ -292,6 +299,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-align: left !important;
 }
 
 .dashboard-panel__header span,
@@ -309,6 +317,7 @@
 .dashboard-stat__trend {
   width: max-content;
   max-width: 100%;
+  align-self: flex-start !important;
   border-radius: 999px;
   padding: 3px 9px;
   background: #f0f9ff;
@@ -319,6 +328,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: left !important;
 }
 
 .dashboard-stat__trend.is-up {
