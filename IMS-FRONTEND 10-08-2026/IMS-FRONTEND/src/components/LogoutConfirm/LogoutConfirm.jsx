@@ -94,7 +94,6 @@ function LogoutConfirm({ settingsData, user, onCancel, onLogout }) {
       setLoading(false);
       finishLogout();
     }
-    }
   };
 
   return (
