@@ -33,9 +33,13 @@ function DashboardTooltip({ active, payload, label }) {
 export default function DashboardChart({ data = [], isLoading }) {
   const safeData = Array.isArray(data) ? data : []
   const hasHistoricalData =
-    safeData.length >= 2 &&
+    safeData.length > 0 &&
     safeData.some((item) => Number(item.sales || 0) > 0 || Number(item.purchases || 0) > 0)
   const isCompactEmpty = !isLoading && !hasHistoricalData
+
+  const chartData = safeData.length === 1
+    ? [{ month: '', sales: 0, purchases: 0 }, ...safeData]
+    : safeData
 
   return (
     <section className={`dashboard-panel dashboard-chart ${isCompactEmpty ? 'is-empty' : ''}`}>
@@ -49,7 +53,7 @@ export default function DashboardChart({ data = [], isLoading }) {
         <SkeletonCard variant="chart" />
       ) : hasHistoricalData ? (
         <ResponsiveChart className="dashboard-chart__frame">
-          <AreaChart data={safeData} margin={{ top: 6, right: 10, bottom: 0, left: -4 }}>
+          <AreaChart data={chartData} margin={{ top: 6, right: 10, bottom: 0, left: -4 }}>
             <defs>
               <linearGradient id="salesArea" x1="0" x2="0" y1="0" y2="1">
                 <stop offset="5%" stopColor="#0284C7" stopOpacity={0.22} />
