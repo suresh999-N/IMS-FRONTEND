@@ -32,11 +32,13 @@ export default function InputField({
     error ? `${id}-error` : '',
   ].filter(Boolean).join(' ') || undefined
 
+  const hasValue = value !== undefined && value !== null && String(value).length > 0
+
   const renderTrailingAction = () => {
     if (trailingAction) {
       return trailingAction
     }
-    if (isPasswordField) {
+    if (isPasswordField && hasValue) {
       const ToggleIcon = showPassword ? EyeOff : Eye
       return (
         <button
