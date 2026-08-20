@@ -785,10 +785,9 @@ export function normalizeDashboardPayload(responses) {
       description: text(item?.description ?? item?.Description),
       date: text(item?.date ?? item?.Date ?? item?.createdAt ?? item?.CreatedAt ?? item?.created_at),
     })) : [],
-    errors: responses
-      .filter((response) => !response.success && response.status !== 403)
-      .map((response) => sanitizeApiError(response.error || response.message))
-      .filter(Boolean),
+    errors: (!responses.some((r) => r.success) && responses.some((r) => r.status === 0 || r.status === 502 || r.status === 503))
+      ? ['Unable to connect to the server.']
+      : [],
   }
 }
 
