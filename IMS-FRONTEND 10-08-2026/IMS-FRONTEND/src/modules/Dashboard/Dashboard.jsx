@@ -326,7 +326,8 @@ export default function Dashboard() {
 
     const payload = await getDashboardData()
     setDashboard(payload)
-    setError(sanitizeApiError(payload.errors?.[0] ?? ''))
+    const firstErr = payload.errors?.[0] || ''
+    setError(firstErr ? sanitizeApiError(firstErr) : '')
     setIsLoading(false)
   }, [])
 

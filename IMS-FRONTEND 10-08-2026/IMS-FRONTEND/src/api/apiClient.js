@@ -273,9 +273,7 @@ export function sanitizeApiError(message, status = 0) {
   const rawMessage = String(message || '').trim()
 
   if (!rawMessage) {
-    return status >= 500 || status === 0
-      ? 'Unable to connect to the server.'
-      : 'The request could not be completed. Please try again.'
+    return ''
   }
 
   const lower = rawMessage.toLowerCase()
