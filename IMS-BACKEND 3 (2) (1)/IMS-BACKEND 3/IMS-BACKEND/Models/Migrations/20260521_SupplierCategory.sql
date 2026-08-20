@@ -1,0 +1,2 @@
+ALTER TABLE suppliers
+  ADD COLUMN IF NOT EXISTS category VARCHAR(100) NULL AFTER name;
