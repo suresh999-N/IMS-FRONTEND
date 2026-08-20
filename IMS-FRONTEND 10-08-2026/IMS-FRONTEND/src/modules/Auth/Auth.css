@@ -962,42 +962,45 @@
 
 @media (min-width: 1025px) {
   .auth-wrapper--register .auth-right-panel {
-    padding: clamp(18px, 2.2vh, 26px) clamp(34px, 4vw, 64px) !important;
-    overflow: hidden !important;
+    padding: clamp(12px, 1.8vh, 24px) clamp(24px, 3vw, 48px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
   }
 }
 
-/* Keep the complete registration form visible when validation adds a banner. */
+/* Keep the complete registration form and submit button visible when validation adds errors. */
 @media (min-width: 1025px) and (max-height: 1000px) {
   .auth-wrapper--register .auth-login-lock {
-    width: 38px !important;
-    height: 38px !important;
-    margin-bottom: 5px !important;
+    width: 32px !important;
+    height: 32px !important;
+    margin-bottom: 2px !important;
   }
 
   .auth-wrapper--register .auth-login-lock svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
   }
 
   .auth-wrapper--register .login-card h2 {
-    font-size: 26px;
+    font-size: 22px !important;
+    margin-bottom: 2px !important;
   }
 
   .auth-wrapper--register .login-card .sub {
-    margin: 3px 0 8px !important;
+    margin: 1px 0 6px !important;
+    font-size: 12px !important;
   }
 
   .auth-wrapper--register .error-box,
   .auth-wrapper--register .success-box {
     display: block;
     box-sizing: border-box;
-    min-height: 32px;
+    min-height: 28px;
     height: auto !important;
-    padding: 8px 12px !important;
-    margin-bottom: 10px !important;
-    font-size: 12.5px;
-    line-height: 1.4;
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 11.5px;
+    line-height: 1.35;
     text-align: left;
     word-break: break-word;
     border-radius: 6px;
@@ -1005,21 +1008,32 @@
   }
 
   .auth-wrapper--register .auth-login-label {
-    margin-bottom: 2px !important;
-    font-size: 12px;
+    margin-top: 2px !important;
+    margin-bottom: 1px !important;
+    font-size: 11.5px;
   }
 
   .auth-wrapper--register .input-box {
-    min-height: 36px !important;
-    margin-bottom: 4px !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .auth-wrapper--register .field-error-text {
+    font-size: 10.5px !important;
+    margin-top: 1px !important;
+    margin-bottom: 2px !important;
   }
 
   .auth-wrapper--register .auth-register-login-link {
-    margin: 0 0 4px !important;
+    margin: 4px 0 6px !important;
+    font-size: 12px !important;
   }
 
   .auth-wrapper--register form > button[type='submit'] {
-    min-height: 38px !important;
+    min-height: 36px !important;
+    height: 36px !important;
+    padding: 6px 12px !important;
   }
 }
 
