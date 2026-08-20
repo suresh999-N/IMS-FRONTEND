@@ -144,8 +144,8 @@ export default function Register() {
 
       setError(
         clientErrors.length === 1
-          ? detailedMessages[0]
-          : `Validation failed for (${fieldNames.join(", ")}): ${detailedMessages.join(" | ")}`
+          ? `Please fix ${clientErrors[0].field}: ${clientErrors[0].error}`
+          : `Please check the highlighted fields: ${fieldNames.join(", ")}.`
       );
       return;
     }
