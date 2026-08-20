@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import SkeletonCard from './SkeletonCard'
-import { formatRelativeTime } from '../../../utils/helpers'
+import { formatExactTimestamp, formatRelativeTime } from '../../../utils/helpers'
 
 function toneForActivity(type = '') {
   const value = String(type).toLowerCase()
@@ -182,7 +182,7 @@ export default function ActivityTimeline({ activities = [], isLoading }) {
                 <div className="activity-item__body">
                   <span className="activity-item__badge">{badge}</span>
                   <strong>{description}</strong>
-                  <time dateTime={activity.date}>{formatRelativeTime(activity.date)}</time>
+                  <time dateTime={activity.date} title={formatExactTimestamp(activity.date)}>{formatExactTimestamp(activity.date)}</time>
                 </div>
               </article>
             )

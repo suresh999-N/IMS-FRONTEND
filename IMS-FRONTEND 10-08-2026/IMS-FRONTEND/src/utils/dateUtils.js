@@ -248,3 +248,16 @@ export function formatRelativeTime(value) {
   const absMonths = Math.round(absDays / 30)
   return `${absMonths}mo ${suffix}`
 }
+
+/**
+ * Formats activity timestamps with exact date, month, year, time, and relative age for audit precision.
+ * @param {string|Date|number|null|undefined} value
+ * @returns {string} e.g. "20-08-2026 05:15 PM • 2 days ago" or "Recently"
+ */
+export function formatExactTimestamp(value) {
+  if (!value) return 'Recently'
+  const exactTime = formatDateTimeForDisplay(value, '')
+  const relativeTime = formatRelativeTime(value)
+  if (!exactTime) return relativeTime
+  return `${exactTime} • ${relativeTime}`
+}
