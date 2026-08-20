@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { LogOut, MonitorOff, X } from "lucide-react";
-import { logoutAllDevices, logoutCurrentSession, resolveUserId } from "../../api/authApi";
+import { LogOut, X } from "lucide-react";
+import { logoutCurrentSession, resolveUserId } from "../../api/authApi";
 import loginLeftPanel from "../../assets/auth/login-left-panel.png";
 import "./LogoutConfirm.css";
 
@@ -12,13 +12,9 @@ const logoutText = {
     sessionDesc: "Your current login session will be closed securely.",
     cancel: "Cancel",
     logout: "Logout",
-    logoutAll: "Logout All Devices",
     loggingOut: "Logging out...",
-    loggingOutAll: "Logging out all devices...",
     success: "Logged out successfully.",
-    allSuccess: "Logged out from all devices successfully.",
     failed: "Logout failed. Please try again.",
-    allFailed: "Logout all devices failed. Please try again.",
     unauthorized: "Session expired. Logging out locally.",
   },
   telugu: {
@@ -28,13 +24,9 @@ const logoutText = {
     sessionDesc: "మీ ప్రస్తుత లాగిన్ సెషన్ సురక్షితంగా మూసివేయబడుతుంది.",
     cancel: "రద్దు",
     logout: "లాగౌట్",
-    logoutAll: "అన్ని డివైస్‌ల నుండి లాగౌట్",
     loggingOut: "లాగౌట్ అవుతోంది...",
-    loggingOutAll: "అన్ని డివైస్‌ల నుండి లాగౌట్ అవుతోంది...",
     success: "విజయవంతంగా లాగౌట్ అయ్యారు.",
-    allSuccess: "అన్ని డివైస్‌ల నుండి విజయవంతంగా లాగౌట్ అయ్యారు.",
     failed: "లాగౌట్ కాలేదు. మళ్లీ ప్రయత్నించండి.",
-    allFailed: "అన్ని డివైస్‌ల లాగౌట్ కాలేదు. మళ్లీ ప్రయత్నించండి.",
     unauthorized: "సెషన్ ముగిసింది. లోకల్‌గా లాగౌట్ అవుతోంది.",
   },
   hindi: {
@@ -44,19 +36,15 @@ const logoutText = {
     sessionDesc: "आपका current login session securely close हो जाएगा.",
     cancel: "Cancel",
     logout: "Logout",
-    logoutAll: "Logout All Devices",
     loggingOut: "Logging out...",
-    loggingOutAll: "Logging out all devices...",
     success: "Logged out successfully.",
-    allSuccess: "Logged out from all devices successfully.",
     failed: "Logout failed. Please try again.",
-    allFailed: "Logout all devices failed. Please try again.",
     unauthorized: "Session expired. Logging out locally.",
   },
 };
 
 function LogoutConfirm({ settingsData, user, onCancel, onLogout }) {
-  const [loadingType, setLoadingType] = useState("");
+  const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -64,7 +52,6 @@ function LogoutConfirm({ settingsData, user, onCancel, onLogout }) {
   const l = logoutText[lang] || logoutText.english;
 
   const userId = resolveUserId(user);
-  const loading = Boolean(loadingType);
 
   useEffect(() => {
     const handleEscape = (event) => {
@@ -88,42 +75,27 @@ function LogoutConfirm({ settingsData, user, onCancel, onLogout }) {
     }, 500);
   };
 
-  const callLogoutApi = async ({ type }) => {
-    const isAllDevices = type === "all";
-
-    const failedMessage = isAllDevices ? l.allFailed : l.failed;
-    const successText = isAllDevices ? l.allSuccess : l.success;
-
+  const handleLogoutCurrentSession = async () => {
     try {
-      setLoadingType(type);
+      setLoading(true);
       setApiError("");
       setSuccessMessage("");
 
-      const result = isAllDevices
-        ? await logoutAllDevices(userId)
-        : await logoutCurrentSession(userId);
+      const result = await logoutCurrentSession(userId);
 
       if (!result.success) {
-        setApiError(result.error || failedMessage);
+        setApiError(result.error || l.failed);
         return;
       }
 
-      setSuccessMessage(result.message || successText);
+      setSuccessMessage(result.message || l.success);
       finishLogout();
     } catch (error) {
       console.error("Logout network/fetch error:", error);
-      setApiError(error instanceof Error ? error.message : failedMessage);
+      setApiError(error instanceof Error ? error.message : l.failed);
     } finally {
-      setLoadingType("");
+      setLoading(false);
     }
-  };
-
-  const handleLogoutCurrentSession = () => {
-    callLogoutApi({ type: "current" });
-  };
-
-  const handleLogoutAllDevices = () => {
-    callLogoutApi({ type: "all" });
   };
 
   return (
@@ -166,17 +138,7 @@ function LogoutConfirm({ settingsData, user, onCancel, onLogout }) {
                 disabled={loading}
               >
                 <LogOut size={18} />
-                {loadingType === "current" ? l.loggingOut : l.logout}
-              </button>
-
-              <button
-                className="logout-confirm-all-btn"
-                type="button"
-                onClick={handleLogoutAllDevices}
-                disabled={loading}
-              >
-                <MonitorOff size={18} />
-                {loadingType === "all" ? l.loggingOutAll : l.logoutAll}
+                {loading ? l.loggingOut : l.logout}
               </button>
 
               <button
