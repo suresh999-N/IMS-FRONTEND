@@ -178,19 +178,21 @@ export default function ResetPassword() {
                 onBlur={() => setTouched((prev) => ({ ...prev, password: true }))}
                 autoComplete="new-password"
               />
-              <button
-                type="button"
-                className="auth-login-password-toggle"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setShowPassword((prev) => !prev)
-                }}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                tabIndex={-1}
-              >
-                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-              </button>
+              {password ? (
+                <button
+                  type="button"
+                  className="auth-login-password-toggle"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setShowPassword((prev) => !prev)
+                  }}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              ) : null}
             </div>
             {passwordDisplayError && (
               <span className="field-error-text">{passwordDisplayError}</span>
@@ -208,19 +210,21 @@ export default function ResetPassword() {
                 onBlur={() => setTouched((prev) => ({ ...prev, confirmPassword: true }))}
                 autoComplete="new-password"
               />
-              <button
-                type="button"
-                className="auth-login-password-toggle"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setShowConfirmPassword((prev) => !prev)
-                }}
-                aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                tabIndex={-1}
-              >
-                {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-              </button>
+              {confirmPassword ? (
+                <button
+                  type="button"
+                  className="auth-login-password-toggle"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setShowConfirmPassword((prev) => !prev)
+                  }}
+                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  tabIndex={-1}
+                >
+                  {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              ) : null}
             </div>
             {confirmPasswordDisplayError && (
               <span className="field-error-text">{confirmPasswordDisplayError}</span>
