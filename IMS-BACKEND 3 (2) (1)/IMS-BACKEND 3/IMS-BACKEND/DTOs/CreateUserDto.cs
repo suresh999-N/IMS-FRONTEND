@@ -9,8 +9,9 @@ namespace IMSBackend.DTOs
         public string Name { get; set; } = string.Empty;
 
         [Required]
-        [EmailAddress]
-        [MaxLength(256)]
+        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+        [MaxLength(254)]
+        [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,24}$", ErrorMessage = "Enter a valid email address and domain extension.")]
         public string Email { get; set; } = string.Empty;
 
         [Required]
