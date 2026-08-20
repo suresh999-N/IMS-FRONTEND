@@ -130,9 +130,23 @@ export default function Register() {
       confirmPassword: true,
     });
 
-    if (!isFormValid) {
-      const firstError = nameError || emailError || phoneError || passwordError || confirmPasswordError;
-      setError(firstError || "Complete all required fields accurately.");
+    const clientErrors = [
+      { field: 'Full Name', key: 'name', error: nameError },
+      { field: 'Email Address', key: 'email', error: emailError },
+      { field: 'Mobile Number', key: 'phoneNumber', error: phoneError },
+      { field: 'Password', key: 'password', error: passwordError },
+      { field: 'Confirm Password', key: 'confirmPassword', error: confirmPasswordError },
+    ].filter(item => Boolean(item.error));
+
+    if (clientErrors.length > 0) {
+      const fieldNames = clientErrors.map(item => item.field);
+      const detailedMessages = clientErrors.map(item => `${item.field}: ${item.error}`);
+
+      setError(
+        clientErrors.length === 1
+          ? detailedMessages[0]
+          : `Validation failed for (${fieldNames.join(", ")}): ${detailedMessages.join(" | ")}`
+      );
       return;
     }
 
@@ -158,23 +172,38 @@ export default function Register() {
           Object.entries(rawErrors).forEach(([key, val]) => {
             const msg = Array.isArray(val) ? val.join(" ") : String(val);
             if (!msg) return;
-            messages.push(msg);
+
             const lowerKey = key.toLowerCase();
-            if (lowerKey.includes("name")) fieldErrorMap.name = msg;
-            if (lowerKey.includes("email")) fieldErrorMap.email = msg;
-            if (lowerKey.includes("phone")) fieldErrorMap.phoneNumber = msg;
-            if (lowerKey.includes("password")) fieldErrorMap.password = msg;
+            let fieldLabel = key;
+            if (lowerKey.includes("name")) { fieldErrorMap.name = msg; fieldLabel = "Full Name"; }
+            else if (lowerKey.includes("email")) { fieldErrorMap.email = msg; fieldLabel = "Email Address"; }
+            else if (lowerKey.includes("phone") || lowerKey.includes("mobile")) { fieldErrorMap.phoneNumber = msg; fieldLabel = "Mobile Number"; }
+            else if (lowerKey.includes("confirmpassword")) { fieldErrorMap.confirmPassword = msg; fieldLabel = "Confirm Password"; }
+            else if (lowerKey.includes("password")) { fieldErrorMap.password = msg; fieldLabel = "Password"; }
+
+            messages.push(`${fieldLabel}: ${msg}`);
           });
         }
 
         setServerFieldErrors(fieldErrorMap);
 
-        const specificError = messages.length > 0
-          ? messages.join(" ")
-          : getAuthErrorMessage(
-              result.error || result.message,
-              "We could not create the account. Review the form and try again.",
-            );
+        const rawErrStr = String(result.error || result.message || '');
+        let specificError = messages.join(" | ");
+
+        if (!specificError) {
+          if (/email/i.test(rawErrStr)) {
+            specificError = "Email Address: Email address is already registered or invalid.";
+            setServerFieldErrors(prev => ({ ...prev, email: "Email address is already registered or invalid." }));
+          } else if (/phone|mobile/i.test(rawErrStr)) {
+            specificError = "Mobile Number: Mobile number is already registered or invalid.";
+            setServerFieldErrors(prev => ({ ...prev, phoneNumber: "Mobile number is already registered or invalid." }));
+          } else if (/password/i.test(rawErrStr)) {
+            specificError = "Password: Password does not meet security requirements.";
+            setServerFieldErrors(prev => ({ ...prev, password: "Password does not meet security requirements." }));
+          } else {
+            specificError = rawErrStr ? `Registration Error: ${rawErrStr}` : "Account creation failed. Please check the highlighted fields.";
+          }
+        }
 
         setError(specificError);
         return;
