@@ -1447,6 +1447,10 @@ function ResourceForm({
       nextValue = sanitizeNameInput(value)
     }
     updateField(name, nextValue)
+    setTouched((currentValue) => ({
+      ...currentValue,
+      [name]: true,
+    }))
   }
 
   function handleBlur(event) {

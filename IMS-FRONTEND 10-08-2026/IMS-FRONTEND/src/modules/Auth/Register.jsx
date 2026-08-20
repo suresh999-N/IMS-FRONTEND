@@ -98,6 +98,7 @@ export default function Register() {
     const { name, value } = event.target;
     setError("");
     setServerFieldErrors((prev) => ({ ...prev, [name]: "" }));
+    setTouched((prev) => ({ ...prev, [name]: true }));
     setFormData((prev) => ({
       ...prev,
       [name]:

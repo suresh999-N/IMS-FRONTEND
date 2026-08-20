@@ -70,6 +70,7 @@ export default function Login() {
     const { name, value } = event.target
     setError('')
     setServerFieldErrors((prev) => ({ ...prev, [name]: '' }))
+    setTouched((prev) => ({ ...prev, [name]: true }))
     setFormData((prev) => ({
       ...prev,
       [name]: name === 'email' ? (value.includes('@') ? sanitizeEmailInput(value) : value) : value,
