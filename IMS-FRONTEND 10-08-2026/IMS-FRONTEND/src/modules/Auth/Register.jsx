@@ -274,149 +274,157 @@ export default function Register() {
           <h2>Create Account</h2>
           <p className="sub">Create your IMS workspace account</p>
 
-          <div
-            className={`error-box auth-register-error ${error ? "is-visible" : ""}`}
-            role={error ? "alert" : undefined}
-            aria-hidden={!error}
-          >
-            {error || "\u00A0"}
-          </div>
-
-          <form onSubmit={handleSubmit} noValidate>
-            <label className="auth-login-label" htmlFor="register-name">
-              Full Name
-            </label>
-            <div className={`input-box ${nameDisplayError ? "input-box--error" : ""}`}>
-              <User size={16} />
-              <input
-                id="register-name"
-                {...nameInputProps}
-                name="name"
-                placeholder="Full name"
-                value={formData.name}
-                onChange={handleChange}
-                maxLength={50}
-                onBlur={handleBlur}
-                autoComplete="name"
-              />
+          {error && (
+            <div className="error-box auth-register-error" role="alert">
+              {error}
             </div>
-            {nameDisplayError && (
-              <span className="field-error-text">{nameDisplayError}</span>
-            )}
+          )}
 
-            <label className="auth-login-label" htmlFor="register-email">
-              Email Address
-            </label>
-            <div className={`input-box ${emailDisplayError ? "input-box--error" : ""}`}>
-              <Mail size={16} />
-              <input
-                id="register-email"
-                {...emailInputProps}
-                name="email"
-                placeholder="Email address"
-                value={formData.email}
-                onChange={handleChange}
-                onBlur={handleBlur}
-              />
+          <form onSubmit={handleSubmit} noValidate className="auth-register-form">
+            <div className="register-field-group">
+              <label className="auth-login-label" htmlFor="register-name">
+                Full Name
+              </label>
+              <div className={`input-box ${nameDisplayError ? "input-box--error" : ""}`}>
+                <User size={16} />
+                <input
+                  id="register-name"
+                  {...nameInputProps}
+                  name="name"
+                  placeholder="Full name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  maxLength={50}
+                  onBlur={handleBlur}
+                  autoComplete="name"
+                />
+              </div>
+              {nameDisplayError && (
+                <span className="field-error-text">{nameDisplayError}</span>
+              )}
             </div>
-            {emailDisplayError && (
-              <span className="field-error-text">{emailDisplayError}</span>
-            )}
 
-            <label className="auth-login-label" htmlFor="register-phone">
-              Mobile Number
-            </label>
-            <div className={`input-box ${phoneDisplayError ? "input-box--error" : ""}`}>
-              <Phone size={16} />
-              <input
-                id="register-phone"
-                {...phoneInputProps}
-                name="phoneNumber"
-                placeholder="10-digit mobile number"
-                value={formData.phoneNumber}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                autoComplete="tel"
-              />
+            <div className="register-field-group">
+              <label className="auth-login-label" htmlFor="register-email">
+                Email Address
+              </label>
+              <div className={`input-box ${emailDisplayError ? "input-box--error" : ""}`}>
+                <Mail size={16} />
+                <input
+                  id="register-email"
+                  {...emailInputProps}
+                  name="email"
+                  placeholder="Email address"
+                  value={formData.email}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+              </div>
+              {emailDisplayError && (
+                <span className="field-error-text">{emailDisplayError}</span>
+              )}
             </div>
-            {phoneDisplayError && (
-              <span className="field-error-text">{phoneDisplayError}</span>
-            )}
 
-            <label className="auth-login-label" htmlFor="register-password">
-              Password
-            </label>
-            <div className={`input-box ${passwordDisplayError ? "input-box--error" : ""}`}>
-              <LockKeyhole size={16} />
-              <input
-                id="register-password"
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                autoComplete="new-password"
-              />
-              {formData.password ? (
-                <button
-                  type="button"
-                  className="auth-login-password-toggle"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setShowPassword((current) => !current);
-                  }}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                </button>
-              ) : null}
+            <div className="register-field-group">
+              <label className="auth-login-label" htmlFor="register-phone">
+                Mobile Number
+              </label>
+              <div className={`input-box ${phoneDisplayError ? "input-box--error" : ""}`}>
+                <Phone size={16} />
+                <input
+                  id="register-phone"
+                  {...phoneInputProps}
+                  name="phoneNumber"
+                  placeholder="10-digit mobile number"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  autoComplete="tel"
+                />
+              </div>
+              {phoneDisplayError && (
+                <span className="field-error-text">{phoneDisplayError}</span>
+              )}
             </div>
-            {passwordDisplayError && (
-              <span className="field-error-text">{passwordDisplayError}</span>
-            )}
 
-            <label
-              className="auth-login-label"
-              htmlFor="register-confirm-password"
-            >
-              Confirm Password
-            </label>
-            <div className={`input-box ${confirmPasswordDisplayError ? "input-box--error" : ""}`}>
-              <LockKeyhole size={16} />
-              <input
-                id="register-confirm-password"
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                placeholder="Confirm password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                autoComplete="new-password"
-              />
-              {formData.confirmPassword ? (
-                <button
-                  type="button"
-                  className="auth-login-password-toggle"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setShowConfirmPassword((current) => !current);
-                  }}
-                  aria-label={
-                    showConfirmPassword ? "Hide password" : "Show password"
-                  }
-                  tabIndex={-1}
-                >
-                  {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                </button>
-              ) : null}
+            <div className="register-field-group">
+              <label className="auth-login-label" htmlFor="register-password">
+                Password
+              </label>
+              <div className={`input-box ${passwordDisplayError ? "input-box--error" : ""}`}>
+                <LockKeyhole size={16} />
+                <input
+                  id="register-password"
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  autoComplete="new-password"
+                />
+                {formData.password ? (
+                  <button
+                    type="button"
+                    className="auth-login-password-toggle"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowPassword((current) => !current);
+                    }}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                ) : null}
+              </div>
+              {passwordDisplayError && (
+                <span className="field-error-text">{passwordDisplayError}</span>
+              )}
             </div>
-            {confirmPasswordDisplayError && (
-              <span className="field-error-text">{confirmPasswordDisplayError}</span>
-            )}
+
+            <div className="register-field-group">
+              <label
+                className="auth-login-label"
+                htmlFor="register-confirm-password"
+              >
+                Confirm Password
+              </label>
+              <div className={`input-box ${confirmPasswordDisplayError ? "input-box--error" : ""}`}>
+                <LockKeyhole size={16} />
+                <input
+                  id="register-confirm-password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  placeholder="Confirm password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  autoComplete="new-password"
+                />
+                {formData.confirmPassword ? (
+                  <button
+                    type="button"
+                    className="auth-login-password-toggle"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowConfirmPassword((current) => !current);
+                    }}
+                    aria-label={
+                      showConfirmPassword ? "Hide password" : "Show password"
+                    }
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                ) : null}
+              </div>
+              {confirmPasswordDisplayError && (
+                <span className="field-error-text">{confirmPasswordDisplayError}</span>
+              )}
+            </div>
 
             <div className="links auth-register-login-link">
               <span>Already have an account?</span>
