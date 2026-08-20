@@ -1,4 +1,5 @@
 import { AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react'
+import { sanitizeApiError } from '../../../api/apiClient'
 
 export default function DashboardHeader({
   healthMessage,
@@ -14,11 +15,11 @@ export default function DashboardHeader({
   const isCritical = (healthTone || '').toLowerCase() === 'danger'
   const statusLabel = isLoading
     ? 'Syncing'
-    : healthMessage || (
+    : (healthMessage ? sanitizeApiError(healthMessage) : (
         isHealthy
           ? 'Operations Healthy'
           : `${lowStockCount} Low Stock ${lowStockCount === 1 ? 'Item' : 'Items'}`
-      )
+      ))
   const statusTone = isHealthy ? 'is-success' : isCritical ? 'is-danger' : 'is-warning'
 
   return (

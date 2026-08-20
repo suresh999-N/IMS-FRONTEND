@@ -12,7 +12,7 @@ import {
   Users,
 } from 'lucide-react'
 import { getDashboardData } from '../../api/businessApi'
-import { IMS_DATA_MUTATION_EVENT } from '../../api/apiClient'
+import { IMS_DATA_MUTATION_EVENT, sanitizeApiError } from '../../api/apiClient'
 import { formatCurrency, formatDate } from '../../utils/helpers'
 import ActivityTimeline from './components/ActivityTimeline'
 import BusinessInsights from './components/BusinessInsights'
@@ -326,7 +326,7 @@ export default function Dashboard() {
 
     const payload = await getDashboardData()
     setDashboard(payload)
-    setError(payload.errors?.[0] ?? '')
+    setError(sanitizeApiError(payload.errors?.[0] ?? ''))
     setIsLoading(false)
   }, [])
 
@@ -423,7 +423,7 @@ export default function Dashboard() {
       {error ? (
         <div className="dashboard-alert page-error-banner" role="alert">
           <AlertTriangle size={18} />
-          <span>{error}</span>
+          <span>{sanitizeApiError(error)}</span>
         </div>
       ) : null}
 

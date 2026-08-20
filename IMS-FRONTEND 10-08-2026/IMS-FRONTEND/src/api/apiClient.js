@@ -225,31 +225,32 @@ function getErrorMessage(payload, fallback) {
   }
  
   if (typeof payload === 'string') {
-    return payload
+    return sanitizeApiError(payload)
   }
- 
+
   const errors = readProp(payload, 'errors', 'Errors')
- 
+
   if (errors && typeof errors === 'object') {
     const firstError = Object.values(errors)
       .flat()
       .find(Boolean)
- 
+
     if (firstError) {
-      return firstError
+      return sanitizeApiError(firstError)
     }
   }
- 
-  return (
+
+  const extracted =
     readProp(payload, 'message', 'Message') ||
     readProp(payload, 'innerError', 'InnerError') ||
     readProp(payload, 'error', 'Error') ||
     readProp(payload, 'fullError', 'FullError') ||
     readProp(payload, 'title', 'Title') ||
     fallback
-  )
+
+  return sanitizeApiError(extracted)
 }
- 
+
 function getStatusErrorMessage(status, payload) {
   const fallbackByStatus = {
     400: 'The request could not be completed. Review the form and try again.',
@@ -262,49 +263,59 @@ function getStatusErrorMessage(status, payload) {
     503: 'Unable to connect to the server.',
     504: 'Unable to connect to the server.',
   }
- 
+
   const message = getErrorMessage(payload, fallbackByStatus[status] || 'The request could not be completed. Please try again.')
- 
+
   return sanitizeApiError(message, status)
 }
- 
+
 export function sanitizeApiError(message, status = 0) {
   const rawMessage = String(message || '').trim()
- 
+
   if (!rawMessage) {
     return status >= 500 || status === 0
       ? 'Unable to connect to the server.'
       : 'The request could not be completed. Please try again.'
   }
- 
-  // Detect HTML or ngrok error/tunnel details and return a clean generic error instead of technical/infra details
-  if (
-    /<[a-z][\s\S]*>/i.test(rawMessage) ||
-    rawMessage.toLowerCase().includes('<!doctype html') ||
-    rawMessage.toLowerCase().includes('ngrok') ||
-    rawMessage.toLowerCase().includes('tunnel') ||
-    rawMessage.toLowerCase().includes('502 bad gateway') ||
-    rawMessage.toLowerCase().includes('err_ngrok_')
-  ) {
+
+  const lower = rawMessage.toLowerCase()
+
+  // Detect HTML/XML tags, DOCTYPE, ngrok error codes/domains, localhost, ports, tunnels, or proxy/infrastructure details
+  const isInfraError =
+    /<[a-z!][\s\S]*>/i.test(rawMessage) ||
+    lower.includes('<!doctype') ||
+    lower.includes('ngrok') ||
+    lower.includes('err_ngrok') ||
+    lower.includes('tunnel') ||
+    lower.includes('localhost') ||
+    lower.includes('127.0.0.1') ||
+    lower.includes('0.0.0.0') ||
+    lower.includes('upstream') ||
+    lower.includes('bad gateway') ||
+    lower.includes('gateway timeout') ||
+    lower.includes('service unavailable') ||
+    lower.includes('connection refused') ||
+    lower.includes('econnrefused') ||
+    lower.includes('etimedout') ||
+    /:\d{4,5}\b/.test(rawMessage) ||
+    /vite_api_base_url|backend server|ims api|failed to fetch|networkerror|load failed/i.test(rawMessage)
+
+  if (isInfraError) {
     return 'Unable to connect to the server.'
   }
- 
-  if (/vite_api_base_url|backend server|ims api|failed to fetch|networkerror|load failed/i.test(rawMessage)) {
-    return 'Unable to connect to the server.'
-  }
- 
+
   if (/timeout|aborted/i.test(rawMessage)) {
     return 'Unable to connect to the server.'
   }
- 
+
   if (/stack trace|exception|system\.|microsoft\.|sql|database|unknown column|unknown table|mysql|syntax near|nullable object|object reference/i.test(rawMessage)) {
     return 'We are having trouble completing this request right now.'
   }
- 
+
   if (/request failed with status/i.test(rawMessage)) {
     return 'The request could not be completed. Please try again.'
   }
- 
+
   return rawMessage
 }
  

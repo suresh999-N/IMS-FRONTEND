@@ -1,4 +1,4 @@
-import { apiRequest, buildApiHeaders, buildUrl, getResponseData, getResponseList } from './apiClient'
+import { apiRequest, buildApiHeaders, buildUrl, getResponseData, getResponseList, sanitizeApiError } from './apiClient'
 import { API_ENDPOINTS } from './endpoints'
 import { getCustomers } from './customersApi'
 import { getProductCatalog } from './productApi'
@@ -785,7 +785,10 @@ export function normalizeDashboardPayload(responses) {
       description: text(item?.description ?? item?.Description),
       date: text(item?.date ?? item?.Date ?? item?.createdAt ?? item?.CreatedAt ?? item?.created_at),
     })) : [],
-    errors: responses.filter((response) => !response.success && response.status !== 403).map((response) => response.error).filter(Boolean),
+    errors: responses
+      .filter((response) => !response.success && response.status !== 403)
+      .map((response) => sanitizeApiError(response.error || response.message))
+      .filter(Boolean),
   }
 }
 
