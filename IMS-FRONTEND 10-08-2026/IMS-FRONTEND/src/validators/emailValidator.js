@@ -19,14 +19,23 @@ function stripUnsafeText(value) {
 
 function hasGibberishLocalPart(localPart) {
   const clean = localPart.toLowerCase().replace(/[^a-z]/g, '')
-  if (clean.length > 8) {
+
+  // Reject local part with 5 or more consecutive consonants (e.g. asjfhsjk, sjfhsjk)
+  if (/[bcdfghjklmnpqrstvwxyz]{5,}/.test(clean)) {
+    return true
+  }
+
+  // Reject long local part with zero vowels
+  if (clean.length >= 6) {
     const vowels = clean.match(/[aeiou]/g)
     if (!vowels || vowels.length === 0) {
       return true
     }
-    if (/[bcdfghjklmnpqrstvwxyz]{8,}/.test(clean)) {
-      return true
-    }
+  }
+
+  // Reject random letter mash followed by 4+ digits (e.g. asjfhsjk321455, hfkjdhf321455)
+  if (/[a-z]{4,}\d{4,}/.test(localPart.toLowerCase())) {
+    return true
   }
 
   const lower = localPart.toLowerCase()
@@ -105,6 +114,11 @@ export function getEmailError(value, options = {}) {
 
   if (!/^[a-z]+$/.test(tld)) {
     return 'Email domain extension must contain only letters.'
+  }
+
+  const domainName = domainParts.slice(0, -1).join('')
+  if (hasGibberishLocalPart(domainName)) {
+    return 'Enter a valid email domain name.'
   }
 
   const DOMAIN_REGEX = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*\.[a-z]{2,24}$/i
