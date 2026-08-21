@@ -281,14 +281,27 @@ function ChangePassword({ settingsData, onClose }) {
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-    setPasswordData((previousData) => ({
-      ...previousData,
+    const updatedData = {
+      ...passwordData,
       [name]: value,
-    }));
+    };
+
+    setPasswordData(updatedData);
+
+    let confirmError = "";
+    if (updatedData.confirmPassword) {
+      if (updatedData.newPassword !== updatedData.confirmPassword) {
+        confirmError = p.mismatch;
+      }
+    }
 
     setErrors((previousErrors) => ({
       ...previousErrors,
       [name]: "",
+      confirmPassword:
+        name === "newPassword" || name === "confirmPassword"
+          ? confirmError
+          : previousErrors.confirmPassword,
     }));
 
     setApiError("");
@@ -311,7 +324,7 @@ function ChangePassword({ settingsData, onClose }) {
       newErrors.newPassword = p.lowercase;
     } else if (!/[0-9]/.test(passwordData.newPassword)) {
       newErrors.newPassword = p.number;
-    } else if (!/[!@#$%^&*]/.test(passwordData.newPassword)) {
+    } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(passwordData.newPassword)) {
       newErrors.newPassword = p.special;
     }
 
@@ -441,7 +454,7 @@ function ChangePassword({ settingsData, onClose }) {
                   disabled={saving}
                   tabIndex={-1}
                 >
-                  {showCurrentPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  {showCurrentPassword ? <Eye size={17} /> : <EyeOff size={17} />}
                 </button>
               </div>
               {errors.currentPassword && <small>{errors.currentPassword}</small>}
@@ -464,13 +477,17 @@ function ChangePassword({ settingsData, onClose }) {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    setShowNewPassword((prev) => !prev);
+                    setShowNewPassword((prev) => {
+                      const next = !prev;
+                      setShowConfirmPassword(next);
+                      return next;
+                    });
                   }}
                   aria-label={showNewPassword ? "Hide password" : "Show password"}
                   disabled={saving}
                   tabIndex={-1}
                 >
-                  {showNewPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  {showNewPassword ? <Eye size={17} /> : <EyeOff size={17} />}
                 </button>
               </div>
               {errors.newPassword && <small>{errors.newPassword}</small>}
@@ -499,7 +516,7 @@ function ChangePassword({ settingsData, onClose }) {
                   disabled={saving}
                   tabIndex={-1}
                 >
-                  {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  {showConfirmPassword ? <Eye size={17} /> : <EyeOff size={17} />}
                 </button>
               </div>
               {errors.confirmPassword && <small>{errors.confirmPassword}</small>}

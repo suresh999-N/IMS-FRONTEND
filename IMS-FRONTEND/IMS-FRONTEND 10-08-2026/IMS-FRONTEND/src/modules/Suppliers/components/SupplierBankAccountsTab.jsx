@@ -395,7 +395,7 @@ export default function SupplierBankAccountsTab({
                             aria-label={`${isAccountRevealed ? 'Hide' : 'Show'} account number ${index + 1}`}
                             disabled={readOnly}
                           >
-                            {isAccountRevealed ? <EyeOff size={14} /> : <Eye size={14} />}
+                            {isAccountRevealed ? <Eye size={14} /> : <EyeOff size={14} />}
                           </button>
                         ) : null
                       }

@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
+
 export default function InputField({
   id,
   label,
@@ -19,11 +22,39 @@ export default function InputField({
   iconLabel,
   ...props
 }) {
+  const [showPassword, setShowPassword] = useState(false)
+  const isPasswordField = type === 'password' || name === 'password' || name === 'confirmPassword' || name === 'newPassword' || name === 'currentPassword'
+  const computedInputType = isPasswordField ? (showPassword ? 'text' : 'password') : type
+
   const isTextarea = Boolean(textarea)
   const describedBy = [
     helperText ? `${id}-help` : '',
     error ? `${id}-error` : '',
   ].filter(Boolean).join(' ') || undefined
+
+  const hasValue = value !== undefined && value !== null && String(value).length > 0
+
+  const renderTrailingAction = () => {
+    if (trailingAction) {
+      return trailingAction
+    }
+    if (isPasswordField && hasValue) {
+      const ToggleIcon = showPassword ? Eye : EyeOff
+      return (
+        <button
+          type="button"
+          className="input-icon-button input-icon-button--password"
+          onClick={() => setShowPassword((prev) => !prev)}
+          aria-label={showPassword ? 'Hide password' : 'Show password'}
+          title={showPassword ? 'Hide password' : 'Show password'}
+          tabIndex={-1}
+        >
+          <ToggleIcon size={18} />
+        </button>
+      )
+    }
+    return null
+  }
 
   return (
     <div className={`field ${error ? 'field--error' : ''} ${className}`.trim()}>
@@ -66,7 +97,7 @@ export default function InputField({
           <input
             id={id}
             name={name}
-            type={type}
+            type={computedInputType}
             value={value}
             placeholder={placeholder}
             onChange={onChange}
@@ -77,7 +108,7 @@ export default function InputField({
             {...props}
           />
         )}
-        {!textarea && trailingAction ? trailingAction : null}
+        {!textarea ? renderTrailingAction() : null}
       </div>
       {helperText && !error ? (
         <span id={`${id}-help`} className="field-help">

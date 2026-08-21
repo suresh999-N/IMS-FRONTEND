@@ -15,6 +15,7 @@ import { apiRequest } from '../../api/apiClient'
 import { API_ENDPOINTS } from '../../api/endpoints'
 import loginLeftPanel from '../../assets/auth/login-left-panel.png'
 import { getAuthErrorMessage } from './authCopy'
+import { getPasswordError } from '../../validators/passwordValidator'
 import './Auth.css'
 
 export default function ResetPassword() {
@@ -42,12 +43,7 @@ export default function ResetPassword() {
     otpError = 'Enter the 6-digit code.'
   }
 
-  let passwordError = ''
-  if (!password) {
-    passwordError = 'Password is required.'
-  } else if (password.length < 8) {
-    passwordError = 'Use at least 8 characters.'
-  }
+  const passwordError = getPasswordError(password)
 
   let confirmPasswordError = ''
   if (!confirmPassword) {
@@ -58,7 +54,7 @@ export default function ResetPassword() {
 
   const otpDisplayError = touched.otp && otpError
   const passwordDisplayError = touched.password && passwordError
-  const confirmPasswordDisplayError = touched.confirmPassword && confirmPasswordError
+  const confirmPasswordDisplayError = (touched.confirmPassword || Boolean(confirmPassword)) && confirmPasswordError
 
   const isFormValid = !otpError && !passwordError && !confirmPasswordError
 
@@ -184,12 +180,16 @@ export default function ResetPassword() {
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  setShowPassword((prev) => !prev)
+                  setShowPassword((prev) => {
+                    const next = !prev
+                    setShowConfirmPassword(next)
+                    return next
+                  })
                 }}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                 tabIndex={-1}
               >
-                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                {showPassword ? <Eye size={17} /> : <EyeOff size={17} />}
               </button>
             </div>
             {passwordDisplayError && (
@@ -214,12 +214,16 @@ export default function ResetPassword() {
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  setShowConfirmPassword((prev) => !prev)
+                  setShowConfirmPassword((prev) => {
+                    const next = !prev
+                    setShowPassword(next)
+                    return next
+                  })
                 }}
                 aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                 tabIndex={-1}
               >
-                {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                {showConfirmPassword ? <Eye size={17} /> : <EyeOff size={17} />}
               </button>
             </div>
             {confirmPasswordDisplayError && (

@@ -33,18 +33,10 @@ import {
   phoneInputProps,
   sanitizePhoneInput,
 } from "../../validators/phoneValidator";
+import { getPasswordError } from "../../validators/passwordValidator";
 import { useAuth } from "../../hooks/useAuth";
 import { getAuthErrorMessage } from "./authCopy";
 import "./Auth.css";
-
-export function getPasswordError(password) {
-  if (!password) return "Password is required.";
-  if (password.length < 8) return "Password must be at least 8 characters.";
-  if (!/[A-Z]/.test(password)) return "Password must include at least one uppercase letter.";
-  if (!/[a-z]/.test(password)) return "Password must include at least one lowercase letter.";
-  if (!/[0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) return "Password must include at least one number or symbol.";
-  return "";
-}
 
 export function getConfirmPasswordError(password, confirmPassword) {
   if (!confirmPassword) return "Confirm password is required.";
@@ -94,14 +86,11 @@ export default function Register() {
     !passwordError &&
     !confirmPasswordError;
 
-  const isFormCompletelyEmpty = Object.values(formData).every(
-    (value) => value.trim() === "",
-  );
-
   function handleChange(event) {
     const { name, value } = event.target;
     setError("");
     setServerFieldErrors((prev) => ({ ...prev, [name]: "" }));
+    setTouched((prev) => ({ ...prev, [name]: true }));
     setFormData((prev) => ({
       ...prev,
       [name]:
@@ -133,20 +122,22 @@ export default function Register() {
       confirmPassword: true,
     });
 
-    if (!isFormValid) {
-      const validationErrors = [
-        nameError,
-        emailError,
-        phoneError,
-        passwordError,
-        confirmPasswordError,
-      ].filter(Boolean);
+    const clientErrors = [
+      { field: 'Full Name', key: 'name', error: nameError },
+      { field: 'Email Address', key: 'email', error: emailError },
+      { field: 'Mobile Number', key: 'phoneNumber', error: phoneError },
+      { field: 'Password', key: 'password', error: passwordError },
+      { field: 'Confirm Password', key: 'confirmPassword', error: confirmPasswordError },
+    ].filter(item => Boolean(item.error));
+
+    if (clientErrors.length > 0) {
+      const fieldNames = clientErrors.map(item => item.field);
+      const detailedMessages = clientErrors.map(item => `${item.field}: ${item.error}`);
+
       setError(
-        isFormCompletelyEmpty
-          ? "Please fill in all required fields."
-          : validationErrors.length === 1
-            ? validationErrors[0]
-            : "Please correct the highlighted fields.",
+        clientErrors.length === 1
+          ? `Please fix ${clientErrors[0].field}: ${clientErrors[0].error}`
+          : `Please check the highlighted fields: ${fieldNames.join(", ")}.`
       );
       return;
     }
@@ -173,23 +164,38 @@ export default function Register() {
           Object.entries(rawErrors).forEach(([key, val]) => {
             const msg = Array.isArray(val) ? val.join(" ") : String(val);
             if (!msg) return;
-            messages.push(msg);
+
             const lowerKey = key.toLowerCase();
-            if (lowerKey.includes("name")) fieldErrorMap.name = msg;
-            if (lowerKey.includes("email")) fieldErrorMap.email = msg;
-            if (lowerKey.includes("phone")) fieldErrorMap.phoneNumber = msg;
-            if (lowerKey.includes("password")) fieldErrorMap.password = msg;
+            let fieldLabel = key;
+            if (lowerKey.includes("name")) { fieldErrorMap.name = msg; fieldLabel = "Full Name"; }
+            else if (lowerKey.includes("email")) { fieldErrorMap.email = msg; fieldLabel = "Email Address"; }
+            else if (lowerKey.includes("phone") || lowerKey.includes("mobile")) { fieldErrorMap.phoneNumber = msg; fieldLabel = "Mobile Number"; }
+            else if (lowerKey.includes("confirmpassword")) { fieldErrorMap.confirmPassword = msg; fieldLabel = "Confirm Password"; }
+            else if (lowerKey.includes("password")) { fieldErrorMap.password = msg; fieldLabel = "Password"; }
+
+            messages.push(`${fieldLabel}: ${msg}`);
           });
         }
 
         setServerFieldErrors(fieldErrorMap);
 
-        const specificError = messages.length > 0
-          ? messages.join(" ")
-          : getAuthErrorMessage(
-              result.error || result.message,
-              "We could not create the account. Review the form and try again.",
-            );
+        const rawErrStr = String(result.error || result.message || '');
+        let specificError = messages.join(" | ");
+
+        if (!specificError) {
+          if (/email/i.test(rawErrStr)) {
+            specificError = "Email Address: Email address is already registered or invalid.";
+            setServerFieldErrors(prev => ({ ...prev, email: "Email address is already registered or invalid." }));
+          } else if (/phone|mobile/i.test(rawErrStr)) {
+            specificError = "Mobile Number: Mobile number is already registered or invalid.";
+            setServerFieldErrors(prev => ({ ...prev, phoneNumber: "Mobile number is already registered or invalid." }));
+          } else if (/password/i.test(rawErrStr)) {
+            specificError = "Password: Password does not meet security requirements.";
+            setServerFieldErrors(prev => ({ ...prev, password: "Password does not meet security requirements." }));
+          } else {
+            specificError = rawErrStr ? `Registration Error: ${rawErrStr}` : "Account creation failed. Please check the highlighted fields.";
+          }
+        }
 
         setError(specificError);
         return;
@@ -216,11 +222,12 @@ export default function Register() {
     }
   }
 
-  const nameFieldError = serverFieldErrors.name || (touched.name && nameError);
-  const emailFieldError = serverFieldErrors.email || (touched.email && emailError);
-  const phoneFieldError = serverFieldErrors.phoneNumber || (touched.phoneNumber && phoneError);
-  const passwordFieldError = serverFieldErrors.password || (touched.password && passwordError);
-  const confirmPasswordFieldError = touched.confirmPassword && confirmPasswordError;
+  const nameDisplayError = serverFieldErrors.name || (touched.name && nameError);
+  const emailDisplayError = serverFieldErrors.email || (touched.email && emailError);
+  const phoneDisplayError = serverFieldErrors.phoneNumber || (touched.phoneNumber && phoneError);
+  const passwordDisplayError = serverFieldErrors.password || (touched.password && passwordError);
+  const confirmPasswordDisplayError =
+    (touched.confirmPassword || Boolean(formData.confirmPassword)) && confirmPasswordError;
 
   return (
     <div
@@ -261,22 +268,24 @@ export default function Register() {
 
       <div className="auth-right-panel">
         <div className="login-card">
+          <div className="auth-login-lock" aria-hidden="true">
+            <UserPlus size={29} />
+          </div>
           <h2>Create Account</h2>
+          <p className="sub">Create your IMS workspace account</p>
 
-          <p
-            className={`auth-register-error ${error ? "is-visible" : ""}`}
-            role={error ? "alert" : undefined}
-            aria-hidden={!error}
-          >
-            {error || "\u00A0"}
-          </p>
+          {error && (
+            <div className="error-box auth-register-error" role="alert">
+              {error}
+            </div>
+          )}
 
-          <form onSubmit={handleSubmit} noValidate>
-            <div className="auth-register-field">
+          <form onSubmit={handleSubmit} noValidate className="auth-register-form">
+            <div className="register-field-group">
               <label className="auth-login-label" htmlFor="register-name">
                 Full Name
               </label>
-              <div className={`input-box ${nameFieldError ? "input-box--error" : ""}`}>
+              <div className={`input-box ${nameDisplayError ? "input-box--error" : ""}`}>
                 <User size={16} />
                 <input
                   id="register-name"
@@ -290,13 +299,16 @@ export default function Register() {
                   autoComplete="name"
                 />
               </div>
+              {nameDisplayError && (
+                <span className="field-error-text">{nameDisplayError}</span>
+              )}
             </div>
 
-            <div className="auth-register-field">
+            <div className="register-field-group">
               <label className="auth-login-label" htmlFor="register-email">
                 Email Address
               </label>
-              <div className={`input-box ${emailFieldError ? "input-box--error" : ""}`}>
+              <div className={`input-box ${emailDisplayError ? "input-box--error" : ""}`}>
                 <Mail size={16} />
                 <input
                   id="register-email"
@@ -308,13 +320,16 @@ export default function Register() {
                   onBlur={handleBlur}
                 />
               </div>
+              {emailDisplayError && (
+                <span className="field-error-text">{emailDisplayError}</span>
+              )}
             </div>
 
-            <div className="auth-register-field">
+            <div className="register-field-group">
               <label className="auth-login-label" htmlFor="register-phone">
                 Mobile Number
               </label>
-              <div className={`input-box ${phoneFieldError ? "input-box--error" : ""}`}>
+              <div className={`input-box ${phoneDisplayError ? "input-box--error" : ""}`}>
                 <Phone size={16} />
                 <input
                   id="register-phone"
@@ -327,13 +342,16 @@ export default function Register() {
                   autoComplete="tel"
                 />
               </div>
+              {phoneDisplayError && (
+                <span className="field-error-text">{phoneDisplayError}</span>
+              )}
             </div>
 
-            <div className="auth-register-field">
+            <div className="register-field-group">
               <label className="auth-login-label" htmlFor="register-password">
                 Password
               </label>
-              <div className={`input-box ${passwordFieldError ? "input-box--error" : ""}`}>
+              <div className={`input-box ${passwordDisplayError ? "input-box--error" : ""}`}>
                 <LockKeyhole size={16} />
                 <input
                   id="register-password"
@@ -345,30 +363,35 @@ export default function Register() {
                   onBlur={handleBlur}
                   autoComplete="new-password"
                 />
-                <button
-                  type="button"
-                  className="auth-login-password-toggle"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setShowPassword((current) => !current);
-                  }}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                </button>
+                {formData.password ? (
+                  <button
+                    type="button"
+                    className="auth-login-password-toggle"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowPassword((current) => !current);
+                    }}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <Eye size={17} /> : <EyeOff size={17} />}
+                  </button>
+                ) : null}
               </div>
+              {passwordDisplayError && (
+                <span className="field-error-text">{passwordDisplayError}</span>
+              )}
             </div>
 
-            <div className="auth-register-field">
+            <div className="register-field-group">
               <label
                 className="auth-login-label"
                 htmlFor="register-confirm-password"
               >
                 Confirm Password
               </label>
-              <div className={`input-box ${confirmPasswordFieldError ? "input-box--error" : ""}`}>
+              <div className={`input-box ${confirmPasswordDisplayError ? "input-box--error" : ""}`}>
                 <LockKeyhole size={16} />
                 <input
                   id="register-confirm-password"
@@ -380,22 +403,27 @@ export default function Register() {
                   onBlur={handleBlur}
                   autoComplete="new-password"
                 />
-                <button
-                  type="button"
-                  className="auth-login-password-toggle"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setShowConfirmPassword((current) => !current);
-                  }}
-                  aria-label={
-                    showConfirmPassword ? "Hide password" : "Show password"
-                  }
-                  tabIndex={-1}
-                >
-                  {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                </button>
+                {formData.confirmPassword ? (
+                  <button
+                    type="button"
+                    className="auth-login-password-toggle"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowConfirmPassword((current) => !current);
+                    }}
+                    aria-label={
+                      showConfirmPassword ? "Hide password" : "Show password"
+                    }
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? <Eye size={17} /> : <EyeOff size={17} />}
+                  </button>
+                ) : null}
               </div>
+              {confirmPasswordDisplayError && (
+                <span className="field-error-text">{confirmPasswordDisplayError}</span>
+              )}
             </div>
 
             <div className="links auth-register-login-link">
