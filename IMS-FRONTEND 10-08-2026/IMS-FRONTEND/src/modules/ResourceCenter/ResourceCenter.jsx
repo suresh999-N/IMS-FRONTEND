@@ -3430,8 +3430,32 @@ function ResourcePage({ config, navigationContent = null }) {
                 {columns
                   .filter((col) => col.key !== 'actions')
                   .map((col) => {
+                    if (col.key === 'isActive') {
+                      const activeVal = readResourceValue(viewingRecord, 'isActive')
+                      const isActive = activeVal === true || String(activeVal).toLowerCase() === 'true' || activeVal === 1
+                      return (
+                        <div className="purchase-details__item" key={col.key}>
+                          <span className="purchase-details__label">{col.label}</span>
+                          <span className="purchase-details__value">
+                            <StatusBadge type={isActive ? 'success' : 'danger'}>
+                              {isActive ? 'Active' : 'Inactive'}
+                            </StatusBadge>
+                          </span>
+                        </div>
+                      )
+                    }
+
                     const val = readResourceValue(viewingRecord, col.key, '')
                     let displayVal = typeof col.render === 'function' ? col.render(viewingRecord, referenceData) : val
+
+                    if (col.key === 'role' || col.key === 'roleName') {
+                      if (typeof displayVal === 'object' && displayVal !== null) {
+                        displayVal = displayVal.roleName || displayVal.name || displayVal.title || displayVal.role || 'N/A'
+                      } else if (!displayVal && typeof val === 'object' && val !== null) {
+                        displayVal = val.roleName || val.name || val.title || val.role || 'N/A'
+                      }
+                    }
+
                     if (col.format === 'currency' || col.key === 'price') {
                       displayVal = formatCurrency(val)
                     } else if (col.format === 'date' || col.key?.toLowerCase().includes('date')) {

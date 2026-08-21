@@ -3513,19 +3513,48 @@ function ResourcePage({ config, navigationContent = null }) {
                   {isUsersPage ? (viewingRecord.email || 'Staff Account') : isRolesPage ? 'Role Definition & Authorization' : (config.subtitle || 'Resource Record')}
                 </p>
               </div>
-              {viewingRecord.isActive !== undefined ? (
-                <StatusBadge type={viewingRecord.isActive === true || viewingRecord.isActive === 'true' ? 'success' : 'danger'}>
-                  {viewingRecord.isActive === true || viewingRecord.isActive === 'true' ? 'Active' : 'Inactive'}
-                </StatusBadge>
-              ) : null}
+              {(() => {
+                const heroActive = readResourceValue(viewingRecord, 'isActive')
+                if (heroActive === undefined) return null
+                const isHeroActive = heroActive === true || String(heroActive).toLowerCase() === 'true' || heroActive === 1
+                return (
+                  <StatusBadge type={isHeroActive ? 'success' : 'danger'}>
+                    {isHeroActive ? 'Active' : 'Inactive'}
+                  </StatusBadge>
+                )
+              })()}
             </div>
 
             <div className="admin-details-grid">
               {columns
                 .filter((col) => col.key !== 'actions')
                 .map((col) => {
+                  if (col.key === 'isActive') {
+                    const activeVal = readResourceValue(viewingRecord, 'isActive')
+                    const isActive = activeVal === true || String(activeVal).toLowerCase() === 'true' || activeVal === 1
+                    return (
+                      <div className="admin-details-item" key={col.key}>
+                        <span className="admin-details-label">{col.label}</span>
+                        <div className="admin-details-value">
+                          <StatusBadge type={isActive ? 'success' : 'danger'}>
+                            {isActive ? 'Active' : 'Inactive'}
+                          </StatusBadge>
+                        </div>
+                      </div>
+                    )
+                  }
+
                   const val = readResourceValue(viewingRecord, col.key, '')
                   let displayVal = typeof col.render === 'function' ? col.render(viewingRecord, referenceData) : val
+
+                  if (col.key === 'role' || col.key === 'roleName') {
+                    if (typeof displayVal === 'object' && displayVal !== null) {
+                      displayVal = displayVal.roleName || displayVal.name || displayVal.title || displayVal.role || 'N/A'
+                    } else if (!displayVal && typeof val === 'object' && val !== null) {
+                      displayVal = val.roleName || val.name || val.title || val.role || 'N/A'
+                    }
+                  }
+
                   if (typeof displayVal !== 'object' && displayVal !== null && displayVal !== undefined) {
                     if (col.format === 'currency' || col.key === 'price') {
                       displayVal = formatCurrency(Number(displayVal || 0))
@@ -3538,7 +3567,8 @@ function ResourcePage({ config, navigationContent = null }) {
                         </StatusBadge>
                       )
                     } else if (col.format === 'boolean') {
-                      displayVal = val === true || String(val).toLowerCase() === 'true' || displayVal === 'Yes' || displayVal === true || String(displayVal).toLowerCase() === 'true' ? 'Yes' : 'No'
+                      const boolVal = val === true || String(val).toLowerCase() === 'true' || displayVal === 'Yes' || displayVal === true || String(displayVal).toLowerCase() === 'true'
+                      displayVal = boolVal ? 'Yes' : 'No'
                     }
                   }
                   return (
