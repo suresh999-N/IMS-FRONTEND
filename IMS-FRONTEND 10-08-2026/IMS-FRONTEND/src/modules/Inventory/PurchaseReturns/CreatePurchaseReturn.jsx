@@ -14,7 +14,7 @@ import {
   getPurchaseReturnErrorMessage,
 } from '../../../api/purchaseReturnsApi'
 import '../../POS/Sales/Sales.css'
-import '../../POS/ReturnsDamage/SalesReturns.css'
+import '../../POS/SalesReturns/SalesReturns.css'
 import './CreatePurchaseReturn.css'
 
 export default function CreatePurchaseReturn() {

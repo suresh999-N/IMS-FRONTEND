@@ -26,7 +26,7 @@ import { ActionMenu, DataTable, FilterBar, StatusBadge } from '../../../componen
 import { showToast } from '../../../components/common/toast'
 import { formatCurrency, formatDate } from '../../../utils/helpers'
 import '../../POS/Sales/Sales.css'
-import '../../POS/ReturnsDamage/SalesReturns.css'
+import '../../POS/SalesReturns/SalesReturns.css'
 import './PurchaseReturns.css'
 
 function getReturnRowKey(r) {
