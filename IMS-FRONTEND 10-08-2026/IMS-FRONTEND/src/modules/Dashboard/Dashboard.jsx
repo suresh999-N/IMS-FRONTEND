@@ -441,7 +441,9 @@ export default function Dashboard() {
       ) : error ? (
         <div className="dashboard-alert page-error-banner" role="alert">
           <AlertTriangle size={18} className="dashboard-alert__icon" />
-          <span>{sanitizeApiError(error)}</span>
+          <div className="dashboard-alert__content">
+            <span>{sanitizeApiError(error)}</span>
+          </div>
         </div>
       ) : null}
 

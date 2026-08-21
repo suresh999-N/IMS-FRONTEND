@@ -208,6 +208,15 @@ export default function AppRoutes({ data, actions }) {
           <Route path="/inventory/purchase-returns/create" element={withRouteSuspense(<CreatePurchaseReturn data={data} actions={actions} onSavePurchaseReturn={actions?.savePurchaseReturn} />)} />
           <Route path="/inventory/purchase-returns/edit/:id" element={withRouteSuspense(<CreatePurchaseReturn mode="edit" data={data} actions={actions} onSavePurchaseReturn={actions?.savePurchaseReturn} />)} />
           <Route path="/inventory/purchase-returns/:id" element={withRouteSuspense(<PurchaseReturnDetails data={data} actions={actions} />)} />
+
+          {/* Purchase Returns Alias Routes */}
+          <Route path="/purchase-returns" element={<Navigate to="/inventory/purchase-returns" replace />} />
+          <Route path="/purchase-returns/create" element={<Navigate to="/inventory/purchase-returns/create" replace />} />
+          <Route path="/purchase-returns/returns" element={<Navigate to="/inventory/purchase-returns" replace />} />
+          <Route path="/purchase-returns/returns/create" element={<Navigate to="/inventory/purchase-returns/create" replace />} />
+          <Route path="/purchase-returns/returns/:id" element={<Navigate to="/inventory/purchase-returns/:id" replace />} />
+          <Route path="/purchase-returns/returns/:id/edit" element={<Navigate to="/inventory/purchase-returns/edit/:id" replace />} />
+          <Route path="/purchase-returns/edit/:id" element={<Navigate to="/inventory/purchase-returns/edit/:id" replace />} />
           <Route
             path="/inventory/purchases/:purchaseOrderId?"
             element={withRouteSuspense(

@@ -39,7 +39,7 @@ export default function InputField({
       return trailingAction
     }
     if (isPasswordField && hasValue) {
-      const ToggleIcon = showPassword ? EyeOff : Eye
+      const ToggleIcon = showPassword ? Eye : EyeOff
       return (
         <button
           type="button"

@@ -362,6 +362,7 @@ export const NAV_ITEMS = [
     key: 'purchaseReturns',
     label: 'Purchase Returns',
     path: '/inventory/purchase-returns',
+    aliases: ['/purchase-returns', '/purchase-returns/returns', '/purchase-returns/create', '/purchase-returns/returns/create'],
     icon: RotateCcw,
     category: 'inventory',
   },

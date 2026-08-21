@@ -253,7 +253,7 @@ export default function CreatePurchaseReturn() {
         title: 'Purchase Return Saved',
         message: `${response.data.returnNumber || 'PR'} saved successfully!`,
       })
-      navigate('/purchase-returns/returns')
+      navigate('/inventory/purchase-returns')
     } else {
       showToast({
         type: 'error',
@@ -268,7 +268,7 @@ export default function CreatePurchaseReturn() {
       {/* Clean Compact Header */}
       <header className="sales-page__compact-header" style={{ marginBottom: '0.25rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <Link to="/purchase-returns/returns" className="button button-secondary" style={{ minHeight: '34px', padding: '0 0.65rem' }} title="Back to Purchase Returns">
+          <Link to="/inventory/purchase-returns" className="button button-secondary" style={{ minHeight: '34px', padding: '0 0.65rem' }} title="Back to Purchase Returns">
             <ArrowLeft size={16} />
           </Link>
           <div>
@@ -282,7 +282,7 @@ export default function CreatePurchaseReturn() {
         </div>
 
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <Link className="button button-secondary" to="/purchase-returns/returns">
+          <Link className="button button-secondary" to="/inventory/purchase-returns">
             Cancel
           </Link>
           <button
@@ -555,7 +555,7 @@ export default function CreatePurchaseReturn() {
         </div>
 
         <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb', display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-          <Link className="button button-secondary" to="/purchase-returns/returns">
+          <Link className="button button-secondary" to="/inventory/purchase-returns">
             Cancel
           </Link>
           <button

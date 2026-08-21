@@ -219,7 +219,7 @@ export default function PurchaseReturns() {
               className="catalog-page__tree-toggle"
               onClick={(e) => {
                 e.stopPropagation()
-                navigate(`/purchase-returns/returns/${id}`)
+                navigate(`/inventory/purchase-returns/${id}`)
               }}
               title="View Return Details"
             >
@@ -339,13 +339,13 @@ export default function PurchaseReturns() {
                 key: 'details',
                 label: 'View Details',
                 icon: Eye,
-                onClick: () => navigate(`/purchase-returns/returns/${id}`),
+                onClick: () => navigate(`/inventory/purchase-returns/${id}`),
               },
               st === 'Draft' ? {
                 key: 'edit',
                 label: 'Edit Draft',
                 icon: Edit,
-                onClick: () => navigate(`/purchase-returns/returns/${id}/edit`),
+                onClick: () => navigate(`/inventory/purchase-returns/edit/${id}`),
               } : null,
               st === 'Draft' ? {
                 key: 'submit',
@@ -411,7 +411,7 @@ export default function PurchaseReturns() {
           <button
             type="button"
             className="button button-primary sales-page__add-button"
-            onClick={() => navigate('/purchase-returns/create')}
+            onClick={() => navigate('/inventory/purchase-returns/create')}
           >
             <Plus size={16} />
             Create Purchase Return
