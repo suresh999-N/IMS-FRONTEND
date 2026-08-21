@@ -50,15 +50,16 @@ const Stock = lazyWithPreload(() => import('../modules/Inventory/Stock/Stock'))
 const Purchases = lazyWithPreload(() => import('../modules/Inventory/Purchases/Purchases'))
 const PurchaseIndents = lazyWithPreload(() => import('../modules/Inventory/PurchaseIndents/PurchaseIndents'))
 const CreatePurchaseIndent = lazyWithPreload(() => import('../modules/Inventory/PurchaseIndents/CreatePurchaseIndent'))
-const PurchaseReturns = lazyWithPreload(() => import('../modules/Inventory/PurchaseReturns/PurchaseReturns'))
+const PurchaseReturnsLayout = lazyWithPreload(() => import('../modules/Inventory/PurchaseReturns/PurchaseReturnsLayout'))
+const PurchaseReturnsList = lazyWithPreload(() => import('../modules/Inventory/PurchaseReturns/PurchaseReturns'))
 const CreatePurchaseReturn = lazyWithPreload(() => import('../modules/Inventory/PurchaseReturns/CreatePurchaseReturn'))
-const PurchaseReturnDetails = lazyWithPreload(() => import('../modules/Inventory/PurchaseReturns/PurchaseReturnDetails'))
+const PurchaseReturnDetails = lazyWithPreload(() => import('../modules/Inventory/PurchaseReturns/ReturnDetails'))
 const Reports = lazyWithPreload(() => import('../modules/Reports/Reports'))
 const Notifications = lazyWithPreload(() => import('../modules/Notifications/Notifications'))
 const Invoices = lazyWithPreload(() => import('../modules/Accounting/Invoices/Invoices'))
-const SalesReturns = lazyWithPreload(() => import('../modules/POS/SalesReturns/SalesReturns'))
-const CreateSalesReturn = lazyWithPreload(() => import('../modules/POS/SalesReturns/CreateSalesReturn'))
-const SalesReturnDetails = lazyWithPreload(() => import('../modules/POS/SalesReturns/SalesReturnDetails'))
+const SalesReturnsList = lazyWithPreload(() => import('../modules/POS/ReturnsDamage/SalesReturnsList'))
+const CreateSalesReturn = lazyWithPreload(() => import('../modules/POS/ReturnsDamage/CreateSalesReturn'))
+const SalesReturnDetails = lazyWithPreload(() => import('../modules/POS/ReturnsDamage/SalesReturnDetails'))
 const Sales = lazyWithPreload(() => import('../modules/POS/Sales/Sales'))
 const CreateInvoice = lazyWithPreload(() => import('../modules/POS/Sales/CreateInvoice'))
 const Suppliers = lazyWithPreload(() => import('../modules/Suppliers/Suppliers'))
@@ -204,19 +205,29 @@ export default function AppRoutes({ data, actions }) {
             )}
           />
           <Route path="/inventory/goods-receipts" element={withRouteSuspense(<GoodsReceipts />)} />
-          <Route path="/inventory/purchase-returns" element={withRouteSuspense(<PurchaseReturns data={data} actions={actions} />)} />
-          <Route path="/inventory/purchase-returns/create" element={withRouteSuspense(<CreatePurchaseReturn data={data} actions={actions} onSavePurchaseReturn={actions?.savePurchaseReturn} />)} />
-          <Route path="/inventory/purchase-returns/edit/:id" element={withRouteSuspense(<CreatePurchaseReturn mode="edit" data={data} actions={actions} onSavePurchaseReturn={actions?.savePurchaseReturn} />)} />
-          <Route path="/inventory/purchase-returns/:id" element={withRouteSuspense(<PurchaseReturnDetails data={data} actions={actions} />)} />
 
-          {/* Purchase Returns Alias Routes */}
-          <Route path="/purchase-returns" element={<Navigate to="/inventory/purchase-returns" replace />} />
-          <Route path="/purchase-returns/create" element={<Navigate to="/inventory/purchase-returns/create" replace />} />
-          <Route path="/purchase-returns/returns" element={<Navigate to="/inventory/purchase-returns" replace />} />
-          <Route path="/purchase-returns/returns/create" element={<Navigate to="/inventory/purchase-returns/create" replace />} />
-          <Route path="/purchase-returns/returns/:id" element={<Navigate to="/inventory/purchase-returns/:id" replace />} />
-          <Route path="/purchase-returns/returns/:id/edit" element={<Navigate to="/inventory/purchase-returns/edit/:id" replace />} />
-          <Route path="/purchase-returns/edit/:id" element={<Navigate to="/inventory/purchase-returns/edit/:id" replace />} />
+          {/* Purchase Returns - migrated from the old working implementation */}
+          <Route path="/inventory/purchase-returns" element={withRouteSuspense(<PurchaseReturnsLayout />)}>
+            <Route index element={<Navigate to="returns" replace />} />
+            <Route path="returns" element={withRouteSuspense(<PurchaseReturnsList />)} />
+            <Route path="returns/:returnId/edit" element={withRouteSuspense(<CreatePurchaseReturn />)} />
+            <Route path="edit/:returnId" element={withRouteSuspense(<CreatePurchaseReturn />)} />
+            <Route path="returns/:returnId" element={withRouteSuspense(<PurchaseReturnDetails />)} />
+            <Route path="create" element={withRouteSuspense(<CreatePurchaseReturn />)} />
+          </Route>
+          <Route path="/inventory/purchase-returns/create" element={withRouteSuspense(<CreatePurchaseReturn />)} />
+          <Route path="/inventory/purchase-returns/edit/:returnId" element={withRouteSuspense(<CreatePurchaseReturn />)} />
+          <Route path="/inventory/purchase-returns/:returnId" element={withRouteSuspense(<PurchaseReturnDetails />)} />
+
+          {/* Legacy working Purchase Returns URLs used by the migrated UI */}
+          <Route path="/purchase-returns" element={withRouteSuspense(<PurchaseReturnsLayout />)}>
+            <Route index element={<Navigate to="returns" replace />} />
+            <Route path="returns" element={withRouteSuspense(<PurchaseReturnsList />)} />
+            <Route path="returns/:returnId/edit" element={withRouteSuspense(<CreatePurchaseReturn />)} />
+            <Route path="edit/:returnId" element={withRouteSuspense(<CreatePurchaseReturn />)} />
+            <Route path="returns/:returnId" element={withRouteSuspense(<PurchaseReturnDetails />)} />
+            <Route path="create" element={withRouteSuspense(<CreatePurchaseReturn />)} />
+          </Route>
           <Route
             path="/inventory/purchases/:purchaseOrderId?"
             element={withRouteSuspense(
@@ -263,10 +274,11 @@ export default function AppRoutes({ data, actions }) {
           <Route path="/inventory/sales" element={<Navigate to="/pos/sales" replace />} />
           <Route path="/inventory/sales/create" element={<Navigate to="/pos/sales/create" replace />} />
 
-          <Route path="/pos/returns" element={withRouteSuspense(<SalesReturns data={data} actions={actions} />)} />
-          <Route path="/pos/returns/create" element={withRouteSuspense(<CreateSalesReturn data={data} actions={actions} onSaveSalesReturn={actions?.saveSalesReturn} />)} />
-          <Route path="/pos/returns/edit/:id" element={withRouteSuspense(<CreateSalesReturn mode="edit" data={data} actions={actions} onSaveSalesReturn={actions?.saveSalesReturn} />)} />
-          <Route path="/pos/returns/:id" element={withRouteSuspense(<SalesReturnDetails data={data} actions={actions} />)} />
+          {/* Sales Returns - migrated from the old working implementation */}
+          <Route path="/pos/returns" element={withRouteSuspense(<SalesReturnsList />)} />
+          <Route path="/pos/returns/create" element={withRouteSuspense(<CreateSalesReturn />)} />
+          <Route path="/pos/returns/edit/:returnId" element={withRouteSuspense(<CreateSalesReturn />)} />
+          <Route path="/pos/returns/:returnId" element={withRouteSuspense(<SalesReturnDetails />)} />
           <Route path="/pos/returns/returns" element={<Navigate to="/pos/returns" replace />} />
           <Route path="/extra/returns/*" element={<Navigate to="/pos/returns" replace />} />
           <Route path="/returns" element={<Navigate to="/pos/returns" replace />} />

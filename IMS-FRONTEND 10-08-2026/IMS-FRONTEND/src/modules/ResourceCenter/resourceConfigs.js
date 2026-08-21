@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import { API_ENDPOINTS } from '../../api/endpoints'
 import { readResourceValue } from '../../api/resourceApi'
-import { getToday } from '../../utils/helpers'
+import { formatName, getToday } from '../../utils/helpers'
 
 const activeStatusOptions = [
   { value: 'active', label: 'Active' },
@@ -1219,7 +1219,12 @@ export const RESOURCE_CONFIGS = {
       },
     ],
     columns: [
-      { key: 'name', label: 'Name', sortable: true },
+      {
+        key: 'name',
+        label: 'Name',
+        sortable: true,
+        render: (row) => formatName(readResourceValue(row, 'name')),
+      },
       { key: 'email', label: 'Email', sortable: true },
       { key: 'phoneNumber', label: 'Phone No', sortable: true },
       {
@@ -1229,26 +1234,16 @@ export const RESOURCE_CONFIGS = {
         sortable: true,
         render: (row) => {
           const roleValue = readResourceValue(row, 'role')
-          return String(roleValue).toLowerCase() === 'user' ? 'New Employee' : roleValue
+          const roleName = typeof roleValue === 'object' && roleValue !== null
+            ? (roleValue.roleName || roleValue.name || roleValue.title || roleValue.role || '')
+            : (roleValue || readResourceValue(row, 'roleName', ''))
+          const str = String(roleName || '').trim()
+          if (!str) return 'Not set'
+          return str.toLowerCase() === 'user' ? 'New Employee' : str
         },
       },
-      {
-        key: 'isActive',
-        label: 'Active',
-        format: 'status',
-        sortable: true,
-        render: (row) => {
-          const rawIsActive = readResourceValue(row, 'isActive', readResourceValue(row, 'status', ''))
-          const isActive =
-            rawIsActive === true ||
-            String(rawIsActive).toLowerCase() === 'true' ||
-            rawIsActive === 1 ||
-            String(rawIsActive).toLowerCase() === 'active' ||
-            String(rawIsActive).toLowerCase() === 'yes'
-
-          return isActive ? 'Active' : 'Inactive'
-        },
-      },
+      { key: 'emailVerificationStatus', label: 'Verification', format: 'status', sortable: true },
+      { key: 'isActive', label: 'Active', format: 'boolean', sortable: true },
     ],
     rowActions: [
       {

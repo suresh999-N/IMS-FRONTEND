@@ -324,17 +324,11 @@ export default function Dashboard() {
     setIsLoading(true)
     setError('')
 
-    try {
-      const payload = await getDashboardData()
-      setDashboard(payload)
-      const firstErr = payload.errors?.[0] || ''
-      setError(firstErr ? sanitizeApiError(firstErr) : '')
-    } catch (err) {
-      console.error('Failed to load dashboard:', err)
-      setError('Unable to connect to the server.')
-    } finally {
-      setIsLoading(false)
-    }
+    const payload = await getDashboardData()
+    setDashboard(payload)
+    const firstErr = payload.errors?.[0] || ''
+    setError(firstErr ? sanitizeApiError(firstErr) : '')
+    setIsLoading(false)
   }, [])
 
   useEffect(() => {
@@ -447,9 +441,7 @@ export default function Dashboard() {
       ) : error ? (
         <div className="dashboard-alert page-error-banner" role="alert">
           <AlertTriangle size={18} className="dashboard-alert__icon" />
-          <div className="dashboard-alert__content">
-            <span>{sanitizeApiError(error)}</span>
-          </div>
+          <span>{sanitizeApiError(error)}</span>
         </div>
       ) : null}
 

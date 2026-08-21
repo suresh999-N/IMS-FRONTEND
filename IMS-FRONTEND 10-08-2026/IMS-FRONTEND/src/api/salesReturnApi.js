@@ -1,4 +1,4 @@
-﻿import { apiRequest, getResponseData, getResponseList } from './apiClient'
+import { apiRequest, getResponseData, getResponseList } from './apiClient'
 import { API_ENDPOINTS } from './endpoints'
 
 /**

@@ -26,7 +26,7 @@ import { ActionMenu, DataTable, FilterBar, StatusBadge } from '../../../componen
 import { showToast } from '../../../components/common/toast'
 import { formatCurrency, formatDate } from '../../../utils/helpers'
 import '../../POS/Sales/Sales.css'
-import '../../POS/SalesReturns/SalesReturns.css'
+import '../../POS/ReturnsDamage/SalesReturns.css'
 import './PurchaseReturns.css'
 
 function getReturnRowKey(r) {
@@ -219,7 +219,7 @@ export default function PurchaseReturns() {
               className="catalog-page__tree-toggle"
               onClick={(e) => {
                 e.stopPropagation()
-                navigate(`/inventory/purchase-returns/${id}`)
+                navigate(`/purchase-returns/returns/${id}`)
               }}
               title="View Return Details"
             >
@@ -339,13 +339,13 @@ export default function PurchaseReturns() {
                 key: 'details',
                 label: 'View Details',
                 icon: Eye,
-                onClick: () => navigate(`/inventory/purchase-returns/${id}`),
+                onClick: () => navigate(`/purchase-returns/returns/${id}`),
               },
               st === 'Draft' ? {
                 key: 'edit',
                 label: 'Edit Draft',
                 icon: Edit,
-                onClick: () => navigate(`/inventory/purchase-returns/edit/${id}`),
+                onClick: () => navigate(`/purchase-returns/returns/${id}/edit`),
               } : null,
               st === 'Draft' ? {
                 key: 'submit',
@@ -411,7 +411,7 @@ export default function PurchaseReturns() {
           <button
             type="button"
             className="button button-primary sales-page__add-button"
-            onClick={() => navigate('/inventory/purchase-returns/create')}
+            onClick={() => navigate('/purchase-returns/create')}
           >
             <Plus size={16} />
             Create Purchase Return

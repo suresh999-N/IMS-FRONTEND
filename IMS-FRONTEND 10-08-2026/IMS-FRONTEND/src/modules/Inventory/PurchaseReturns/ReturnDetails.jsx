@@ -110,7 +110,7 @@ export default function ReturnDetails() {
           title: 'Purchase Return Deleted',
           message: `${record.returnNumber || `PR-${recId}`} deleted successfully.`,
         })
-        navigate('/inventory/purchase-returns')
+        navigate('../returns')
       } else {
         showToast({
           type: 'error',
@@ -192,7 +192,7 @@ export default function ReturnDetails() {
           {error || 'Purchase return record not found.'}
         </div>
         <div style={{ textAlign: 'center' }}>
-          <Link className="button button-secondary" to="/inventory/purchase-returns">
+          <Link className="button button-secondary" to="../returns">
             <ArrowLeft size={16} /> Back to Purchase Returns
           </Link>
         </div>
@@ -243,7 +243,7 @@ export default function ReturnDetails() {
       {/* 1. HEADER */}
       <header className="sales-returns-details-header">
         <div className="sales-returns-details-header-left">
-          <Link to="/inventory/purchase-returns" className="button button-secondary sales-returns-back-btn" title="Back to Purchase Returns">
+          <Link to="/purchase-returns/returns" className="button button-secondary sales-returns-back-btn" title="Back to Purchase Returns">
             <ArrowLeft size={16} />
           </Link>
           <div className="sales-returns-details-title-stack">
@@ -266,7 +266,7 @@ export default function ReturnDetails() {
 
           {status === 'Draft' && (
             <>
-              <button onClick={() => navigate(`/inventory/purchase-returns/edit/${recReturnId || recId || returnId}`)} className="button button-secondary">
+              <button onClick={() => navigate(`/purchase-returns/returns/${recReturnId || recId || returnId}/edit`)} className="button button-secondary">
                 <Edit size={15} /> Edit
               </button>
               <button disabled={actionLoading} onClick={() => handleAction(submitPurchaseReturn)} className="button button-primary">
@@ -296,7 +296,7 @@ export default function ReturnDetails() {
           )}
 
           {status === 'Rejected' && (
-            <button onClick={() => navigate(`/inventory/purchase-returns/edit/${recReturnId || recId || returnId}`)} className="button button-secondary">
+            <button onClick={() => navigate(`/purchase-returns/returns/${recReturnId || recId || returnId}/edit`)} className="button button-secondary">
               <Edit size={15} /> Edit & Resubmit
             </button>
           )}

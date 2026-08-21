@@ -1,4 +1,4 @@
-﻿import { API_ENDPOINTS } from './endpoints'
+import { API_ENDPOINTS } from './endpoints'
 import { apiRequest } from './apiClient'
 
 export async function getPurchaseReturns(query = {}) {

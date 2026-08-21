@@ -1,4 +1,4 @@
-import React, { isValidElement, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Activity,
@@ -51,7 +51,7 @@ import { ActionButtons, ActionMenu, DataTable, ExportMenu, FilterBar, Statistics
 import { showToast } from '../../../components/common/toast'
 import FormModal from '../../../layouts/FormModal'
 import { useAuth } from '../../../hooks/useAuth'
-import { formatCurrency, formatDate } from '../../../utils/helpers'
+import { formatCurrency, formatDate, formatName } from '../../../utils/helpers'
 import {
   emailInputProps,
   getEmailError,
@@ -64,10 +64,8 @@ import {
   sanitizePhoneInput,
 } from '../../../validators/phoneValidator'
 import {
-  autoCapitalizeWords,
   getNameError,
   sanitizeNameInput,
-  shouldAutoCapitalizeField,
 } from '../../../validators/nameValidator'
 import { RESOURCE_CONFIGS, RESOURCE_HUBS } from '../../ResourceCenter/resourceConfigs'
 import './Roles.css'
@@ -661,13 +659,12 @@ function getStatusType(value) {
     normalizedValue === 'inactive' ||
     normalizedValue === 'blocked' ||
     normalizedValue === 'failed' ||
-    normalizedValue === 'no' ||
     normalizedValue.includes('failed')
   ) {
     return 'critical'
   }
 
-  if (normalizedValue === 'active' || normalizedValue === 'verified' || normalizedValue === 'yes') {
+  if (normalizedValue === 'verified') {
     return 'active'
   }
 
@@ -717,18 +714,7 @@ function formatCellValue(row, column, referenceData) {
   }
 
   if (column.format === 'boolean') {
-    const isTrue =
-      value === true ||
-      value === 'true' ||
-      value === 1 ||
-      String(value).toLowerCase() === 'active' ||
-      String(value).toLowerCase() === 'yes'
-
-    return (
-      <StatusBadge type={isTrue ? 'active' : 'critical'}>
-        {isTrue ? 'Active' : 'Inactive'}
-      </StatusBadge>
-    )
+    return value === true || String(value).toLowerCase() === 'true' ? 'Yes' : 'No'
   }
 
   if (column.format === 'status') {
@@ -818,25 +804,6 @@ function getInventoryWorkspaceMetrics(config, rows) {
         { label: 'Pending', value: countStatus('pending', 'draft'), tone: 'warning' },
         { label: 'Completed', value: countStatus('complete', 'received', 'approved'), tone: 'info' },
       ]
-    case 'users': {
-      const activeCount = rows.filter((row) => {
-        const raw = readResourceValue(row, 'isActive', readResourceValue(row, 'status', ''))
-        return (
-          raw === true ||
-          raw === 'true' ||
-          raw === 1 ||
-          String(raw).toLowerCase() === 'active' ||
-          String(raw).toLowerCase() === 'yes'
-        )
-      }).length
-      const inactiveCount = Math.max(total - activeCount, 0)
-
-      return [
-        { label: 'Users', value: total, tone: 'info' },
-        { label: 'Active', value: activeCount, tone: 'success' },
-        { label: 'Inactive', value: inactiveCount, tone: 'danger' },
-      ]
-    }
     default:
       return [
         { label: 'Records', value: total, tone: 'success' },
@@ -1476,8 +1443,8 @@ function ResourceForm({
       nextValue = sanitizeEmailInput(value)
     } else if (field?.name === 'phoneNumber' || field?.name === 'phone' || field?.type === 'tel') {
       nextValue = sanitizePhoneInput(value, 10)
-    } else if (shouldAutoCapitalizeField(field?.name || name, field?.type || type)) {
-      nextValue = autoCapitalizeWords(value)
+    } else if (field?.name === 'name' || field?.name === 'fullName') {
+      nextValue = sanitizeNameInput(value)
     }
     updateField(name, nextValue)
     setTouched((currentValue) => ({
@@ -1971,34 +1938,34 @@ function ResourcePage({ config, navigationContent = null }) {
   }, [isRolesPage, viewingRecord])
 
   const summary = useMemo(() => {
+    if (isUsersPage) {
+      const activeCount = rows.filter((row) => {
+        const value = readResourceValue(row, 'isActive', false)
+        return value === true || String(value).toLowerCase() === 'true'
+      }).length
+
+      return {
+        total: rows.length,
+        active: activeCount,
+        pending: 0,
+        unread: null,
+      }
+    }
+
     const statusCounts = rows.reduce((result, row) => {
       const status = String(readResourceValue(row, 'status', '') || '').toLowerCase()
       if (status) {
         result[status] = (result[status] ?? 0) + 1
       }
-      const rawIsActive = readResourceValue(row, 'isActive', null)
-      if (rawIsActive !== null && rawIsActive !== '') {
-        const isActive =
-          rawIsActive === true ||
-          String(rawIsActive).toLowerCase() === 'true' ||
-          rawIsActive === 1 ||
-          String(rawIsActive).toLowerCase() === 'active' ||
-          String(rawIsActive).toLowerCase() === 'yes'
-        result.activeUsers = (result.activeUsers ?? 0) + (isActive ? 1 : 0)
-      }
       return result
     }, {})
     const unreadCount = metric?.unreadCount ?? metric?.UnreadCount ?? null
 
-    const activeCount = isUsersPage
-      ? (statusCounts.activeUsers ?? 0)
-      : config.statuslessRowsAreActive
-        ? rows.length
-        : statusCounts.active ?? statusCounts.posted ?? statusCounts.approved ?? 0
-
     return {
       total: rows.length,
-      active: activeCount,
+      active: config.statuslessRowsAreActive
+        ? rows.length
+        : statusCounts.active ?? statusCounts.posted ?? statusCounts.approved ?? 0,
       pending: (statusCounts.pending ?? statusCounts.draft ?? 0) + (hasSubCategoryDraft ? 1 : 0),
       unread: unreadCount,
     }
@@ -2116,13 +2083,8 @@ function ResourcePage({ config, navigationContent = null }) {
 
     const shouldBeActive = usersStatusFilter === 'active'
     return productStyleTableRows.filter((row) => {
-      const value = readResourceValue(row, 'isActive', readResourceValue(row, 'status', ''))
-      const isActive =
-        value === true ||
-        String(value).toLowerCase() === 'true' ||
-        value === 1 ||
-        String(value).toLowerCase() === 'active' ||
-        String(value).toLowerCase() === 'yes'
+      const value = readResourceValue(row, 'isActive', false)
+      const isActive = value === true || String(value).toLowerCase() === 'true'
       return isActive === shouldBeActive
     })
   }, [isUsersPage, productStyleTableRows, usersStatusFilter])
@@ -3154,13 +3116,13 @@ function ResourcePage({ config, navigationContent = null }) {
               <p className="resource-center__users-description">{config.subtitle}</p>
             </div>
             <div className="resource-center__inventory-metrics" aria-label={`${config.title} metrics`}>
-              <span className="resource-center__inventory-metric resource-center__inventory-metric--info">
+              <span className="resource-center__inventory-metric resource-center__inventory-metric--success">
                 {isAuditLogsPage ? auditSummary.total : summary.total} {isUsersPage ? 'Users' : isRolesPage ? 'Roles' : 'Logs'}
               </span>
-              <span className="resource-center__inventory-metric resource-center__inventory-metric--success">
+              <span className="resource-center__inventory-metric resource-center__inventory-metric--info">
                 {isAuditLogsPage ? auditSummary.modules : isUsersPage ? summary.active : summary.total} {isUsersPage ? 'Active' : isRolesPage ? 'Configured' : 'Modules'}
               </span>
-              <span className="resource-center__inventory-metric resource-center__inventory-metric--danger">
+              <span className="resource-center__inventory-metric resource-center__inventory-metric--warning">
                 {isAuditLogsPage ? auditSummary.recorded : isUsersPage ? Math.max(0, summary.total - summary.active) : summary.pending} {isUsersPage ? 'Inactive' : isRolesPage ? 'Draft' : 'Recorded'}
               </span>
             </div>
@@ -3543,27 +3505,18 @@ function ResourcePage({ config, navigationContent = null }) {
               </div>
               <div className="admin-details-hero-info">
                 <h3 className="admin-details-hero-title">
-                  {readResourceValue(viewingRecord, 'name', readResourceValue(viewingRecord, 'roleName', config.entityName))}
+                  {isUsersPage
+                    ? formatName(readResourceValue(viewingRecord, 'name', ''))
+                    : readResourceValue(viewingRecord, 'name', readResourceValue(viewingRecord, 'roleName', config.entityName))}
                 </h3>
                 <p className="admin-details-hero-subtitle">
                   {isUsersPage ? (viewingRecord.email || 'Staff Account') : isRolesPage ? 'Role Definition & Authorization' : (config.subtitle || 'Resource Record')}
                 </p>
               </div>
-              {readResourceValue(viewingRecord, 'isActive', null) !== null || readResourceValue(viewingRecord, 'status', null) !== null ? (
-                (() => {
-                  const rawAct = readResourceValue(viewingRecord, 'isActive', readResourceValue(viewingRecord, 'status', ''))
-                  const isAct =
-                    rawAct === true ||
-                    String(rawAct).toLowerCase() === 'true' ||
-                    rawAct === 1 ||
-                    String(rawAct).toLowerCase() === 'active' ||
-                    String(rawAct).toLowerCase() === 'yes'
-                  return (
-                    <StatusBadge type={isAct ? 'active' : 'critical'}>
-                      {isAct ? 'Active' : 'Inactive'}
-                    </StatusBadge>
-                  )
-                })()
+              {viewingRecord.isActive !== undefined ? (
+                <StatusBadge type={viewingRecord.isActive === true || viewingRecord.isActive === 'true' ? 'success' : 'danger'}>
+                  {viewingRecord.isActive === true || viewingRecord.isActive === 'true' ? 'Active' : 'Inactive'}
+                </StatusBadge>
               ) : null}
             </div>
 
@@ -3573,41 +3526,21 @@ function ResourcePage({ config, navigationContent = null }) {
                 .map((col) => {
                   const val = readResourceValue(viewingRecord, col.key, '')
                   let displayVal = typeof col.render === 'function' ? col.render(viewingRecord, referenceData) : val
-
-                  if (col.key === 'role' || col.key === 'roleName') {
-                    if (displayVal && typeof displayVal === 'object' && !isValidElement(displayVal)) {
-                      displayVal = displayVal.roleName || displayVal.name || displayVal.title || displayVal.role || 'User'
-                    }
-                  }
-
-                  if (col.key === 'isActive' || col.format === 'boolean') {
-                    const rawAct = readResourceValue(viewingRecord, 'isActive', readResourceValue(viewingRecord, 'status', val))
-                    const isAct =
-                      rawAct === true ||
-                      String(rawAct).toLowerCase() === 'true' ||
-                      rawAct === 1 ||
-                      String(rawAct).toLowerCase() === 'active' ||
-                      String(rawAct).toLowerCase() === 'yes'
-
-                    displayVal = (
-                      <StatusBadge type={isAct ? 'active' : 'critical'}>
-                        {isAct ? 'Active' : 'Inactive'}
-                      </StatusBadge>
-                    )
-                  } else if (col.format === 'currency' || col.key === 'price') {
-                    displayVal = formatCurrency(Number(displayVal || 0))
-                  } else if (col.format === 'date' || col.key?.toLowerCase().includes('date')) {
-                    displayVal = displayVal ? formatDate(displayVal) : 'N/A'
-                  } else if (col.format === 'status') {
-                    if (!isValidElement(displayVal)) {
+                  if (typeof displayVal !== 'object' && displayVal !== null && displayVal !== undefined) {
+                    if (col.format === 'currency' || col.key === 'price') {
+                      displayVal = formatCurrency(Number(displayVal || 0))
+                    } else if (col.format === 'date' || col.key?.toLowerCase().includes('date')) {
+                      displayVal = displayVal ? formatDate(displayVal) : 'N/A'
+                    } else if (col.format === 'status') {
                       displayVal = (
                         <StatusBadge type={getStatusType ? getStatusType(displayVal) : 'info'}>
                           {formatStatusLabel ? formatStatusLabel(displayVal) : displayVal}
                         </StatusBadge>
                       )
+                    } else if (col.format === 'boolean') {
+                      displayVal = val === true || String(val).toLowerCase() === 'true' || displayVal === 'Yes' || displayVal === true || String(displayVal).toLowerCase() === 'true' ? 'Yes' : 'No'
                     }
                   }
-
                   return (
                     <div className="admin-details-item" key={col.key}>
                       <span className="admin-details-label">{col.label}</span>

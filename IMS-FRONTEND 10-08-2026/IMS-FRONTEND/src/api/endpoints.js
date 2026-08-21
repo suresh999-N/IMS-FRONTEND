@@ -210,6 +210,13 @@ export const API_ENDPOINTS = {
     customers: "/SalesReturns/customers",
     customerInvoices: (customerId) => `/SalesReturns/customers/${customerId}/invoices`,
     invoiceItems: (invoiceId) => `/SalesReturns/invoices/${invoiceId}/items`,
+    returnableInvoices: "/SalesReturns/returnable-invoices",
+    invoiceDetails: (invoiceId) => `/SalesReturns/invoice-details/${invoiceId}`,
+    submit: (id) => `/SalesReturns/${id}/submit`,
+    approve: (id) => `/SalesReturns/${id}/approve`,
+    reject: (id) => `/SalesReturns/${id}/reject`,
+    processRefund: (id) => `/SalesReturns/${id}/process-refund`,
+    complete: (id) => `/SalesReturns/${id}/complete`,
   },
 
   purchaseReturns: {
@@ -232,6 +239,11 @@ export const API_ENDPOINTS = {
 
     delete: (id) =>
       `/PurchaseReturns/${id}`,
+
+    submit: (id) => `/PurchaseReturns/${id}/submit`,
+    approve: (id) => `/PurchaseReturns/${id}/approve`,
+    reject: (id) => `/PurchaseReturns/${id}/reject`,
+    complete: (id) => `/PurchaseReturns/${id}/complete`,
   },
 
   exchanges: {

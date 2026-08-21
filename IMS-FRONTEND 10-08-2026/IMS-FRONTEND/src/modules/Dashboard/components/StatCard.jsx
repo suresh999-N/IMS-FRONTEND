@@ -26,13 +26,11 @@ export default function StatCard({
 
   return (
     <Component className={`dashboard-stat dashboard-stat--${tone} ${to ? 'is-clickable' : ''}`} {...interactiveProps}>
-      <div className="dashboard-stat__metric">
-        <span className="dashboard-stat__icon" aria-hidden="true">
-          <Icon size={16} />
-        </span>
+      <span className="dashboard-stat__icon" aria-hidden="true">
+        <Icon size={16} />
+      </span>
+      <div className="dashboard-stat__content">
         <strong className="dashboard-stat__value" title={String(value)}>{value}</strong>
-      </div>
-      <div className="dashboard-stat__footer">
         <span className="dashboard-stat__label" title={title}>{title}</span>
         {trend ? (
           <span
@@ -42,7 +40,7 @@ export default function StatCard({
             {trend}
           </span>
         ) : null}
-        {description ? <p>{description}</p> : null}
+        {description ? <p className="dashboard-stat__description">{description}</p> : null}
       </div>
     </Component>
   )

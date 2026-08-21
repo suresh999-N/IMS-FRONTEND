@@ -16,19 +16,19 @@ const DEFAULT_VISIBLE_COLUMNS = [
 ]
 const LOCKED_COLUMNS = ['name', 'actions']
 const CUSTOMER_COLUMN_WIDTHS = {
-  name: 390,
-  email: 270,
-  phone: 170,
-  company: 225,
-  address: 260,
-  gstNumber: 240,
-  totalOrders: 100,
-  totalPurchases: 180,
-  outstandingBalance: 180,
-  creditLimit: 130,
-  lastActivity: 190,
-  createdAt: 140,
-  status: 120,
+  name: 240,
+  email: 220,
+  phone: 150,
+  company: 160,
+  address: 220,
+  gstNumber: 170,
+  totalOrders: 90,
+  totalPurchases: 140,
+  outstandingBalance: 140,
+  creditLimit: 120,
+  lastActivity: 150,
+  createdAt: 130,
+  status: 110,
   actions: 80,
 }
 
@@ -42,7 +42,6 @@ function withCustomerColumnWidth(column) {
   const widthStyle = {
     width: `${width}px`,
     minWidth: `${width}px`,
-    maxWidth: `${width}px`,
   }
 
   return {

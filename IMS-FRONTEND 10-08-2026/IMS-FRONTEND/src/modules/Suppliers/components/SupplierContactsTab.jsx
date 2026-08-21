@@ -4,7 +4,6 @@ import CreatableSearchableSelect from '../../../components/CreatableSearchableSe
 import InputField from '../../../components/InputField'
 import { emailInputProps } from '../../../validators/emailValidator'
 import { phoneInputProps, sanitizePhoneInput } from '../../../validators/phoneValidator'
-import { autoCapitalizeWords, shouldAutoCapitalizeField } from '../../../validators/nameValidator'
 import { SupplierSection } from './SupplierFormSections'
 
 const emptyContact = {
@@ -83,13 +82,9 @@ export default function SupplierContactsTab({
 
   function handleContactChange(index, event) {
     const { name, value } = event.target
-    let nextValue = value
-    if (name === 'phone') {
-      nextValue = sanitizePhoneInput(value)
-    } else if (shouldAutoCapitalizeField(name)) {
-      nextValue = autoCapitalizeWords(value)
-    }
-    const nextEvent = buildContactEvent(event, nextValue)
+    const nextEvent = name === 'phone'
+      ? buildContactEvent(event, sanitizePhoneInput(value))
+      : event
 
     onChange(index, nextEvent)
   }

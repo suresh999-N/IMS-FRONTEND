@@ -1,4 +1,4 @@
-import React, { isValidElement, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Activity,
@@ -57,10 +57,6 @@ import {
   getEmailError,
   sanitizeEmailInput,
 } from '../../validators/emailValidator'
-import {
-  autoCapitalizeWords,
-  shouldAutoCapitalizeField,
-} from '../../validators/nameValidator'
 import { RESOURCE_CONFIGS, RESOURCE_HUBS } from './resourceConfigs'
 import './ResourceCenter.css'
 
@@ -681,12 +677,8 @@ function formatStatusLabel(value) {
 function getStatusType(value) {
   const normalizedValue = String(value ?? '').trim().toLowerCase().replace(/[_\s]+/g, '-')
 
-  if (normalizedValue === 'inactive' || normalizedValue === 'blocked' || normalizedValue === 'failed' || normalizedValue === 'no') {
+  if (normalizedValue === 'inactive' || normalizedValue === 'blocked' || normalizedValue === 'failed') {
     return 'critical'
-  }
-
-  if (normalizedValue === 'active' || normalizedValue === 'verified' || normalizedValue === 'yes') {
-    return 'active'
   }
 
   return normalizedValue || 'info'
@@ -718,15 +710,7 @@ function notifyCatalogStructureUpdate(config, action) {
 
 function formatCellValue(row, column, referenceData) {
   if (typeof column.render === 'function') {
-    const rendered = column.render(row, referenceData)
-    if (column.format === 'status' && (typeof rendered === 'string' || typeof rendered === 'number')) {
-      return (
-        <StatusBadge type={getStatusType(rendered)}>
-          {formatStatusLabel(rendered)}
-        </StatusBadge>
-      )
-    }
-    return rendered
+    return column.render(row, referenceData)
   }
 
   const value = readResourceValue(row, column.key)
@@ -740,18 +724,7 @@ function formatCellValue(row, column, referenceData) {
   }
 
   if (column.format === 'boolean') {
-    const isTrue =
-      value === true ||
-      value === 'true' ||
-      value === 1 ||
-      String(value).toLowerCase() === 'active' ||
-      String(value).toLowerCase() === 'yes'
-
-    return (
-      <StatusBadge type={isTrue ? 'active' : 'critical'}>
-        {isTrue ? 'Active' : 'Inactive'}
-      </StatusBadge>
-    )
+    return value ? 'Yes' : 'No'
   }
 
   if (column.format === 'status') {
@@ -837,25 +810,6 @@ function getInventoryWorkspaceMetrics(config, rows) {
         { label: 'Pending', value: countStatus('pending', 'draft'), tone: 'warning' },
         { label: 'Completed', value: countStatus('complete', 'received', 'approved'), tone: 'info' },
       ]
-    case 'users': {
-      const activeCount = rows.filter((row) => {
-        const raw = readResourceValue(row, 'isActive', readResourceValue(row, 'status', ''))
-        return (
-          raw === true ||
-          raw === 'true' ||
-          raw === 1 ||
-          String(raw).toLowerCase() === 'active' ||
-          String(raw).toLowerCase() === 'yes'
-        )
-      }).length
-      const inactiveCount = Math.max(total - activeCount, 0)
-
-      return [
-        { label: 'Users', value: total, tone: 'info' },
-        { label: 'Active', value: activeCount, tone: 'success' },
-        { label: 'Inactive', value: inactiveCount, tone: 'danger' },
-      ]
-    }
     default:
       return [
         { label: 'Records', value: total, tone: 'success' },
@@ -1547,16 +1501,7 @@ function ResourceForm({
       return
     }
 
-    let nextValue = type === 'checkbox' ? checked : value
-    if (field?.type === 'email') {
-      nextValue = sanitizeEmailInput(value)
-    } else if (field?.name === 'phoneNumber' || field?.name === 'phone' || field?.type === 'tel') {
-      nextValue = value ? String(value).slice(0, 10) : ''
-    } else if (shouldAutoCapitalizeField(field?.name || name, field?.type || type)) {
-      nextValue = autoCapitalizeWords(value)
-    }
-
-    updateField(name, nextValue)
+    updateField(name, field?.type === 'email' ? sanitizeEmailInput(value) : type === 'checkbox' ? checked : value)
   }
 
   function handleBlur(event) {
@@ -2094,38 +2039,38 @@ function ResourcePage({ config, navigationContent = null }) {
   }, [config, loadRows])
 
   const summary = useMemo(() => {
+    if (config.key === 'users') {
+      const activeCount = rows.filter((row) => {
+        const value = readResourceValue(row, 'isActive', false)
+        return value === true || String(value).toLowerCase() === 'true'
+      }).length
+
+      return {
+        total: rows.length,
+        active: activeCount,
+        pending: 0,
+        unread: null,
+      }
+    }
+
     const statusCounts = rows.reduce((result, row) => {
       const status = String(readResourceValue(row, 'status', '') || '').toLowerCase()
       if (status) {
         result[status] = (result[status] ?? 0) + 1
       }
-      const rawIsActive = readResourceValue(row, 'isActive', null)
-      if (rawIsActive !== null && rawIsActive !== '') {
-        const isActive =
-          rawIsActive === true ||
-          String(rawIsActive).toLowerCase() === 'true' ||
-          rawIsActive === 1 ||
-          String(rawIsActive).toLowerCase() === 'active' ||
-          String(rawIsActive).toLowerCase() === 'yes'
-        result.activeUsers = (result.activeUsers ?? 0) + (isActive ? 1 : 0)
-      }
       return result
     }, {})
     const unreadCount = metric?.unreadCount ?? metric?.UnreadCount ?? null
 
-    const activeCount = isUsersPage
-      ? (statusCounts.activeUsers ?? 0)
-      : config.statuslessRowsAreActive
-        ? rows.length
-        : statusCounts.active ?? statusCounts.posted ?? statusCounts.approved ?? 0
-
     return {
       total: rows.length,
-      active: activeCount,
+      active: config.statuslessRowsAreActive
+        ? rows.length
+        : statusCounts.active ?? statusCounts.posted ?? statusCounts.approved ?? 0,
       pending: (statusCounts.pending ?? statusCounts.draft ?? 0) + (hasSubCategoryDraft ? 1 : 0),
       unread: unreadCount,
     }
-  }, [config.statuslessRowsAreActive, hasSubCategoryDraft, isUsersPage, metric, rows])
+  }, [config.key, config.statuslessRowsAreActive, hasSubCategoryDraft, metric, rows])
 
   const notificationSummary = useMemo(() => {
     const unread = rows.filter((row) => !getNotificationReadState(row)).length
@@ -3487,39 +3432,16 @@ function ResourcePage({ config, navigationContent = null }) {
                   .map((col) => {
                     const val = readResourceValue(viewingRecord, col.key, '')
                     let displayVal = typeof col.render === 'function' ? col.render(viewingRecord, referenceData) : val
-
-                    if (col.key === 'role' || col.key === 'roleName') {
-                      if (displayVal && typeof displayVal === 'object' && !isValidElement(displayVal)) {
-                        displayVal = displayVal.roleName || displayVal.name || displayVal.title || displayVal.role || 'User'
-                      }
-                    }
-
-                    if (col.key === 'isActive' || col.format === 'boolean') {
-                      const rawAct = readResourceValue(viewingRecord, 'isActive', readResourceValue(viewingRecord, 'status', val))
-                      const isAct =
-                        rawAct === true ||
-                        String(rawAct).toLowerCase() === 'true' ||
-                        rawAct === 1 ||
-                        String(rawAct).toLowerCase() === 'active' ||
-                        String(rawAct).toLowerCase() === 'yes'
-
-                      displayVal = (
-                        <StatusBadge type={isAct ? 'active' : 'critical'}>
-                          {isAct ? 'Active' : 'Inactive'}
-                        </StatusBadge>
-                      )
-                    } else if (col.format === 'currency' || col.key === 'price') {
+                    if (col.format === 'currency' || col.key === 'price') {
                       displayVal = formatCurrency(val)
                     } else if (col.format === 'date' || col.key?.toLowerCase().includes('date')) {
                       displayVal = val ? formatDate(val) : 'N/A'
                     } else if (col.format === 'status') {
-                      if (!isValidElement(displayVal)) {
-                        displayVal = (
-                          <StatusBadge type={getStatusType ? getStatusType(val) : 'info'}>
-                            {formatStatusLabel ? formatStatusLabel(val) : val}
-                          </StatusBadge>
-                        )
-                      }
+                      displayVal = (
+                        <StatusBadge type={getStatusType ? getStatusType(val) : 'info'}>
+                          {formatStatusLabel ? formatStatusLabel(val) : val}
+                        </StatusBadge>
+                      )
                     }
                     return (
                       <div className="purchase-details__item" key={col.key}>

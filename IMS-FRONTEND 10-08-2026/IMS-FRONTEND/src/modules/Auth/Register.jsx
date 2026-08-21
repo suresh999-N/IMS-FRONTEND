@@ -1,6 +1,7 @@
 import {
   BarChart3,
   Boxes,
+  Check,
   Eye,
   EyeOff,
   LineChart,
@@ -12,6 +13,7 @@ import {
   ShoppingCart,
   User,
   UserPlus,
+  X,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -33,7 +35,10 @@ import {
   phoneInputProps,
   sanitizePhoneInput,
 } from "../../validators/phoneValidator";
-import { getPasswordError } from "../../validators/passwordValidator";
+import {
+  checkPasswordRequirements,
+  getPasswordError,
+} from "../../validators/passwordValidator";
 import { useAuth } from "../../hooks/useAuth";
 import { getAuthErrorMessage } from "./authCopy";
 import "./Auth.css";
@@ -66,6 +71,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
 
   // Compute field errors dynamically
   const nameError = getNameError(formData.name, { required: true, label: "Full Name" });
@@ -73,6 +79,7 @@ export default function Register() {
   const phoneError = getPhoneError(formData.phoneNumber, "Mobile number");
   const passwordError = getPasswordError(formData.password);
   const confirmPasswordError = getConfirmPasswordError(formData.password, formData.confirmPassword);
+  const passwordChecks = checkPasswordRequirements(formData.password);
 
   const isFormValid =
     formData.name.trim() !== "" &&
@@ -360,7 +367,11 @@ export default function Register() {
                   placeholder="Password"
                   value={formData.password}
                   onChange={handleChange}
-                  onBlur={handleBlur}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={(e) => {
+                    handleBlur(e);
+                    setPasswordFocused(false);
+                  }}
                   autoComplete="new-password"
                 />
                 {formData.password ? (
@@ -379,6 +390,33 @@ export default function Register() {
                   </button>
                 ) : null}
               </div>
+              {(passwordFocused || formData.password.length > 0) && (
+                <div className="password-requirements-panel" aria-live="polite">
+                  <span className="password-requirements-title">Password must contain:</span>
+                  <ul className="password-requirements-list">
+                    <li className={`password-requirement-item ${passwordChecks.minLength ? "is-valid" : "is-invalid"}`}>
+                      {passwordChecks.minLength ? <Check size={13} /> : <X size={13} />}
+                      <span>At least 8 characters</span>
+                    </li>
+                    <li className={`password-requirement-item ${passwordChecks.uppercase ? "is-valid" : "is-invalid"}`}>
+                      {passwordChecks.uppercase ? <Check size={13} /> : <X size={13} />}
+                      <span>At least one uppercase letter (A-Z)</span>
+                    </li>
+                    <li className={`password-requirement-item ${passwordChecks.lowercase ? "is-valid" : "is-invalid"}`}>
+                      {passwordChecks.lowercase ? <Check size={13} /> : <X size={13} />}
+                      <span>At least one lowercase letter (a-z)</span>
+                    </li>
+                    <li className={`password-requirement-item ${passwordChecks.number ? "is-valid" : "is-invalid"}`}>
+                      {passwordChecks.number ? <Check size={13} /> : <X size={13} />}
+                      <span>At least one number (0-9)</span>
+                    </li>
+                    <li className={`password-requirement-item ${passwordChecks.special ? "is-valid" : "is-invalid"}`}>
+                      {passwordChecks.special ? <Check size={13} /> : <X size={13} />}
+                      <span>At least one special character (!@#$%^&amp;*)</span>
+                    </li>
+                  </ul>
+                </div>
+              )}
               {passwordDisplayError && (
                 <span className="field-error-text">{passwordDisplayError}</span>
               )}

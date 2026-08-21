@@ -207,11 +207,11 @@
 .dashboard-stat {
   min-height: 108px;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  flex-direction: row;
   align-items: flex-start !important;
+  justify-content: flex-start;
   text-align: left !important;
-  gap: 10px;
+  gap: 12px;
   padding: 14px 16px;
   color: inherit;
   text-decoration: none;
@@ -238,16 +238,6 @@
   outline: none;
 }
 
-.dashboard-stat__metric {
-  width: 100%;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start !important;
-  text-align: left !important;
-  gap: 10px;
-}
-
 .dashboard-stat__icon,
 .analytics-card__icon {
   display: inline-flex;
@@ -263,13 +253,25 @@
   color: #ffffff;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(15, 23, 42, 0.06);
+  margin-top: 2px;
+}
+
+.dashboard-stat__content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start !important;
+  text-align: left !important;
+  gap: 3px;
 }
 
 .dashboard-stat__value {
+  width: 100%;
   min-width: 0;
   color: var(--dashboard-text);
-  font-size: clamp(20px, 1.5vw, 24px);
-  line-height: 1.1;
+  font-size: clamp(18px, 1.4vw, 22px);
+  line-height: 1.15;
   font-weight: 700;
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
@@ -279,18 +281,9 @@
   text-align: left !important;
 }
 
-.dashboard-stat__footer {
+.dashboard-stat__label {
   width: 100%;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start !important;
-  text-align: left !important;
-  gap: 4px;
-  margin-top: auto;
-}
-
-.dashboard-stat__label {
   color: var(--dashboard-muted);
   font-size: 12px;
   line-height: 1.2;
@@ -300,6 +293,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: left !important;
+  margin-top: 1px;
 }
 
 .dashboard-panel__header span,
@@ -315,7 +309,7 @@
 }
 
 .dashboard-stat__trend {
-  width: max-content;
+  width: fit-content;
   max-width: 100%;
   align-self: flex-start !important;
   border-radius: 999px;
@@ -329,6 +323,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: left !important;
+  margin-top: 2px;
 }
 
 .dashboard-stat__trend.is-up {
