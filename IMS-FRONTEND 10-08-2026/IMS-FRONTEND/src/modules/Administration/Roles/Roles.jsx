@@ -2100,8 +2100,13 @@ function ResourcePage({ config, navigationContent = null }) {
 
     const shouldBeActive = usersStatusFilter === 'active'
     return productStyleTableRows.filter((row) => {
-      const value = readResourceValue(row, 'isActive', false)
-      const isActive = value === true || String(value).toLowerCase() === 'true'
+      const value = readResourceValue(row, 'isActive', readResourceValue(row, 'status', ''))
+      const isActive =
+        value === true ||
+        String(value).toLowerCase() === 'true' ||
+        value === 1 ||
+        String(value).toLowerCase() === 'active' ||
+        String(value).toLowerCase() === 'yes'
       return isActive === shouldBeActive
     })
   }, [isUsersPage, productStyleTableRows, usersStatusFilter])
