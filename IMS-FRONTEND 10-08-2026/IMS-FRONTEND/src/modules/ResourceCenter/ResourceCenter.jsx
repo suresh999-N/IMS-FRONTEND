@@ -57,6 +57,10 @@ import {
   getEmailError,
   sanitizeEmailInput,
 } from '../../validators/emailValidator'
+import {
+  autoCapitalizeWords,
+  shouldAutoCapitalizeField,
+} from '../../validators/nameValidator'
 import { RESOURCE_CONFIGS, RESOURCE_HUBS } from './resourceConfigs'
 import './ResourceCenter.css'
 
@@ -1543,7 +1547,16 @@ function ResourceForm({
       return
     }
 
-    updateField(name, field?.type === 'email' ? sanitizeEmailInput(value) : type === 'checkbox' ? checked : value)
+    let nextValue = type === 'checkbox' ? checked : value
+    if (field?.type === 'email') {
+      nextValue = sanitizeEmailInput(value)
+    } else if (field?.name === 'phoneNumber' || field?.name === 'phone' || field?.type === 'tel') {
+      nextValue = value ? String(value).slice(0, 10) : ''
+    } else if (shouldAutoCapitalizeField(field?.name || name, field?.type || type)) {
+      nextValue = autoCapitalizeWords(value)
+    }
+
+    updateField(name, nextValue)
   }
 
   function handleBlur(event) {

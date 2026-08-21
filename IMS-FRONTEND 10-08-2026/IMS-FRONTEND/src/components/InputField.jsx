@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
+import { shouldAutoCapitalizeField } from '../validators/nameValidator'
 
 export default function InputField({
   id,
@@ -91,6 +92,7 @@ export default function InputField({
             aria-invalid={Boolean(error)}
             aria-describedby={describedBy}
             autoComplete="off"
+            autoCapitalize={props.autoCapitalize ?? (shouldAutoCapitalizeField(name, type) ? 'words' : 'off')}
             {...props}
           />
         ) : (
@@ -105,6 +107,7 @@ export default function InputField({
             aria-invalid={Boolean(error)}
             aria-describedby={describedBy}
             autoComplete="off"
+            autoCapitalize={props.autoCapitalize ?? (shouldAutoCapitalizeField(name, computedInputType) ? 'words' : 'off')}
             {...props}
           />
         )}

@@ -12,13 +12,53 @@ export function stripUnsafeNameText(value) {
   }).join('')
 }
 
+export function autoCapitalizeWords(text) {
+  if (typeof text !== 'string' || !text) return text
+  return text.replace(/(?:^|[\s'-])\p{L}/gu, (match) => match.toUpperCase())
+}
+
+export function shouldAutoCapitalizeField(fieldName = '', fieldType = '') {
+  if (!fieldName || fieldType === 'email' || fieldType === 'password' || fieldType === 'number' || fieldType === 'tel') {
+    return false
+  }
+
+  const name = String(fieldName).toLowerCase()
+  if (name.includes('email') || name.includes('password') || name.includes('url') || name.includes('sku') || name.includes('barcode') || name.includes('code') || name.includes('website')) {
+    return false
+  }
+
+  return (
+    name.includes('name') ||
+    name.includes('title') ||
+    name.includes('role') ||
+    name.includes('designation') ||
+    name.includes('department') ||
+    name.includes('city') ||
+    name.includes('state') ||
+    name.includes('country') ||
+    name.includes('address') ||
+    name.includes('label') ||
+    name.includes('brand') ||
+    name.includes('category') ||
+    name.includes('unit') ||
+    name.includes('attribute') ||
+    name.includes('supplier') ||
+    name.includes('customer') ||
+    name.includes('warehouse') ||
+    name.includes('bin') ||
+    name.includes('rack')
+  )
+}
+
 export function sanitizeNameInput(value, maxLength = NAME_MAX_LENGTH) {
-  return stripUnsafeNameText(value)
+  const cleaned = stripUnsafeNameText(value)
     .normalize('NFKC')
     .replace(/[<>]/g, '')
     .replace(/^\s+/, '')
     .replace(/\s{2,}/g, ' ')
     .slice(0, maxLength)
+
+  return autoCapitalizeWords(cleaned)
 }
 
 export function getNameError(value, options = {}) {
