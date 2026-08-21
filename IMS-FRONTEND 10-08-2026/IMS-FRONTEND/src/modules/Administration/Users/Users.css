@@ -83,17 +83,29 @@
   color: #c2410c;
 }
 
+.resource-center__page--users .resource-center__inventory-metric--danger,
+.resource-center__page--users .resource-center__inventory-metric--critical {
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: #dc2626;
+}
+
 .resource-center__page--users .resource-center__inventory-header-actions .button {
   height: 38px;
   min-height: 38px;
   padding: 0 16px;
-  border-color: #047857;
+  border-color: var(--ims-primary, #2563eb);
   border-radius: 8px;
-  background: var(--ims-success, #059669);
+  background: var(--ims-primary, #2563eb);
   color: #fff;
   font-size: 13px;
   font-weight: 700;
   box-shadow: none;
+}
+
+.resource-center__page--users .resource-center__inventory-header-actions .button:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
 }
 
 .resource-center__page--users .resource-center__inventory-table-card {
@@ -177,8 +189,8 @@
 }
 
 .resource-center__page--users .search-wrapper:focus-within {
-  border-color: var(--ims-success, #059669);
-  box-shadow: 0 0 0 3px rgba(5, 150, 105, .12);
+  border-color: var(--ims-primary, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
 }
 
 .resource-center__page--users .users-list-page__status-filter {
@@ -210,9 +222,9 @@
 }
 
 .resource-center__page--users .users-list-page__status-filter select:focus {
-  border-color: var(--ims-success, #059669);
+  border-color: var(--ims-primary, #2563eb);
   outline: 0;
-  box-shadow: 0 0 0 3px rgba(5, 150, 105, .12);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
 }
 
 .resource-center__page--users .table-container {

@@ -816,6 +816,25 @@ function getInventoryWorkspaceMetrics(config, rows) {
         { label: 'Pending', value: countStatus('pending', 'draft'), tone: 'warning' },
         { label: 'Completed', value: countStatus('complete', 'received', 'approved'), tone: 'info' },
       ]
+    case 'users': {
+      const activeCount = rows.filter((row) => {
+        const raw = row.isActive
+        return (
+          raw === true ||
+          raw === 'true' ||
+          raw === 1 ||
+          String(raw).toLowerCase() === 'active' ||
+          String(raw).toLowerCase() === 'yes'
+        )
+      }).length
+      const inactiveCount = Math.max(total - activeCount, 0)
+
+      return [
+        { label: 'Users', value: total, tone: 'info' },
+        { label: 'Active', value: activeCount, tone: 'success' },
+        { label: 'Inactive', value: inactiveCount, tone: 'danger' },
+      ]
+    }
     default:
       return [
         { label: 'Records', value: total, tone: 'success' },
