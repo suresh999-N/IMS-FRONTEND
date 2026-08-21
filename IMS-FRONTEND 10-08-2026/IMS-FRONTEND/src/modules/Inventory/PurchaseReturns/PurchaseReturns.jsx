@@ -1,939 +1,520 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
-
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
 import {
-  AlertCircle,
-  Eye,
-  MoreVertical,
-  Pencil,
+  ChevronRight,
   Plus,
   RefreshCw,
-  Search,
+  SlidersHorizontal,
+  RotateCcw,
+  ReceiptText,
+  Building2,
+  Eye,
+  Edit,
   Trash2,
+  Download,
+  CheckCircle,
+  Send,
 } from 'lucide-react'
-
-import PageHeader from '../../../components/common/PageHeader'
-import StateBlock from '../../../components/common/StateBlock'
-import { showToast } from '../../../components/common/toast'
-import FormModal from '../../../layouts/FormModal'
-
 import {
-  deletePurchaseReturn,
   getPurchaseReturns,
-  getPurchaseReturnGrns,
-  getPurchaseReturnSuppliers,
-} from '../../../api/purchaseReturnApi'
-
-import {
-  formatCurrency,
-  formatDate,
-} from '../../../utils/helpers'
-
+  deletePurchaseReturn,
+  submitPurchaseReturn,
+  approvePurchaseReturn,
+  getPurchaseReturnErrorMessage,
+} from '../../../api/purchaseReturnsApi'
+import { ActionMenu, DataTable, FilterBar, StatusBadge } from '../../../components/erp'
+import { showToast } from '../../../components/common/toast'
+import { formatCurrency, formatDate } from '../../../utils/helpers'
+import '../../POS/Sales/Sales.css'
+import '../../POS/ReturnsDamage/SalesReturns.css'
 import './PurchaseReturns.css'
 
-
-/**
- * Normalize API responses without hiding API errors.
- *
- * Supports:
- * 1. Direct array
- * 2. { data: [] }
- * 3. { data: { items: [] } }
- * 4. { items: [] }
- */
-const getArrayFromResponse = (response) => {
-  if (Array.isArray(response)) {
-    return response
-  }
-
-  if (Array.isArray(response?.data)) {
-    return response.data
-  }
-
-  if (Array.isArray(response?.data?.items)) {
-    return response.data.items
-  }
-
-  if (Array.isArray(response?.items)) {
-    return response.items
-  }
-
-  return null
+function getReturnRowKey(r) {
+  return String(r?.returnId ?? r?.id ?? r?.returnNumber ?? '')
 }
-
-
-const getSupplierId = (supplier) =>
-  supplier?.id ??
-  supplier?.supplierId ??
-  supplier?.supplier_id
-
-
-const getSupplierName = (supplier) =>
-  supplier?.name ??
-  supplier?.supplierName ??
-  supplier?.supplier_name ??
-  (
-    getSupplierId(supplier)
-      ? `Supplier #${getSupplierId(supplier)}`
-      : '-'
-  )
-
-
-const getGrnId = (grn) =>
-  grn?.id ??
-  grn?.grnId ??
-  grn?.grn_id
-
-
-const getGrnNumber = (grn) =>
-  grn?.grnNumber ??
-  grn?.grn_number ??
-  grn?.number ??
-  (
-    getGrnId(grn)
-      ? `GRN-${getGrnId(grn)}`
-      : '-'
-  )
-
-
-const getReturnId = (item) =>
-  item?.purchaseReturnId ??
-  item?.returnId ??
-  item?.return_id ??
-  item?.id
-
-
-const getReturnNumberDisplay = (item) =>
-  item?.returnNumber ??
-  item?.return_number ??
-  (getReturnId(item) ? `#${getReturnId(item)}` : '-')
-
-
-const getReturnSupplierId = (item) =>
-  item?.supplierId ??
-  item?.supplier_id
-
-
-const getReturnGrnId = (item) =>
-  item?.grnId ??
-  item?.grn_id
-
-
-const getReturnDate = (item) =>
-  item?.returnDate ??
-  item?.return_date
-
-
-const getTotalAmount = (item) =>
-  item?.totalAmount ??
-  item?.total_amount ??
-  item?.totalReturnAmount ??
-  0
-
 
 export default function PurchaseReturns() {
   const navigate = useNavigate()
-
-  // =========================================================
-  // STATE
-  // =========================================================
-
   const [returns, setReturns] = useState([])
-  const [suppliers, setSuppliers] = useState([])
-  const [grns, setGrns] = useState([])
-
-  const [loading, setLoading] = useState(true)
+  const [selectedReturnIds, setSelectedReturnIds] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
 
-  const [searchQuery, setSearchQuery] = useState('')
-  const [supplierFilter, setSupplierFilter] = useState('')
-
-  const [deleteTargetId, setDeleteTargetId] = useState(null)
-  const [deleting, setDeleting] = useState(false)
-
-  const [activeMenuId, setActiveMenuId] = useState(null)
-
-
-  // =========================================================
-  // CLOSE ACTION MENU WHEN CLICKING OUTSIDE
-  // =========================================================
-
-  useEffect(() => {
-    const handleOutsideClick = () => {
-      setActiveMenuId(null)
-    }
-
-    document.addEventListener('click', handleOutsideClick)
-
-    return () => {
-      document.removeEventListener(
-        'click',
-        handleOutsideClick
-      )
-    }
-  }, [])
-
-
-  // =========================================================
-  // LOAD DATA
-  // =========================================================
-
-  const fetchData = useCallback(async () => {
-    setLoading(true)
+  const fetchReturns = useCallback(async () => {
+    setIsLoading(true)
     setError('')
-
     try {
-      const [
-        returnsResponse,
-        suppliersResponse,
-      ] = await Promise.all([
-        getPurchaseReturns(),
-        getPurchaseReturnSuppliers(),
-      ])
+      const res = await getPurchaseReturns({
+        status: statusFilter !== 'all' ? statusFilter : undefined,
+      })
 
+      const payload = res?.data || res
+      const listData = Array.isArray(payload?.data)
+        ? payload.data
+        : Array.isArray(payload)
+          ? payload
+          : []
 
-      const returnsData =
-        getArrayFromResponse(returnsResponse)
-
-      const suppliersData =
-        getArrayFromResponse(suppliersResponse)
-
-
-      if (returnsData === null) {
-        throw new Error(
-          'Purchase Returns API returned an unexpected response format.'
-        )
-      }
-
-      if (suppliersData === null) {
-        throw new Error(
-          'Purchase Return Suppliers API returned an unexpected response format.'
-        )
-      }
-
-
-      setReturns(returnsData)
-      setSuppliers(suppliersData)
-      setGrns([])
-
+      setReturns(listData)
     } catch (err) {
-      console.error(
-        'Purchase Returns API error:',
-        err
-      )
-
-      setReturns([])
-      setSuppliers([])
-      setGrns([])
-
-      setError(
-        err?.response?.data?.message ||
-        err?.response?.data?.title ||
-        err?.message ||
-        'Failed to load Purchase Returns.'
-      )
+      console.error('Failed to load purchase returns', err)
+      setError(getPurchaseReturnErrorMessage(err, 'Unable to load purchase returns workspace.'))
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
-  }, [])
-
+  }, [statusFilter])
 
   useEffect(() => {
-    fetchData()
-  }, [fetchData])
+    fetchReturns()
+  }, [fetchReturns])
 
+  const summary = useMemo(() => {
+    const totalCount = returns.length
+    const totalValue = returns.reduce(
+      (sum, r) => sum + Number(r.totalAmount ?? r.totalReturnAmount ?? r.grandTotal ?? 0),
+      0,
+    )
+    const draftCount = returns.filter((r) => r.status === 'Draft').length
+    const pendingCount = returns.filter((r) => r.status === 'Pending Approval').length
+    const approvedCount = returns.filter((r) => r.status === 'Approved').length
+    const completedCount = returns.filter(
+      (r) => r.status === 'Completed' || r.status === 'Refund Processed',
+    ).length
 
-  // =========================================================
-  // SUPPLIER LOOKUP
-  // =========================================================
+    return {
+      totalCount,
+      totalValue,
+      draftCount,
+      pendingCount,
+      approvedCount,
+      completedCount,
+    }
+  }, [returns])
 
-  const suppliersMap = useMemo(() => {
-    const map = {}
+  const selectedReturns = useMemo(() => {
+    const selectedSet = new Set(selectedReturnIds.map(String))
+    return returns.filter((r) => selectedSet.has(getReturnRowKey(r)))
+  }, [returns, selectedReturnIds])
 
-    suppliers.forEach((supplier) => {
-      const id = getSupplierId(supplier)
-
-      if (
-        id === null ||
-        id === undefined ||
-        id === ''
-      ) {
-        return
-      }
-
-      map[String(id)] = getSupplierName(supplier)
-    })
-
-    return map
-  }, [suppliers])
-
-
-  // =========================================================
-  // GRN LOOKUP
-  // =========================================================
-
-  const grnsMap = useMemo(() => {
-    const map = {}
-
-    grns.forEach((grn) => {
-      const id = getGrnId(grn)
-
-      if (
-        id === null ||
-        id === undefined ||
-        id === ''
-      ) {
-        return
-      }
-
-      map[String(id)] = getGrnNumber(grn)
-    })
-
-    return map
-  }, [grns])
-
-
-  // =========================================================
-  // FILTER RETURNS
-  // =========================================================
+  const tableReturns = useMemo(
+    () =>
+      returns.map((r, index) => ({
+        ...r,
+        __rowKey: getReturnRowKey(r) || `pr-return-${index}`,
+      })),
+    [returns],
+  )
 
   const filteredReturns = useMemo(() => {
-    const query = searchQuery
-      .trim()
-      .toLowerCase()
-
-    return returns.filter((item) => {
-      const returnId = String(
-        getReturnId(item) ?? ''
-      ).toLowerCase()
-
-      const supplierId =
-        getReturnSupplierId(item)
-
-      const grnId =
-        getReturnGrnId(item)
-
-      const supplierName = String(
-        suppliersMap[String(supplierId ?? '')] ??
-        item?.supplierName ??
-        item?.supplier_name ??
-        ''
-      ).toLowerCase()
-
-      const grnNumber = String(
-        grnsMap[String(grnId ?? '')] ??
-        item?.grnNumber ??
-        item?.grn_number ??
-        ''
-      ).toLowerCase()
-
-      const reason = String(
-        item?.reason ?? ''
-      ).toLowerCase()
-
-
-      const matchesSearch =
-        !query ||
-        returnId.includes(query) ||
-        supplierName.includes(query) ||
-        grnNumber.includes(query) ||
-        reason.includes(query)
-
-
-      const matchesSupplier =
-        !supplierFilter ||
-        String(supplierId ?? '') ===
-        String(supplierFilter)
-
-
-      return (
-        matchesSearch &&
-        matchesSupplier
-      )
+    if (statusFilter === 'all') {
+      return tableReturns
+    }
+    return tableReturns.filter((r) => {
+      const st = String(r.status || 'Draft').trim().toLowerCase()
+      const filterKey = statusFilter.toLowerCase()
+      return st === filterKey
     })
-  }, [
-    returns,
-    suppliersMap,
-    grnsMap,
-    searchQuery,
-    supplierFilter,
-  ])
+  }, [statusFilter, tableReturns])
 
-
-  // =========================================================
-  // DELETE
-  // =========================================================
-
-  const handleDeleteConfirm = async () => {
-    if (
-      deleteTargetId === null ||
-      deleteTargetId === undefined ||
-      deleting
-    ) {
-      return
-    }
-
-    setDeleting(true)
-
+  const handleDelete = async (row) => {
+    const id = row.returnId || row.id
+    const label = row.returnNumber || `PR-${id}`
+    if (!window.confirm(`Are you sure you want to delete ${label}?`)) return
     try {
-      await deletePurchaseReturn(
-        deleteTargetId
-      )
-
-      setReturns((previous) =>
-        previous.filter((item) => {
-          const itemId =
-            getReturnId(item)
-
-          return (
-            String(itemId) !==
-            String(deleteTargetId)
-          )
+      const res = await deletePurchaseReturn(id)
+      if (res?.success || !res?.error) {
+        showToast({
+          type: 'success',
+          title: 'Purchase Returns',
+          message: `${label} deleted successfully.`,
         })
-      )
-
-      showToast(
-        'Purchase return deleted successfully.',
-        'success'
-      )
-
+        fetchReturns()
+      } else {
+        showToast({
+          type: 'error',
+          title: 'Delete Failed',
+          message: getPurchaseReturnErrorMessage(res, 'Failed to delete return.'),
+        })
+      }
     } catch (err) {
-      console.error(
-        'Delete Purchase Return error:',
-        err
-      )
-
-      showToast(
-        err?.response?.data?.message ||
-        err?.response?.data?.title ||
-        err?.message ||
-        'Failed to delete purchase return.',
-        'error'
-      )
-    } finally {
-      setDeleting(false)
-      setDeleteTargetId(null)
+      showToast({
+        type: 'error',
+        title: 'Delete Error',
+        message: getPurchaseReturnErrorMessage(err, 'Failed to delete return.'),
+      })
     }
   }
 
-
-  // =========================================================
-  // CREATE
-  // =========================================================
-
-  const handleCreate = () => {
-    navigate(
-      '/inventory/purchase-returns/create'
-    )
-  }
-
-
-  // =========================================================
-  // VIEW
-  // =========================================================
-
-  const handleView = (id) => {
-    if (
-      id === null ||
-      id === undefined
-    ) {
-      return
+  const handleSubmit = async (id) => {
+    try {
+      const res = await submitPurchaseReturn(id)
+      if (res?.success || !res?.error) {
+        showToast({ type: 'success', title: 'Purchase Returns', message: 'Purchase return submitted for approval.' })
+        fetchReturns()
+      } else {
+        showToast({ type: 'error', title: 'Submit Failed', message: getPurchaseReturnErrorMessage(res, 'Failed to submit return.') })
+      }
+    } catch (err) {
+      showToast({ type: 'error', title: 'Submit Error', message: getPurchaseReturnErrorMessage(err, 'Failed to submit return.') })
     }
-
-    setActiveMenuId(null)
-
-    navigate(
-      `/inventory/purchase-returns/${id}`
-    )
   }
 
-
-  // =========================================================
-  // EDIT
-  // =========================================================
-
-  const handleEdit = (id) => {
-    if (
-      id === null ||
-      id === undefined
-    ) {
-      return
+  const handleApprove = async (id) => {
+    if (!window.confirm('Approve this purchase return? Inventory will be deducted and return movements logged.')) return
+    try {
+      const res = await approvePurchaseReturn(id)
+      if (res?.success || !res?.error) {
+        showToast({ type: 'success', title: 'Purchase Returns', message: 'Purchase return approved successfully.' })
+        fetchReturns()
+      } else {
+        showToast({ type: 'error', title: 'Approve Failed', message: getPurchaseReturnErrorMessage(res, 'Failed to approve return.') })
+      }
+    } catch (err) {
+      showToast({ type: 'error', title: 'Approve Error', message: getPurchaseReturnErrorMessage(err, 'Failed to approve return.') })
     }
-
-    setActiveMenuId(null)
-
-    navigate(
-      `/inventory/purchase-returns/edit/${id}`
-    )
   }
 
-
-  // =========================================================
-  // DELETE
-  // =========================================================
-
-  const handleDelete = (id) => {
-    if (
-      id === null ||
-      id === undefined
-    ) {
-      return
-    }
-
-    setActiveMenuId(null)
-    setDeleteTargetId(id)
+  const exportCSV = () => {
+    if (returns.length === 0) return
+    const headers = ['Return Number', 'GRN Number', 'Supplier', 'Return Date', 'Items', 'Total Amount', 'Status']
+    const rowsCSV = returns.map((r) => [
+      r.returnNumber || `PR-${r.returnId || r.id}`,
+      r.grnNumber || (r.grnId ? `GRN-${r.grnId}` : ''),
+      r.supplierName || '',
+      r.returnDate ? formatDate(r.returnDate) : '',
+      r.itemCount ?? r.items?.length ?? 0,
+      r.totalAmount ?? r.totalReturnAmount ?? r.grandTotal ?? 0,
+      r.status || 'Draft',
+    ])
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      [headers.join(','), ...rowsCSV.map((e) => e.join(','))].join('\n')
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement('a')
+    link.setAttribute('href', encodedUri)
+    link.setAttribute('download', `purchase-returns-${new Date().toISOString().substring(0, 10)}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
-
-  // =========================================================
-  // RESET
-  // =========================================================
-
-  const handleResetFilters = () => {
-    setSearchQuery('')
-    setSupplierFilter('')
-  }
-
-
-  // =========================================================
-  // RENDER
-  // =========================================================
-
-  return (
-    <main>
-      <PageHeader
-        title="Purchase Returns"
-        subtitle="Manage and track goods returned to suppliers."
-        primaryAction={{
-          icon: Plus,
-          label: 'Create Purchase Return',
-          onClick: handleCreate,
-        }}
-      />
-
-
-      {/* TOOLBAR */}
-
-      <section className="purchase-returns-toolbar card">
-        <div className="toolbar-search">
-          <Search
-            size={16}
-            className="search-icon"
-          />
-
-          <input
-            type="text"
-            placeholder="Search by Return ID, Supplier, GRN or Reason..."
-            value={searchQuery}
-            onChange={(event) =>
-              setSearchQuery(
-                event.target.value
-              )
-            }
-          />
-
-          {searchQuery && (
+  const returnColumns = [
+    {
+      key: 'returnNumber',
+      label: 'Return No',
+      sortable: true,
+      mobilePrimary: true,
+      tableWidth: 240,
+      style: { width: 240, minWidth: 220 },
+      headerStyle: { width: 240, minWidth: 220 },
+      searchValue: (r) =>
+        `${r.returnNumber || ''} ${r.grnNumber || ''} ${r.supplierName || ''} ${r.status || ''} ${r.reason || ''}`,
+      render: (r) => {
+        const id = r.returnId || r.id
+        return (
+          <div className="catalog-page__tree-cell">
             <button
               type="button"
-              className="clear-search-btn"
-              onClick={() =>
-                setSearchQuery('')
-              }
+              className="catalog-page__tree-toggle"
+              onClick={(e) => {
+                e.stopPropagation()
+                navigate(`/purchase-returns/returns/${id}`)
+              }}
+              title="View Return Details"
             >
-              Clear
+              <ChevronRight size={16} />
             </button>
-          )}
-        </div>
-
-
-        <div className="toolbar-filters">
-          <div className="filter-group">
-            <label htmlFor="supplier-select">
-              Supplier:
-            </label>
-
-            <select
-              id="supplier-select"
-              value={supplierFilter}
-              onChange={(event) =>
-                setSupplierFilter(
-                  event.target.value
-                )
-              }
-            >
-              <option value="">
-                All Suppliers
-              </option>
-
-              {suppliers.map((supplier) => {
-                const supplierId =
-                  getSupplierId(supplier)
-
-                if (
-                  supplierId === null ||
-                  supplierId === undefined ||
-                  supplierId === ''
-                ) {
-                  return null
-                }
-
-                return (
-                  <option
-                    key={String(supplierId)}
-                    value={String(supplierId)}
-                  >
-                    {getSupplierName(supplier)}
-                  </option>
-                )
-              })}
-            </select>
+            <RotateCcw size={16} className="catalog-page__tree-icon" style={{ color: '#059669' }} />
+            <div className="catalog-page__entity">
+              <strong style={{ color: '#059669' }}>
+                {r.returnNumber || `PR-${String(id).padStart(5, '0')}`}
+              </strong>
+              {r.returnDate ? <span>{formatDate(r.returnDate)}</span> : null}
+            </div>
           </div>
-
-
-          {(searchQuery ||
-            supplierFilter) && (
-              <button
-                className="erp-button erp-button--secondary"
-                type="button"
-                onClick={
-                  handleResetFilters
-                }
-              >
-                Reset Filters
-              </button>
-            )}
+        )
+      },
+    },
+    {
+      key: 'grnNumber',
+      label: 'GRN Number',
+      sortable: true,
+      tableWidth: 180,
+      style: { width: 180, minWidth: 160 },
+      headerStyle: { width: 180, minWidth: 160 },
+      render: (r) => (
+        <div className="sales-page__invoice-cell">
+          <ReceiptText size={15} style={{ color: '#475569' }} />
+          <strong>{r.grnNumber || (r.grnId ? `GRN-${String(r.grnId).padStart(6, '0')}` : '—')}</strong>
         </div>
-      </section>
-
-
-      {/* LOADING */}
-
-      {loading && (
-        <StateBlock
-          state="loading"
-          message="Loading purchase returns..."
-        />
-      )}
-
-
-      {/* ERROR */}
-
-      {!loading && error && (
-        <div className="purchase-returns-error-card card">
-          <AlertCircle
-            size={24}
-            className="error-icon"
+      ),
+    },
+    {
+      key: 'supplierName',
+      label: 'Supplier',
+      sortable: true,
+      tableWidth: 200,
+      style: { width: 200, minWidth: 180 },
+      headerStyle: { width: 200, minWidth: 180 },
+      searchValue: (r) => r.supplierName || '',
+      render: (r) => (
+        <div className="sales-page__customer-cell">
+          <Building2 size={15} />
+          <span style={{ whiteSpace: 'nowrap', fontWeight: 600, color: '#111827' }}>
+            {r.supplierName || 'Unassigned Supplier'}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'returnDate',
+      label: 'Date',
+      sortable: true,
+      tableWidth: 140,
+      style: { width: 140, minWidth: 120 },
+      headerStyle: { width: 140, minWidth: 120 },
+      sortValue: (r) => new Date(r.returnDate || 0).getTime() || 0,
+      render: (r) => (
+        <span style={{ whiteSpace: 'nowrap', fontWeight: 600 }}>
+          {r.returnDate ? formatDate(r.returnDate) : 'Not set'}
+        </span>
+      ),
+    },
+    {
+      key: 'itemCount',
+      label: 'Items',
+      sortable: true,
+      tableWidth: 90,
+      style: { width: 90, minWidth: 80, textAlign: 'center' },
+      headerStyle: { width: 90, minWidth: 80, textAlign: 'center' },
+      render: (r) => (
+        <span style={{ display: 'inline-block', width: '100%', textAlign: 'center', fontWeight: 600 }}>
+          {r.itemCount ?? r.items?.length ?? 1}
+        </span>
+      ),
+    },
+    {
+      key: 'totalAmount',
+      label: 'Return Amount',
+      sortable: true,
+      tableWidth: 150,
+      style: { width: 150, minWidth: 130 },
+      headerStyle: { width: 150, minWidth: 130 },
+      sortValue: (r) => Number(r.totalAmount ?? r.totalReturnAmount ?? r.grandTotal ?? 0),
+      render: (r) => (
+        <strong style={{ whiteSpace: 'nowrap', fontWeight: 600, color: '#059669' }}>
+          {formatCurrency(r.totalAmount ?? r.totalReturnAmount ?? r.grandTotal ?? 0)}
+        </strong>
+      ),
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      sortable: true,
+      mobileStatus: true,
+      tableWidth: 140,
+      style: { width: 140, minWidth: 120 },
+      headerStyle: { width: 140, minWidth: 120 },
+      render: (r) => <StatusBadge status={r.status || 'Draft'} />,
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      searchable: false,
+      hideable: false,
+      className: 'sales-page__col-actions',
+      tableWidth: 80,
+      style: { width: 80, minWidth: 70, maxWidth: 80 },
+      headerStyle: { width: 80, minWidth: 70, maxWidth: 80 },
+      render: (r) => {
+        const id = r.returnId || r.id
+        const st = r.status || 'Draft'
+        return (
+          <ActionMenu
+            iconOnly
+            label={`Actions for ${r.returnNumber || id}`}
+            actions={[
+              {
+                key: 'details',
+                label: 'View Details',
+                icon: Eye,
+                onClick: () => navigate(`/purchase-returns/returns/${id}`),
+              },
+              st === 'Draft' ? {
+                key: 'edit',
+                label: 'Edit Draft',
+                icon: Edit,
+                onClick: () => navigate(`/purchase-returns/returns/${id}/edit`),
+              } : null,
+              st === 'Draft' ? {
+                key: 'submit',
+                label: 'Submit for Approval',
+                icon: Send,
+                onClick: () => handleSubmit(id),
+              } : null,
+              st === 'Pending Approval' ? {
+                key: 'approve',
+                label: 'Approve Return',
+                icon: CheckCircle,
+                onClick: () => handleApprove(id),
+              } : null,
+              st === 'Draft' ? {
+                key: 'delete',
+                label: 'Delete Draft',
+                icon: Trash2,
+                variant: 'danger',
+                onClick: () => handleDelete(r),
+              } : null,
+            ].filter(Boolean)}
           />
+        )
+      },
+    },
+  ]
 
-          <div>
-            <h3>
-              We could not load this workspace
-            </h3>
-
-            <p>{error}</p>
+  return (
+    <div className="page sales-page">
+      {/* Compact Header matching SalesReturnsList.jsx exactly */}
+      <header className="sales-page__compact-header" aria-label="Purchase returns summary">
+        <div className="sales-page__compact-main">
+          <h1>Purchase Returns</h1>
+          <div className="sales-page__metrics" aria-label="Purchase return metrics">
+            <span className="sales-page__metric sales-page__metric--success">
+              {summary.totalCount} Returns
+            </span>
+            <span className="sales-page__metric sales-page__metric--info">
+              {formatCurrency(summary.totalValue)} Total
+            </span>
+            <span className="sales-page__metric sales-page__metric--warning">
+              {summary.pendingCount} Pending
+            </span>
+            <span className="sales-page__metric sales-page__metric--value">
+              {summary.approvedCount} Approved
+            </span>
+            <span className="sales-page__metric sales-page__metric--success">
+              {summary.completedCount} Completed
+            </span>
           </div>
+        </div>
 
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <button
-            className="erp-button erp-button--primary"
-            onClick={fetchData}
             type="button"
+            className="button button-secondary"
+            onClick={exportCSV}
+            title="Export Purchase Returns CSV"
           >
-            <RefreshCw size={14} />
+            <Download size={15} />
+            Export
+          </button>
+          <button
+            type="button"
+            className="button button-primary sales-page__add-button"
+            onClick={() => navigate('/purchase-returns/create')}
+          >
+            <Plus size={16} />
+            Create Purchase Return
+          </button>
+        </div>
+      </header>
+
+      {error ? (
+        <div className="message-box message-box--error page-error-banner" role="alert">
+          <span>{error}</span>
+          <button
+            type="button"
+            className="button button-secondary"
+            onClick={() => fetchReturns()}
+            disabled={isLoading}
+          >
+            <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
             Retry
           </button>
         </div>
-      )}
+      ) : null}
 
-
-      {/* EMPTY */}
-
-      {!loading &&
-        !error &&
-        filteredReturns.length === 0 && (
-          <div className="purchase-returns-empty card">
-            <p className="empty-title">
-              No purchase returns found
-            </p>
-
-            <p className="empty-subtitle">
-              {searchQuery ||
-                supplierFilter
-                ? 'No returns match your filter criteria.'
-                : 'Click "Create Purchase Return" to record your first return.'}
-            </p>
-
-            {!searchQuery &&
-              !supplierFilter && (
+      {/* Main Table Card reusing DataTable & Filter Toolbar */}
+      <div className="card sales-page__table-card">
+        <DataTable
+          className="sales-page__table"
+          rows={filteredReturns}
+          columns={returnColumns}
+          loading={isLoading}
+          defaultPageSize={20}
+          defaultSortKey="returnDate"
+          defaultSortDirection="desc"
+          splitToolbar
+          showSearch={selectedReturns.length === 0}
+          searchPlaceholder="Search purchase returns by return #, GRN, supplier, or status..."
+          toolbarContent={
+            selectedReturns.length === 0 ? (
+              <FilterBar className="sales-page__toolbar-actions">
                 <button
-                  className="erp-button erp-button--primary"
-                  onClick={
-                    handleCreate
-                  }
                   type="button"
+                  className="button button-secondary"
+                  onClick={() => fetchReturns()}
+                  disabled={isLoading}
                 >
-                  <Plus size={14} />
-                  Create Purchase Return
+                  <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
+                  Refresh
                 </button>
-              )}
-          </div>
-        )}
-
-
-      {/* TABLE */}
-
-      {!loading &&
-        !error &&
-        filteredReturns.length > 0 && (
-          <section className="card purchase-returns-table-container">
-            <table className="purchase-returns-table">
-              <thead>
-                <tr>
-                  <th>Return ID</th>
-                  <th>Supplier</th>
-                  <th>GRN</th>
-                  <th>Return Date</th>
-                  <th className="text-right">
-                    Total Amount
-                  </th>
-                  <th>Reason</th>
-                  <th className="text-right">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {filteredReturns.map((row) => {
-                  const returnId =
-                    getReturnId(row)
-
-                  const supplierId =
-                    getReturnSupplierId(row)
-
-                  const grnId =
-                    getReturnGrnId(row)
-
-                  const supplierName =
-                    suppliersMap[
-                    String(supplierId ?? '')
-                    ] ??
-                    row?.supplierName ??
-                    row?.supplier_name ??
-                    (
-                      supplierId
-                        ? `Supplier #${supplierId}`
-                        : '-'
-                    )
-
-                  const grnNumber =
-                    grnsMap[
-                    String(grnId ?? '')
-                    ] ??
-                    row?.grnNumber ??
-                    row?.grn_number ??
-                    (
-                      grnId
-                        ? `GRN-${grnId}`
-                        : '-'
-                    )
-
-                  const returnDate =
-                    getReturnDate(row)
-
-                  const totalAmount =
-                    getTotalAmount(row)
-
-                  const reason =
-                    row?.reason ?? ''
-
-
-                  return (
-                    <tr key={returnId}>
-                      <td className="font-semibold text-primary">
-                        {getReturnNumberDisplay(row)}
-                      </td>
-
-                      <td>
-                        {supplierName}
-                      </td>
-
-                      <td>
-                        <span className="grn-badge">
-                          {grnNumber}
-                        </span>
-                      </td>
-
-                      <td>
-                        {returnDate
-                          ? formatDate(
-                            returnDate
-                          )
-                          : '-'}
-                      </td>
-
-                      <td className="text-right font-semibold">
-                        {formatCurrency(
-                          totalAmount
-                        )}
-                      </td>
-
-                      <td
-                        className="reason-cell"
-                        title={reason}
-                      >
-                        {reason
-                          ? reason.length > 50
-                            ? `${reason.slice(
-                              0,
-                              50
-                            )}...`
-                            : reason
-                          : '-'}
-                      </td>
-
-                      <td className="text-right actions-cell">
-                        <div className="actions-dropdown-container">
-                          <button
-                            className={`action-menu-btn ${activeMenuId ===
-                              returnId
-                              ? 'active'
-                              : ''
-                              }`}
-                            type="button"
-                            title="Actions"
-                            onClick={(event) => {
-                              event.stopPropagation()
-
-                              setActiveMenuId(
-                                (previous) =>
-                                  previous ===
-                                    returnId
-                                    ? null
-                                    : returnId
-                              )
-                            }}
-                          >
-                            <MoreVertical
-                              size={18}
-                            />
-                          </button>
-
-                          {activeMenuId ===
-                            returnId && (
-                              <div
-                                className="action-dropdown-menu"
-                                onClick={(event) =>
-                                  event.stopPropagation()
-                                }
-                              >
-                                <button
-                                  type="button"
-                                  className="action-dropdown-item"
-                                  onClick={() =>
-                                    handleView(
-                                      returnId
-                                    )
-                                  }
-                                >
-                                  <Eye size={15} />
-                                  View Details
-                                </button>
-
-                                <button
-                                  type="button"
-                                  className="action-dropdown-item"
-                                  onClick={() =>
-                                    handleEdit(
-                                      returnId
-                                    )
-                                  }
-                                >
-                                  <Pencil size={15} />
-                                  Edit
-                                </button>
-
-                                <button
-                                  type="button"
-                                  className="action-dropdown-item danger-item"
-                                  onClick={() =>
-                                    handleDelete(
-                                      returnId
-                                    )
-                                  }
-                                >
-                                  <Trash2 size={15} />
-                                  Delete
-                                </button>
-                              </div>
-                            )}
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </section>
-        )}
-
-
-      {/* DELETE MODAL */}
-
-      {deleteTargetId !== null &&
-        deleteTargetId !== undefined && (
-          <FormModal
-            isOpen={true}
-            title="Delete Purchase Return?"
-            onClose={() =>
-              !deleting &&
-              setDeleteTargetId(null)
-            }
-          >
-            <div className="delete-confirm-content">
-              <p>
-                This action will permanently
-                remove this purchase return
-                and its associated items.
-              </p>
-
-              <p className="delete-warning">
-                Return ID: #{deleteTargetId}
-              </p>
-
-              <div className="form-modal-actions">
-                <button
-                  className="erp-button erp-button--secondary"
-                  type="button"
-                  disabled={deleting}
-                  onClick={() =>
-                    setDeleteTargetId(null)
-                  }
-                >
-                  Cancel
-                </button>
-
-                <button
-                  className="erp-button erp-button--danger"
-                  type="button"
-                  disabled={deleting}
-                  onClick={
-                    handleDeleteConfirm
-                  }
-                >
-                  {deleting
-                    ? 'Deleting...'
-                    : 'Delete'}
-                </button>
+              </FilterBar>
+            ) : null
+          }
+          filterContent={
+            selectedReturns.length === 0 ? (
+              <div className="sales-page__filters">
+                <div className="sales-page__status-filter">
+                  <SlidersHorizontal size={15} />
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    aria-label="Filter by status"
+                  >
+                    <option value="all">All statuses</option>
+                    <option value="Draft">Draft</option>
+                    <option value="Pending Approval">Pending Approval</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Rejected">Rejected</option>
+                  </select>
+                </div>
               </div>
-            </div>
-          </FormModal>
-        )}
-    </main>
+            ) : (
+              <FilterBar className="sales-page__selection-actions" ariaLabel="Selected return actions">
+                <div className="sales-selection-summary" aria-live="polite">
+                  <strong>{selectedReturns.length} selected</strong>
+                </div>
+                <button
+                  type="button"
+                  className="button button-secondary sales-page__selection-button"
+                  onClick={() => setSelectedReturnIds([])}
+                >
+                  Clear
+                </button>
+              </FilterBar>
+            )
+          }
+          columnStorageKey="ims.purchaseReturns.visibleColumns.v2"
+          defaultVisibleColumnKeys={[
+            'returnNumber',
+            'grnNumber',
+            'supplierName',
+            'returnDate',
+            'itemCount',
+            'totalAmount',
+            'status',
+            'actions',
+          ]}
+          fitExplicitColumnsToContainer
+          enableRowSelection
+          selectedRowKeys={selectedReturnIds}
+          onSelectionChange={setSelectedReturnIds}
+          keyField="__rowKey"
+          emptyMessage="No purchase returns available."
+        />
+      </div>
+    </div>
   )
 }

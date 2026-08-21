@@ -7,209 +7,52 @@ import { API_ENDPOINTS } from './endpoints'
  * - sales_return_items (id, return_id, product_id, variant_id, quantity, price)
  */
 export function normalizeSalesReturn(item = {}) {
-  if (!item || typeof item !== 'object') return null
+  if (!item || typeof item !== 'object' || Object.keys(item).length === 0) return null
 
-  let source = item
-  if (Array.isArray(item)) {
-    if (item.length === 0) return null
-    source = item[0]
-  }
+  const salesReturnId = item.salesReturnId ?? item.SalesReturnId ?? item.id ?? item.return_id ?? ''
+  if (!salesReturnId && !item.returnNumber && !item.ReturnNumber && !item.return_number) return null
 
-  if (source && typeof source === 'object') {
-    if (source.salesReturn && typeof source.salesReturn === 'object') source = source.salesReturn
-    else if (source.SalesReturn && typeof source.SalesReturn === 'object') source = source.SalesReturn
-    else if (source.return && typeof source.return === 'object') source = source.return
-    else if (source.Return && typeof source.Return === 'object') source = source.Return
-    else if (source.returnDetails && typeof source.returnDetails === 'object') source = source.returnDetails
-    else if (source.ReturnDetails && typeof source.ReturnDetails === 'object') source = source.ReturnDetails
-    else if (source.data && typeof source.data === 'object' && !Array.isArray(source.data)) source = source.data
-  }
-
-  if (!source || typeof source !== 'object' || Object.keys(source).length === 0) return null
-
-  const salesReturnId =
-    source.salesReturnId ??
-    source.SalesReturnId ??
-    source.returnId ??
-    source.ReturnId ??
-    source.id ??
-    source.Id ??
-    source.ID ??
-    source.return_id ??
-    source.sales_return_id ??
-    source.salesReturnID ??
-    source.returnID ??
-    source.srrId ??
-    source.SrrId ??
-    source.SRR_Id ??
-    ''
-
-  const returnNumber =
-    source.returnNumber ??
-    source.ReturnNumber ??
-    source.return_number ??
-    source.returnNo ??
-    source.ReturnNo ??
-    source.return_no ??
-    source.returnReference ??
-    source.ReturnReference ??
-    source.referenceNumber ??
-    source.ReferenceNumber ??
-    (salesReturnId ? `SRR-${String(salesReturnId).padStart(6, '0')}` : '')
-
-  if (!salesReturnId && !returnNumber) return null
-
-  const id = String(salesReturnId || returnNumber.replace(/\D/g, '') || source.id || '')
+  const id = String(salesReturnId)
+  const returnNumber = item.returnNumber ?? item.ReturnNumber ?? item.return_number ?? (id ? `SRR-${String(id).padStart(6, '0')}` : '')
   const returnId = id || returnNumber
 
-  const invoiceId = source.invoiceId ?? source.InvoiceId ?? source.invoice_id ?? source.invoice?.id ?? ''
-  const invoiceNumber =
-    source.invoiceNumber ??
-    source.InvoiceNumber ??
-    source.invoice_number ??
-    source.invoiceNo ??
-    source.InvoiceNo ??
-    source.invoice?.invoiceNumber ??
-    (invoiceId ? `INV-${String(invoiceId).padStart(6, '0')}` : '')
+  const invoiceId = item.invoiceId ?? item.InvoiceId ?? item.invoice_id ?? ''
+  const invoiceNumber = item.invoiceNumber ?? item.InvoiceNumber ?? item.invoice_number ?? (invoiceId ? `SINV-${invoiceId}` : '')
 
-  const customerId = source.customerId ?? source.CustomerId ?? source.customer_id ?? source.customer?.id ?? ''
-  const customerName =
-    source.customerName ??
-    source.CustomerName ??
-    source.customer_name ??
-    source.customer?.name ??
-    source.customer?.customerName ??
-    source.customer?.displayName ??
-    ''
+  const customerId = item.customerId ?? item.CustomerId ?? item.customer_id ?? ''
+  const customerName = item.customerName ?? item.CustomerName ?? item.customer_name ?? (item.customer?.name || '')
 
-  const returnDate =
-    source.returnDate ??
-    source.ReturnDate ??
-    source.return_date ??
-    source.createdAt ??
-    source.CreatedAt ??
-    source.created_at ??
-    source.date ??
-    ''
+  const returnDate = item.returnDate ?? item.ReturnDate ?? item.return_date ?? item.createdAt ?? item.CreatedAt ?? ''
+  const totalAmount = Number(item.totalReturnAmount ?? item.TotalReturnAmount ?? item.totalAmount ?? item.total_amount ?? 0)
+  const reason = String(item.reason ?? item.Reason ?? '').trim()
+  const status = String(item.status ?? item.Status ?? 'Completed').trim()
 
-  const totalAmount = Number(
-    source.totalReturnAmount ??
-    source.TotalReturnAmount ??
-    source.totalAmount ??
-    source.TotalAmount ??
-    source.total_amount ??
-    source.total_return_amount ??
-    source.amount ??
-    source.Amount ??
-    0
-  )
-
-  const reason = String(
-    source.reason ??
-    source.Reason ??
-    source.returnReason ??
-    source.ReturnReason ??
-    source.return_reason ??
-    ''
-  ).trim()
-
-  const status = String(source.status ?? source.Status ?? 'Completed').trim()
-
-  const rawItems = Array.isArray(source.items)
-    ? source.items
-    : Array.isArray(source.Items)
-    ? source.Items
-    : Array.isArray(source.salesReturnItems)
-    ? source.salesReturnItems
-    : Array.isArray(source.SalesReturnItems)
-    ? source.SalesReturnItems
-    : Array.isArray(source.sales_return_items)
-    ? source.sales_return_items
-    : Array.isArray(source.returnItems)
-    ? source.returnItems
-    : Array.isArray(source.ReturnItems)
-    ? source.ReturnItems
-    : Array.isArray(source.return_items)
-    ? source.return_items
-    : Array.isArray(source.lineItems)
-    ? source.lineItems
-    : Array.isArray(source.LineItems)
-    ? source.LineItems
-    : Array.isArray(source.lines)
-    ? source.lines
-    : Array.isArray(source.Lines)
-    ? source.Lines
-    : Array.isArray(source.details)
-    ? source.details
-    : Array.isArray(source.Details)
-    ? source.Details
+  const rawItems = Array.isArray(item.items)
+    ? item.items
+    : Array.isArray(item.Items)
+    ? item.Items
+    : Array.isArray(item.salesReturnItems)
+    ? item.salesReturnItems
+    : Array.isArray(item.SalesReturnItems)
+    ? item.SalesReturnItems
+    : Array.isArray(item.sales_return_items)
+    ? item.sales_return_items
     : []
 
   const items = rawItems.map((line, idx) => {
-    const lineQty = Number(
-      line.returnQuantity ??
-      line.ReturnQuantity ??
-      line.quantity ??
-      line.Quantity ??
-      line.qty ??
-      line.Qty ??
-      line.returnedQuantity ??
-      0
-    )
-    const linePrice = Number(
-      line.price ??
-      line.Price ??
-      line.unitPrice ??
-      line.UnitPrice ??
-      line.salePrice ??
-      line.unit_price ??
-      0
-    )
-    const invoicedQty = Number(
-      line.invoicedQuantity ??
-      line.InvoicedQuantity ??
-      line.receivedQuantity ??
-      line.ReceivedQuantity ??
-      line.invoicedQty ??
-      lineQty
-    )
-    const lineTotal = Number(
-      line.total ??
-      line.Total ??
-      line.lineTotal ??
-      line.LineTotal ??
-      line.amount ??
-      line.Amount ??
-      lineQty * linePrice
-    )
-
-    const prodId = line.productId ?? line.ProductId ?? line.product_id ?? line.product?.id ?? ''
-    const prodName =
-      line.productName ??
-      line.ProductName ??
-      line.product_name ??
-      line.product?.name ??
-      line.product?.productName ??
-      (prodId ? `Product #${prodId}` : '')
-
-    const varId = line.variantId ?? line.VariantId ?? line.variant_id ?? line.variant?.id ?? null
-    const varName =
-      line.variantName ??
-      line.VariantName ??
-      line.variant_name ??
-      line.variant?.name ??
-      line.variant?.variantName ??
-      line.variant?.title ??
-      ''
+    const lineQty = Number(line.returnQuantity ?? line.ReturnQuantity ?? line.quantity ?? line.qty ?? 0)
+    const linePrice = Number(line.price ?? line.Price ?? line.unitPrice ?? 0)
+    const invoicedQty = Number(line.invoicedQuantity ?? line.InvoicedQuantity ?? line.receivedQuantity ?? lineQty)
+    const lineTotal = Number(line.total ?? line.Total ?? lineQty * linePrice)
 
     return {
-      id: line.salesReturnItemId ?? line.SalesReturnItemId ?? line.returnItemId ?? line.ReturnItemId ?? line.id ?? line.Id ?? idx + 1,
-      salesReturnItemId: line.salesReturnItemId ?? line.SalesReturnItemId ?? line.returnItemId ?? line.ReturnItemId ?? line.id ?? line.Id ?? idx + 1,
-      returnId: line.returnId ?? line.ReturnId ?? line.return_id ?? id,
-      productId: prodId,
-      productName: prodName,
-      variantId: varId,
-      variantName: varName,
+      id: line.salesReturnItemId ?? line.SalesReturnItemId ?? line.id ?? idx + 1,
+      salesReturnItemId: line.salesReturnItemId ?? line.SalesReturnItemId ?? line.id ?? idx + 1,
+      returnId: line.returnId ?? line.return_id ?? id,
+      productId: line.productId ?? line.ProductId ?? line.product_id ?? '',
+      productName: line.productName ?? line.ProductName ?? line.product?.name ?? '',
+      variantId: line.variantId ?? line.VariantId ?? line.variant_id ?? null,
+      variantName: line.variantName ?? line.VariantName ?? '',
       invoicedQuantity: invoicedQty,
       receivedQuantity: invoicedQty,
       returnQuantity: lineQty,
@@ -220,10 +63,10 @@ export function normalizeSalesReturn(item = {}) {
   })
 
   return {
-    ...source,
+    ...item,
     id,
     salesReturnId: id,
-    returnId: id,
+    returnId,
     returnNumber,
     invoiceId,
     invoiceNumber,
@@ -256,77 +99,24 @@ export async function getSalesReturns(query = {}) {
  * Fetch a single sales return by ID.
  */
 export async function getSalesReturnById(id) {
-  if (!id) {
+  const response = await apiRequest(API_ENDPOINTS.salesReturns.byId(id))
+  if (!response.success) return response
+
+  const data = getResponseData(response, null)
+  const normalized = normalizeSalesReturn(data)
+
+  if (!normalized) {
     return {
+      ...response,
       success: false,
       data: null,
-      error: 'Sales return ID is required.',
+      error: 'Sales return record not found on server.',
     }
-  }
-
-  const cleanId = String(id).trim()
-  const numericId = cleanId.replace(/\D/g, '')
-
-  // 1. Try direct GET request by ID
-  let response = await apiRequest(API_ENDPOINTS.salesReturns.byId(cleanId))
-
-  // 2. If direct call failed and cleanId contains formatting (e.g. "SRR-000001"), try numeric ID
-  if ((!response || !response.success) && numericId && numericId !== cleanId) {
-    const numResponse = await apiRequest(API_ENDPOINTS.salesReturns.byId(numericId))
-    if (numResponse && numResponse.success) {
-      response = numResponse
-    }
-  }
-
-  // 3. If direct call succeeded, try normalizing the returned payload
-  if (response && response.success) {
-    const data = getResponseData(response, null)
-    const normalized = normalizeSalesReturn(data)
-    if (normalized) {
-      return {
-        ...response,
-        data: normalized,
-      }
-    }
-  }
-
-  // 4. Fallback: Search in full list of Sales Returns if direct lookup failed or yielded non-normalized data
-  try {
-    const listRes = await getSalesReturns()
-    if (listRes && listRes.success && Array.isArray(listRes.data)) {
-      const targetId = cleanId.toLowerCase()
-      const targetNumId = numericId
-
-      const matched = listRes.data.find((item) => {
-        if (!item) return false
-        const itemId = String(item.salesReturnId || item.id || item.returnId || '').trim()
-        const itemNum = String(item.returnNumber || '').trim().toLowerCase()
-
-        return (
-          itemId.toLowerCase() === targetId ||
-          (targetNumId && itemId === targetNumId) ||
-          itemNum === targetId ||
-          (itemNum && targetId.includes(itemNum)) ||
-          (itemNum && itemNum.includes(targetId))
-        )
-      })
-
-      if (matched) {
-        return {
-          success: true,
-          data: matched,
-          error: null,
-        }
-      }
-    }
-  } catch (fallbackErr) {
-    console.error('Fallback lookup for sales return failed:', fallbackErr)
   }
 
   return {
-    success: false,
-    data: null,
-    error: response?.error || 'Sales return record not found on server.',
+    ...response,
+    data: normalized,
   }
 }
 

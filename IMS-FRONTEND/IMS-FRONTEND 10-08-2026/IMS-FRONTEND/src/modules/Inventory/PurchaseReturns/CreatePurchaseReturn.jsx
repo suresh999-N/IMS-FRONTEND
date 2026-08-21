@@ -1,668 +1,581 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { AlertCircle, ArrowLeft, Info, PackageSearch, Save } from 'lucide-react'
-import PageHeader from '../../../components/common/PageHeader'
-import StateBlock from '../../../components/common/StateBlock'
+import React, { useEffect, useState, useMemo } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft, Save, Send, Trash2 } from 'lucide-react'
+import { FormControl, Input, Select } from '../../../components/erp'
 import { showToast } from '../../../components/common/toast'
+import { getLocalTodayDate, toDateInputValue } from '../../../utils/dateUtils'
+import { formatCurrency } from '../../../utils/helpers'
 import {
+  getPurchaseReturnSuppliers,
+  getPurchaseReturnGoodsReceipts,
+  getGoodsReceiptReturnItems,
   createPurchaseReturn,
   getPurchaseReturnById,
-  getPurchaseReturnGrnItems,
-  getPurchaseReturnGrns,
-  getPurchaseReturnSuppliers,
-  updatePurchaseReturn,
-} from '../../../api/purchaseReturnApi'
-import { formatCurrency } from '../../../utils/helpers'
-import './PurchaseReturns.css'
-
-const getArrayFromResponse = (response) => {
-  if (Array.isArray(response)) return response
-  if (Array.isArray(response?.data)) return response.data
-  if (Array.isArray(response?.data?.items)) return response.data.items
-  if (Array.isArray(response?.items)) return response.items
-  return null
-}
-
-const getResponseData = (response) => {
-  if (response?.data !== undefined && !Array.isArray(response?.data)) {
-    return response.data
-  }
-  return response
-}
-
-const getId = (item) => item?.id ?? item?.supplierId ?? item?.supplier_id
-const getSupplierName = (supplier) =>
-  supplier?.name ?? supplier?.supplierName ?? supplier?.supplier_name ?? (getId(supplier) ? `Supplier #${getId(supplier)}` : '-')
-
-const getGrnId = (grn) => grn?.id ?? grn?.grnId ?? grn?.grn_id
-const getGrnNumber = (grn) =>
-  grn?.grnNumber ?? grn?.grn_number ?? grn?.number ?? (getGrnId(grn) ? `GRN-${getGrnId(grn)}` : '-')
-
-const getProductId = (item) => item?.productId ?? item?.product_id
-const getVariantId = (item) => item?.variantId ?? item?.variant_id
-const getProductName = (item) =>
-  item?.productName ?? item?.product_name ?? item?.name ?? (getProductId(item) ? `Product #${getProductId(item)}` : '-')
-const getVariantName = (item) =>
-  item?.variantName ?? item?.variant_name ?? item?.variant?.name ?? item?.sku ?? (getVariantId(item) ? `Variant #${getVariantId(item)}` : '')
-
-const getNumber = (...values) => {
-  for (const value of values) {
-    if (value !== null && value !== undefined && value !== '') {
-      const number = Number(value)
-      if (Number.isFinite(number)) return number
-    }
-  }
-  return 0
-}
-
-const normalizeGrnItem = (line, index = 0) => {
-  const receivedQuantity = getNumber(
-    line?.receivedQuantity,
-    line?.quantityReceived,
-    line?.received_quantity,
-    line?.quantity,
-  )
-
-  const previouslyReturnedQuantity = getNumber(
-    line?.previouslyReturnedQuantity,
-    line?.returnedQuantity,
-    line?.alreadyReturnedQuantity,
-    line?.previously_returned_quantity,
-    line?.already_returned_quantity,
-  )
-
-  const explicitReturnableQuantity =
-    line?.returnableQuantity ??
-    line?.availableReturnQuantity ??
-    line?.remainingQuantity ??
-    line?.returnable_quantity ??
-    line?.available_return_quantity ??
-    line?.remaining_quantity
-
-  const calculatedReturnableQuantity = Math.max(0, receivedQuantity - previouslyReturnedQuantity)
-
-  const returnableQuantity =
-    explicitReturnableQuantity !== undefined &&
-    explicitReturnableQuantity !== null &&
-    explicitReturnableQuantity !== ''
-      ? Math.max(0, getNumber(explicitReturnableQuantity))
-      : calculatedReturnableQuantity
-
-  return {
-    id: `${Date.now()}-${index}-${Math.random()}`,
-    productId: String(getProductId(line) ?? ''),
-    variantId: String(getVariantId(line) ?? ''),
-    productName: getProductName(line),
-    variantName: getVariantName(line),
-    receivedQuantity: String(receivedQuantity),
-    previouslyReturnedQuantity: String(previouslyReturnedQuantity),
-    returnableQuantity: String(returnableQuantity),
-    returnQuantity: '0',
-    price: String(
-      getNumber(
-        line?.unitPrice,
-        line?.price,
-        line?.unitCost,
-        line?.purchasePrice,
-        line?.unit_price,
-        line?.unit_cost,
-      )
-    ),
-  }
-}
+  getPurchaseReturnErrorMessage,
+} from '../../../api/purchaseReturnsApi'
+import '../../POS/Sales/Sales.css'
+import '../../POS/ReturnsDamage/SalesReturns.css'
+import './CreatePurchaseReturn.css'
 
 export default function CreatePurchaseReturn() {
   const navigate = useNavigate()
-  const { id } = useParams()
-  const isEditMode = Boolean(id)
+  const { returnId: editId } = useParams()
+  const isEditing = Boolean(editId)
 
   const [suppliers, setSuppliers] = useState([])
-  const [allGrns, setAllGrns] = useState([])
-  const [items, setItems] = useState([])
-
-  const [supplierId, setSupplierId] = useState('')
-  const [grnId, setGrnId] = useState('')
-  const [returnDate, setReturnDate] = useState(() => new Date().toISOString().slice(0, 10))
-  const [reason, setReason] = useState('')
-
-  const [loading, setLoading] = useState(true)
+  const [grns, setGrns] = useState([])
+  const [loadingRefs, setLoadingRefs] = useState(true)
   const [loadingGrnItems, setLoadingGrnItems] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState('')
-  const [validationErrors, setValidationErrors] = useState({})
 
-  // Load Reference Data
-  const loadReferenceData = useCallback(async () => {
-    setLoading(true)
-    setError('')
+  const [form, setForm] = useState({
+    supplierId: '',
+    grnId: '',
+    returnDate: getLocalTodayDate(),
+    reason: 'Defective / Damaged Item',
+    notes: '',
+  })
 
-    try {
-      const suppliersResponse = await getPurchaseReturnSuppliers()
-      const supplierData = getArrayFromResponse(suppliersResponse)
+  const [items, setItems] = useState([])
 
-      if (supplierData === null) {
-        throw new Error('Supplier API returned an unexpected response format.')
+  // Load Suppliers and GRNs
+  useEffect(() => {
+    async function loadInitial() {
+      setLoadingRefs(true)
+      const supRes = await getPurchaseReturnSuppliers()
+      const grnRes = await getPurchaseReturnGoodsReceipts()
+      setLoadingRefs(false)
+
+      if (supRes.success && Array.isArray(supRes.data)) {
+        setSuppliers(supRes.data)
+      }
+      if (grnRes.success && Array.isArray(grnRes.data)) {
+        setGrns(grnRes.data)
       }
 
-      setSuppliers(supplierData)
-
-      if (isEditMode) {
-        const response = await getPurchaseReturnById(id)
-        const record = getResponseData(response)
-
-        if (!record) {
-          throw new Error('Purchase return record not found.')
-        }
-
-        const recordSupplierId = record?.supplierId ?? record?.supplier_id ?? ''
-        const recordGrnId = record?.grnId ?? record?.grn_id ?? ''
-
-        setSupplierId(String(recordSupplierId))
-        setGrnId(String(recordGrnId))
-
-        if (recordSupplierId) {
-          const grnsResponse = await getPurchaseReturnGrns(recordSupplierId)
-          const grnData = getArrayFromResponse(grnsResponse)
-          setAllGrns(grnData || [])
-        }
-
-        const dateValue = record?.returnDate ?? record?.return_date
-        if (dateValue) {
-          setReturnDate(String(dateValue).slice(0, 10))
-        }
-
-        setReason(record?.reason ?? '')
-
-        const recordItems = Array.isArray(record?.items)
-          ? record.items
-          : Array.isArray(record?.returnItems)
-          ? record.returnItems
-          : []
-
-        if (recordItems.length) {
+      if (isEditing) {
+        const detailRes = await getPurchaseReturnById(editId)
+        if (detailRes.success && detailRes.data) {
+          const rec = detailRes.data
+          setForm({
+            supplierId: String(rec.supplierId || ''),
+            grnId: String(rec.grnId || ''),
+            returnDate: toDateInputValue(rec.returnDate) || getLocalTodayDate(),
+            reason: rec.reason || 'Defective / Damaged Item',
+            notes: rec.notes || '',
+          })
           setItems(
-            recordItems.map((line, index) => ({
-              ...normalizeGrnItem(line, index),
-              returnQuantity: String(getNumber(line?.returnQuantity, line?.quantity, line?.return_quantity)),
+            (rec.items || []).map((it) => ({
+              productId: it.productId,
+              productName: it.productName || `Product #${it.productId}`,
+              sku: it.sku || '—',
+              variantId: it.variantId,
+              variantName: it.variantName,
+              quantity: Number(it.quantity ?? it.returnQuantity ?? 1),
+              price: Number(it.price ?? it.unitCost ?? it.unitPrice ?? 0),
+              unitCost: Number(it.price ?? it.unitCost ?? it.unitPrice ?? 0),
+              discount: Number(it.discount || 0),
+              tax: Number(it.tax || 0),
+              receivedQuantity: Number(it.receivedQuantity ?? it.grnQuantity ?? 9999),
+              error: null,
             }))
           )
         }
       }
-    } catch (err) {
-      setError(
-        err?.response?.data?.message ||
-        err?.response?.data?.title ||
-        err?.message ||
-        'Failed to load purchase return data.'
-      )
-    } finally {
-      setLoading(false)
     }
-  }, [id, isEditMode])
+    loadInitial()
+  }, [editId, isEditing])
 
-  useEffect(() => {
-    loadReferenceData()
-  }, [loadReferenceData])
+  // When Supplier changes, filter GRNs
+  async function handleSupplierChange(supplierId) {
+    setForm((prev) => ({ ...prev, supplierId, grnId: '' }))
+    setItems([])
+    if (supplierId) {
+      const res = await getPurchaseReturnGoodsReceipts(Number(supplierId))
+      if (res.success && Array.isArray(res.data)) {
+        setGrns(res.data)
+      }
+    }
+  }
 
-  // Filter GRNs by Supplier
-  const availableGrns = useMemo(() => {
-    if (!supplierId) return []
-    return allGrns.filter((grn) => {
-      const grnSupplierId = grn?.supplierId ?? grn?.supplier_id ?? grn?.supplier?.id
-      return String(grnSupplierId ?? '') === String(supplierId)
+  // When GRN changes, load products from GRN
+  async function handleGrnChange(grnId) {
+    setForm((prev) => ({ ...prev, grnId }))
+    setItems([])
+
+    if (grnId) {
+      setLoadingGrnItems(true)
+      const res = await getGoodsReceiptReturnItems(Number(grnId))
+      setLoadingGrnItems(false)
+
+      if (res.success && Array.isArray(res.data)) {
+        setItems(
+          res.data.map((it) => {
+            const rawPrice = Number(it.rawUnitPrice ?? it.unitPrice ?? it.unitCost ?? it.price ?? 0)
+            const discount = Number(it.discount || 0)
+            const tax = Number(it.tax || it.taxPercentage || 0)
+            const recQty = Number(it.receivedQuantity || 0)
+
+            return {
+              productId: it.productId,
+              productName: it.productName || `Product #${it.productId}`,
+              sku: it.sku || '—',
+              variantId: it.variantId || null,
+              variantName: it.variantName || null,
+              quantity: recQty > 0 ? recQty : 1,
+              price: rawPrice,
+              unitCost: rawPrice,
+              discount: discount,
+              tax: tax,
+              receivedQuantity: recQty,
+              error: null,
+            }
+          })
+        )
+      }
+    }
+  }
+
+  // Handle Return Qty input change with auto-correction & inline validation
+  function handleQuantityChange(idx, rawValue) {
+    setItems((prev) => {
+      const next = [...prev]
+      const currentItem = { ...next[idx] }
+      const maxAllowed = currentItem.receivedQuantity > 0 ? currentItem.receivedQuantity : 999999
+
+      // Enforce positive whole numbers only
+      const digitsOnly = String(rawValue || '').replace(/[^0-9]/g, '')
+
+      if (!digitsOnly || digitsOnly === '0') {
+        currentItem.quantity = ''
+        currentItem.error = 'Qty required (min 1).'
+      } else {
+        let num = parseInt(digitsOnly, 10)
+        if (num > maxAllowed) {
+          currentItem.quantity = maxAllowed
+          currentItem.error = `Maximum return quantity is ${maxAllowed}.`
+        } else {
+          currentItem.quantity = num
+          currentItem.error = null
+        }
+      }
+
+      next[idx] = currentItem
+      return next
     })
-  }, [allGrns, supplierId])
+  }
 
-  // Total Return Amount Calculation
-  const totalReturnAmount = useMemo(
-    () =>
-      items.reduce(
-        (sum, item) => sum + getNumber(item.returnQuantity) * getNumber(item.price),
-        0
-      ),
-    [items]
+  function handleRemoveItem(idx) {
+    setItems((prev) => prev.filter((_, i) => i !== idx))
+  }
+
+  // Live ERP Financial Breakdown Calculations
+  const calculatedTotals = useMemo(() => {
+    let subtotal = 0
+    let discount = 0
+    let tax = 0
+
+    items.forEach((item) => {
+      const qty = Number(item.quantity || 0)
+      const unitPrice = Number(item.price || item.unitCost || 0)
+      const discPercent = Number(item.discount || 0)
+      const taxRate = Number(item.tax || 0)
+
+      const grossAmount = qty * unitPrice
+      const discountAmount = grossAmount * (discPercent / 100)
+      const taxableAmount = grossAmount - discountAmount
+      const taxAmount = taxableAmount * (taxRate / 100)
+
+      subtotal += grossAmount
+      discount += discountAmount
+      tax += taxAmount
+    })
+
+    const total = subtotal - discount + tax
+    return {
+      subtotal: Math.round(subtotal * 100) / 100,
+      discount: Math.round(discount * 100) / 100,
+      tax: Math.round(tax * 100) / 100,
+      total: Math.round(total * 100) / 100,
+    }
+  }, [items])
+
+  const hasValidationErrors = items.some(
+    (it) => it.error || !it.quantity || Number(it.quantity) <= 0,
   )
 
-  // Load GRN Items
-  const loadGrnItems = useCallback(async (selectedGrnId) => {
-    if (!selectedGrnId) {
-      setItems([])
+  async function handleSubmit(e, submitForApproval = false) {
+    if (e) e.preventDefault()
+
+    if (!form.supplierId) {
+      showToast({ type: 'error', title: 'Validation Error', message: 'Please select a supplier.' })
       return
     }
 
-    setLoadingGrnItems(true)
-    setValidationErrors((prev) => ({ ...prev, grnItems: undefined }))
-
-    try {
-      const response = await getPurchaseReturnGrnItems(selectedGrnId)
-      const rawItems = getArrayFromResponse(response)
-
-      if (rawItems === null) {
-        throw new Error('GRN items API returned an unexpected response format.')
-      }
-
-      if (!rawItems.length) {
-        throw new Error('No returnable items found for the selected GRN.')
-      }
-
-      const normalizedItems = rawItems
-        .map(normalizeGrnItem)
-        .filter((item) => getNumber(item.returnableQuantity) > 0)
-
-      if (!normalizedItems.length) {
-        throw new Error('All items in this GRN have already been returned.')
-      }
-
-      setItems(normalizedItems)
-    } catch (err) {
-      setItems([])
-      setValidationErrors((prev) => ({
-        ...prev,
-        grnItems: err?.response?.data?.message || err?.message || 'Failed to load GRN returnable items.',
-      }))
-    } finally {
-      setLoadingGrnItems(false)
-    }
-  }, [])
-
-  // Handle Supplier Change
-  const handleSupplierChange = async (event) => {
-    const selectedSupplierId = event.target.value
-    setSupplierId(selectedSupplierId)
-    setGrnId('')
-    setItems([])
-    setAllGrns([])
-    setValidationErrors({})
-
-    if (selectedSupplierId) {
-      try {
-        const response = await getPurchaseReturnGrns(selectedSupplierId)
-        const grnData = getArrayFromResponse(response)
-        setAllGrns(grnData || [])
-      } catch (err) {
-        showToast('Failed to load Goods Receipts for selected supplier.', 'error')
-      }
-    }
-  }
-
-  // Handle GRN Change
-  const handleGrnChange = async (event) => {
-    const selectedGrnId = event.target.value
-    setGrnId(selectedGrnId)
-    setItems([])
-    setValidationErrors({})
-
-    if (selectedGrnId) {
-      await loadGrnItems(selectedGrnId)
-    }
-  }
-
-  // Handle Return Quantity Input
-  const handleReturnQuantityChange = (index, value) => {
-    setItems((previous) =>
-      previous.map((item, itemIndex) =>
-        itemIndex === index ? { ...item, returnQuantity: value } : item
-      )
-    )
-    setValidationErrors((prev) => ({ ...prev, itemErrors: undefined }))
-  }
-
-  // Validation
-  const validateForm = () => {
-    const errors = {}
-    if (!supplierId) errors.supplierId = 'Supplier is required.'
-    if (!grnId) errors.grnId = 'Goods Receipt / GRN is required.'
-    if (!returnDate) errors.returnDate = 'Return date is required.'
-    if (!reason.trim()) errors.reason = 'Reason for return is required.'
-    if (!items.length) errors.items = 'No returnable items available for this GRN.'
-
-    const itemErrors = []
-    items.forEach((item, index) => {
-      const rowErrors = {}
-      const returnQuantity = getNumber(item.returnQuantity)
-      const returnableQuantity = getNumber(item.returnableQuantity)
-      const price = getNumber(item.price)
-
-      if (returnQuantity <= 0) {
-        rowErrors.returnQuantity = 'Return quantity must be greater than 0.'
-      }
-      if (returnQuantity > returnableQuantity) {
-        rowErrors.returnQuantity = `Cannot return more than ${returnableQuantity}.`
-      }
-      if (price < 0) {
-        rowErrors.price = 'Unit price cannot be negative.'
-      }
-
-      if (Object.keys(rowErrors).length) {
-        itemErrors[index] = rowErrors
-      }
-    })
-
-    if (itemErrors.length) errors.itemErrors = itemErrors
-    setValidationErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
-  // Submit Handler
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    if (submitting) return
-
-    if (!validateForm()) {
-      showToast('Please resolve validation errors before submitting.', 'error')
+    if (!form.grnId) {
+      showToast({ type: 'error', title: 'Validation Error', message: 'Please select a Goods Receipt (GRN).' })
       return
+    }
+
+    if (items.length === 0) {
+      showToast({ type: 'error', title: 'Validation Error', message: 'At least one return line item is required.' })
+      return
+    }
+
+    if (hasValidationErrors) {
+      showToast({ type: 'error', title: 'Validation Error', message: 'Please correct invalid return quantities before submitting.' })
+      return
+    }
+
+    const payload = {
+      supplierId: Number(form.supplierId),
+      grnId: Number(form.grnId),
+      returnDate: form.returnDate,
+      reason: form.reason,
+      notes: form.notes,
+      totalAmount: calculatedTotals.total,
+      submitForApproval,
+      items: items.map((it) => ({
+        productId: Number(it.productId),
+        variantId: it.variantId ? Number(it.variantId) : null,
+        quantity: Number(it.quantity),
+        price: Number(it.price || it.unitCost || 0),
+      })),
     }
 
     setSubmitting(true)
-    try {
-      const payload = {
-        supplierId: Number(supplierId),
-        grnId: Number(grnId),
-        returnDate,
-        reason: reason.trim(),
-        items: items.map((item) => ({
-          productId: Number(item.productId),
-          variantId: item.variantId ? Number(item.variantId) : null,
-          returnQuantity: Number(item.returnQuantity),
-        })),
-      }
+    const response = await createPurchaseReturn(payload)
+    setSubmitting(false)
 
-      if (isEditMode) {
-        await updatePurchaseReturn(id, payload)
-      } else {
-        await createPurchaseReturn(payload)
-      }
-
-      showToast(
-        isEditMode ? 'Purchase return updated successfully.' : 'Purchase return created successfully.',
-        'success'
-      )
-      navigate('/inventory/purchase-returns')
-    } catch (err) {
-      showToast(err?.response?.data?.message || err?.message || 'Failed to save purchase return.', 'error')
-    } finally {
-      setSubmitting(false)
+    if (response.success && response.data) {
+      showToast({
+        type: 'success',
+        title: 'Purchase Return Saved',
+        message: `${response.data.returnNumber || 'PR'} saved successfully!`,
+      })
+      navigate('/purchase-returns/returns')
+    } else {
+      showToast({
+        type: 'error',
+        title: 'Submission Failed',
+        message: getPurchaseReturnErrorMessage(response, 'Failed to save purchase return.'),
+      })
     }
   }
 
-  if (loading) {
-    return <StateBlock state="loading" message="Loading purchase return data..." />
-  }
-
-  if (error) {
-    return (
-      <main className="create-purchase-return-page">
-        <PageHeader title={isEditMode ? `Edit Purchase Return #${id}` : 'Create Purchase Return'} />
-        <div className="card purchase-returns-error-card" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <AlertCircle size={24} className="error-icon" style={{ color: '#dc2626' }} />
-          <div style={{ flex: 1 }}>
-            <h3 style={{ margin: '0 0 4px 0' }}>Unable to load Purchase Return</h3>
-            <p style={{ margin: 0, color: '#64748b' }}>{error}</p>
-          </div>
-          <button type="button" className="erp-button erp-button--primary" onClick={loadReferenceData}>
-            Retry
-          </button>
-        </div>
-      </main>
-    )
-  }
-
   return (
-    <main className="create-purchase-return-page">
-      <PageHeader
-        title={isEditMode ? `Edit Purchase Return #${id}` : 'Create Purchase Return'}
-        subtitle={
-          isEditMode
-            ? 'Update the supplier goods return transaction.'
-            : 'Return defective or excess goods to the supplier against a GRN.'
-        }
-        primaryAction={{
-          icon: ArrowLeft,
-          label: 'Back to Returns',
-          onClick: () => navigate('/inventory/purchase-returns'),
-          variant: 'secondary',
-        }}
-      />
-
-      <form onSubmit={handleSubmit} noValidate>
-        {/* Step 1: Header Details */}
-        <section className="card form-section-card">
-          <div className="section-header-title-container">
-            <span className="section-step-badge">1</span>
-            <h3 className="section-title-text">Return Header Details</h3>
-            <span className="section-subtitle-text">Select supplier and GRN to load returnable items</span>
+    <div className="create-sales-return-page">
+      {/* Clean Compact Header */}
+      <header className="sales-page__compact-header" style={{ marginBottom: '0.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <Link to="/purchase-returns/returns" className="button button-secondary" style={{ minHeight: '34px', padding: '0 0.65rem' }} title="Back to Purchase Returns">
+            <ArrowLeft size={16} />
+          </Link>
+          <div>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111827', margin: 0, lineHeight: 1.2 }}>
+              {isEditing ? 'Edit Purchase Return' : 'Create Purchase Return'}
+            </h1>
+            <p style={{ fontSize: '0.8125rem', color: '#6b7280', margin: '0.1rem 0 0 0' }}>
+              Select a Goods Receipt (GRN) to return products back to the supplier.
+            </p>
           </div>
+        </div>
 
-          <div className="form-grid">
-            {/* Supplier Field */}
-            <div className="form-field">
-              <label htmlFor="supplierId">
-                Supplier <span className="required-star">*</span>
-              </label>
-              <select
-                id="supplierId"
-                value={supplierId}
-                onChange={handleSupplierChange}
-                disabled={isEditMode}
-                className={validationErrors.supplierId ? 'input-error' : ''}
-              >
-                <option value="">-- Select Supplier --</option>
-                {suppliers.map((supplier) => {
-                  const supplierValue = String(getId(supplier) ?? '')
-                  if (!supplierValue) return null
-                  return (
-                    <option key={supplierValue} value={supplierValue}>
-                      {getSupplierName(supplier)}
-                    </option>
-                  )
-                })}
-              </select>
-              {validationErrors.supplierId ? (
-                <span className="field-error">{validationErrors.supplierId}</span>
-              ) : (
-                <div className="field-hint-pill">
-                  <Info size={13} /> Select supplier first
-                </div>
-              )}
-            </div>
-
-            {/* GRN Field */}
-            <div className="form-field">
-              <label htmlFor="grnId">
-                Goods Receipt / GRN <span className="required-star">*</span>
-              </label>
-              <select
-                id="grnId"
-                value={grnId}
-                onChange={handleGrnChange}
-                disabled={!supplierId || isEditMode}
-                className={validationErrors.grnId ? 'input-error' : ''}
-              >
-                <option value="">
-                  {!supplierId
-                    ? '-- Select Supplier First --'
-                    : availableGrns.length === 0
-                    ? 'No eligible GRNs available'
-                    : '-- Select GRN --'}
-                </option>
-                {availableGrns.map((grn) => {
-                  const value = String(getGrnId(grn) ?? '')
-                  if (!value) return null
-                  const date = grn?.receivedDate ?? grn?.received_date ?? grn?.date
-                  return (
-                    <option key={value} value={value}>
-                      {getGrnNumber(grn)}
-                      {date ? ` (${String(date).slice(0, 10)})` : ''}
-                    </option>
-                  )
-                })}
-              </select>
-              {validationErrors.grnId && <span className="field-error">{validationErrors.grnId}</span>}
-              {validationErrors.grnItems && <span className="field-error">{validationErrors.grnItems}</span>}
-            </div>
-
-            {/* Return Date Field */}
-            <div className="form-field">
-              <label htmlFor="returnDate">
-                Return Date <span className="required-star">*</span>
-              </label>
-              <input
-                id="returnDate"
-                type="date"
-                value={returnDate}
-                onChange={(e) => setReturnDate(e.target.value)}
-                className={validationErrors.returnDate ? 'input-error' : ''}
-              />
-              {validationErrors.returnDate && (
-                <span className="field-error">{validationErrors.returnDate}</span>
-              )}
-            </div>
-
-            {/* Reason Field */}
-            <div className="form-field">
-              <label htmlFor="reason">
-                Reason for Return <span className="required-star">*</span>
-              </label>
-              <input
-                id="reason"
-                type="text"
-                placeholder="Enter mandatory reason for returning goods..."
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                className={validationErrors.reason ? 'input-error' : ''}
-              />
-              {validationErrors.reason && (
-                <span className="field-error">{validationErrors.reason}</span>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Step 2: Line Items */}
-        <section className="card form-section-card">
-          <div className="section-header-title-container">
-            <span className="section-step-badge">2</span>
-            <h3 className="section-title-text">Returned Line Items</h3>
-            <span className="section-subtitle-text">Adjust quantity for items returned to supplier</span>
-          </div>
-
-          {validationErrors.items && (
-            <div className="form-global-error">
-              <AlertCircle size={16} /> {validationErrors.items}
-            </div>
-          )}
-
-          {loadingGrnItems ? (
-            <StateBlock state="loading" message="Loading returnable items from GRN..." />
-          ) : items.length === 0 ? (
-            <div className="empty-items-notice-card">
-              <PackageSearch size={36} className="empty-icon" />
-              <p className="empty-title">No Line Items Loaded</p>
-              <p className="empty-desc">
-                {grnId
-                  ? 'No returnable items found for the selected GRN.'
-                  : 'Select a Supplier and GRN above to automatically populate returnable items.'}
-              </p>
-            </div>
-          ) : (
-            <div className="items-table-container">
-              <table className="items-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: '26%' }}>Product *</th>
-                    <th style={{ width: '16%' }}>Variant</th>
-                    <th style={{ width: '13%' }}>Received Qty</th>
-                    <th style={{ width: '15%' }}>Previously Returned</th>
-                    <th style={{ width: '13%' }}>Returnable Qty</th>
-                    <th style={{ width: '13%' }}>Return Qty *</th>
-                    <th style={{ width: '12%' }}>Unit Price</th>
-                    <th style={{ width: '12%' }} className="text-right">Line Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item, index) => {
-                    const itemErr = validationErrors.itemErrors?.[index] || {}
-                    const lineTotal = getNumber(item.returnQuantity) * getNumber(item.price)
-
-                    return (
-                      <tr key={item.id}>
-                        <td className="font-semibold">{item.productName || `Product #${item.productId}`}</td>
-                        <td>{item.variantName || (item.variantId ? `Variant #${item.variantId}` : '-')}</td>
-                        <td>
-                          <input type="number" readOnly value={item.receivedQuantity} className="input-readonly" />
-                        </td>
-                        <td>
-                          <input type="number" readOnly value={item.previouslyReturnedQuantity} className="input-readonly" />
-                        </td>
-                        <td>
-                          <input type="number" readOnly value={item.returnableQuantity} className="input-readonly" />
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            max={item.returnableQuantity}
-                            placeholder="0.00"
-                            value={item.returnQuantity}
-                            onChange={(e) => handleReturnQuantityChange(index, e.target.value)}
-                            className={itemErr.returnQuantity ? 'input-error' : ''}
-                          />
-                          {itemErr.returnQuantity && (
-                            <span className="field-error">{itemErr.returnQuantity}</span>
-                          )}
-                        </td>
-                        <td>
-                          <input type="number" step="0.01" readOnly value={item.price} className="input-readonly" />
-                        </td>
-                        <td className="text-right font-semibold">{formatCurrency(lineTotal)}</td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {items.length > 0 && (
-            <div className="return-totals-summary">
-              <div className="total-amount-box">
-                <span className="total-label">Total Return Amount:</span>
-                <span className="total-value">{formatCurrency(totalReturnAmount)}</span>
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* Submit Actions */}
-        <div className="form-submit-bar">
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <Link className="button button-secondary" to="/purchase-returns/returns">
+            Cancel
+          </Link>
           <button
             type="button"
-            className="erp-button erp-button--secondary"
-            onClick={() => navigate('/inventory/purchase-returns')}
-            disabled={submitting}
-            style={{ height: '40px', padding: '0 20px', borderRadius: '8px', fontWeight: 600 }}
+            disabled={submitting || loadingRefs || hasValidationErrors}
+            onClick={(e) => handleSubmit(e, false)}
+            className="button button-secondary"
           >
-            Cancel
+            <Save size={16} /> Save Draft
           </button>
           <button
-            type="submit"
-            className="erp-button erp-button--primary"
-            disabled={submitting || loadingGrnItems}
-            style={{
-              height: '40px',
-              padding: '0 24px',
-              borderRadius: '8px',
-              fontWeight: 700,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
+            type="button"
+            disabled={submitting || loadingRefs || hasValidationErrors}
+            onClick={(e) => handleSubmit(e, true)}
+            className="button button-primary"
           >
-            <Save size={16} /> {submitting ? 'Saving Return...' : isEditMode ? 'Update Return' : 'Save Return'}
+            <Send size={16} /> Submit for Approval
           </button>
         </div>
-      </form>
-    </main>
+      </header>
+
+      {/* Row 1: Two Clean Cards */}
+      <div className="create-sales-return-top-grid">
+        {/* Left Card: Supplier & Goods Receipt */}
+        <div className="sales-returns-card" style={{ padding: '28px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <FormControl id="supplier-select" label="Supplier" required>
+              <Select
+                id="supplier-select"
+                disabled={loadingRefs || isEditing}
+                value={form.supplierId}
+                onChange={(e) => handleSupplierChange(e.target.value)}
+                required
+              >
+                <option value="">Select Supplier...</option>
+                {suppliers.map((s) => (
+                  <option key={s.supplierId || s.id} value={s.supplierId || s.id}>
+                    {s.name} {s.supplierCode ? `(${s.supplierCode})` : ''}
+                  </option>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl id="grn-select" label="Goods Receipt (GRN)" required>
+              <Select
+                id="grn-select"
+                disabled={loadingRefs || !form.supplierId || isEditing}
+                value={form.grnId}
+                onChange={(e) => handleGrnChange(e.target.value)}
+                required
+              >
+                <option value="">Select Goods Receipt...</option>
+                {grns.map((g) => (
+                  <option key={g.grnId || g.id} value={g.grnId || g.id}>
+                    {g.grnNumber || `GRN-${g.grnId}`} {g.receiptDate ? `(${new Date(g.receiptDate).toLocaleDateString()})` : ''}
+                  </option>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+        </div>
+
+        {/* Right Card: Reason for Return & Return Date */}
+        <div className="sales-returns-card" style={{ padding: '28px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <FormControl id="reason-select" label="Reason for Return">
+              <Select
+                id="reason-select"
+                value={form.reason}
+                onChange={(e) => setForm((prev) => ({ ...prev, reason: e.target.value }))}
+              >
+                <option value="Defective / Damaged Item">Defective / Damaged Item</option>
+                <option value="Wrong Product Delivered">Wrong Product Delivered</option>
+                <option value="Quality Not as Per Specification">Quality Not as Per Specification</option>
+                <option value="Excess Inventory Returned">Excess Inventory Returned</option>
+                <option value="Expired Stock">Expired Stock</option>
+                <option value="Other">Other Reason</option>
+              </Select>
+            </FormControl>
+
+            <FormControl id="return-date-input" label="Return Date" required>
+              <Input
+                id="return-date-input"
+                type="date"
+                value={form.returnDate}
+                onChange={(e) => setForm((prev) => ({ ...prev, returnDate: e.target.value }))}
+                required
+              />
+            </FormControl>
+          </div>
+        </div>
+      </div>
+
+      {/* Row 2: Full Width Additional Notes Card */}
+      <div className="sales-returns-card" style={{ padding: '20px 28px', marginTop: '1.15rem', marginBottom: '1.25rem' }}>
+        <FormControl id="notes-input" label="Additional Notes">
+          <textarea
+            id="notes-input"
+            rows={2}
+            placeholder="Enter supplier return notes or debit memo remarks..."
+            value={form.notes}
+            onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))}
+            style={{
+              width: '100%',
+              padding: '0.65rem 0.75rem',
+              border: '1px solid #d1d5db',
+              borderRadius: '8px',
+              fontSize: '0.875rem',
+              outline: 'none',
+              boxSizing: 'border-box',
+              fontFamily: 'inherit',
+            }}
+          />
+        </FormControl>
+      </div>
+
+      {/* Row 3: Returnable Products Table Card */}
+      <div className="sales-returns-card-table">
+        <div className="sales-returns-card-header">
+          <h2 className="sales-returns-card-title">
+            Returnable Products {items.length > 0 ? `(${items.length})` : ''}
+          </h2>
+        </div>
+
+        {!form.grnId ? (
+          <div style={{ padding: '3rem 2rem', textAlign: 'center', color: '#9ca3af', fontSize: '0.875rem' }}>
+            Select a Goods Receipt (GRN) above to load returnable products.
+          </div>
+        ) : loadingGrnItems ? (
+          <div style={{ padding: '3rem 2rem', textAlign: 'center', color: '#6b7280', fontSize: '0.875rem' }}>
+            Loading products from Goods Receipt...
+          </div>
+        ) : items.length === 0 ? (
+          <div style={{ padding: '3rem 2rem', textAlign: 'center', color: '#6b7280', fontSize: '0.875rem' }}>
+            No returnable products found on this Goods Receipt.
+          </div>
+        ) : (
+          <div className="sales-returns-table-wrapper">
+            <table className="sales-returns-table" style={{ width: '100%' }}>
+              <thead>
+                <tr>
+                  <th style={{ width: '36%', textAlign: 'left' }}>Product</th>
+                  <th style={{ width: '12%', textAlign: 'left' }}>SKU</th>
+                  <th style={{ width: '10%', textAlign: 'center' }}>Rec. Qty</th>
+                  <th style={{ width: '13%', textAlign: 'center' }}>Return Qty</th>
+                  <th style={{ width: '13%', textAlign: 'right' }}>Unit Cost</th>
+                  <th style={{ width: '8%', textAlign: 'center' }}>Disc %</th>
+                  <th style={{ width: '8%', textAlign: 'center' }}>Tax %</th>
+                  <th style={{ width: '14%', textAlign: 'right' }}>Line Total</th>
+                  <th style={{ width: '6%', textAlign: 'center' }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item, idx) => {
+                  const unitPrice = Number(item.price || item.unitCost || 0)
+                  const qty = Number(item.quantity || 0)
+                  const discPercent = Number(item.discount || 0)
+                  const taxRate = Number(item.tax || 0)
+
+                  const grossAmount = qty * unitPrice
+                  const discountAmount = grossAmount * (discPercent / 100)
+                  const taxableAmount = grossAmount - discountAmount
+                  const taxAmount = taxableAmount * (taxRate / 100)
+                  const lineTotal = taxableAmount + taxAmount
+
+                  return (
+                    <tr key={idx}>
+                      <td className="sales-returns-col-product" style={{ width: '36%', verticalAlign: 'middle' }}>
+                        <div className="sales-returns-product-name" title={item.productName}>
+                          {item.productName}
+                        </div>
+                        {item.variantName ? (
+                          <div className="sales-returns-product-sku">Variant: {item.variantName}</div>
+                        ) : null}
+                      </td>
+                      <td style={{ width: '12%', verticalAlign: 'middle' }}>
+                        <span className="sales-returns-product-sku" style={{ fontFamily: 'monospace' }}>
+                          {item.sku || '—'}
+                        </span>
+                      </td>
+                      <td style={{ width: '10%', textAlign: 'center', color: '#4b5563', fontWeight: 500, verticalAlign: 'middle' }}>
+                        {item.receivedQuantity ?? '—'}
+                      </td>
+                      <td style={{ width: '13%', textAlign: 'center', verticalAlign: 'middle' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            className={`sales-returns-qty-input ${item.error ? 'sales-returns-qty-input--error' : ''}`}
+                            style={{ width: '85px', textAlign: 'center' }}
+                            value={item.quantity}
+                            onChange={(e) => handleQuantityChange(idx, e.target.value)}
+                            placeholder="1"
+                            required
+                          />
+                          {item.error ? (
+                            <span style={{ fontSize: '0.7rem', color: '#dc2626', fontWeight: 600, marginTop: '2px', whiteSpace: 'nowrap' }}>
+                              {item.error}
+                            </span>
+                          ) : null}
+                        </div>
+                      </td>
+                      <td style={{ width: '13%', textAlign: 'right', color: '#374151', fontWeight: 500, verticalAlign: 'middle' }}>
+                        {formatCurrency(unitPrice)}
+                      </td>
+                      <td style={{ width: '8%', textAlign: 'center', color: '#6b7280', fontSize: '0.875rem', verticalAlign: 'middle' }}>
+                        {discPercent ? `${discPercent}%` : '0%'}
+                      </td>
+                      <td style={{ width: '8%', textAlign: 'center', color: '#6b7280', fontSize: '0.875rem', verticalAlign: 'middle' }}>
+                        {taxRate ? `${taxRate}%` : '0%'}
+                      </td>
+                      <td style={{ width: '14%', textAlign: 'right', fontWeight: 700, color: '#059669', verticalAlign: 'middle' }}>
+                        {formatCurrency(lineTotal)}
+                      </td>
+                      <td style={{ width: '6%', textAlign: 'center', verticalAlign: 'middle' }}>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItem(idx)}
+                          style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                          title="Remove Item"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Row 4: Full-Width Financial Summary & Action Bar */}
+      <div className="sales-returns-card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.25rem' }}>
+          <div style={{ flex: '1', minWidth: '240px' }}>
+            <h3 style={{ fontSize: '0.85rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em', margin: 0 }}>
+              Financial Breakdown
+            </h3>
+            <p style={{ fontSize: '0.8125rem', color: '#6b7280', margin: '0.25rem 0 0 0' }}>
+              Total return amount calculated automatically based on item quantities, discounts, and applied taxes.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
+            <div style={{ textAlign: 'right' }}>
+              <span style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block' }}>Subtotal</span>
+              <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#111827' }}>{formatCurrency(calculatedTotals.subtotal)}</span>
+            </div>
+
+            <div style={{ textAlign: 'right' }}>
+              <span style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block' }}>Discount</span>
+              <span style={{ fontSize: '0.95rem', fontWeight: 600, color: calculatedTotals.discount > 0 ? '#dc2626' : '#111827' }}>
+                {calculatedTotals.discount > 0 ? `-${formatCurrency(calculatedTotals.discount)}` : formatCurrency(0)}
+              </span>
+            </div>
+
+            <div style={{ textAlign: 'right' }}>
+              <span style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block' }}>Tax Amount</span>
+              <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#111827' }}>{formatCurrency(calculatedTotals.tax)}</span>
+            </div>
+
+            <div style={{ textAlign: 'right', paddingLeft: '1.25rem', borderLeft: '1px solid #e5e7eb' }}>
+              <span style={{ fontSize: '0.75rem', color: '#059669', fontWeight: 600, display: 'block' }}>Total Return Amount</span>
+              <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#059669' }}>{formatCurrency(calculatedTotals.total)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb', display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+          <Link className="button button-secondary" to="/purchase-returns/returns">
+            Cancel
+          </Link>
+          <button
+            type="button"
+            disabled={submitting || loadingRefs || hasValidationErrors}
+            onClick={(e) => handleSubmit(e, false)}
+            className="button button-secondary"
+          >
+            <Save size={16} /> Save Draft
+          </button>
+          <button
+            type="button"
+            disabled={submitting || loadingRefs || hasValidationErrors}
+            onClick={(e) => handleSubmit(e, true)}
+            className="button button-primary"
+          >
+            <Send size={16} /> Submit for Approval
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }

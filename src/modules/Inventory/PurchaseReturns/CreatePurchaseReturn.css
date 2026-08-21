@@ -1,0 +1,360 @@
+.create-purchase-return-page {
+  padding: 1.25rem 1.5rem 2rem 1.5rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* =========================================================
+   PAGE HEADER STYLING
+   ========================================================= */
+
+.create-purchase-return-header {
+  margin-bottom: 24px;
+}
+
+.create-purchase-return-header .app-page-header__title h1 {
+  font-size: 32px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  margin: 0 0 6px 0 !important;
+  line-height: 1.2 !important;
+}
+
+.create-purchase-return-header .page-subtitle {
+  font-size: 16px !important;
+  color: #64748b !important;
+  margin: 0 !important;
+  font-weight: 400 !important;
+}
+
+/* =========================================================
+   FORM CARD & FIELD GRID STYLING
+   ========================================================= */
+
+.create-purchase-return-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  margin-bottom: 24px;
+}
+
+/* Form Row Layout */
+.create-purchase-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.create-purchase-form-row--single {
+  grid-template-columns: 1fr;
+}
+
+.create-purchase-form-row--half {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .create-purchase-form-row,
+  .create-purchase-form-row--half {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Field Control & Label Styling */
+.create-purchase-return-card .erp-form-control {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.create-purchase-return-card .erp-form-control__label {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #374151 !important;
+  margin-bottom: 8px !important;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Input, Select & Textarea Design */
+.create-purchase-return-card select,
+.create-purchase-return-card input[type="date"],
+.create-purchase-return-card input[type="text"],
+.create-purchase-return-card .erp-select,
+.create-purchase-return-card .erp-input {
+  height: 48px !important;
+  min-height: 48px !important;
+  border-radius: 10px !important;
+  font-size: 15px !important;
+  padding: 0 14px !important;
+  border: 1px solid #d1d5db !important;
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  outline: none !important;
+  width: 100% !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.create-purchase-return-card select:focus,
+.create-purchase-return-card input[type="date"]:focus,
+.create-purchase-return-card input[type="text"]:focus,
+.create-purchase-return-card textarea:focus {
+  border-color: #059669 !important;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12) !important;
+}
+
+.create-purchase-return-card textarea {
+  border-radius: 10px !important;
+  font-size: 15px !important;
+  padding: 12px 14px !important;
+  border: 1px solid #d1d5db !important;
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  outline: none !important;
+  width: 100% !important;
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* =========================================================
+   ERP RETURNED PRODUCTS TABLE STYLING
+   ========================================================= */
+
+.erp-return-table-card {
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  margin-bottom: 24px;
+}
+
+.erp-return-table-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.erp-return-table-header-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.erp-return-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.erp-return-grid-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+}
+
+.erp-return-grid-table thead tr {
+  background-color: #f8fafc;
+  height: 42px;
+}
+
+.erp-return-grid-table th {
+  padding: 0.6rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+  vertical-align: middle;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: #f8fafc;
+}
+
+.erp-return-grid-table tbody tr {
+  height: 64px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.15s ease;
+}
+
+.erp-return-grid-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.erp-return-grid-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.erp-return-grid-table td {
+  padding: 0.65rem 0.75rem;
+  font-size: 0.875rem;
+  color: #334155;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* Product Cell */
+.erp-product-cell {
+  max-width: 280px;
+}
+
+.erp-product-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 2.7em;
+  word-break: break-word;
+}
+
+.erp-product-variant {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* SKU Cell */
+.erp-sku-text {
+  font-size: 0.8125rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #475569;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Received Qty Cell */
+.erp-rec-qty {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155;
+  text-align: center;
+}
+
+/* Return Qty Input & Validation */
+.erp-return-qty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.erp-return-qty-input {
+  width: 96px;
+  height: 38px !important;
+  min-height: 38px !important;
+  text-align: center;
+  font-size: 0.875rem !important;
+  font-weight: 600;
+  color: #0f172a;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  outline: none;
+  padding: 0 0.5rem !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.erp-return-qty-input:focus {
+  border-color: #059669 !important;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12) !important;
+}
+
+.erp-return-qty-input--error {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+  background-color: #fef2f2 !important;
+}
+
+.erp-return-qty-error-msg {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #dc2626;
+  margin-top: 4px;
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1.1;
+}
+
+/* Unit Cost & Line Total */
+.erp-unit-cost {
+  text-align: right;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+}
+
+.erp-disc-tax {
+  text-align: center;
+  font-size: 0.8125rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.erp-line-total {
+  text-align: right;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #059669;
+  white-space: nowrap;
+}
+
+/* Delete Button */
+.erp-delete-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.erp-delete-btn:hover {
+  background-color: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
+  box-shadow: 0 1px 2px rgba(239, 68, 68, 0.1);
+}
+
+/* Table Footer */
+.erp-return-grid-table tfoot tr {
+  background-color: #f8fafc;
+  border-top: 2px solid #e2e8f0;
+}
+
+.erp-return-grid-table tfoot td {
+  padding: 0.85rem 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+}

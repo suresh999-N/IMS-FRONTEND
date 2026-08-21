@@ -1217,3 +1217,76 @@ export function getExchangesReport() {
 export function getCreditNotesReport() {
   return apiRequest(API_ENDPOINTS.reports.creditNotes)
 }
+
+
+// Legacy working Sales Returns API contract used by the migrated Returns UI.
+// These wrappers intentionally preserve the old project's request/response behavior
+// while keeping the newer Returns/Exchange API exports intact.
+export const legacyGetSalesReturns = async (params = {}) => {
+  return await apiRequest(API_ENDPOINTS.salesReturns.list, { query: params });
+};
+
+export const legacyGetReturnableInvoices = async () => {
+  return await apiRequest(API_ENDPOINTS.salesReturns.returnableInvoices);
+};
+
+export const legacyGetSalesReturnById = async (id) => {
+  return await apiRequest(API_ENDPOINTS.salesReturns.byId(id));
+};
+
+export const legacyGetInvoiceReturnableDetails = async (invoiceId) => {
+  return await apiRequest(API_ENDPOINTS.salesReturns.invoiceDetails(invoiceId));
+};
+
+export const legacyCreateSalesReturn = async (data) => {
+  return await apiRequest(API_ENDPOINTS.salesReturns.list, {
+    method: "POST",
+    body: data,
+  });
+};
+
+export const legacyUpdateSalesReturn = async (id, data) => {
+  return await apiRequest(API_ENDPOINTS.salesReturns.byId(id), {
+    method: "PUT",
+    body: data,
+  });
+};
+
+export const legacyDeleteSalesReturn = async (id) => {
+  return await apiRequest(API_ENDPOINTS.salesReturns.byId(id), {
+    method: "DELETE",
+  });
+};
+
+export const legacySubmitSalesReturn = async (id) => {
+  return await apiRequest(API_ENDPOINTS.salesReturns.submit(id), {
+    method: "POST",
+  });
+};
+
+export const legacyApproveSalesReturn = async (id, data = {}) => {
+  return await apiRequest(API_ENDPOINTS.salesReturns.approve(id), {
+    method: "POST",
+    body: data,
+  });
+};
+
+export const legacyRejectSalesReturn = async (id, data) => {
+  return await apiRequest(API_ENDPOINTS.salesReturns.reject(id), {
+    method: "POST",
+    body: data,
+  });
+};
+
+export const legacyProcessSalesReturnRefund = async (id, data) => {
+  return await apiRequest(API_ENDPOINTS.salesReturns.processRefund(id), {
+    method: "POST",
+    body: data,
+  });
+};
+
+export const legacyCompleteSalesReturn = async (id) => {
+  return await apiRequest(API_ENDPOINTS.salesReturns.complete(id), {
+    method: "POST",
+  });
+};
