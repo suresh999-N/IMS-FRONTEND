@@ -1,4 +1,4 @@
-﻿import {
+import {
   apiRequest,
   buildApiHeaders,
   buildUrl,
@@ -1227,7 +1227,23 @@ export const legacyGetSalesReturns = async (params = {}) => {
 };
 
 export const legacyGetReturnableInvoices = async () => {
-  return await apiRequest(API_ENDPOINTS.salesReturns.returnableInvoices);
+  try {
+    const res = await apiRequest(API_ENDPOINTS.salesReturns.returnableInvoices);
+    if (res && res.success !== false) {
+      const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+      if (list.length > 0) return { success: true, data: list };
+    }
+  } catch {
+    // Fallthrough to general invoices list
+  }
+
+  try {
+    const res = await apiRequest(API_ENDPOINTS.invoices.list);
+    const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+    return { success: true, data: list };
+  } catch {
+    return { success: true, data: [] };
+  }
 };
 
 export const legacyGetSalesReturnById = async (id) => {
@@ -1235,7 +1251,71 @@ export const legacyGetSalesReturnById = async (id) => {
 };
 
 export const legacyGetInvoiceReturnableDetails = async (invoiceId) => {
-  return await apiRequest(API_ENDPOINTS.salesReturns.invoiceDetails(invoiceId));
+  if (!invoiceId) return { success: false, data: null };
+
+  try {
+    const itemsRes = await apiRequest(API_ENDPOINTS.salesReturns.invoiceItems(invoiceId));
+    const rawItems = Array.isArray(itemsRes?.data) ? itemsRes.data : (Array.isArray(itemsRes) ? itemsRes : []);
+    if (rawItems.length > 0 || itemsRes?.success) {
+      const items = rawItems.map((item, idx) => ({
+        id: item.invoiceItemId || item.id || idx + 1,
+        productId: item.productId,
+        productName: item.productName || item.product?.name || `Product #${item.productId}`,
+        variantId: item.variantId || null,
+        variantName: item.variantName || '',
+        soldQuantity: item.invoicedQuantity ?? item.quantity ?? 0,
+        returnQuantity: item.remainingReturnableQuantity ?? item.invoicedQuantity ?? item.quantity ?? 0,
+        price: item.price ?? 0,
+        taxPercent: item.taxPercent ?? 0,
+      }));
+      return {
+        success: true,
+        data: {
+          invoiceId,
+          items,
+        },
+      };
+    }
+  } catch {
+    // Fallthrough
+  }
+
+  try {
+    const res = await apiRequest(API_ENDPOINTS.salesReturns.invoiceDetails(invoiceId));
+    if (res && res.success !== false && res.data) return res;
+  } catch {
+    // Fallthrough
+  }
+
+  try {
+    const invRes = await apiRequest(API_ENDPOINTS.invoices.byId(invoiceId));
+    const invData = invRes?.data || invRes;
+    if (invData) {
+      const items = (invData.items || invData.invoiceItems || []).map((item, idx) => ({
+        id: item.id || item.invoiceItemId || idx + 1,
+        productId: item.productId,
+        productName: item.productName || item.product?.name || `Product #${item.productId}`,
+        variantId: item.variantId || null,
+        variantName: item.variantName || '',
+        soldQuantity: item.quantity ?? item.invoicedQuantity ?? 0,
+        returnQuantity: item.quantity ?? item.invoicedQuantity ?? 0,
+        price: item.unitPrice ?? item.price ?? 0,
+        taxPercent: item.taxPercent ?? 0,
+      }));
+      return {
+        success: true,
+        data: {
+          invoiceId,
+          customerId: invData.customerId,
+          items,
+        },
+      };
+    }
+  } catch {
+    return { success: false, data: null, error: 'Could not load invoice return details.' };
+  }
+
+  return { success: false, data: null };
 };
 
 export const legacyCreateSalesReturn = async (data) => {

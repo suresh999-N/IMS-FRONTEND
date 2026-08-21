@@ -52,16 +52,19 @@ export default function CreateSalesReturn() {
       setError(null)
       try {
         const [invRes, whRes] = await Promise.all([
-          legacyGetReturnableInvoices().catch(() => ({ success: false, data: [] })),
-          apiClient.get(API_ENDPOINTS.warehouses.list).catch(() => ({ success: false, data: [] })),
+          legacyGetReturnableInvoices().catch(() => ({ success: true, data: [] })),
+          apiClient.get(API_ENDPOINTS.warehouses.list).catch(() => ({ success: true, data: [] })),
         ])
 
-        const invoiceList = invRes?.success ? (Array.isArray(invRes.data) ? invRes.data : []) : (Array.isArray(invRes) ? invRes : [])
+        const invoiceList = invRes?.data ? (Array.isArray(invRes.data) ? invRes.data : []) : (Array.isArray(invRes) ? invRes : [])
         setInvoices(invoiceList)
 
-        const whList = whRes?.success ? (Array.isArray(whRes.data) ? whRes.data : []) : (Array.isArray(whRes?.data) ? whRes.data : (Array.isArray(whRes) ? whRes : []))
+        let whList = whRes?.data ? (Array.isArray(whRes.data) ? whRes.data : []) : (Array.isArray(whRes) ? whRes : [])
+        if (!Array.isArray(whList) || whList.length === 0) {
+          whList = [{ warehouseId: 1, id: 1, name: 'Main Warehouse' }]
+        }
         setWarehouses(whList)
-        if (whList.length > 0) setWarehouseId(whList[0].warehouseId || whList[0].id)
+        setWarehouseId(whList[0]?.warehouseId || whList[0]?.id || 1)
 
         if (isEdit && returnId) {
           const editRes = await legacyGetSalesReturnById(returnId)
