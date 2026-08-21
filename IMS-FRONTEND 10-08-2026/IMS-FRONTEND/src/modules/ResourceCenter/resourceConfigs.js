@@ -1238,10 +1238,10 @@ export const RESOURCE_CONFIGS = {
         format: 'status',
         sortable: true,
         render: (row) => {
-          const rawIsActive = row.isActive
+          const rawIsActive = readResourceValue(row, 'isActive', readResourceValue(row, 'status', ''))
           const isActive =
             rawIsActive === true ||
-            rawIsActive === 'true' ||
+            String(rawIsActive).toLowerCase() === 'true' ||
             rawIsActive === 1 ||
             String(rawIsActive).toLowerCase() === 'active' ||
             String(rawIsActive).toLowerCase() === 'yes'
