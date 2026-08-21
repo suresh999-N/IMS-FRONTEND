@@ -1974,19 +1974,33 @@ function ResourcePage({ config, navigationContent = null }) {
       if (status) {
         result[status] = (result[status] ?? 0) + 1
       }
+      const rawIsActive = readResourceValue(row, 'isActive', null)
+      if (rawIsActive !== null && rawIsActive !== '') {
+        const isActive =
+          rawIsActive === true ||
+          String(rawIsActive).toLowerCase() === 'true' ||
+          rawIsActive === 1 ||
+          String(rawIsActive).toLowerCase() === 'active' ||
+          String(rawIsActive).toLowerCase() === 'yes'
+        result.activeUsers = (result.activeUsers ?? 0) + (isActive ? 1 : 0)
+      }
       return result
     }, {})
     const unreadCount = metric?.unreadCount ?? metric?.UnreadCount ?? null
 
+    const activeCount = isUsersPage
+      ? (statusCounts.activeUsers ?? 0)
+      : config.statuslessRowsAreActive
+        ? rows.length
+        : statusCounts.active ?? statusCounts.posted ?? statusCounts.approved ?? 0
+
     return {
       total: rows.length,
-      active: config.statuslessRowsAreActive
-        ? rows.length
-        : statusCounts.active ?? statusCounts.posted ?? statusCounts.approved ?? 0,
+      active: activeCount,
       pending: (statusCounts.pending ?? statusCounts.draft ?? 0) + (hasSubCategoryDraft ? 1 : 0),
       unread: unreadCount,
     }
-  }, [config.statuslessRowsAreActive, hasSubCategoryDraft, metric, rows])
+  }, [config.statuslessRowsAreActive, hasSubCategoryDraft, isUsersPage, metric, rows])
 
   const auditSummary = useMemo(() => ({
     total: rows.length,
@@ -3138,13 +3152,13 @@ function ResourcePage({ config, navigationContent = null }) {
               <p className="resource-center__users-description">{config.subtitle}</p>
             </div>
             <div className="resource-center__inventory-metrics" aria-label={`${config.title} metrics`}>
-              <span className="resource-center__inventory-metric resource-center__inventory-metric--success">
+              <span className="resource-center__inventory-metric resource-center__inventory-metric--info">
                 {isAuditLogsPage ? auditSummary.total : summary.total} {isUsersPage ? 'Users' : isRolesPage ? 'Roles' : 'Logs'}
               </span>
-              <span className="resource-center__inventory-metric resource-center__inventory-metric--info">
+              <span className="resource-center__inventory-metric resource-center__inventory-metric--success">
                 {isAuditLogsPage ? auditSummary.modules : isUsersPage ? summary.active : summary.total} {isUsersPage ? 'Active' : isRolesPage ? 'Configured' : 'Modules'}
               </span>
-              <span className="resource-center__inventory-metric resource-center__inventory-metric--warning">
+              <span className="resource-center__inventory-metric resource-center__inventory-metric--danger">
                 {isAuditLogsPage ? auditSummary.recorded : isUsersPage ? Math.max(0, summary.total - summary.active) : summary.pending} {isUsersPage ? 'Inactive' : isRolesPage ? 'Draft' : 'Recorded'}
               </span>
             </div>
