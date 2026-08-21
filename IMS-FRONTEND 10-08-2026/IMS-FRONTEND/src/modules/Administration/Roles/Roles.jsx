@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { isValidElement, useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Activity,
@@ -3547,10 +3547,21 @@ function ResourcePage({ config, navigationContent = null }) {
                   {isUsersPage ? (viewingRecord.email || 'Staff Account') : isRolesPage ? 'Role Definition & Authorization' : (config.subtitle || 'Resource Record')}
                 </p>
               </div>
-              {viewingRecord.isActive !== undefined ? (
-                <StatusBadge type={viewingRecord.isActive === true || viewingRecord.isActive === 'true' ? 'success' : 'danger'}>
-                  {viewingRecord.isActive === true || viewingRecord.isActive === 'true' ? 'Active' : 'Inactive'}
-                </StatusBadge>
+              {readResourceValue(viewingRecord, 'isActive', null) !== null || readResourceValue(viewingRecord, 'status', null) !== null ? (
+                (() => {
+                  const rawAct = readResourceValue(viewingRecord, 'isActive', readResourceValue(viewingRecord, 'status', ''))
+                  const isAct =
+                    rawAct === true ||
+                    String(rawAct).toLowerCase() === 'true' ||
+                    rawAct === 1 ||
+                    String(rawAct).toLowerCase() === 'active' ||
+                    String(rawAct).toLowerCase() === 'yes'
+                  return (
+                    <StatusBadge type={isAct ? 'active' : 'critical'}>
+                      {isAct ? 'Active' : 'Inactive'}
+                    </StatusBadge>
+                  )
+                })()
               ) : null}
             </div>
 
@@ -3560,19 +3571,40 @@ function ResourcePage({ config, navigationContent = null }) {
                 .map((col) => {
                   const val = readResourceValue(viewingRecord, col.key, '')
                   let displayVal = typeof col.render === 'function' ? col.render(viewingRecord, referenceData) : val
-                  if (col.format === 'currency' || col.key === 'price') {
+
+                  if (col.key === 'role' || col.key === 'roleName') {
+                    if (displayVal && typeof displayVal === 'object' && !isValidElement(displayVal)) {
+                      displayVal = displayVal.roleName || displayVal.name || displayVal.title || displayVal.role || 'User'
+                    }
+                  }
+
+                  const isTrue =
+                    displayVal === true ||
+                    displayVal === 'true' ||
+                    displayVal === 1 ||
+                    String(displayVal).toLowerCase() === 'active' ||
+                    String(displayVal).toLowerCase() === 'yes'
+
+                  if (col.key === 'isActive' || col.format === 'boolean') {
+                    displayVal = (
+                      <StatusBadge type={isTrue ? 'active' : 'critical'}>
+                        {isTrue ? 'Active' : 'Inactive'}
+                      </StatusBadge>
+                    )
+                  } else if (col.format === 'currency' || col.key === 'price') {
                     displayVal = formatCurrency(Number(displayVal || 0))
                   } else if (col.format === 'date' || col.key?.toLowerCase().includes('date')) {
                     displayVal = displayVal ? formatDate(displayVal) : 'N/A'
                   } else if (col.format === 'status') {
-                    displayVal = (
-                      <StatusBadge type={getStatusType ? getStatusType(displayVal) : 'info'}>
-                        {formatStatusLabel ? formatStatusLabel(displayVal) : displayVal}
-                      </StatusBadge>
-                    )
-                  } else if (col.format === 'boolean') {
-                    displayVal = displayVal === true || displayVal === 'true' ? 'Yes' : 'No'
+                    if (!isValidElement(displayVal)) {
+                      displayVal = (
+                        <StatusBadge type={getStatusType ? getStatusType(displayVal) : 'info'}>
+                          {formatStatusLabel ? formatStatusLabel(displayVal) : displayVal}
+                        </StatusBadge>
+                      )
+                    }
                   }
+
                   return (
                     <div className="admin-details-item" key={col.key}>
                       <span className="admin-details-label">{col.label}</span>
