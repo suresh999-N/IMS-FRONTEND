@@ -715,8 +715,14 @@ function formatCellValue(row, column, referenceData) {
     return value ? formatDate(value) : 'Not set'
   }
 
-  if (column.format === 'boolean') {
-    return value === true || String(value).toLowerCase() === 'true' ? 'Yes' : 'No'
+  if (column.key === 'isActive' || column.format === 'boolean') {
+    const rawVal = readResourceValue(row, 'isActive', value)
+    const isActive = rawVal === true || String(rawVal).toLowerCase() === 'true' || String(rawVal).toLowerCase() === 'active' || rawVal === 1
+    return (
+      <StatusBadge type={isActive ? 'success' : 'danger'}>
+        {isActive ? 'Active' : 'Inactive'}
+      </StatusBadge>
+    )
   }
 
   if (column.format === 'status') {

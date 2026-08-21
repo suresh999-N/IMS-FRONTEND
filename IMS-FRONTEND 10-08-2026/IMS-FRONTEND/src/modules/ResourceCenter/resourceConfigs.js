@@ -1243,7 +1243,7 @@ export const RESOURCE_CONFIGS = {
         },
       },
       { key: 'emailVerificationStatus', label: 'Verification', format: 'status', sortable: true },
-      { key: 'isActive', label: 'Active', format: 'boolean', sortable: true },
+      { key: 'isActive', label: 'Active', format: 'status', sortable: true },
     ],
     rowActions: [
       {
