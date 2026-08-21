@@ -64,8 +64,10 @@ import {
   sanitizePhoneInput,
 } from '../../../validators/phoneValidator'
 import {
+  autoCapitalizeWords,
   getNameError,
   sanitizeNameInput,
+  shouldAutoCapitalizeField,
 } from '../../../validators/nameValidator'
 import { RESOURCE_CONFIGS, RESOURCE_HUBS } from '../../ResourceCenter/resourceConfigs'
 import './Roles.css'
@@ -1443,8 +1445,8 @@ function ResourceForm({
       nextValue = sanitizeEmailInput(value)
     } else if (field?.name === 'phoneNumber' || field?.name === 'phone' || field?.type === 'tel') {
       nextValue = sanitizePhoneInput(value, 10)
-    } else if (field?.name === 'name' || field?.name === 'fullName') {
-      nextValue = sanitizeNameInput(value)
+    } else if (shouldAutoCapitalizeField(field?.name || name, field?.type || type)) {
+      nextValue = autoCapitalizeWords(value)
     }
     updateField(name, nextValue)
     setTouched((currentValue) => ({
