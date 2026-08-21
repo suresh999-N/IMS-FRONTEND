@@ -382,6 +382,23 @@ select {
     background-color var(--transition);
 }
 
+input[autocapitalize="words"],
+textarea[autocapitalize="words"],
+input[name*="name" i],
+input[name*="title" i],
+input[name*="brand" i],
+input[name*="category" i],
+input[name*="department" i],
+input[name*="designation" i],
+input[name*="city" i],
+input[name*="state" i],
+input[name*="country" i],
+input[name*="address" i],
+input[name*="supplier" i],
+input[name*="customer" i] {
+  text-transform: capitalize;
+}
+
 input:focus,
 textarea:focus,
 select:focus {
