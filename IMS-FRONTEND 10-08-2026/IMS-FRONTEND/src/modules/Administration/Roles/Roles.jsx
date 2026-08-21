@@ -3578,17 +3578,18 @@ function ResourcePage({ config, navigationContent = null }) {
                     }
                   }
 
-                  const isTrue =
-                    displayVal === true ||
-                    displayVal === 'true' ||
-                    displayVal === 1 ||
-                    String(displayVal).toLowerCase() === 'active' ||
-                    String(displayVal).toLowerCase() === 'yes'
-
                   if (col.key === 'isActive' || col.format === 'boolean') {
+                    const rawAct = readResourceValue(viewingRecord, 'isActive', readResourceValue(viewingRecord, 'status', val))
+                    const isAct =
+                      rawAct === true ||
+                      String(rawAct).toLowerCase() === 'true' ||
+                      rawAct === 1 ||
+                      String(rawAct).toLowerCase() === 'active' ||
+                      String(rawAct).toLowerCase() === 'yes'
+
                     displayVal = (
-                      <StatusBadge type={isTrue ? 'active' : 'critical'}>
-                        {isTrue ? 'Active' : 'Inactive'}
+                      <StatusBadge type={isAct ? 'active' : 'critical'}>
+                        {isAct ? 'Active' : 'Inactive'}
                       </StatusBadge>
                     )
                   } else if (col.format === 'currency' || col.key === 'price') {
