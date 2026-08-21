@@ -324,11 +324,17 @@ export default function Dashboard() {
     setIsLoading(true)
     setError('')
 
-    const payload = await getDashboardData()
-    setDashboard(payload)
-    const firstErr = payload.errors?.[0] || ''
-    setError(firstErr ? sanitizeApiError(firstErr) : '')
-    setIsLoading(false)
+    try {
+      const payload = await getDashboardData()
+      setDashboard(payload)
+      const firstErr = payload.errors?.[0] || ''
+      setError(firstErr ? sanitizeApiError(firstErr) : '')
+    } catch (err) {
+      console.error('Failed to load dashboard:', err)
+      setError('Unable to connect to the server.')
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
 
   useEffect(() => {

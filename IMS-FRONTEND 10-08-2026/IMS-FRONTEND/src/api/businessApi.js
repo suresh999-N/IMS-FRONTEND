@@ -792,7 +792,7 @@ export function normalizeDashboardPayload(responses) {
 }
 
 export async function getDashboardData() {
-  const responses = await Promise.all([
+  const results = await Promise.allSettled([
     apiRequest(API_ENDPOINTS.dashboard.summary),
     apiRequest(API_ENDPOINTS.dashboard.lowStock),
     apiRequest(API_ENDPOINTS.dashboard.recentSales),
@@ -804,6 +804,9 @@ export async function getDashboardData() {
     getCustomers(),
     getSuppliers(),
   ])
+  const responses = results.map((res) =>
+    res.status === 'fulfilled' ? res.value : { success: false, status: 0, error: 'Unable to connect to the server.' }
+  )
   return normalizeDashboardPayload(responses)
 }
 

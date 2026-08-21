@@ -1,4 +1,4 @@
-const DEFAULT_TIMEOUT_MS = 15000
+const DEFAULT_TIMEOUT_MS = 5000
 const DEFAULT_BASE_URL = '/api'
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL || DEFAULT_BASE_URL).replace(/\/+$/, '')
 const NGROK_SKIP_BROWSER_WARNING_HEADER = 'ngrok-skip-browser-warning'
