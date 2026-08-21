@@ -818,7 +818,7 @@ function getInventoryWorkspaceMetrics(config, rows) {
       ]
     case 'users': {
       const activeCount = rows.filter((row) => {
-        const raw = row.isActive
+        const raw = readResourceValue(row, 'isActive', readResourceValue(row, 'status', ''))
         return (
           raw === true ||
           raw === 'true' ||
