@@ -1948,8 +1948,11 @@ function ResourcePage({ config, navigationContent = null }) {
   const summary = useMemo(() => {
     if (isUsersPage) {
       const activeCount = rows.filter((row) => {
-        const value = readResourceValue(row, 'isActive', readResourceValue(row, 'status', ''))
-        return value === true || String(value).toLowerCase() === 'true' || String(value).toLowerCase() === 'active' || value === 1
+        const rawAct = readResourceValue(row, 'isActive', readResourceValue(row, 'status', readResourceValue(row, 'is_active', undefined)))
+        if (rawAct !== undefined && rawAct !== null && rawAct !== '') {
+          return rawAct === true || String(rawAct).toLowerCase() === 'true' || String(rawAct).toLowerCase() === 'active' || rawAct === 1
+        }
+        return true
       }).length
 
       return {
