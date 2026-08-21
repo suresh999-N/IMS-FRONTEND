@@ -659,12 +659,13 @@ function getStatusType(value) {
     normalizedValue === 'inactive' ||
     normalizedValue === 'blocked' ||
     normalizedValue === 'failed' ||
+    normalizedValue === 'no' ||
     normalizedValue.includes('failed')
   ) {
     return 'critical'
   }
 
-  if (normalizedValue === 'verified') {
+  if (normalizedValue === 'active' || normalizedValue === 'verified' || normalizedValue === 'yes') {
     return 'active'
   }
 
@@ -714,7 +715,18 @@ function formatCellValue(row, column, referenceData) {
   }
 
   if (column.format === 'boolean') {
-    return value === true || String(value).toLowerCase() === 'true' ? 'Yes' : 'No'
+    const isTrue =
+      value === true ||
+      value === 'true' ||
+      value === 1 ||
+      String(value).toLowerCase() === 'active' ||
+      String(value).toLowerCase() === 'yes'
+
+    return (
+      <StatusBadge type={isTrue ? 'active' : 'critical'}>
+        {isTrue ? 'Active' : 'Inactive'}
+      </StatusBadge>
+    )
   }
 
   if (column.format === 'status') {

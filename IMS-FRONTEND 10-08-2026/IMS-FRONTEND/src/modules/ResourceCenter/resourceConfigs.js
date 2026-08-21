@@ -1232,8 +1232,23 @@ export const RESOURCE_CONFIGS = {
           return String(roleValue).toLowerCase() === 'user' ? 'New Employee' : roleValue
         },
       },
-      { key: 'emailVerificationStatus', label: 'Verification', format: 'status', sortable: true },
-      { key: 'isActive', label: 'Active', format: 'boolean', sortable: true },
+      {
+        key: 'isActive',
+        label: 'Active',
+        format: 'status',
+        sortable: true,
+        render: (row) => {
+          const rawIsActive = row.isActive
+          const isActive =
+            rawIsActive === true ||
+            rawIsActive === 'true' ||
+            rawIsActive === 1 ||
+            String(rawIsActive).toLowerCase() === 'active' ||
+            String(rawIsActive).toLowerCase() === 'yes'
+
+          return isActive ? 'Active' : 'Inactive'
+        },
+      },
     ],
     rowActions: [
       {

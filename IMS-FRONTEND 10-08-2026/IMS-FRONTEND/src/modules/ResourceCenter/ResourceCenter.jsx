@@ -677,8 +677,12 @@ function formatStatusLabel(value) {
 function getStatusType(value) {
   const normalizedValue = String(value ?? '').trim().toLowerCase().replace(/[_\s]+/g, '-')
 
-  if (normalizedValue === 'inactive' || normalizedValue === 'blocked' || normalizedValue === 'failed') {
+  if (normalizedValue === 'inactive' || normalizedValue === 'blocked' || normalizedValue === 'failed' || normalizedValue === 'no') {
     return 'critical'
+  }
+
+  if (normalizedValue === 'active' || normalizedValue === 'verified' || normalizedValue === 'yes') {
+    return 'active'
   }
 
   return normalizedValue || 'info'
@@ -710,7 +714,15 @@ function notifyCatalogStructureUpdate(config, action) {
 
 function formatCellValue(row, column, referenceData) {
   if (typeof column.render === 'function') {
-    return column.render(row, referenceData)
+    const rendered = column.render(row, referenceData)
+    if (column.format === 'status' && (typeof rendered === 'string' || typeof rendered === 'number')) {
+      return (
+        <StatusBadge type={getStatusType(rendered)}>
+          {formatStatusLabel(rendered)}
+        </StatusBadge>
+      )
+    }
+    return rendered
   }
 
   const value = readResourceValue(row, column.key)
@@ -724,7 +736,18 @@ function formatCellValue(row, column, referenceData) {
   }
 
   if (column.format === 'boolean') {
-    return value ? 'Yes' : 'No'
+    const isTrue =
+      value === true ||
+      value === 'true' ||
+      value === 1 ||
+      String(value).toLowerCase() === 'active' ||
+      String(value).toLowerCase() === 'yes'
+
+    return (
+      <StatusBadge type={isTrue ? 'active' : 'critical'}>
+        {isTrue ? 'Active' : 'Inactive'}
+      </StatusBadge>
+    )
   }
 
   if (column.format === 'status') {
