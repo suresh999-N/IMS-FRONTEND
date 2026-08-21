@@ -2726,13 +2726,6 @@ function ResourcePage({ config, navigationContent = null }) {
           Delete
         </button>
       ) : null}
-      <button
-        type="button"
-        className="button button-secondary resource-center__subcategories-selection-button"
-        onClick={() => setSelectedSubCategoryIds([])}
-      >
-        Clear
-      </button>
     </FilterBar>
   ) : null
   const subCategoryToolbarContent = null
@@ -2769,13 +2762,6 @@ function ResourcePage({ config, navigationContent = null }) {
           Delete
         </button>
       ) : null}
-      <button
-        type="button"
-        className="button button-secondary resource-center__product-style-selection-button"
-        onClick={() => setSelectedProductStyleRowIds([])}
-      >
-        Clear
-      </button>
     </FilterBar>
   ) : null
   const productStyleSelectedRightContent = hasSelectedProductStyleRows && canCreate ? (

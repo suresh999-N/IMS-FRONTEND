@@ -709,13 +709,6 @@ export default function Sales({ customers = [] }) {
                   Delete
                 </button>
               ) : null}
-              <button
-                type="button"
-                className="button button-secondary sales-page__selection-button"
-                onClick={() => setSelectedInvoiceIds([])}
-              >
-                Clear
-              </button>
             </FilterBar>
           )}
           columnStorageKey="ims.sales.visibleColumns.compact.v3"

@@ -949,13 +949,6 @@ export default function Suppliers({
           Archive
         </button>
       ) : null}
-      <button
-        type="button"
-        className="button button-secondary"
-        onClick={() => setSelectedSupplierIds([])}
-      >
-        Clear
-      </button>
     </FilterBar>
   ) : null
 

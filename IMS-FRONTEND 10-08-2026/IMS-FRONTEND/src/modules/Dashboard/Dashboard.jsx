@@ -359,24 +359,6 @@ export default function Dashboard() {
     };
 }, [loadDashboard]);
 
-  useEffect(() => {
-    let timer = null
-    const currentIds = (dashboard.lowStock || []).map(p => p.productId || p.id).sort().join(',')
-    const dismissedIds = sessionStorage.getItem('ims-low-stock-alert-dismissed-ids')
-
-    if (!isLoading && dashboard.lowStock && dashboard.lowStock.length > 0 && currentIds !== dismissedIds) {
-      timer = setTimeout(() => {
-        setShowLowStockModal(true)
-        sessionStorage.setItem('ims-low-stock-alert-dismissed-ids', currentIds)
-      }, 1500)
-    }
-    return () => {
-      if (timer) {
-        clearTimeout(timer)
-      }
-    }
-  }, [isLoading, dashboard.lowStock])
-
   const monthlyTrend = useMemo(
     () => buildMonthlyTrend(dashboard.monthlySales, dashboard.monthlyPurchases),
     [dashboard.monthlyPurchases, dashboard.monthlySales],
@@ -419,26 +401,10 @@ export default function Dashboard() {
         lowStockProducts={lowStockProducts}
         onRefresh={loadDashboard}
         totalProducts={totalProducts}
+        onOpenLowStockModal={() => setShowLowStockModal(true)}
       />
 
-      {lowStockProducts > 0 ? (
-        <div className="dashboard-alert dashboard-alert--danger page-error-banner" role="alert">
-          <AlertTriangle size={18} className="dashboard-alert__icon" />
-          <div className="dashboard-alert__content">
-            <strong>Inventory Attention Required:</strong>
-            <span>
-              {lowStockProducts} {lowStockProducts === 1 ? 'product is' : 'products are'} below the reorder threshold and require restocking.
-            </span>
-          </div>
-          <button
-            type="button"
-            className="dashboard-alert__action"
-            onClick={() => setShowLowStockModal(true)}
-          >
-            View Low Stock Items
-          </button>
-        </div>
-      ) : error ? (
+      {error ? (
         <div className="dashboard-alert page-error-banner" role="alert">
           <AlertTriangle size={18} className="dashboard-alert__icon" />
           <span>{sanitizeApiError(error)}</span>

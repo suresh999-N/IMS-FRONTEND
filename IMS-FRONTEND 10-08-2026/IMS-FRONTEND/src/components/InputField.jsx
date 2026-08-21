@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
-import { autoCapitalizeWords, shouldAutoCapitalizeField } from '../validators/nameValidator'
 
 export default function InputField({
   id,
@@ -35,35 +34,12 @@ export default function InputField({
 
   const hasValue = value !== undefined && value !== null && String(value).length > 0
 
-  const handleInputChange = (event) => {
-    if (!onChange) return
-
-    const isAutoCap = props.autoCapitalize === 'words' || (props.autoCapitalize !== 'off' && shouldAutoCapitalizeField(name, computedInputType))
-
-    if (isAutoCap && event?.target && typeof event.target.value === 'string' && event.target.value) {
-      const originalValue = event.target.value
-      const capitalizedValue = autoCapitalizeWords(originalValue)
-      if (capitalizedValue !== originalValue) {
-        event = {
-          ...event,
-          target: {
-            ...event.target,
-            name: event.target.name || name,
-            value: capitalizedValue,
-          },
-        }
-      }
-    }
-
-    onChange(event)
-  }
-
   const renderTrailingAction = () => {
     if (trailingAction) {
       return trailingAction
     }
     if (isPasswordField && hasValue) {
-      const ToggleIcon = showPassword ? Eye : EyeOff
+      const ToggleIcon = showPassword ? EyeOff : Eye
       return (
         <button
           type="button"
@@ -79,8 +55,6 @@ export default function InputField({
     }
     return null
   }
-
-  const isAutoCapField = props.autoCapitalize === 'words' || (props.autoCapitalize !== 'off' && shouldAutoCapitalizeField(name, computedInputType))
 
   return (
     <div className={`field ${error ? 'field--error' : ''} ${className}`.trim()}>
@@ -112,13 +86,11 @@ export default function InputField({
             value={value}
             rows={rows}
             placeholder={placeholder}
-            onChange={handleInputChange}
+            onChange={onChange}
             onBlur={onBlur}
             aria-invalid={Boolean(error)}
             aria-describedby={describedBy}
             autoComplete="off"
-            autoCapitalize={isAutoCapField ? 'words' : 'off'}
-            style={isAutoCapField ? { textTransform: 'capitalize', ...props.style } : props.style}
             {...props}
           />
         ) : (
@@ -128,13 +100,11 @@ export default function InputField({
             type={computedInputType}
             value={value}
             placeholder={placeholder}
-            onChange={handleInputChange}
+            onChange={onChange}
             onBlur={onBlur}
             aria-invalid={Boolean(error)}
             aria-describedby={describedBy}
             autoComplete="off"
-            autoCapitalize={isAutoCapField ? 'words' : 'off'}
-            style={isAutoCapField ? { textTransform: 'capitalize', ...props.style } : props.style}
             {...props}
           />
         )}

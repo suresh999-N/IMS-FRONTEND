@@ -27,21 +27,14 @@ function findTruncatedElement(cell) {
 
 function getTooltipPosition(element) {
   const rect = element.getBoundingClientRect()
-  const width = Math.min(MAX_TOOLTIP_WIDTH, window.innerWidth - VIEWPORT_GUTTER * 2)
-  const halfWidth = width / 2
-  const availableAbove = rect.top - VIEWPORT_GUTTER
-  const availableBelow = window.innerHeight - rect.bottom - VIEWPORT_GUTTER
-  const placeAbove = availableAbove >= availableBelow
-  const left = Math.max(
-    VIEWPORT_GUTTER + halfWidth,
-    Math.min(rect.left + rect.width / 2, window.innerWidth - VIEWPORT_GUTTER - halfWidth),
-  )
+  const left = Math.max(VIEWPORT_GUTTER, Math.min(rect.left, window.innerWidth - VIEWPORT_GUTTER - 100))
+  const maxWidth = Math.min(MAX_TOOLTIP_WIDTH, window.innerWidth - left - VIEWPORT_GUTTER)
 
   return {
     left,
-    maxWidth: width,
-    top: placeAbove ? rect.top - TOOLTIP_GAP : rect.bottom + TOOLTIP_GAP,
-    placement: placeAbove ? 'above' : 'below',
+    maxWidth,
+    top: rect.top,
+    placement: 'overlay',
   }
 }
 

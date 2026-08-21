@@ -2865,10 +2865,6 @@ export default function SupplierPaymentModule({
           Delete
         </button>
       ) : null}
-
-      <button type="button" className="button button-secondary payments-toolbar-button" onClick={() => setSelectedPaymentIds([])}>
-        Clear
-      </button>
     </FilterBar>
   ) : null
 

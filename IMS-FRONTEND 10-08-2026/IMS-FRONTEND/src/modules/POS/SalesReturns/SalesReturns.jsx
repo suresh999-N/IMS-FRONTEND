@@ -257,13 +257,6 @@ export default function SalesReturns() {
         <Check size={15} />
         <strong>{selectedRowKeys.length} selected</strong>
       </div>
-      <button
-        type="button"
-        className="button button-secondary resource-center__product-style-selection-button"
-        onClick={() => setSelectedRowKeys([])}
-      >
-        Clear Selection
-      </button>
     </FilterBar>
   ) : (
     <FilterBar className="purchases-page__table-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

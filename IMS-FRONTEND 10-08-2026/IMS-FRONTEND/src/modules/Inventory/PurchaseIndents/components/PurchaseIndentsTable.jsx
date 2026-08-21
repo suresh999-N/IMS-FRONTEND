@@ -367,13 +367,6 @@ export default function PurchaseIndentsTable({
           Delete
         </button>
       ) : null}
-      <button
-        type="button"
-        className="button button-secondary resource-center__product-style-selection-button"
-        onClick={onClearSelection}
-      >
-        Clear
-      </button>
     </FilterBar>
   ) : (
     <FilterBar className="purchases-page__table-actions">

@@ -556,13 +556,6 @@ export default function WarehousesTable({
           Delete
         </button>
       ) : null}
-      <button
-        type="button"
-        className="button button-secondary warehouses-table__selection-button"
-        onClick={clearSelection}
-      >
-        Clear
-      </button>
     </FilterBar>
   ) : null
 

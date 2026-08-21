@@ -51,7 +51,7 @@ import { ActionButtons, ActionMenu, DataTable, ExportMenu, FilterBar, Statistics
 import { showToast } from '../../../components/common/toast'
 import FormModal from '../../../layouts/FormModal'
 import { useAuth } from '../../../hooks/useAuth'
-import { formatCurrency, formatDate, formatName } from '../../../utils/helpers'
+import { formatCurrency, formatDate } from '../../../utils/helpers'
 import {
   emailInputProps,
   getEmailError,
@@ -64,10 +64,8 @@ import {
   sanitizePhoneInput,
 } from '../../../validators/phoneValidator'
 import {
-  autoCapitalizeWords,
   getNameError,
   sanitizeNameInput,
-  shouldAutoCapitalizeField,
 } from '../../../validators/nameValidator'
 import { RESOURCE_CONFIGS, RESOURCE_HUBS } from '../../ResourceCenter/resourceConfigs'
 import './Roles.css'
@@ -701,10 +699,13 @@ function notifyCatalogStructureUpdate(config, action) {
   }))
 }
 
-function formatCellValue(row, column, referenceData) {
+function formatCellValue(row, column, referenceData, index, sNo) {
+  if (column.key === 'sNo') {
+    return sNo ?? (index != null ? index + 1 : '-')
+  }
   const hasRender = typeof column.render === 'function'
   const value = hasRender
-    ? column.render(row, referenceData)
+    ? column.render(row, referenceData, index, sNo)
     : readResourceValue(row, column.key)
 
   if (column.format === 'currency') {
@@ -715,14 +716,8 @@ function formatCellValue(row, column, referenceData) {
     return value ? formatDate(value) : 'Not set'
   }
 
-  if (column.key === 'isActive' || column.format === 'boolean') {
-    const rawVal = readResourceValue(row, 'isActive', value)
-    const isActive = rawVal === true || String(rawVal).toLowerCase() === 'true' || String(rawVal).toLowerCase() === 'active' || rawVal === 1
-    return (
-      <StatusBadge type={isActive ? 'success' : 'danger'}>
-        {isActive ? 'Active' : 'Inactive'}
-      </StatusBadge>
-    )
+  if (column.format === 'boolean') {
+    return value === true || String(value).toLowerCase() === 'true' ? 'Yes' : 'No'
   }
 
   if (column.format === 'status') {
@@ -1451,8 +1446,8 @@ function ResourceForm({
       nextValue = sanitizeEmailInput(value)
     } else if (field?.name === 'phoneNumber' || field?.name === 'phone' || field?.type === 'tel') {
       nextValue = sanitizePhoneInput(value, 10)
-    } else if (shouldAutoCapitalizeField(field?.name || name, field?.type || type)) {
-      nextValue = autoCapitalizeWords(value)
+    } else if (field?.name === 'name' || field?.name === 'fullName') {
+      nextValue = sanitizeNameInput(value)
     }
     updateField(name, nextValue)
     setTouched((currentValue) => ({
@@ -1946,23 +1941,6 @@ function ResourcePage({ config, navigationContent = null }) {
   }, [isRolesPage, viewingRecord])
 
   const summary = useMemo(() => {
-    if (isUsersPage) {
-      const activeCount = rows.filter((row) => {
-        const rawAct = readResourceValue(row, 'isActive', readResourceValue(row, 'status', readResourceValue(row, 'is_active', undefined)))
-        if (rawAct !== undefined && rawAct !== null && rawAct !== '') {
-          return rawAct === true || String(rawAct).toLowerCase() === 'true' || String(rawAct).toLowerCase() === 'active' || rawAct === 1
-        }
-        return true
-      }).length
-
-      return {
-        total: rows.length,
-        active: activeCount,
-        pending: Math.max(0, rows.length - activeCount),
-        unread: null,
-      }
-    }
-
     const statusCounts = rows.reduce((result, row) => {
       const status = String(readResourceValue(row, 'status', '') || '').toLowerCase()
       if (status) {
@@ -1980,7 +1958,7 @@ function ResourcePage({ config, navigationContent = null }) {
       pending: (statusCounts.pending ?? statusCounts.draft ?? 0) + (hasSubCategoryDraft ? 1 : 0),
       unread: unreadCount,
     }
-  }, [config.statuslessRowsAreActive, hasSubCategoryDraft, isUsersPage, metric, rows])
+  }, [config.statuslessRowsAreActive, hasSubCategoryDraft, metric, rows])
 
   const auditSummary = useMemo(() => ({
     total: rows.length,
@@ -2678,7 +2656,7 @@ function ResourcePage({ config, navigationContent = null }) {
               ['description', 'message', 'reason', 'companyAddress', 'notes'].includes(column.key),
             mobileStatus: column.mobileStatus ?? (column.format === 'status' || ['status', 'isActive', 'type'].includes(column.key)),
             searchable: column.searchable,
-            render: (row) => formatCellValue(row, column, referenceData),
+            render: (row, index, sNo) => formatCellValue(row, column, referenceData, index, sNo),
             searchValue: (row) => String(readResourceValue(row, column.key, '') ?? ''),
             sortValue: (row) => readResourceValue(row, column.key, ''),
           }
@@ -2998,13 +2976,6 @@ function ResourcePage({ config, navigationContent = null }) {
           Delete
         </button>
       ) : null}
-      <button
-        type="button"
-        className="button button-secondary resource-center__subcategories-selection-button"
-        onClick={() => setSelectedSubCategoryIds([])}
-      >
-        Clear
-      </button>
     </FilterBar>
   ) : null
   const subCategoryToolbarContent = null
@@ -3041,13 +3012,6 @@ function ResourcePage({ config, navigationContent = null }) {
           Delete
         </button>
       ) : null}
-      <button
-        type="button"
-        className="button button-secondary resource-center__product-style-selection-button"
-        onClick={() => setSelectedProductStyleRowIds([])}
-      >
-        Clear
-      </button>
     </FilterBar>
   ) : null
   const productStyleSelectedRightContent = hasSelectedProductStyleRows && canCreate ? (
@@ -3127,13 +3091,13 @@ function ResourcePage({ config, navigationContent = null }) {
               <p className="resource-center__users-description">{config.subtitle}</p>
             </div>
             <div className="resource-center__inventory-metrics" aria-label={`${config.title} metrics`}>
-              <span className={`resource-center__inventory-metric resource-center__inventory-metric--${isUsersPage ? 'info' : 'success'}`}>
+              <span className="resource-center__inventory-metric resource-center__inventory-metric--success">
                 {isAuditLogsPage ? auditSummary.total : summary.total} {isUsersPage ? 'Users' : isRolesPage ? 'Roles' : 'Logs'}
               </span>
-              <span className={`resource-center__inventory-metric resource-center__inventory-metric--${isUsersPage ? 'success' : 'info'}`}>
+              <span className="resource-center__inventory-metric resource-center__inventory-metric--info">
                 {isAuditLogsPage ? auditSummary.modules : isUsersPage ? summary.active : summary.total} {isUsersPage ? 'Active' : isRolesPage ? 'Configured' : 'Modules'}
               </span>
-              <span className={`resource-center__inventory-metric resource-center__inventory-metric--${isUsersPage ? 'danger' : 'warning'}`}>
+              <span className="resource-center__inventory-metric resource-center__inventory-metric--warning">
                 {isAuditLogsPage ? auditSummary.recorded : isUsersPage ? Math.max(0, summary.total - summary.active) : summary.pending} {isUsersPage ? 'Inactive' : isRolesPage ? 'Draft' : 'Recorded'}
               </span>
             </div>
@@ -3516,71 +3480,37 @@ function ResourcePage({ config, navigationContent = null }) {
               </div>
               <div className="admin-details-hero-info">
                 <h3 className="admin-details-hero-title">
-                  {isUsersPage
-                    ? formatName(readResourceValue(viewingRecord, 'name', ''))
-                    : readResourceValue(viewingRecord, 'name', readResourceValue(viewingRecord, 'roleName', config.entityName))}
+                  {readResourceValue(viewingRecord, 'name', readResourceValue(viewingRecord, 'roleName', config.entityName))}
                 </h3>
                 <p className="admin-details-hero-subtitle">
                   {isUsersPage ? (viewingRecord.email || 'Staff Account') : isRolesPage ? 'Role Definition & Authorization' : (config.subtitle || 'Resource Record')}
                 </p>
               </div>
-              {(() => {
-                const heroActive = readResourceValue(viewingRecord, 'isActive')
-                if (heroActive === undefined) return null
-                const isHeroActive = heroActive === true || String(heroActive).toLowerCase() === 'true' || heroActive === 1
-                return (
-                  <StatusBadge type={isHeroActive ? 'success' : 'danger'}>
-                    {isHeroActive ? 'Active' : 'Inactive'}
-                  </StatusBadge>
-                )
-              })()}
+              {viewingRecord.isActive !== undefined ? (
+                <StatusBadge type={viewingRecord.isActive === true || viewingRecord.isActive === 'true' ? 'success' : 'danger'}>
+                  {viewingRecord.isActive === true || viewingRecord.isActive === 'true' ? 'Active' : 'Inactive'}
+                </StatusBadge>
+              ) : null}
             </div>
 
             <div className="admin-details-grid">
               {columns
                 .filter((col) => col.key !== 'actions')
                 .map((col) => {
-                  if (col.key === 'isActive') {
-                    const activeVal = readResourceValue(viewingRecord, 'isActive')
-                    const isActive = activeVal === true || String(activeVal).toLowerCase() === 'true' || activeVal === 1
-                    return (
-                      <div className="admin-details-item" key={col.key}>
-                        <span className="admin-details-label">{col.label}</span>
-                        <div className="admin-details-value">
-                          <StatusBadge type={isActive ? 'success' : 'danger'}>
-                            {isActive ? 'Active' : 'Inactive'}
-                          </StatusBadge>
-                        </div>
-                      </div>
-                    )
-                  }
-
                   const val = readResourceValue(viewingRecord, col.key, '')
                   let displayVal = typeof col.render === 'function' ? col.render(viewingRecord, referenceData) : val
-
-                  if (col.key === 'role' || col.key === 'roleName') {
-                    if (typeof displayVal === 'object' && displayVal !== null) {
-                      displayVal = displayVal.roleName || displayVal.name || displayVal.title || displayVal.role || 'N/A'
-                    } else if (!displayVal && typeof val === 'object' && val !== null) {
-                      displayVal = val.roleName || val.name || val.title || val.role || 'N/A'
-                    }
-                  }
-
-                  if (typeof displayVal !== 'object' && displayVal !== null && displayVal !== undefined) {
-                    if (col.format === 'currency' || col.key === 'price') {
-                      displayVal = formatCurrency(Number(displayVal || 0))
-                    } else if (col.format === 'date' || col.key?.toLowerCase().includes('date')) {
-                      displayVal = displayVal ? formatDate(displayVal) : 'N/A'
-                    } else if (col.format === 'status') {
-                      displayVal = (
-                        <StatusBadge type={getStatusType ? getStatusType(displayVal) : 'info'}>
-                          {formatStatusLabel ? formatStatusLabel(displayVal) : displayVal}
-                        </StatusBadge>
-                      )
-                    } else if (col.format === 'boolean') {
-                      const boolVal = val === true || String(val).toLowerCase() === 'true' || displayVal === 'Yes' || displayVal === true || String(displayVal).toLowerCase() === 'true'
-                      displayVal = boolVal ? 'Yes' : 'No'
-                    }
+                  if (col.format === 'currency' || col.key === 'price') {
+                    displayVal = formatCurrency(Number(displayVal || 0))
+                  } else if (col.format === 'date' || col.key?.toLowerCase().includes('date')) {
+                    displayVal = displayVal ? formatDate(displayVal) : 'N/A'
+                  } else if (col.format === 'status') {
+                    displayVal = (
+                      <StatusBadge type={getStatusType ? getStatusType(displayVal) : 'info'}>
+                        {formatStatusLabel ? formatStatusLabel(displayVal) : displayVal}
+                      </StatusBadge>
+                    )
+                  } else if (col.format === 'boolean') {
+                    displayVal = displayVal === true || displayVal === 'true' ? 'Yes' : 'No'
                   }
                   return (
                     <div className="admin-details-item" key={col.key}>

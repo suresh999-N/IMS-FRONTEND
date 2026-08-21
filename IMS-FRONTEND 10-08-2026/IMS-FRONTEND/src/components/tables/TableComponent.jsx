@@ -18,12 +18,37 @@ import TruncatedCellTooltip from './TruncatedCellTooltip'
 import './TableComponent.css'
 
 function getValueFromColumn(column, row) {
+  if (!column || !row) return ''
+
   if (typeof column.sortValue === 'function') {
     return column.sortValue(row)
   }
 
   if (column.key) {
-    return row[column.key]
+    let value
+    if (typeof column.key === 'string' && column.key.includes('.')) {
+      value = column.key.split('.').reduce((acc, part) => acc?.[part], row)
+    } else {
+      value = row[column.key]
+    }
+
+    if (value !== undefined && value !== null) {
+      if (typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
+        return value.name ?? value.label ?? value.title ?? value.code ?? value.value ?? value.id ?? String(value)
+      }
+      return value
+    }
+  }
+
+  if (typeof column.render === 'function') {
+    try {
+      const rendered = column.render(row)
+      if (typeof rendered === 'string' || typeof rendered === 'number') {
+        return rendered
+      }
+    } catch {
+      // Ignore render errors during value extraction
+    }
   }
 
   return ''
@@ -348,29 +373,70 @@ export default function TableComponent({
       return filteredRows
     }
 
-    const activeColumn = displayColumns.find((column) => column.key === sortConfig.key)
+    const activeColumn = columns.find(
+      (column) => (column.key || column.label) === sortConfig.key || column.key === sortConfig.key,
+    )
 
     if (!activeColumn) {
       return filteredRows
     }
 
     return [...filteredRows].sort((firstRow, secondRow) => {
-      const firstValue = getValueFromColumn(activeColumn, firstRow)
-      const secondValue = getValueFromColumn(activeColumn, secondRow)
+      const rawFirst = getValueFromColumn(activeColumn, firstRow)
+      const rawSecond = getValueFromColumn(activeColumn, secondRow)
 
-      const normalizedFirst =
-        typeof firstValue === 'string' ? firstValue.toLowerCase() : firstValue
-      const normalizedSecond =
-        typeof secondValue === 'string' ? secondValue.toLowerCase() : secondValue
+      const isFirstNil = rawFirst === null || rawFirst === undefined || rawFirst === ''
+      const isSecondNil = rawSecond === null || rawSecond === undefined || rawSecond === ''
 
-      if (normalizedFirst === normalizedSecond) {
-        return 0
+      if (isFirstNil && isSecondNil) return 0
+      if (isFirstNil) return 1
+      if (isSecondNil) return -1
+
+      const mult = sortConfig.direction === 'asc' ? 1 : -1
+
+      // Booleans
+      if (typeof rawFirst === 'boolean' || typeof rawSecond === 'boolean') {
+        return (Number(Boolean(rawFirst)) - Number(Boolean(rawSecond))) * mult
       }
 
-      const nextValue = normalizedFirst > normalizedSecond ? 1 : -1
-      return sortConfig.direction === 'asc' ? nextValue : -nextValue
+      // Numbers or Numeric strings (e.g. 10 vs 2, or "10" vs "2")
+      const numFirst = Number(rawFirst)
+      const numSecond = Number(rawSecond)
+      const isFirstNumeric =
+        typeof rawFirst === 'number' ||
+        (typeof rawFirst === 'string' && rawFirst.trim() !== '' && !Number.isNaN(numFirst))
+      const isSecondNumeric =
+        typeof rawSecond === 'number' ||
+        (typeof rawSecond === 'string' && rawSecond.trim() !== '' && !Number.isNaN(numSecond))
+
+      if (isFirstNumeric && isSecondNumeric) {
+        return (numFirst - numSecond) * mult
+      }
+
+      // Dates (ISO timestamp or Date object)
+      const parseDate = (val) => {
+        if (val instanceof Date) return val.getTime()
+        if (typeof val === 'string' && val.length >= 8) {
+          const parsed = Date.parse(val)
+          if (!Number.isNaN(parsed)) return parsed
+        }
+        return null
+      }
+
+      const dateFirst = parseDate(rawFirst)
+      const dateSecond = parseDate(rawSecond)
+
+      if (dateFirst !== null && dateSecond !== null) {
+        return (dateFirst - dateSecond) * mult
+      }
+
+      // Natural String comparison with localeCompare
+      const strFirst = String(rawFirst)
+      const strSecond = String(rawSecond)
+
+      return strFirst.localeCompare(strSecond, undefined, { numeric: true, sensitivity: 'base' }) * mult
     })
-  }, [displayColumns, filteredRows, sortConfig])
+  }, [columns, filteredRows, sortConfig])
 
   const totalPages = Math.max(1, Math.ceil(sortedRows.length / pageSize))
   const currentPage = Math.min(page, totalPages)
@@ -443,15 +509,17 @@ export default function TableComponent({
       return
     }
 
+    const columnKey = column.key || column.label
+
     setSortConfig((currentValue) => {
-      if (allowSortReset && currentValue.key === column.key && currentValue.direction === 'desc') {
+      if (allowSortReset && currentValue.key === columnKey && currentValue.direction === 'desc') {
         return { key: '', direction: 'asc' }
       }
 
       return {
-        key: column.key,
+        key: columnKey,
         direction:
-          currentValue.key === column.key && currentValue.direction === 'asc'
+          currentValue.key === columnKey && currentValue.direction === 'asc'
             ? 'desc'
             : 'asc',
       }
@@ -743,7 +811,7 @@ export default function TableComponent({
                       {column.sortable ? (
                         <button
                           type="button"
-                          className="table-component__sort-button"
+                          className={`table-component__sort-button ${sortConfig.key && (sortConfig.key === column.key || sortConfig.key === column.label) ? 'is-active' : ''}`}
                           onClick={() => handleSort(column)}
                         >
                           {column.label}
@@ -789,19 +857,22 @@ export default function TableComponent({
                         />
                       </td>
                     ) : null}
-                    {displayColumns.map((column) => (
-                      <td
-                        key={column.key || column.label}
-                        data-label={getColumnLabel(column)}
-                        data-column={column.key || getColumnLabel(column)}
-                        className={column.className || ''}
-                        style={column.style}
-                      >
-                        {typeof column.render === 'function'
-                          ? column.render(row)
-                          : row[column.key]}
-                      </td>
-                    ))}
+                    {displayColumns.map((column) => {
+                      const sNo = (currentPage - 1) * pageSize + index + 1
+                      return (
+                        <td
+                          key={column.key || column.label}
+                          data-label={getColumnLabel(column)}
+                          data-column={column.key || getColumnLabel(column)}
+                          className={column.className || ''}
+                          style={column.style}
+                        >
+                          {typeof column.render === 'function'
+                            ? column.render(row, index, sNo)
+                            : row[column.key]}
+                        </td>
+                      )
+                    })}
                   </tr>
                 )})}
               </tbody>

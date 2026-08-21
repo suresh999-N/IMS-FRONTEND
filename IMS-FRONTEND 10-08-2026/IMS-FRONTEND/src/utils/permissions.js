@@ -345,13 +345,6 @@ export const NAV_ITEMS = [
     category: 'inventory',
   },
   {
-    key: 'purchaseReturns',
-    label: 'Purchase Returns',
-    path: '/inventory/purchase-returns',
-    icon: RotateCcw,
-    category: 'inventory',
-  },
-  {
     key: 'customerPayments',
     label: 'Customer Payments',
     path: '/people/customer-payments',
@@ -364,6 +357,13 @@ export const NAV_ITEMS = [
     path: '/people/supplier-payments',
     icon: CreditCard,
     category: 'billing',
+  },
+  {
+    key: 'purchaseReturns',
+    label: 'Purchase Returns',
+    path: '/inventory/purchase-returns',
+    icon: RotateCcw,
+    category: 'inventory',
   },
 
   {

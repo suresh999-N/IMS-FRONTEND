@@ -30,11 +30,13 @@ export function getAuthErrorMessage(message, fallback = 'We could not complete t
     normalizedText.includes('email') ||
     normalizedText.includes('phone') ||
     normalizedText.includes('password') ||
-    normalizedText.includes('match')
+    normalizedText.includes('match') ||
+    normalizedText.includes('user') ||
+    normalizedText.includes('account')
   ) {
-    if (normalizedText.includes('already') || normalizedText.includes('exists')) {
-      if (normalizedText.includes('phone')) return 'An account with this phone number already exists.'
-      return 'An account with this email already exists.'
+    if (normalizedText.includes('already') || normalizedText.includes('exists') || normalizedText.includes('conflict') || normalizedText.includes('duplicate') || normalizedText.includes('registered')) {
+      if (normalizedText.includes('phone') || normalizedText.includes('mobile')) return 'An account with this phone number already exists.'
+      return 'An account with this email address already exists.'
     }
     if (normalizedText.includes('not found') || normalizedText.includes('no user')) {
       return 'No account matches that email.'
@@ -59,11 +61,11 @@ export function getAuthErrorMessage(message, fallback = 'We could not complete t
   if (normalizedText.includes('token')) {
     return 'We could not start your session. Please sign in again.'
   }
-  if (normalizedText.includes('phone') && (normalizedText.includes('already') || normalizedText.includes('exists'))) {
+  if ((normalizedText.includes('phone') || normalizedText.includes('mobile')) && (normalizedText.includes('already') || normalizedText.includes('exists') || normalizedText.includes('conflict') || normalizedText.includes('duplicate'))) {
     return 'An account with this phone number already exists.'
   }
-  if (normalizedText.includes('already') || normalizedText.includes('exists')) {
-    return 'An account with this email already exists.'
+  if (normalizedText.includes('already') || normalizedText.includes('exists') || normalizedText.includes('conflict') || normalizedText.includes('duplicate') || normalizedText.includes('registered')) {
+    return 'An account with this email address already exists.'
   }
   if (normalizedText.includes('not found') || normalizedText.includes('no user')) {
     return 'No account matches that email.'

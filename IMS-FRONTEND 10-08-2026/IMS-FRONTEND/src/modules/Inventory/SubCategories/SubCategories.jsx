@@ -1086,13 +1086,6 @@ export default function SubCategories() {
           Delete
         </button>
       ) : null}
-      <button
-        type="button"
-        className="button button-secondary subcategories__selection-button"
-        onClick={() => setSelectedIds([])}
-      >
-        Clear
-      </button>
     </FilterBar>
   ) : (
     <FilterBar

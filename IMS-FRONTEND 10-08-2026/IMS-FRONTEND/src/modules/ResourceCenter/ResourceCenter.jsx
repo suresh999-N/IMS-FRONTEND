@@ -708,9 +708,13 @@ function notifyCatalogStructureUpdate(config, action) {
   }))
 }
 
-function formatCellValue(row, column, referenceData) {
+function formatCellValue(row, column, referenceData, index, sNo) {
   if (typeof column.render === 'function') {
-    return column.render(row, referenceData)
+    return column.render(row, referenceData, index, sNo)
+  }
+
+  if (column.key === 'sNo') {
+    return sNo ?? (index != null ? index + 1 : '-')
   }
 
   const value = readResourceValue(row, column.key)
@@ -2039,20 +2043,6 @@ function ResourcePage({ config, navigationContent = null }) {
   }, [config, loadRows])
 
   const summary = useMemo(() => {
-    if (config.key === 'users') {
-      const activeCount = rows.filter((row) => {
-        const value = readResourceValue(row, 'isActive', false)
-        return value === true || String(value).toLowerCase() === 'true'
-      }).length
-
-      return {
-        total: rows.length,
-        active: activeCount,
-        pending: 0,
-        unread: null,
-      }
-    }
-
     const statusCounts = rows.reduce((result, row) => {
       const status = String(readResourceValue(row, 'status', '') || '').toLowerCase()
       if (status) {
@@ -2070,7 +2060,7 @@ function ResourcePage({ config, navigationContent = null }) {
       pending: (statusCounts.pending ?? statusCounts.draft ?? 0) + (hasSubCategoryDraft ? 1 : 0),
       unread: unreadCount,
     }
-  }, [config.key, config.statuslessRowsAreActive, hasSubCategoryDraft, metric, rows])
+  }, [config.statuslessRowsAreActive, hasSubCategoryDraft, metric, rows])
 
   const notificationSummary = useMemo(() => {
     const unread = rows.filter((row) => !getNotificationReadState(row)).length
@@ -2210,10 +2200,23 @@ function ResourcePage({ config, navigationContent = null }) {
 
     if (!response.success) {
       setServerErrors(response.errors)
+      let errorMessage = response.error || `Unable to save ${config.entityName.toLowerCase()}.`
+
+      if (config.key === 'users') {
+        const rawErrStr = String(response.error || response.message || JSON.stringify(response.errors || '')).toLowerCase()
+        if (response.status === 409 || /already|exists|conflict|duplicate|registered/i.test(rawErrStr)) {
+          if (rawErrStr.includes('phone') || rawErrStr.includes('mobile')) {
+            errorMessage = 'An account with this phone number already exists.'
+          } else {
+            errorMessage = 'An account with this email address already exists.'
+          }
+        }
+      }
+
       showToast({
         type: 'error',
         title: config.title,
-        message: response.error || `Unable to save ${config.entityName.toLowerCase()}.`,
+        message: errorMessage,
       })
       return
     }
@@ -2727,7 +2730,7 @@ function ResourcePage({ config, navigationContent = null }) {
             ['description', 'message', 'reason', 'companyAddress', 'notes'].includes(column.key),
           mobileStatus: column.mobileStatus ?? (column.format === 'status' || ['status', 'isActive', 'type'].includes(column.key)),
           searchable: column.searchable,
-          render: (row) => formatCellValue(row, column, referenceData),
+          render: (row, index, sNo) => formatCellValue(row, column, referenceData, index, sNo),
           searchValue: (row) => String(readResourceValue(row, column.key, '') ?? ''),
           sortValue: (row) => readResourceValue(row, column.key, ''),
         }
@@ -3049,13 +3052,6 @@ function ResourcePage({ config, navigationContent = null }) {
           Delete
         </button>
       ) : null}
-      <button
-        type="button"
-        className="button button-secondary resource-center__subcategories-selection-button"
-        onClick={() => setSelectedSubCategoryIds([])}
-      >
-        Clear
-      </button>
     </FilterBar>
   ) : null
   const subCategoryToolbarContent = null
@@ -3092,13 +3088,6 @@ function ResourcePage({ config, navigationContent = null }) {
           Delete
         </button>
       ) : null}
-      <button
-        type="button"
-        className="button button-secondary resource-center__product-style-selection-button"
-        onClick={() => setSelectedProductStyleRowIds([])}
-      >
-        Clear
-      </button>
     </FilterBar>
   ) : null
   const productStyleSelectedRightContent = hasSelectedProductStyleRows && canCreate ? (
@@ -3430,32 +3419,8 @@ function ResourcePage({ config, navigationContent = null }) {
                 {columns
                   .filter((col) => col.key !== 'actions')
                   .map((col) => {
-                    if (col.key === 'isActive') {
-                      const activeVal = readResourceValue(viewingRecord, 'isActive')
-                      const isActive = activeVal === true || String(activeVal).toLowerCase() === 'true' || activeVal === 1
-                      return (
-                        <div className="purchase-details__item" key={col.key}>
-                          <span className="purchase-details__label">{col.label}</span>
-                          <span className="purchase-details__value">
-                            <StatusBadge type={isActive ? 'success' : 'danger'}>
-                              {isActive ? 'Active' : 'Inactive'}
-                            </StatusBadge>
-                          </span>
-                        </div>
-                      )
-                    }
-
                     const val = readResourceValue(viewingRecord, col.key, '')
                     let displayVal = typeof col.render === 'function' ? col.render(viewingRecord, referenceData) : val
-
-                    if (col.key === 'role' || col.key === 'roleName') {
-                      if (typeof displayVal === 'object' && displayVal !== null) {
-                        displayVal = displayVal.roleName || displayVal.name || displayVal.title || displayVal.role || 'N/A'
-                      } else if (!displayVal && typeof val === 'object' && val !== null) {
-                        displayVal = val.roleName || val.name || val.title || val.role || 'N/A'
-                      }
-                    }
-
                     if (col.format === 'currency' || col.key === 'price') {
                       displayVal = formatCurrency(val)
                     } else if (col.format === 'date' || col.key?.toLowerCase().includes('date')) {

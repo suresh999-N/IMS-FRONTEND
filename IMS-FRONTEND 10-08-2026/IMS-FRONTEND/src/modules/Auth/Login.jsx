@@ -227,7 +227,7 @@ export default function Login() {
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                   tabIndex={-1}
                 >
-                  {showPassword ? <Eye size={17} /> : <EyeOff size={17} />}
+                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               ) : null}
             </div>

@@ -8,6 +8,7 @@ export default function DashboardHeader({
   lowStockProducts,
   onRefresh,
   totalProducts,
+  onOpenLowStockModal,
 }) {
   const lowStockCount = Number(lowStockProducts) || 0
   const productCount = Number(totalProducts) || 0
@@ -27,10 +28,15 @@ export default function DashboardHeader({
       <div className="dashboard-hero__copy">
         <div className="dashboard-hero__title-row">
           <h1>Operations Dashboard</h1>
-          <span className={`dashboard-status ${statusTone}`}>
+          <button
+            type="button"
+            className={`dashboard-status ${statusTone}`}
+            onClick={onOpenLowStockModal}
+            title="Click to view low stock items"
+          >
             {isHealthy ? <CheckCircle2 size={14} /> : <AlertTriangle size={14} />}
             {statusLabel}
-          </span>
+          </button>
         </div>
       </div>
 

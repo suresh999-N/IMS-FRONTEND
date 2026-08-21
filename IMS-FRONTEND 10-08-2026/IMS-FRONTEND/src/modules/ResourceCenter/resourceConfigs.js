@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import { API_ENDPOINTS } from '../../api/endpoints'
 import { readResourceValue } from '../../api/resourceApi'
-import { formatName, getToday } from '../../utils/helpers'
+import { getToday } from '../../utils/helpers'
 
 const activeStatusOptions = [
   { value: 'active', label: 'Active' },
@@ -1220,30 +1220,28 @@ export const RESOURCE_CONFIGS = {
     ],
     columns: [
       {
-        key: 'name',
-        label: 'Name',
-        sortable: true,
-        render: (row) => formatName(readResourceValue(row, 'name')),
+        key: 'sNo',
+        label: 'S.No',
+        sortable: false,
+        width: '60px',
+        className: 'resource-center__cell-sno',
+        render: (row, referenceData, index, sNo) => sNo ?? (index != null ? index + 1 : '-'),
       },
+      { key: 'name', label: 'Name', sortable: true },
       { key: 'email', label: 'Email', sortable: true },
       { key: 'phoneNumber', label: 'Phone No', sortable: true },
       {
         key: 'role',
         label: 'Role',
-        format: 'status',
         sortable: true,
+        className: 'resource-center__cell-role',
         render: (row) => {
           const roleValue = readResourceValue(row, 'role')
-          const roleName = typeof roleValue === 'object' && roleValue !== null
-            ? (roleValue.roleName || roleValue.name || roleValue.title || roleValue.role || '')
-            : (roleValue || readResourceValue(row, 'roleName', ''))
-          const str = String(roleName || '').trim()
-          if (!str) return 'Not set'
-          return str.toLowerCase() === 'user' ? 'New Employee' : str
+          return String(roleValue).toLowerCase() === 'user' ? 'New Employee' : roleValue
         },
       },
       { key: 'emailVerificationStatus', label: 'Verification', format: 'status', sortable: true },
-      { key: 'isActive', label: 'Active', format: 'status', sortable: true },
+      { key: 'isActive', label: 'Active', format: 'boolean', sortable: true },
     ],
     rowActions: [
       {

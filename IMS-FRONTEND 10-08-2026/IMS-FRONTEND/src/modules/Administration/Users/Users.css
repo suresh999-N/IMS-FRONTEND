@@ -83,13 +83,6 @@
   color: #c2410c;
 }
 
-.resource-center__page--users .resource-center__inventory-metric--danger,
-.resource-center__page--users .resource-center__inventory-metric--critical {
-  border-color: #fecaca;
-  background: #fff1f2;
-  color: #dc2626;
-}
-
 .resource-center__page--users .resource-center__inventory-header-actions .button {
   height: 38px;
   min-height: 38px;
@@ -272,6 +265,12 @@
   font-size: 13px;
 }
 
+.resource-center__page--users :where(td[data-column='role'], td[data-column='roleName'], .resource-center__cell-role, .resource-center__role-text) {
+  font-size: 13.5px;
+  font-weight: 550;
+  color: #0f172a;
+}
+
 .resource-center__page--users tbody tr:hover > td {
   background: #f7fcf9;
 }
@@ -303,6 +302,16 @@
   outline: none;
   box-shadow: none;
   filter: none;
+}
+
+.resource-center__page--users :where(th, td)[data-column='sNo'],
+.resource-center__page--users :where(th, td).resource-center__cell-sno {
+  width: 60px;
+  min-width: 60px;
+  max-width: 60px;
+  text-align: center;
+  font-weight: 600;
+  color: #64748b;
 }
 
 .resource-center__page--users :where(th, td)[data-column='actions'] {

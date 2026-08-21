@@ -590,13 +590,6 @@ export default function ProductTable({
           Delete
         </button>
       ) : null}
-      <button
-        type="button"
-        className="button button-secondary products-table__selection-button"
-        onClick={() => setSelectedProductIds([])}
-      >
-        Clear
-      </button>
     </FilterBar>
   ) : null
 

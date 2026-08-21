@@ -543,13 +543,6 @@ export default function Brands() {
           Delete
         </button>
       ) : null}
-      <button
-        type="button"
-        className="button button-secondary brands__selection-button"
-        onClick={() => setSelectedIds([])}
-      >
-        Clear
-      </button>
     </FilterBar>
   ) : null
 

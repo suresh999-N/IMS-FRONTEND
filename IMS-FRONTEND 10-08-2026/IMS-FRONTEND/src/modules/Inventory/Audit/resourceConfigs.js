@@ -1033,9 +1033,26 @@ export const RESOURCE_CONFIGS = {
       { name: 'isActive', label: 'Active', type: 'checkbox', defaultValue: true },
     ],
     columns: [
+      {
+        key: 'sNo',
+        label: 'S.No',
+        sortable: false,
+        width: '60px',
+        className: 'resource-center__cell-sno',
+        render: (row, referenceData, index, sNo) => sNo ?? (index != null ? index + 1 : '-'),
+      },
       { key: 'name', label: 'Name', sortable: true },
       { key: 'email', label: 'Email', sortable: true },
-      { key: 'role', label: 'Role', format: 'status', sortable: true },
+      {
+        key: 'role',
+        label: 'Role',
+        sortable: true,
+        className: 'resource-center__cell-role',
+        render: (row) => {
+          const roleValue = readResourceValue(row, 'role')
+          return String(roleValue).toLowerCase() === 'user' ? 'New Employee' : roleValue
+        },
+      },
       { key: 'isActive', label: 'Active', format: 'boolean', sortable: true },
     ],
   },

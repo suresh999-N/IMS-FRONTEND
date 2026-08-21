@@ -2481,13 +2481,6 @@ function ResourcePage({ config }) {
           Delete
         </button>
       ) : null}
-      <button
-        type="button"
-        className="button button-secondary resource-center__subcategories-selection-button"
-        onClick={() => setSelectedSubCategoryIds([])}
-      >
-        Clear
-      </button>
     </FilterBar>
   ) : null
   const subCategoryToolbarContent = null

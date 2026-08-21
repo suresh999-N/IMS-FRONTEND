@@ -12,7 +12,6 @@ import {
   getTranslatedText,
 } from "../../data/imsConfig";
 
-import { formatName } from "../../utils/helpers";
 import "../../styles/imsProjectTheme.css";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "/api").replace(
@@ -101,7 +100,7 @@ export default function UserMenu({ user, onLogout }) {
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
 
-  const name = user?.name ? formatName(user.name) : user?.email || "IMS";
+  const name = user?.name || user?.email || "IMS";
   const role = user?.role || "Admin";
   const initials = useMemo(() => getInitials(name), [name]);
 

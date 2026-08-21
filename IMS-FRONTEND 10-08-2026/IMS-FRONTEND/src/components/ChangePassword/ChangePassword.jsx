@@ -454,7 +454,7 @@ function ChangePassword({ settingsData, onClose }) {
                   disabled={saving}
                   tabIndex={-1}
                 >
-                  {showCurrentPassword ? <Eye size={17} /> : <EyeOff size={17} />}
+                  {showCurrentPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
               {errors.currentPassword && <small>{errors.currentPassword}</small>}
@@ -487,7 +487,7 @@ function ChangePassword({ settingsData, onClose }) {
                   disabled={saving}
                   tabIndex={-1}
                 >
-                  {showNewPassword ? <Eye size={17} /> : <EyeOff size={17} />}
+                  {showNewPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
               {errors.newPassword && <small>{errors.newPassword}</small>}
@@ -516,7 +516,7 @@ function ChangePassword({ settingsData, onClose }) {
                   disabled={saving}
                   tabIndex={-1}
                 >
-                  {showConfirmPassword ? <Eye size={17} /> : <EyeOff size={17} />}
+                  {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
               {errors.confirmPassword && <small>{errors.confirmPassword}</small>}

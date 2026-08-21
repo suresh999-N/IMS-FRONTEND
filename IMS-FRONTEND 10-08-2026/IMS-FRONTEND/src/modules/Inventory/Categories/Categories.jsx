@@ -953,13 +953,6 @@ export default function Categories() {
           Delete
         </button>
       ) : null}
-      <button
-        type="button"
-        className="button button-secondary catalog-table__selection-button"
-        onClick={() => setSelectedCategoryIds([])}
-      >
-        Clear
-      </button>
     </FilterBar>
   ) : null
 
