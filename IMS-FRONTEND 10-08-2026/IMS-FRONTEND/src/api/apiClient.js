@@ -548,5 +548,10 @@ export async function apiRequest(endpoint, options = {}) {
     window.clearTimeout(timeoutId)
   }
 }
- 
+
+apiRequest.get = (endpoint, options = {}) => apiRequest(endpoint, { ...options, method: 'GET' })
+apiRequest.post = (endpoint, body, options = {}) => apiRequest(endpoint, { ...options, method: 'POST', body })
+apiRequest.put = (endpoint, body, options = {}) => apiRequest(endpoint, { ...options, method: 'PUT', body })
+apiRequest.delete = (endpoint, options = {}) => apiRequest(endpoint, { ...options, method: 'DELETE' })
+
 export default apiRequest

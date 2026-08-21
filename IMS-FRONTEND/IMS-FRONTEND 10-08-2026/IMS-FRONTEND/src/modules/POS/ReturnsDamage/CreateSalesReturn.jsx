@@ -53,7 +53,7 @@ export default function CreateSalesReturn() {
       try {
         const [invRes, whRes] = await Promise.all([
           legacyGetReturnableInvoices().catch(() => ({ success: true, data: [] })),
-          apiClient.get(API_ENDPOINTS.warehouses.list).catch(() => ({ success: true, data: [] })),
+          apiClient(API_ENDPOINTS.warehouses.list).catch(() => ({ success: true, data: [] })),
         ])
 
         const invoiceList = invRes?.data ? (Array.isArray(invRes.data) ? invRes.data : []) : (Array.isArray(invRes) ? invRes : [])
