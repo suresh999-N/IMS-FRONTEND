@@ -57,6 +57,9 @@ import {
   getEmailError,
   sanitizeEmailInput,
 } from '../../validators/emailValidator'
+import {
+  getPasswordError,
+} from '../../validators/passwordValidator'
 import { RESOURCE_CONFIGS, RESOURCE_HUBS } from './resourceConfigs'
 import './ResourceCenter.css'
 
@@ -511,6 +514,11 @@ function getFieldError(field, value, mode, context = {}) {
     if (dynamicMax !== null && numericValue > dynamicMax) {
       return field.maxMessage || `${label} cannot exceed ${dynamicMax}.`
     }
+  }
+
+  if (field.name === 'password' || (field.type === 'password' && field.name !== 'confirmPassword')) {
+    const pwdErr = getPasswordError(value, { required: Boolean(isRequired), label })
+    if (pwdErr) return pwdErr
   }
 
   if (field.name === 'confirmPassword') {

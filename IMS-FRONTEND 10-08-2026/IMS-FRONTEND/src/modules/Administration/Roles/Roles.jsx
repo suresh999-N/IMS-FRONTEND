@@ -58,6 +58,9 @@ import {
   sanitizeEmailInput,
 } from '../../../validators/emailValidator'
 import {
+  getPasswordError,
+} from '../../../validators/passwordValidator'
+import {
   blockInvalidPhoneKey,
   getPhoneError,
   phoneInputProps,
@@ -443,13 +446,8 @@ function getFieldError(field, value, mode, context = {}) {
   }
 
   if (field.name === 'password' || (field.type === 'password' && field.name !== 'confirmPassword')) {
-    if (isRequired && !value) {
-      return `${label} is required.`
-    }
-    if (value) {
-      const pwdErr = getPasswordValidationError(value, label)
-      if (pwdErr) return pwdErr
-    }
+    const pwdErr = getPasswordError(value, { required: Boolean(isRequired), label })
+    if (pwdErr) return pwdErr
   }
 
   if (isEmptyValue(value, field)) {

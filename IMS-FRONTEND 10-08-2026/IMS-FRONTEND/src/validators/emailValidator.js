@@ -1,6 +1,22 @@
 export const EMAIL_MAX_LENGTH = 254
 
-const STRICT_EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+const STRICT_EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10}$/
+
+const COMMON_DOMAIN_TYPOS = {
+  'gmail.cm': 'gmail.com',
+  'gmai.com': 'gmail.com',
+  'gamil.com': 'gmail.com',
+  'gmial.com': 'gmail.com',
+  'gmaill.com': 'gmail.com',
+  'yahoo.cm': 'yahoo.com',
+  'yaho.com': 'yahoo.com',
+  'hotmail.cm': 'hotmail.com',
+  'hotmial.com': 'hotmail.com',
+  'outlook.cm': 'outlook.com',
+  'outlok.com': 'outlook.com',
+}
+
+const KNOWN_INVALID_TLDS = new Set(['cm', 'x', 'c', 'coom', 'gma', 'gmai', 'yaho', 'hotm'])
 
 function stripUnsafeText(value) {
   return Array.from(String(value ?? '')).filter((character) => {
@@ -50,6 +66,10 @@ export function getEmailError(value, options = {}) {
     return `Enter a valid ${label.toLowerCase()} address (e.g., name@example.com).`
   }
 
+  if (localPart.length < 2) {
+    return `${label} username must be at least 2 characters.`
+  }
+
   if (localPart.length > 64) {
     return `${label} username cannot exceed 64 characters.`
   }
@@ -70,11 +90,20 @@ export function getEmailError(value, options = {}) {
     return `Enter a valid ${label.toLowerCase()} domain.`
   }
 
+  if (COMMON_DOMAIN_TYPOS[domainPart]) {
+    return `Invalid domain "${domainPart}". Did you mean "${COMMON_DOMAIN_TYPOS[domainPart]}"?`
+  }
+
   const domainParts = domainPart.split('.')
+  const mainDomain = domainParts[0]
   const tld = domainParts[domainParts.length - 1]
 
-  if (domainParts.length < 2 || !tld || tld.length < 2 || !/^[a-z]{2,}$/i.test(tld)) {
-    return `Enter a valid ${label.toLowerCase()} domain with a valid extension (e.g., .com, .in, .org).`
+  if (!mainDomain || mainDomain.length < 2) {
+    return `Enter a valid ${label.toLowerCase()} domain (e.g., gmail.com, company.in).`
+  }
+
+  if (domainParts.length < 2 || !tld || tld.length < 2 || !/^[a-z]{2,10}$/i.test(tld) || KNOWN_INVALID_TLDS.has(tld)) {
+    return `Enter a valid ${label.toLowerCase()} extension (e.g., .com, .in, .org, .net).`
   }
 
   return STRICT_EMAIL_PATTERN.test(email) ? '' : `Enter a valid ${label.toLowerCase()} address.`
