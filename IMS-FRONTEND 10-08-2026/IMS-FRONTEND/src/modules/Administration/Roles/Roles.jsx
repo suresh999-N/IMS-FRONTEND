@@ -461,8 +461,8 @@ function getFieldError(field, value, mode, context = {}) {
     if (phoneErr) return phoneErr
   }
 
-  if (field.type === 'email' || field.name === 'email' || field.name?.toLowerCase().includes('email')) {
-    const emailErr = getEmailError(value, { required: Boolean(isRequired) })
+  if (field.type === 'email' || field.name === 'email' || String(field.name || '').toLowerCase().includes('email')) {
+    const emailErr = getEmailError(value, { required: Boolean(isRequired), label })
     if (emailErr) return emailErr
   }
 

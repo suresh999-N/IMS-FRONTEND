@@ -1,6 +1,6 @@
 export const EMAIL_MAX_LENGTH = 254
 
-const EMAIL_DOMAIN_PATTERN = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i
+const STRICT_EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 
 function stripUnsafeText(value) {
   return Array.from(String(value ?? '')).filter((character) => {
@@ -24,7 +24,8 @@ export function sanitizeEmailInput(value) {
 }
 
 export function getEmailError(value, options = {}) {
-  const { required = false, label = 'Email' } = options
+  const opts = typeof options === 'string' ? { label: options } : options
+  const { required = false, label = 'Email' } = opts
   const email = sanitizeEmailInput(value)
 
   if (!email) {
@@ -32,54 +33,51 @@ export function getEmailError(value, options = {}) {
   }
 
   if (email.length > EMAIL_MAX_LENGTH) {
-    return 'Email cannot exceed 254 characters.'
+    return `${label} cannot exceed 254 characters.`
   }
 
   if (email.includes('..')) {
-    return 'Email cannot contain consecutive periods.'
+    return `${label} cannot contain consecutive periods.`
   }
 
   const parts = email.split('@')
   if (parts.length !== 2) {
-    return 'Enter a valid email address (e.g. name@example.com).'
+    return `Enter a valid ${label.toLowerCase()} address (e.g., name@example.com).`
   }
 
   const [localPart, domainPart] = parts
   if (!localPart || !domainPart) {
-    return 'Enter a valid email address (e.g. name@example.com).'
+    return `Enter a valid ${label.toLowerCase()} address (e.g., name@example.com).`
   }
 
   if (localPart.length > 64) {
-    return 'Email username cannot exceed 64 characters.'
+    return `${label} username cannot exceed 64 characters.`
   }
 
   if (!/[a-z0-9]/i.test(localPart)) {
-    return 'Email username must contain letters or numbers.'
+    return `${label} username must contain letters or numbers.`
   }
 
   if (localPart.startsWith('.') || localPart.endsWith('.')) {
-    return 'Email username cannot start or end with a period.'
+    return `${label} username cannot start or end with a period.`
   }
 
   if (!/^[a-z0-9._%+-]+$/i.test(localPart)) {
-    return 'Email username contains invalid characters.'
+    return `${label} contains invalid characters.`
   }
 
   if (domainPart.startsWith('.') || domainPart.endsWith('.')) {
-    return 'Enter a valid email domain (e.g. example.com).'
-  }
-
-  if (!domainPart.includes('.')) {
-    return 'Email domain must include a top-level domain (e.g. .com, .in).'
+    return `Enter a valid ${label.toLowerCase()} domain.`
   }
 
   const domainParts = domainPart.split('.')
   const tld = domainParts[domainParts.length - 1]
-  if (!tld || tld.length < 2 || !/^[a-z]{2,63}$/i.test(tld)) {
-    return 'Enter a valid email domain extension (e.g. .com, .in).'
+
+  if (domainParts.length < 2 || !tld || tld.length < 2 || !/^[a-z]{2,}$/i.test(tld)) {
+    return `Enter a valid ${label.toLowerCase()} domain with a valid extension (e.g., .com, .in, .org).`
   }
 
-  return EMAIL_DOMAIN_PATTERN.test(domainPart) ? '' : 'Enter a valid email domain (e.g. example.com).'
+  return STRICT_EMAIL_PATTERN.test(email) ? '' : `Enter a valid ${label.toLowerCase()} address.`
 }
 
 export function isValidEmail(value, options = {}) {
