@@ -3529,7 +3529,10 @@ function ResourcePage({ config, navigationContent = null }) {
 
           <div className="admin-details-grid">
             {columns
-              .filter((col) => col.key !== 'actions' && col.key !== 'sno' && col.key !== 'selection')
+              .filter((col) => {
+                const k = String(col.key || '').toLowerCase()
+                return k !== 'actions' && k !== 'sno' && k !== 'selection' && k !== 's_no' && k !== 'serialno'
+              })
               .map((col) => {
                 const val = readResourceValue(viewingRecord, col.key, '')
 
