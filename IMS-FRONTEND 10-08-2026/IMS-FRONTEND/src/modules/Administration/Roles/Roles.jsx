@@ -3509,41 +3509,84 @@ function ResourcePage({ config, navigationContent = null }) {
                   {isUsersPage ? (viewingRecord.email || 'Staff Account') : isRolesPage ? 'Role Definition & Authorization' : (config.subtitle || 'Resource Record')}
                 </p>
               </div>
-              {viewingRecord.isActive !== undefined ? (
-                <StatusBadge type={viewingRecord.isActive === true || viewingRecord.isActive === 'true' ? 'success' : 'danger'}>
-                  {viewingRecord.isActive === true || viewingRecord.isActive === 'true' ? 'Active' : 'Inactive'}
-                </StatusBadge>
-              ) : null}
-            </div>
+            {isUsersPage ? (
+              (() => {
+                const isAct = readResourceValue(viewingRecord, 'isActive', readResourceValue(viewingRecord, 'status', ''))
+                const activeBool = isAct === true || String(isAct).toLowerCase() === 'true' || String(isAct).toLowerCase() === 'active' || isAct === 1
+                return (
+                  <StatusBadge type={activeBool ? 'success' : 'danger'}>
+                    {activeBool ? 'Active' : 'Inactive'}
+                  </StatusBadge>
+                )
+              })()
+            ) : viewingRecord.isActive !== undefined ? (
+              <StatusBadge type={viewingRecord.isActive === true || viewingRecord.isActive === 'true' ? 'success' : 'danger'}>
+                {viewingRecord.isActive === true || viewingRecord.isActive === 'true' ? 'Active' : 'Inactive'}
+              </StatusBadge>
+            ) : null}
+          </div>
 
-            <div className="admin-details-grid">
-              {columns
-                .filter((col) => col.key !== 'actions')
-                .map((col) => {
-                  const val = readResourceValue(viewingRecord, col.key, '')
-                  let displayVal = typeof col.render === 'function' ? col.render(viewingRecord, referenceData) : val
-                  if (col.format === 'currency' || col.key === 'price') {
-                    displayVal = formatCurrency(Number(displayVal || 0))
-                  } else if (col.format === 'date' || col.key?.toLowerCase().includes('date')) {
-                    displayVal = displayVal ? formatDate(displayVal) : 'N/A'
-                  } else if (col.format === 'status') {
-                    displayVal = (
-                      <StatusBadge type={getStatusType ? getStatusType(displayVal) : 'info'}>
-                        {formatStatusLabel ? formatStatusLabel(displayVal) : displayVal}
-                      </StatusBadge>
-                    )
-                  } else if (col.format === 'boolean') {
-                    displayVal = displayVal === true || displayVal === 'true' ? 'Yes' : 'No'
-                  }
+          <div className="admin-details-grid">
+            {columns
+              .filter((col) => col.key !== 'actions' && col.key !== 'sno' && col.key !== 'selection')
+              .map((col) => {
+                const val = readResourceValue(viewingRecord, col.key, '')
+
+                if (col.key === 'isActive') {
+                  const rawVal = readResourceValue(viewingRecord, 'isActive', readResourceValue(viewingRecord, 'status', ''))
+                  const isActive = rawVal === true || String(rawVal).toLowerCase() === 'true' || String(rawVal).toLowerCase() === 'active' || rawVal === 1
                   return (
                     <div className="admin-details-item" key={col.key}>
                       <span className="admin-details-label">{col.label}</span>
                       <div className="admin-details-value">
-                        {typeof displayVal === 'object' ? displayVal : <span>{String(displayVal ?? 'N/A')}</span>}
+                        <StatusBadge type={isActive ? 'success' : 'danger'}>
+                          {isActive ? 'Active' : 'Inactive'}
+                        </StatusBadge>
                       </div>
                     </div>
                   )
-                })}
+                }
+
+                if (col.key === 'role') {
+                  const roleVal = readResourceValue(viewingRecord, 'role', '')
+                  const roleName = typeof roleVal === 'object' && roleVal !== null
+                    ? (roleVal.roleName || roleVal.name || roleVal.title || roleVal.role || '')
+                    : (roleVal || readResourceValue(viewingRecord, 'roleName', ''))
+                  const roleStr = String(roleName || '').trim()
+                  const displayRole = roleStr.toLowerCase() === 'user' ? 'New Employee' : (roleStr || 'Not set')
+                  return (
+                    <div className="admin-details-item" key={col.key}>
+                      <span className="admin-details-label">{col.label}</span>
+                      <div className="admin-details-value">
+                        <span>{displayRole}</span>
+                      </div>
+                    </div>
+                  )
+                }
+
+                let displayVal = typeof col.render === 'function' ? col.render(viewingRecord, referenceData) : val
+                if (col.format === 'currency' || col.key === 'price') {
+                  displayVal = formatCurrency(Number(displayVal || 0))
+                } else if (col.format === 'date' || col.key?.toLowerCase().includes('date')) {
+                  displayVal = displayVal ? formatDate(displayVal) : 'N/A'
+                } else if (col.format === 'status') {
+                  displayVal = (
+                    <StatusBadge type={getStatusType ? getStatusType(val) : 'info'}>
+                      {formatStatusLabel ? formatStatusLabel(val) : val}
+                    </StatusBadge>
+                  )
+                } else if (col.format === 'boolean') {
+                  displayVal = displayVal === true || displayVal === 'true' ? 'Yes' : 'No'
+                }
+                return (
+                  <div className="admin-details-item" key={col.key}>
+                    <span className="admin-details-label">{col.label}</span>
+                    <div className="admin-details-value">
+                      {typeof displayVal === 'object' ? displayVal : <span>{String(displayVal ?? 'N/A')}</span>}
+                    </div>
+                  </div>
+                )
+              })}
               {config.fields?.map((f) => {
                 const columnKeys = new Set(columns.map((c) => c.key))
                 if (columnKeys.has(f.name)) return null
