@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   Bell,
   Boxes,
@@ -1283,7 +1284,15 @@ export const RESOURCE_CONFIGS = {
         sortable: true,
         render: (row) => autoCapitalizeWords(readResourceValue(row, 'roleName', readResourceValue(row, 'name', ''))),
       },
-      { key: 'description', label: 'Description', sortable: true },
+      {
+        key: 'description',
+        label: 'Description',
+        sortable: true,
+        render: (row) => {
+          const desc = readResourceValue(row, 'description', readResourceValue(row, 'roleDescription', '')) || 'Not set'
+          return React.createElement('span', { className: 'resource-center__role-description', title: desc }, desc)
+        },
+      },
       {
         key: 'usersCount',
         label: 'Users',
