@@ -1297,6 +1297,7 @@ export const RESOURCE_CONFIGS = {
         key: 'usersCount',
         label: 'Users',
         sortable: true,
+        className: 'resource-center__cell-users-count',
         render: (row, referenceData) => {
           const usersList = referenceData?.users ?? []
           const count = usersList.filter(

@@ -340,11 +340,13 @@
   word-break: break-word;
 }
 
-.resource-center__page--roles :where(th, td)[data-column='usersCount'] {
-  width: 70px;
-  min-width: 70px;
-  max-width: 70px;
-  text-align: center;
+.resource-center__page--roles :where(th, td)[data-column='usersCount'],
+.resource-center__page--roles :where(th, td).resource-center__cell-users-count,
+:where(th, td).resource-center__cell-users-count {
+  width: 70px !important;
+  min-width: 70px !important;
+  max-width: 70px !important;
+  text-align: center !important;
 }
 
 .resource-center__page--roles :where(th, td)[data-column='createdAt'] {
