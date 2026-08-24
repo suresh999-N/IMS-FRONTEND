@@ -3108,12 +3108,12 @@ function ResourcePage({ config, navigationContent = null }) {
         <header className="resource-center__inventory-header resource-center__users-header" aria-label={`${config.title} summary`}>
           <div className="resource-center__inventory-header-main">
             <div>
-              <h1>{config.title}</h1>
-              <p className="resource-center__users-description">{config.subtitle}</p>
+              {!isUsersPage && <h1>{config.title}</h1>}
+              {config.subtitle && <p className="resource-center__users-description">{config.subtitle}</p>}
             </div>
             <div className="resource-center__inventory-metrics" aria-label={`${config.title} metrics`}>
               <span className={`resource-center__inventory-metric resource-center__inventory-metric--${isUsersPage ? 'info' : 'success'}`}>
-                {isAuditLogsPage ? auditSummary.total : summary.total}{isUsersPage ? '' : isRolesPage ? ' Roles' : ' Logs'}
+                {isAuditLogsPage ? auditSummary.total : summary.total} {isUsersPage ? 'Users' : isRolesPage ? 'Roles' : 'Logs'}
               </span>
               <span className={`resource-center__inventory-metric resource-center__inventory-metric--${isUsersPage ? 'success' : 'info'}`}>
                 {isAuditLogsPage ? auditSummary.modules : isUsersPage ? summary.active : summary.total} {isUsersPage ? 'Active' : isRolesPage ? 'Configured' : 'Modules'}
