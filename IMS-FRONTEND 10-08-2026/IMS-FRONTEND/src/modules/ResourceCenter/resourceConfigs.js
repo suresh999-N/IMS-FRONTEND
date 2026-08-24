@@ -21,6 +21,7 @@ import {
 import { API_ENDPOINTS } from '../../api/endpoints'
 import { readResourceValue } from '../../api/resourceApi'
 import { getToday } from '../../utils/helpers'
+import { autoCapitalizeWords } from '../../validators/nameValidator'
 
 const activeStatusOptions = [
   { value: 'active', label: 'Active' },
@@ -1276,7 +1277,12 @@ export const RESOURCE_CONFIGS = {
       { name: 'description', label: 'Description', type: 'textarea' },
     ],
     columns: [
-      { key: 'roleName', label: 'Role', sortable: true },
+      {
+        key: 'roleName',
+        label: 'Role',
+        sortable: true,
+        render: (row) => autoCapitalizeWords(readResourceValue(row, 'roleName', readResourceValue(row, 'name', ''))),
+      },
       { key: 'description', label: 'Description', sortable: true },
       {
         key: 'usersCount',
