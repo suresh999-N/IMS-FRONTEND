@@ -329,28 +329,28 @@
 }
 
 .resource-center__page--roles :where(th, td)[data-column='roleName'] {
-  width: 170px;
-  min-width: 150px;
+  width: 180px;
+  min-width: 160px;
 }
 
 .resource-center__page--roles :where(th, td)[data-column='description'] {
   width: auto;
-  min-width: 460px;
+  min-width: 480px;
   white-space: normal !important;
   word-break: break-word;
 }
 
 .resource-center__page--roles :where(th, td)[data-column='usersCount'] {
-  width: 100px;
-  min-width: 100px;
-  max-width: 100px;
+  width: 70px;
+  min-width: 70px;
+  max-width: 70px;
   text-align: center;
 }
 
 .resource-center__page--roles :where(th, td)[data-column='createdAt'] {
-  width: 120px;
-  min-width: 120px;
-  max-width: 120px;
+  width: 130px;
+  min-width: 130px;
+  max-width: 130px;
 }
 
 .resource-center__page--roles :where(th, td)[data-column='actions'] {
@@ -360,40 +360,13 @@
 }
 
 .resource-center__role-description {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  max-width: 100%;
+  display: block;
+  width: 100%;
+  white-space: normal !important;
+  word-break: break-word;
   color: #334155;
   font-size: 13px;
   line-height: 1.35;
-}
-
-.resource-center__users-count-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 66px;
-  height: 22px;
-  padding: 2px 9px;
-  border-radius: 999px;
-  font-size: 11.5px;
-  font-weight: 700;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.resource-center__users-count-badge.is-active {
-  border: 1px solid #bfdbfe;
-  background: #eff6ff;
-  color: #1d4ed8;
-}
-
-.resource-center__users-count-badge.is-zero {
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  color: #64748b;
 }
 
 .resource-center__page--users .resource-center__admin-row-actions {
