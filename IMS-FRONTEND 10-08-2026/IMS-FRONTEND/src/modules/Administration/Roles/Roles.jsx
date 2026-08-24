@@ -702,9 +702,11 @@ function formatCellValue(row, column, referenceData, index, sNo) {
     return sNo ?? (index != null ? index + 1 : '-')
   }
   const hasRender = typeof column.render === 'function'
-  const value = hasRender
-    ? column.render(row, referenceData, index, sNo)
-    : readResourceValue(row, column.key)
+  if (hasRender) {
+    return column.render(row, referenceData, index, sNo)
+  }
+
+  const value = readResourceValue(row, column.key)
 
   if (column.format === 'currency') {
     return formatCurrency(Number(value || 0))
@@ -730,10 +732,6 @@ function formatCellValue(row, column, referenceData, index, sNo) {
         {formatStatusLabel(value)}
       </StatusBadge>
     )
-  }
-
-  if (hasRender) {
-    return value
   }
 
   if (column.key === 'roleName' || column.key === 'role') {
