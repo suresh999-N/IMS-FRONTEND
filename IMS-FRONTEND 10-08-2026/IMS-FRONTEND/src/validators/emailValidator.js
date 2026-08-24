@@ -2,21 +2,34 @@ export const EMAIL_MAX_LENGTH = 254
 
 const STRICT_EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10}$/
 
+const PUBLIC_PROVIDERS = new Set([
+  'gmail', 'yahoo', 'hotmail', 'outlook', 'icloud', 'rediffmail', 'live', 'aol', 'msn', 'ymail', 'protonmail', 'zoho'
+])
+
+const TYPO_TLDS = new Set(['co', 'cm', 'c', 'coom', 'comm', 'con', 'cmm', 'gma', 'gmai'])
+
 const COMMON_DOMAIN_TYPOS = {
   'gmail.cm': 'gmail.com',
+  'gmail.co': 'gmail.com',
   'gmai.com': 'gmail.com',
+  'gmai.co': 'gmail.com',
   'gamil.com': 'gmail.com',
+  'gamil.co': 'gmail.com',
   'gmial.com': 'gmail.com',
+  'gmial.co': 'gmail.com',
   'gmaill.com': 'gmail.com',
   'yahoo.cm': 'yahoo.com',
+  'yahoo.co': 'yahoo.com',
   'yaho.com': 'yahoo.com',
   'hotmail.cm': 'hotmail.com',
+  'hotmail.co': 'hotmail.com',
   'hotmial.com': 'hotmail.com',
   'outlook.cm': 'outlook.com',
+  'outlook.co': 'outlook.com',
   'outlok.com': 'outlook.com',
 }
 
-const KNOWN_INVALID_TLDS = new Set(['cm', 'x', 'c', 'coom', 'gma', 'gmai', 'yaho', 'hotm'])
+const KNOWN_INVALID_TLDS = new Set(['cm', 'x', 'c', 'coom', 'comm', 'con', 'cmm', 'gma', 'gmai', 'yaho', 'hotm'])
 
 function stripUnsafeText(value) {
   return Array.from(String(value ?? '')).filter((character) => {
@@ -100,6 +113,10 @@ export function getEmailError(value, options = {}) {
 
   if (!mainDomain || mainDomain.length < 2) {
     return `Enter a valid ${label.toLowerCase()} domain (e.g., gmail.com, company.in).`
+  }
+
+  if (PUBLIC_PROVIDERS.has(mainDomain) && TYPO_TLDS.has(tld)) {
+    return `Invalid domain "${domainPart}". Did you mean "${mainDomain}.com"?`
   }
 
   if (domainParts.length < 2 || !tld || tld.length < 2 || !/^[a-z]{2,10}$/i.test(tld) || KNOWN_INVALID_TLDS.has(tld)) {
