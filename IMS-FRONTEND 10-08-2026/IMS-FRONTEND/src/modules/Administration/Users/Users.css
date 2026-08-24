@@ -334,8 +334,10 @@
 }
 
 .resource-center__page--roles :where(th, td)[data-column='description'] {
-  width: 55%;
-  min-width: 420px;
+  width: 48%;
+  min-width: 360px;
+  white-space: normal !important;
+  word-break: break-word;
 }
 
 .resource-center__page--roles :where(th, td)[data-column='createdAt'] {
@@ -353,11 +355,11 @@
 .resource-center__role-description {
   display: block;
   width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal !important;
+  word-break: break-word;
   color: #334155;
   font-size: 13px;
+  line-height: 1.35;
 }
 
 .resource-center__page--users .resource-center__admin-row-actions {
