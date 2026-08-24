@@ -83,6 +83,13 @@
   color: #c2410c;
 }
 
+.resource-center__page--users .resource-center__inventory-metric--danger,
+.resource-center__page--users .resource-center__inventory-metric--critical {
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: #dc2626;
+}
+
 .resource-center__page--users .resource-center__inventory-header-actions .button {
   height: 38px;
   min-height: 38px;

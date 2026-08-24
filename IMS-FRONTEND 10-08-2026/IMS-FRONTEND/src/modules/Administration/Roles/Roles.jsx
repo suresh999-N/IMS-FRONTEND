@@ -716,8 +716,14 @@ function formatCellValue(row, column, referenceData, index, sNo) {
     return value ? formatDate(value) : 'Not set'
   }
 
-  if (column.format === 'boolean') {
-    return value === true || String(value).toLowerCase() === 'true' ? 'Yes' : 'No'
+  if (column.key === 'isActive' || column.format === 'boolean') {
+    const rawVal = readResourceValue(row, 'isActive', value)
+    const isActive = rawVal === true || String(rawVal).toLowerCase() === 'true' || String(rawVal).toLowerCase() === 'active' || rawVal === 1
+    return (
+      <StatusBadge type={isActive ? 'success' : 'danger'}>
+        {isActive ? 'Active' : 'Inactive'}
+      </StatusBadge>
+    )
   }
 
   if (column.format === 'status') {
@@ -1941,6 +1947,23 @@ function ResourcePage({ config, navigationContent = null }) {
   }, [isRolesPage, viewingRecord])
 
   const summary = useMemo(() => {
+    if (isUsersPage) {
+      const activeCount = rows.filter((row) => {
+        const rawAct = readResourceValue(row, 'isActive', readResourceValue(row, 'status', readResourceValue(row, 'is_active', undefined)))
+        if (rawAct !== undefined && rawAct !== null && rawAct !== '') {
+          return rawAct === true || String(rawAct).toLowerCase() === 'true' || String(rawAct).toLowerCase() === 'active' || rawAct === 1
+        }
+        return true
+      }).length
+
+      return {
+        total: rows.length,
+        active: activeCount,
+        pending: Math.max(0, rows.length - activeCount),
+        unread: null,
+      }
+    }
+
     const statusCounts = rows.reduce((result, row) => {
       const status = String(readResourceValue(row, 'status', '') || '').toLowerCase()
       if (status) {
@@ -1958,7 +1981,7 @@ function ResourcePage({ config, navigationContent = null }) {
       pending: (statusCounts.pending ?? statusCounts.draft ?? 0) + (hasSubCategoryDraft ? 1 : 0),
       unread: unreadCount,
     }
-  }, [config.statuslessRowsAreActive, hasSubCategoryDraft, metric, rows])
+  }, [config.statuslessRowsAreActive, hasSubCategoryDraft, isUsersPage, metric, rows])
 
   const auditSummary = useMemo(() => ({
     total: rows.length,
@@ -3091,13 +3114,13 @@ function ResourcePage({ config, navigationContent = null }) {
               <p className="resource-center__users-description">{config.subtitle}</p>
             </div>
             <div className="resource-center__inventory-metrics" aria-label={`${config.title} metrics`}>
-              <span className="resource-center__inventory-metric resource-center__inventory-metric--success">
+              <span className={`resource-center__inventory-metric resource-center__inventory-metric--${isUsersPage ? 'info' : 'success'}`}>
                 {isAuditLogsPage ? auditSummary.total : summary.total} {isUsersPage ? 'Users' : isRolesPage ? 'Roles' : 'Logs'}
               </span>
-              <span className="resource-center__inventory-metric resource-center__inventory-metric--info">
+              <span className={`resource-center__inventory-metric resource-center__inventory-metric--${isUsersPage ? 'success' : 'info'}`}>
                 {isAuditLogsPage ? auditSummary.modules : isUsersPage ? summary.active : summary.total} {isUsersPage ? 'Active' : isRolesPage ? 'Configured' : 'Modules'}
               </span>
-              <span className="resource-center__inventory-metric resource-center__inventory-metric--warning">
+              <span className={`resource-center__inventory-metric resource-center__inventory-metric--${isUsersPage ? 'danger' : 'warning'}`}>
                 {isAuditLogsPage ? auditSummary.recorded : isUsersPage ? Math.max(0, summary.total - summary.active) : summary.pending} {isUsersPage ? 'Inactive' : isRolesPage ? 'Draft' : 'Recorded'}
               </span>
             </div>
