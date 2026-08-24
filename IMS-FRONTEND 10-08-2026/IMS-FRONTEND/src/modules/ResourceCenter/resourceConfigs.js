@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import { API_ENDPOINTS } from '../../api/endpoints'
 import { readResourceValue } from '../../api/resourceApi'
-import { getToday } from '../../utils/helpers'
+import { formatDate, getToday } from '../../utils/helpers'
 import { autoCapitalizeWords } from '../../validators/nameValidator'
 
 const activeStatusOptions = [
@@ -1306,7 +1306,16 @@ export const RESOURCE_CONFIGS = {
           return count
         },
       },
-      { key: 'createdAt', label: 'Created', format: 'date', sortable: true },
+      {
+        key: 'createdAt',
+        label: 'Created Date',
+        format: 'date',
+        sortable: true,
+        render: (row) => {
+          const rawDate = readResourceValue(row, 'createdAt', readResourceValue(row, 'created_at', readResourceValue(row, 'createdDate', '')))
+          return rawDate ? formatDate(rawDate) : 'System Default'
+        },
+      },
     ],
   },
 }

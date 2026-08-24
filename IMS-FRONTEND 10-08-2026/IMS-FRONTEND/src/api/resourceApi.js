@@ -84,6 +84,10 @@ export function readResourceValue(row, key, fallback = '') {
     candidates.push('phone', 'phoneNo', 'phoneNumber', 'Phone', 'PhoneNo', 'PhoneNumber')
   }
 
+  if (['createdat', 'created_at', 'createddate', 'creationdate', 'datecreated', 'created'].includes(String(key).toLowerCase())) {
+    candidates.push('createdAt', 'created_at', 'createdDate', 'creationDate', 'dateCreated', 'created', 'CreatedAt', 'Created_At', 'CreatedDate')
+  }
+
   for (const candidate of candidates) {
     if (row[candidate] !== undefined && row[candidate] !== null) {
       return row[candidate]

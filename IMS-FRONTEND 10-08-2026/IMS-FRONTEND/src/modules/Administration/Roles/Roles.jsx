@@ -3571,7 +3571,7 @@ function ResourcePage({ config, navigationContent = null }) {
                 if (col.format === 'currency' || col.key === 'price') {
                   displayVal = formatCurrency(Number(displayVal || 0))
                 } else if (col.format === 'date' || col.key?.toLowerCase().includes('date')) {
-                  displayVal = displayVal ? formatDate(displayVal) : 'N/A'
+                  displayVal = typeof col.render === 'function' ? displayVal : (displayVal ? formatDate(displayVal) : 'System Default')
                 } else if (col.format === 'status') {
                   displayVal = (
                     <StatusBadge type={getStatusType ? getStatusType(val) : 'info'}>
