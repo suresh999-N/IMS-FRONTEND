@@ -732,13 +732,13 @@ function formatCellValue(row, column, referenceData, index, sNo) {
     )
   }
 
+  if (hasRender) {
+    return value
+  }
+
   if (column.key === 'roleName' || column.key === 'role') {
     const roleVal = autoCapitalizeWords(String(value || 'Not set'))
     return roleVal.toLowerCase() === 'user' ? 'New Employee' : roleVal
-  }
-
-  if (hasRender) {
-    return value
   }
 
   if (value === undefined || value === null || value === '') {
