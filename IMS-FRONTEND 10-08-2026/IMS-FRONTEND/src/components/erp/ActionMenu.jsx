@@ -32,8 +32,9 @@ export default function ActionMenu({
     }
 
     const rect = trigger.getBoundingClientRect()
-    const popoverWidth = Math.max(184, rect.width)
-    const popoverHeight = popoverRef.current?.offsetHeight || Math.min(260, 14 + enabledActions.length * 52)
+    const defaultMinWidth = iconOnly ? 118 : 128
+    const popoverWidth = Math.max(defaultMinWidth, rect.width)
+    const popoverHeight = popoverRef.current?.offsetHeight || Math.min(260, 14 + enabledActions.length * 40)
     const gutter = 8
     const left = align === 'left'
       ? Math.min(rect.left, window.innerWidth - popoverWidth - gutter)
@@ -51,6 +52,7 @@ export default function ActionMenu({
       top: `${Math.max(gutter, top)}px`,
       left: `${Math.max(gutter, left)}px`,
       minWidth: `${popoverWidth}px`,
+      width: 'max-content',
       zIndex: 1600,
     })
   }
