@@ -396,7 +396,7 @@ export default function Register() {
                     aria-label={showPassword ? "Hide password" : "Show password"}
                     tabIndex={-1}
                   >
-                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                    {showPassword ? <Eye size={17} /> : <EyeOff size={17} />}
                   </button>
                 ) : null}
               </div>
@@ -438,7 +438,7 @@ export default function Register() {
                     }
                     tabIndex={-1}
                   >
-                    {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                    {showConfirmPassword ? <Eye size={17} /> : <EyeOff size={17} />}
                   </button>
                 ) : null}
               </div>

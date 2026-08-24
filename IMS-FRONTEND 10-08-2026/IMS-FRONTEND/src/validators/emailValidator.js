@@ -1,16 +1,21 @@
 export const EMAIL_MAX_LENGTH = 254
 
-const STRICT_EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10}$/
-
-const PUBLIC_PROVIDERS = new Set([
-  'gmail', 'yahoo', 'hotmail', 'outlook', 'icloud', 'rediffmail', 'live', 'aol', 'msn', 'ymail', 'protonmail', 'zoho'
+const VALID_TLDS = new Set([
+  'com', 'in', 'org', 'net', 'edu', 'gov', 'io', 'co', 'info', 'biz', 'tech',
+  'app', 'dev', 'store', 'online', 'me', 'site', 'ca', 'uk', 'au', 'us', 'de',
+  'fr', 'jp', 'sg', 'ae', 'cn', 'ru', 'br', 'nl', 'se', 'no', 'fi', 'dk', 'pl',
+  'it', 'es', 'mx', 'za', 'nz', 'ch', 'at', 'be', 'ph', 'id', 'my', 'th', 'vn',
+  'live', 'cloud', 'digital', 'global', 'systems', 'solutions', 'agency', 'group',
+  'services', 'co.in', 'net.in', 'org.in', 'edu.in', 'gov.in', 'ac.in', 'co.uk',
+  'com.au', 'co.jp', 'or.jp', 'ne.jp', 'ac.uk', 'gov.uk'
 ])
-
-const TYPO_TLDS = new Set(['co', 'cm', 'c', 'coom', 'comm', 'con', 'cmm', 'gma', 'gmai'])
 
 const COMMON_DOMAIN_TYPOS = {
   'gmail.cm': 'gmail.com',
   'gmail.co': 'gmail.com',
+  'gmail.commm': 'gmail.com',
+  'gmail.comm': 'gmail.com',
+  'gmail.coom': 'gmail.com',
   'gmai.com': 'gmail.com',
   'gmai.co': 'gmail.com',
   'gamil.com': 'gmail.com',
@@ -29,7 +34,11 @@ const COMMON_DOMAIN_TYPOS = {
   'outlok.com': 'outlook.com',
 }
 
-const KNOWN_INVALID_TLDS = new Set(['cm', 'x', 'c', 'coom', 'comm', 'con', 'cmm', 'gma', 'gmai', 'yaho', 'hotm'])
+const PUBLIC_PROVIDERS = new Set([
+  'gmail', 'yahoo', 'hotmail', 'outlook', 'icloud', 'rediffmail', 'live', 'aol', 'msn', 'ymail', 'protonmail', 'zoho'
+])
+
+const TYPO_TLDS = new Set(['co', 'cm', 'c', 'coom', 'comm', 'commm', 'con', 'cmm', 'gma', 'gmai'])
 
 function stripUnsafeText(value) {
   return Array.from(String(value ?? '')).filter((character) => {
@@ -109,21 +118,21 @@ export function getEmailError(value, options = {}) {
 
   const domainParts = domainPart.split('.')
   const mainDomain = domainParts[0]
-  const tld = domainParts[domainParts.length - 1]
+  const tld = domainParts.slice(1).join('.')
 
   if (!mainDomain || mainDomain.length < 2) {
     return `Enter a valid ${label.toLowerCase()} domain (e.g., gmail.com, company.in).`
   }
 
-  if (PUBLIC_PROVIDERS.has(mainDomain) && TYPO_TLDS.has(tld)) {
+  if (PUBLIC_PROVIDERS.has(mainDomain) && (TYPO_TLDS.has(tld) || !VALID_TLDS.has(tld))) {
     return `Invalid domain "${domainPart}". Did you mean "${mainDomain}.com"?`
   }
 
-  if (domainParts.length < 2 || !tld || tld.length < 2 || !/^[a-z]{2,10}$/i.test(tld) || KNOWN_INVALID_TLDS.has(tld)) {
+  if (domainParts.length < 2 || !tld || !VALID_TLDS.has(tld)) {
     return `Enter a valid ${label.toLowerCase()} extension (e.g., .com, .in, .org, .net).`
   }
 
-  return STRICT_EMAIL_PATTERN.test(email) ? '' : `Enter a valid ${label.toLowerCase()} address.`
+  return ''
 }
 
 export function isValidEmail(value, options = {}) {
