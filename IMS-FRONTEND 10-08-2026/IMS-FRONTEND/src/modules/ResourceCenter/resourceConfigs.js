@@ -1302,7 +1302,11 @@ export const RESOURCE_CONFIGS = {
           const count = usersList.filter(
             (u) => String(u.role).toLowerCase() === String(row.roleName).toLowerCase()
           ).length
-          return count
+          return React.createElement(
+            'span',
+            { className: `resource-center__users-count-badge ${count > 0 ? 'is-active' : 'is-zero'}` },
+            `${count} ${count === 1 ? 'User' : 'Users'}`
+          )
         },
       },
       { key: 'createdAt', label: 'Created', format: 'date', sortable: true },
