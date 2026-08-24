@@ -528,7 +528,7 @@ function getFieldError(field, value, mode, context = {}) {
     return getEmailOrPhoneError(value, label)
   }
 
-  if (field.type === 'email') {
+  if (field.type === 'email' || field.name === 'email' || field.name?.toLowerCase().includes('email')) {
     return getEmailError(value, { required: Boolean(isRequired) })
   }
 

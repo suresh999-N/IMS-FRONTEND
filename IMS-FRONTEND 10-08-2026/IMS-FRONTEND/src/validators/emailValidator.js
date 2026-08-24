@@ -1,6 +1,6 @@
 export const EMAIL_MAX_LENGTH = 254
 
-const EMAIL_DOMAIN_PATTERN = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i
+const EMAIL_DOMAIN_PATTERN = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i
 
 function stripUnsafeText(value) {
   return Array.from(String(value ?? '')).filter((character) => {
@@ -41,16 +41,16 @@ export function getEmailError(value, options = {}) {
 
   const parts = email.split('@')
   if (parts.length !== 2) {
-    return 'Enter a valid email address.'
+    return 'Enter a valid email address (e.g. name@example.com).'
   }
 
   const [localPart, domainPart] = parts
   if (!localPart || !domainPart) {
-    return 'Enter a valid email address.'
+    return 'Enter a valid email address (e.g. name@example.com).'
   }
 
   if (localPart.length > 64) {
-    return 'Email local part cannot exceed 64 characters.'
+    return 'Email username cannot exceed 64 characters.'
   }
 
   if (!/[a-z0-9]/i.test(localPart)) {
@@ -62,14 +62,24 @@ export function getEmailError(value, options = {}) {
   }
 
   if (!/^[a-z0-9._%+-]+$/i.test(localPart)) {
-    return 'Email contains invalid characters.'
+    return 'Email username contains invalid characters.'
   }
 
   if (domainPart.startsWith('.') || domainPart.endsWith('.')) {
-    return 'Enter a valid email domain.'
+    return 'Enter a valid email domain (e.g. example.com).'
   }
 
-  return EMAIL_DOMAIN_PATTERN.test(domainPart) ? '' : 'Enter a valid email domain.'
+  if (!domainPart.includes('.')) {
+    return 'Email domain must include a top-level domain (e.g. .com, .in).'
+  }
+
+  const domainParts = domainPart.split('.')
+  const tld = domainParts[domainParts.length - 1]
+  if (!tld || tld.length < 2 || !/^[a-z]{2,63}$/i.test(tld)) {
+    return 'Enter a valid email domain extension (e.g. .com, .in).'
+  }
+
+  return EMAIL_DOMAIN_PATTERN.test(domainPart) ? '' : 'Enter a valid email domain (e.g. example.com).'
 }
 
 export function isValidEmail(value, options = {}) {
