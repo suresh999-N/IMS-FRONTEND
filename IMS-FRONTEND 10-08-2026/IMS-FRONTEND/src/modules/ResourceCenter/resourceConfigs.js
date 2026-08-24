@@ -1168,8 +1168,8 @@ export const RESOURCE_CONFIGS = {
   users: {
     key: 'users',
     permissionKey: 'users',
-    title: 'Users',
-    subtitle: 'Manage backend users and account activation state.',
+    title: 'Employees',
+    subtitle: 'Manage employee accounts, role assignments, and status.',
     entityName: 'Employee',
     icon: Users,
     endpoint: API_ENDPOINTS.users.list,
