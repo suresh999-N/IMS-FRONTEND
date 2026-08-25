@@ -3132,10 +3132,10 @@ function ResourcePage({ config, navigationContent = null }) {
                 {isAuditLogsPage ? auditSummary.total : summary.total} Total
               </span>
               <span className={`resource-center__inventory-metric resource-center__inventory-metric--${isUsersPage ? 'success' : 'info'}`}>
-                {isAuditLogsPage ? auditSummary.modules : isUsersPage ? summary.active : summary.total} {isUsersPage ? 'Active' : isRolesPage ? 'Configured' : 'Modules'}
+                {isAuditLogsPage ? auditSummary.modules : summary.active} {isUsersPage ? 'Active' : isRolesPage ? 'Configured' : 'Modules'}
               </span>
               <span className={`resource-center__inventory-metric resource-center__inventory-metric--${isUsersPage ? 'danger' : 'warning'}`}>
-                {isAuditLogsPage ? auditSummary.recorded : isUsersPage ? Math.max(0, summary.total - summary.active) : summary.pending} {isUsersPage ? 'Inactive' : isRolesPage ? 'Draft' : 'Recorded'}
+                {isAuditLogsPage ? auditSummary.recorded : summary.pending} {isUsersPage ? 'Inactive' : isRolesPage ? 'Draft' : 'Recorded'}
               </span>
             </div>
           </div>
