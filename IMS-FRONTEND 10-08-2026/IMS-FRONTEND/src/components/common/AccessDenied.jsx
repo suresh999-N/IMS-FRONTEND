@@ -1,18 +1,10 @@
-import { Link } from 'react-router-dom'
-import { LayoutDashboard, ShieldAlert } from 'lucide-react'
+import { ShieldAlert } from 'lucide-react'
 import './AccessDenied.css'
 
 export default function AccessDenied() {
   return (
     <main className="access-denied-container" role="alert">
       <div className="access-denied-card">
-        <div className="access-denied-header">
-          <Link className="access-denied-back-btn" to="/dashboard">
-            <LayoutDashboard size={15} />
-            <span>Back to Dashboard</span>
-          </Link>
-        </div>
-
         <div className="access-denied-body">
           <div className="access-denied-icon-wrap" aria-hidden="true">
             <ShieldAlert size={44} strokeWidth={1.8} />
