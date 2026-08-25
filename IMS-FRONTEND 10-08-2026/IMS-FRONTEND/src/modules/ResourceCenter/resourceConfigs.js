@@ -20,7 +20,7 @@ import {
   Users,
 } from 'lucide-react'
 import { API_ENDPOINTS } from '../../api/endpoints'
-import { readResourceValue } from '../../api/resourceApi'
+import { getRoleUserCount, readResourceValue } from '../../api/resourceApi'
 import { formatDate, getToday } from '../../utils/helpers'
 import { autoCapitalizeWords } from '../../validators/nameValidator'
 
@@ -1301,10 +1301,7 @@ export const RESOURCE_CONFIGS = {
         className: 'resource-center__cell-users-count',
         render: (row, referenceData) => {
           const usersList = referenceData?.users ?? []
-          const count = usersList.filter(
-            (u) => String(u.role).toLowerCase() === String(row.roleName).toLowerCase()
-          ).length
-          return count
+          return getRoleUserCount(row, usersList)
         },
       },
       {

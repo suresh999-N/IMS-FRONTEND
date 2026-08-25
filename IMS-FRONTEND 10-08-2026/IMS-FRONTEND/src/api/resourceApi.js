@@ -97,6 +97,32 @@ export function readResourceValue(row, key, fallback = '') {
   return fallback
 }
 
+export function getRoleUserCount(roleRow, usersList = []) {
+  if (!roleRow || !Array.isArray(usersList) || usersList.length === 0) {
+    return 0
+  }
+  const roleNameStr = String(
+    readResourceValue(roleRow, 'roleName', readResourceValue(roleRow, 'name', readResourceValue(roleRow, 'role', '')))
+  ).trim().toLowerCase()
+  const roleIdStr = String(readResourceValue(roleRow, 'roleId', readResourceValue(roleRow, 'id', ''))).trim()
+
+  return usersList.filter((u) => {
+    const rawUserRole = readResourceValue(u, 'role', readResourceValue(u, 'roleName', readResourceValue(u, 'role_name', '')))
+    const userRoleStr = typeof rawUserRole === 'object' && rawUserRole !== null
+      ? String(rawUserRole.roleName || rawUserRole.name || rawUserRole.role || '').trim().toLowerCase()
+      : String(rawUserRole || '').trim().toLowerCase()
+    const userRoleIdStr = String(readResourceValue(u, 'roleId', readResourceValue(u, 'role_id', ''))).trim()
+
+    if (roleNameStr && userRoleStr && userRoleStr === roleNameStr) {
+      return true
+    }
+    if (roleIdStr && userRoleIdStr && userRoleIdStr === roleIdStr) {
+      return true
+    }
+    return false
+  }).length
+}
+
 export function getResourceId(row, config = {}) {
   const idFields = [
     ...(config.idFields ?? []),
