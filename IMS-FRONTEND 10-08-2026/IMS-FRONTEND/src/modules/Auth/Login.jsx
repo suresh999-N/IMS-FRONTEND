@@ -23,6 +23,8 @@ import {
 import { getAuthErrorMessage } from './authCopy'
 import './Auth.css'
  
+const REMEMBER_ME_STORAGE_KEY = 'ims_remember_me_identifier'
+
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -30,10 +32,19 @@ export default function Login() {
   const verificationMessage = location.state?.verificationMessage || ''
   const verificationNotice = location.state?.verificationNotice || ''
  
+  const [rememberMe, setRememberMe] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return Boolean(window.localStorage.getItem(REMEMBER_ME_STORAGE_KEY))
+  })
 
-   const [formData, setFormData] = useState({
-    email: location.state?.email || '',
-    password: '',
+  const [formData, setFormData] = useState(() => {
+    const savedIdentifier = typeof window !== 'undefined'
+      ? window.localStorage.getItem(REMEMBER_ME_STORAGE_KEY) || ''
+      : ''
+    return {
+      email: location.state?.email || savedIdentifier,
+      password: '',
+    }
   })
   const [touched, setTouched] = useState({
     email: false,
@@ -96,9 +107,17 @@ export default function Login() {
  
     try {
       setLoading(true)
+
+      if (rememberMe && typeof window !== 'undefined') {
+        window.localStorage.setItem(REMEMBER_ME_STORAGE_KEY, identifier)
+      } else if (typeof window !== 'undefined') {
+        window.localStorage.removeItem(REMEMBER_ME_STORAGE_KEY)
+      }
+
       const result = await login({
         emailOrPhone: identifier,
         password: formData.password,
+        rememberMe,
       })
  
       if (!result?.success) {
@@ -235,9 +254,22 @@ export default function Login() {
               <span className="field-error-text">{passwordDisplayError}</span>
             )}
  
-            <div className="links">
-              <Link to="/register">Create account</Link>
+            <div className="auth-login-options-row">
+              <label className="auth-login-remember" htmlFor="login-remember-me">
+                <input
+                  id="login-remember-me"
+                  type="checkbox"
+                  name="rememberMe"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                <span>Remember me</span>
+              </label>
               <Link to="/forgot-password">Forgot password?</Link>
+            </div>
+
+            <div className="links auth-login-secondary-row">
+              <Link to="/register">Create account</Link>
             </div>
  
             <button type="submit" disabled={loading}>

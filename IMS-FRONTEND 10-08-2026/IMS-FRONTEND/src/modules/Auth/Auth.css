@@ -746,9 +746,50 @@
   margin: 2px 0 22px;
 }
 
+.auth-login-options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0 12px;
+  font-size: 13px;
+}
+
+.auth-login-remember {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 550;
+  cursor: pointer;
+  user-select: none;
+}
+
+.auth-login-remember input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  accent-color: #16a34a;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.auth-login-remember input[type="checkbox"]:focus-visible {
+  outline: 2px solid #22c55e;
+  outline-offset: 1px;
+}
+
+.auth-login-options-row a,
 .auth-wrapper--login .links a {
   color: #15803d;
   font-weight: 600;
+}
+
+.auth-login-secondary-row {
+  margin-bottom: 22px !important;
 }
 
 .auth-wrapper--login form > button[type='submit'] {
