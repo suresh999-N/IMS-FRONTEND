@@ -1965,6 +1965,22 @@ function ResourcePage({ config, navigationContent = null }) {
       }
     }
 
+    if (isRolesPage) {
+      const usersList = referenceData?.users ?? []
+      const configuredCount = rows.filter((role) => {
+        const roleName = String(role.roleName || role.name || '').toLowerCase()
+        const userCount = usersList.filter((u) => String(u.role || u.roleName || '').toLowerCase() === roleName).length
+        return userCount > 0
+      }).length
+
+      return {
+        total: rows.length,
+        active: configuredCount,
+        pending: Math.max(0, rows.length - configuredCount),
+        unread: null,
+      }
+    }
+
     const statusCounts = rows.reduce((result, row) => {
       const status = String(readResourceValue(row, 'status', '') || '').toLowerCase()
       if (status) {
@@ -1982,7 +1998,7 @@ function ResourcePage({ config, navigationContent = null }) {
       pending: (statusCounts.pending ?? statusCounts.draft ?? 0) + (hasSubCategoryDraft ? 1 : 0),
       unread: unreadCount,
     }
-  }, [config.statuslessRowsAreActive, hasSubCategoryDraft, isUsersPage, metric, rows])
+  }, [config.statuslessRowsAreActive, hasSubCategoryDraft, isRolesPage, isUsersPage, metric, referenceData?.users, rows])
 
   const auditSummary = useMemo(() => ({
     total: rows.length,
