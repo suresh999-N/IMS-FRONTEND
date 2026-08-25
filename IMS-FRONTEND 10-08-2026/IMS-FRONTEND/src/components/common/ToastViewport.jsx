@@ -53,9 +53,18 @@ export default function ToastViewport() {
             </div>
 
             <div className="toast-viewport__body">
-              <p className="toast-viewport__title">
-                {toast.title || (toast.type === 'success' ? 'Success' : toast.type === 'error' ? 'Error' : toast.type === 'warning' ? 'Warning' : 'Notification')}
-              </p>
+              {(() => {
+                const titleText = String(toast.title || '').trim()
+                const msgText = String(toast.message || '').trim()
+                const isGenericTitle = ['success', 'error', 'warning', 'notification', 'info'].includes(titleText.toLowerCase())
+                const rootWord = titleText.toLowerCase().replace(/s$/, '')
+                const isRedundant = !titleText || isGenericTitle || (msgText && rootWord && msgText.toLowerCase().includes(rootWord))
+
+                if (isRedundant || !msgText) {
+                  return null
+                }
+                return <p className="toast-viewport__title">{titleText}</p>
+              })()}
               <p className="toast-viewport__message">{toast.message}</p>
               {toast.action?.label && typeof toast.action?.onClick === 'function' ? (
                 <button
