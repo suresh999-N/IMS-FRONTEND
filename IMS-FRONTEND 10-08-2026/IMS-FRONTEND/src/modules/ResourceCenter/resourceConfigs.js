@@ -1299,6 +1299,10 @@ export const RESOURCE_CONFIGS = {
         label: 'Users',
         sortable: true,
         className: 'resource-center__cell-users-count',
+        sortValue: (row, referenceData) => {
+          const usersList = referenceData?.users ?? []
+          return getRoleUserCount(row, usersList)
+        },
         render: (row, referenceData) => {
           const usersList = referenceData?.users ?? []
           return getRoleUserCount(row, usersList)

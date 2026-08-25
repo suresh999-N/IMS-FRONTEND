@@ -2695,7 +2695,17 @@ function ResourcePage({ config, navigationContent = null }) {
             searchable: column.searchable,
             render: (row, index, sNo) => formatCellValue(row, column, referenceData, index, sNo),
             searchValue: (row) => String(readResourceValue(row, column.key, '') ?? ''),
-            sortValue: (row) => readResourceValue(row, column.key, ''),
+            sortValue: (row) => {
+              if (typeof column.sortValue === 'function') {
+                return column.sortValue(row, referenceData)
+              }
+              if (typeof column.render === 'function') {
+                const rendered = column.render(row, referenceData)
+                if (typeof rendered === 'number') return rendered
+                if (typeof rendered === 'string') return rendered
+              }
+              return readResourceValue(row, column.key, '')
+            },
           }
         })
   const columns = isSubCategoriesPage
