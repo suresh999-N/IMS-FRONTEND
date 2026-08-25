@@ -3116,7 +3116,7 @@ function ResourcePage({ config, navigationContent = null }) {
             </div>
             <div className="resource-center__inventory-metrics" aria-label={`${config.title} metrics`}>
               <span className={`resource-center__inventory-metric resource-center__inventory-metric--${isUsersPage ? 'info' : 'success'}`}>
-                {isAuditLogsPage ? auditSummary.total : summary.total} {isUsersPage ? 'Users' : isRolesPage ? 'Roles' : 'Logs'}
+                {isAuditLogsPage ? auditSummary.total : summary.total} Total
               </span>
               <span className={`resource-center__inventory-metric resource-center__inventory-metric--${isUsersPage ? 'success' : 'info'}`}>
                 {isAuditLogsPage ? auditSummary.modules : isUsersPage ? summary.active : summary.total} {isUsersPage ? 'Active' : isRolesPage ? 'Configured' : 'Modules'}
