@@ -1282,6 +1282,7 @@ export const RESOURCE_CONFIGS = {
         key: 'roleName',
         label: 'Role',
         sortable: true,
+        className: 'resource-center__cell-role-name',
         render: (row) => autoCapitalizeWords(readResourceValue(row, 'roleName', readResourceValue(row, 'name', ''))),
       },
       {
@@ -1311,6 +1312,7 @@ export const RESOURCE_CONFIGS = {
         label: 'Created Date',
         format: 'date',
         sortable: true,
+        className: 'resource-center__cell-created-date',
         render: (row) => {
           const rawDate = readResourceValue(row, 'createdAt', readResourceValue(row, 'created_at', readResourceValue(row, 'createdDate', '')))
           return rawDate ? formatDate(rawDate) : 'System Default'
