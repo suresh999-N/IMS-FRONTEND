@@ -1125,6 +1125,7 @@ export const RESOURCE_CONFIGS = {
     subtitle: 'Review the latest ERP activity across products, customers, suppliers, invoices, payments and inventory.',
     entityName: 'Activity',
     icon: History,
+    searchPlaceholder: 'Search by action, module, user, or date...',
     endpoint: API_ENDPOINTS.auditLogs.list,
     defaultQuery: { pageSize: 50 },
     idFields: ['auditLogId', 'auditId', 'id'],

@@ -265,7 +265,7 @@ button.dashboard-status:active {
   min-width: 0;
   display: flex;
   align-items: center;
-  justify-content: flex-start !important;
+  justify-content: space-between !important;
   text-align: left !important;
   gap: 8px;
 }
@@ -285,6 +285,8 @@ button.dashboard-status:active {
   color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 3px 6px rgba(15, 23, 42, 0.06);
+  flex: 0 0 auto;
+  margin-left: auto;
 }
 
 .dashboard-stat__content {
@@ -300,6 +302,8 @@ button.dashboard-status:active {
 
 .dashboard-stat__value {
   min-width: 0;
+  width: 100%;
+  display: block !important;
   color: var(--dashboard-text);
   font-size: clamp(20px, 1.5vw, 24px);
   line-height: 1.1;
@@ -310,6 +314,8 @@ button.dashboard-status:active {
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: left !important;
+  margin-left: 0 !important;
+  margin-right: auto !important;
 }
 
 .dashboard-stat__label {
@@ -322,6 +328,8 @@ button.dashboard-status:active {
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: left !important;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .dashboard-panel__header span,
@@ -339,6 +347,9 @@ button.dashboard-status:active {
 .dashboard-stat__trend {
   width: max-content;
   max-width: 100%;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
   align-self: flex-start !important;
   border-radius: 999px;
   padding: 3px 9px;
@@ -351,6 +362,8 @@ button.dashboard-status:active {
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: left !important;
+  margin-left: 0 !important;
+  margin-right: auto !important;
 }
 
 .dashboard-stat__trend.is-up {

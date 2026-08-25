@@ -1782,7 +1782,11 @@ function ResourcePage({ config, navigationContent = null }) {
         .map((row) => String(readResourceValue(row, 'module', '') || '').trim())
         .filter(Boolean),
     ).size,
-    recorded: rows.filter((row) => readResourceValue(row, 'createdAt', '')).length,
+    actions: new Set(
+      rows
+        .map((row) => String(readResourceValue(row, 'action', '') || '').trim())
+        .filter(Boolean),
+    ).size,
   }), [rows])
 
   const notificationSummary = useMemo(() => {
@@ -2825,13 +2829,13 @@ function ResourcePage({ config, navigationContent = null }) {
             </div>
             <div className="resource-center__inventory-metrics" aria-label="Audit Log metrics">
               <span className="resource-center__inventory-metric resource-center__inventory-metric--success">
-                {auditSummary.total} Logs
+                {auditSummary.total} {auditSummary.total === 1 ? 'Log' : 'Logs'}
               </span>
               <span className="resource-center__inventory-metric resource-center__inventory-metric--info">
-                {auditSummary.modules} Modules
+                {auditSummary.modules} {auditSummary.modules === 1 ? 'Module' : 'Modules'}
               </span>
               <span className="resource-center__inventory-metric resource-center__inventory-metric--warning">
-                {auditSummary.recorded} Recorded
+                {auditSummary.actions} {auditSummary.actions === 1 ? 'Action' : 'Actions'}
               </span>
             </div>
           </div>
@@ -3014,7 +3018,7 @@ function ResourcePage({ config, navigationContent = null }) {
           loading={isLoading}
           defaultPageSize={isProductStylePage || isSubCategoriesPage || isInventoryCompactPage || isNotificationsPage || isInvoicesPage ? 20 : 8}
           showSearch={isSubCategoriesPage ? !hasSelectedSubCategories : isProductStylePage ? !hasSelectedProductStyleRows : true}
-          searchPlaceholder={`Search ${config.title.toLowerCase()}...`}
+          searchPlaceholder={config.searchPlaceholder || (isAuditLogsPage ? 'Search by action, module, user, or date...' : `Search ${config.title.toLowerCase()}...`)}
           emptyMessage={`No ${config.title.toLowerCase()} records found.`}
           splitToolbar={isProductStylePage || isSubCategoriesPage || isInventoryCompactPage || isNotificationsPage || isInvoicesPage}
           showColumnControls={!(isProductStylePage && hasSelectedProductStyleRows)}

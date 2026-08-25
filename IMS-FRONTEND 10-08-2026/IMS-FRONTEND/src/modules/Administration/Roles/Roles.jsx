@@ -844,7 +844,7 @@ function escapeHtml(value) {
 }
 
 function exportSubCategoriesCsv(rows) {
-  const headers = ['SubCategory', 'Category', 'Status', 'Created']
+  const headers = ['SubCategory', 'Category', 'Status', 'Created Date']
   const csvRows = rows.map((row) => [
     readResourceValue(row, 'name', ''),
     readResourceValue(row, 'categoryName', ''),
@@ -888,7 +888,7 @@ function printSubCategories(rows) {
   </style></head><body>
     <h1>SubCategories</h1>
     <table>
-      <thead><tr><th>SubCategory</th><th>Category</th><th>Status</th><th>Created</th></tr></thead>
+      <thead><tr><th>SubCategory</th><th>Category</th><th>Status</th><th>Created Date</th></tr></thead>
       <tbody>${tableRows}</tbody>
     </table>
   </body></html>`)
@@ -987,7 +987,7 @@ function printResourceRows(config, rows) {
 }
 
 function exportNotificationsCsv(rows) {
-  const headers = ['Title', 'Type', 'Message', 'Read', 'Created']
+  const headers = ['Title', 'Type', 'Message', 'Read', 'Created Date']
   const csvRows = rows.map((row) => [
     readResourceValue(row, 'title', ''),
     formatStatusLabel(readResourceValue(row, 'type', '')),
@@ -2475,7 +2475,7 @@ function ResourcePage({ config, navigationContent = null }) {
       },
       {
         key: 'createdAt',
-        label: 'Created',
+        label: 'Created Date',
         sortable: true,
         className: 'resource-center__subcategories-col-date',
         tableWidth: 170,
@@ -2574,7 +2574,7 @@ function ResourcePage({ config, navigationContent = null }) {
         },
         {
           key: 'createdAt',
-          label: 'Created',
+          label: 'Created Date',
           sortable: true,
           className: 'resource-center__notifications-col-created',
           render: (row) => (

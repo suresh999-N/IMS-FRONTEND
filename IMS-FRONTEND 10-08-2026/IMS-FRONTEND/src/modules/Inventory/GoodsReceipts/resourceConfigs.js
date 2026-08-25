@@ -1159,7 +1159,7 @@ export const RESOURCE_CONFIGS = {
     columns: [
       { key: 'roleName', label: 'Role', sortable: true },
       { key: 'description', label: 'Description', sortable: true },
-      { key: 'createdAt', label: 'Created', format: 'date', sortable: true },
+      { key: 'createdAt', label: 'Created Date', format: 'date', sortable: true },
     ],
   },
   purchaseIndents: {

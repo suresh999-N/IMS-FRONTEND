@@ -916,55 +916,12 @@
   letter-spacing: 0.035em;
 }
 
-.customers-page__directory-card .table-container td[data-column='name'] {
-  width: 180px;
-  max-width: 180px;
-}
-
-.customers-page__directory-card .table-container td.customers-col-email {
-  width: 190px;
-  max-width: 190px;
-}
-
-.customers-page__directory-card .table-container td.customers-col-phone {
-  width: 118px;
-  max-width: 118px;
-}
-
-.customers-page__directory-card .table-container td.customers-col-company {
-  width: 150px;
-  max-width: 150px;
-}
-
 .customers-page__directory-card .table-container td.customers-col-address {
-  width: 190px;
-  max-width: 190px;
   white-space: nowrap;
 }
 
-.customers-page__directory-card .table-container td.customers-col-orders {
-  width: 72px;
-  max-width: 72px;
-}
-
-.customers-page__directory-card .table-container td.customers-col-purchases {
-  width: 112px;
-  max-width: 112px;
-}
-
-.customers-page__directory-card .table-container td.customers-col-activity {
-  width: 116px;
-  max-width: 116px;
-}
-
-.customers-page__directory-card .table-container td.customers-col-status {
-  width: 96px;
-  max-width: 96px;
-}
-
 .customers-page__directory-card .table-container td.customers-col-actions {
-  width: 178px;
-  max-width: 178px;
+  overflow: visible;
 }
 
 .customers-page__table-stack {
@@ -1224,55 +1181,7 @@
   box-shadow: inset 2px 0 0 rgba(14, 165, 183, 0.36);
 }
 
-.customers-page__directory-card .table-container td[data-column='name'] {
-  width: 188px;
-  max-width: 188px;
-}
-
-.customers-page__directory-card .table-container td.customers-col-email {
-  width: 182px;
-  max-width: 182px;
-}
-
-.customers-page__directory-card .table-container td.customers-col-phone {
-  width: 110px;
-  max-width: 110px;
-}
-
-.customers-page__directory-card .table-container td.customers-col-company {
-  width: 142px;
-  max-width: 142px;
-}
-
-.customers-page__directory-card .table-container td.customers-col-address {
-  width: 160px;
-  max-width: 160px;
-}
-
-.customers-page__directory-card .table-container td.customers-col-orders {
-  width: 66px;
-  max-width: 66px;
-}
-
-.customers-page__directory-card .table-container td.customers-col-purchases {
-  width: 104px;
-  max-width: 104px;
-}
-
-.customers-page__directory-card .table-container td.customers-col-activity {
-  width: 108px;
-  max-width: 108px;
-}
-
-.customers-page__directory-card .table-container td.customers-col-status {
-  width: 88px;
-  max-width: 88px;
-}
-
 .customers-page__directory-card .table-container td.customers-col-actions {
-  width: 146px;
-  min-width: 146px;
-  max-width: 146px;
   overflow: visible;
 }
 
@@ -1539,55 +1448,7 @@
   text-align: right;
 }
 
-.customers-page__directory-card :where(th, td).customers-col-name {
-  width: 186px;
-  max-width: 186px;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-email {
-  width: 176px;
-  max-width: 176px;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-phone {
-  width: 104px;
-  max-width: 104px;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-company {
-  width: 132px;
-  max-width: 132px;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-address {
-  width: 154px;
-  max-width: 154px;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-orders {
-  width: 60px;
-  max-width: 60px;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-purchases {
-  width: 98px;
-  max-width: 98px;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-activity {
-  width: 102px;
-  max-width: 102px;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-status {
-  width: 82px;
-  max-width: 82px;
-}
-
 .customers-page__directory-card :where(th, td).customers-col-actions {
-  width: 126px;
-  min-width: 126px;
-  max-width: 126px;
   overflow: visible;
 }
 
@@ -1914,55 +1775,7 @@
   min-height: 20px;
 }
 
-.customers-page__directory-card :where(th, td).customers-col-name {
-  width: 17%;
-  max-width: none;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-email {
-  width: 15%;
-  max-width: none;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-phone {
-  width: 9%;
-  max-width: none;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-company {
-  width: 11%;
-  max-width: none;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-address {
-  width: 12%;
-  max-width: none;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-orders {
-  width: 5%;
-  max-width: none;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-purchases {
-  width: 8%;
-  max-width: none;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-activity {
-  width: 8%;
-  max-width: none;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-status {
-  width: 7%;
-  max-width: none;
-}
-
 .customers-page__directory-card :where(th, td).customers-col-actions {
-  width: 8%;
-  min-width: 0;
-  max-width: none;
   overflow: visible;
 }
 
@@ -2277,45 +2090,7 @@
     inset 0 -1px 0 rgba(203, 213, 225, 0.58);
 }
 
-.customers-page__directory-card :where(th, td).customers-col-name {
-  width: 18%;
-}
 
-.customers-page__directory-card :where(th, td).customers-col-email {
-  width: 15%;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-phone {
-  width: 8%;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-company {
-  width: 10%;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-address {
-  width: 10%;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-orders {
-  width: 5%;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-purchases {
-  width: 8%;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-activity {
-  width: 8%;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-status {
-  width: 7%;
-}
-
-.customers-page__directory-card :where(th, td).customers-col-actions {
-  width: 11%;
-}
 
 .customers-page__table-stack strong {
   color: #0f172a;

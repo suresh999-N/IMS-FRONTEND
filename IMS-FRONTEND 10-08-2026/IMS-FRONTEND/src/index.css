@@ -1778,7 +1778,8 @@ button.status-badge:disabled,
 }
 
 :where(.stat-card, [class*='__summary-card']) {
-  align-items: center;
+  align-items: flex-start !important;
+  text-align: left !important;
 }
 
 :where([class*='__summary-card']) {
