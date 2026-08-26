@@ -1440,14 +1440,16 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
               </button>
             )}
 
-            <button
-              className="settings-final-save-btn button button-primary"
-              onClick={handleSaveSettings}
-              disabled={savingSettings || uploadingLogo || loadingSettings}
-              style={{ marginLeft: 'auto' }}
-            >
-              {savingSettings ? "Saving..." : st.saveChanges}
-            </button>
+            {activeTab !== "roles" && (
+              <button
+                className="settings-final-save-btn button button-primary"
+                onClick={handleSaveSettings}
+                disabled={savingSettings || uploadingLogo || loadingSettings}
+                style={{ marginLeft: 'auto' }}
+              >
+                {savingSettings ? "Saving..." : st.saveChanges}
+              </button>
+            )}
           </div>
         </div>
 
@@ -1654,20 +1656,22 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
             </div>
 
             <div className="settings-footer-actions">
-              <button
-                className="settings-final-save-btn"
-                onClick={handleSaveSettings}
-                disabled={savingSettings || uploadingLogo || loadingSettings}
-              >
-                {savingSettings ? "Saving..." : st.saveChanges}
-              </button>
+              {activeTab !== "roles" && (
+                <button
+                  className="settings-final-save-btn"
+                  onClick={handleSaveSettings}
+                  disabled={savingSettings || uploadingLogo || loadingSettings}
+                >
+                  {savingSettings ? "Saving..." : st.saveChanges}
+                </button>
+              )}
 
               <button
                 className="settings-cancel-btn"
                 onClick={onClose}
                 disabled={savingSettings || uploadingLogo || loadingSettings}
               >
-                {st.cancel}
+                {activeTab === "roles" ? "Close" : st.cancel}
               </button>
             </div>
           </div>
