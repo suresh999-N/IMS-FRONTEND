@@ -588,7 +588,6 @@ export default function Brands() {
             loading={isLoading}
             defaultPageSize={20}
             defaultSortKey=""
-            showSearch={!hasSelectedBrands}
             searchPlaceholder="Search brands by name or description..."
             emptyMessage="No brands found."
             splitToolbar
