@@ -19371,8 +19371,8 @@
 
 .customers-page .customers-data-table--compact.erp-data-table :where(th, td).table-component__selection-cell input:indeterminate {
   border-color: #0891b2 !important;
-  background-color: #0891b2 !important;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.2 5h7.6' fill='none' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+  background-color: #ffffff !important;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.2 5h7.6' fill='none' stroke='%230891b2' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") !important;
 }
 
 .customers-page .customers-data-table--compact.erp-data-table .table-component__table tbody tr.is-selected>td {
@@ -21347,7 +21347,7 @@
 
 .resource-center__page--customers .customers-data-table--compact .table-component__selection-cell input:indeterminate {
   border-color: #059669;
-  background: #059669 linear-gradient(#fff, #fff) center / 8px 2px no-repeat;
+  background: #ffffff linear-gradient(#059669, #059669) center / 8px 2px no-repeat;
 }
 
 .resource-center__page--customers .customers-data-table--compact .table-component__selection-summary {

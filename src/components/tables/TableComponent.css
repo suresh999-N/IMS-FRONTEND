@@ -208,7 +208,7 @@
 
 :is(#ims-table-selection-theme, .table-component) .table-component__selection-cell input[type='checkbox']:indeterminate {
   border-color: #059669 !important;
-  background: #059669 linear-gradient(#fff, #fff) center / 8px 2px no-repeat !important;
+  background: #ffffff linear-gradient(#059669, #059669) center / 8px 2px no-repeat !important;
 }
 
 :is(#ims-table-selection-theme, .table-component) .table-component__selection-cell input[type='checkbox']:disabled {

@@ -252,6 +252,7 @@ export default function TableComponent({
   const columnMenuRef = useRef(null)
   const tableContainerRef = useRef(null)
   const horizontalScrollbarRef = useRef(null)
+  const selectAllCheckboxRef = useRef(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(defaultPageSize)
@@ -466,6 +467,13 @@ export default function TableComponent({
   const selectedPageCount = pageRowKeys.filter((key) => selectedKeySet.has(key)).length
   const isPageSelected = pageRowKeys.length > 0 && selectedPageCount === pageRowKeys.length
   const isPagePartiallySelected = selectedPageCount > 0 && selectedPageCount < pageRowKeys.length
+
+  useEffect(() => {
+    if (selectAllCheckboxRef.current) {
+      selectAllCheckboxRef.current.indeterminate = false
+      selectAllCheckboxRef.current.checked = isPageSelected
+    }
+  }, [isPageSelected])
   const hideableColumns = columns.filter((column, index) =>
     typeof column.label === 'string' &&
     !effectiveLockedColumnKeys.includes(getColumnKey(column, index)))
@@ -567,7 +575,7 @@ export default function TableComponent({
   }
 
   function handleTogglePageSelection() {
-    if (isPageSelected) {
+    if (isPageSelected || isPagePartiallySelected) {
       updateSelection(selectedKeys.filter((key) => !pageRowKeys.includes(String(key))))
       return
     }
@@ -789,13 +797,9 @@ export default function TableComponent({
                   {shouldShowSelection ? (
                     <th scope="col" className="table-component__selection-cell">
                       <input
+                        ref={selectAllCheckboxRef}
                         type="checkbox"
                         checked={isPageSelected}
-                        ref={(input) => {
-                          if (input) {
-                            input.indeterminate = isPagePartiallySelected
-                          }
-                        }}
                         onChange={handleTogglePageSelection}
                         aria-label="Select all rows on this page"
                       />

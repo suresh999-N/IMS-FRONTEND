@@ -165,7 +165,7 @@
 
 .sales-page:not(.sales-page--create) .sales-page__table .table-component__selection-cell input:indeterminate {
   border-color: #059669 !important;
-  background: #059669 linear-gradient(#fff, #fff) center / 8px 2px no-repeat !important;
+  background: #ffffff linear-gradient(#059669, #059669) center / 8px 2px no-repeat !important;
 }
 
 .sales-page:not(.sales-page--create) .sales-page__table .table-component__pagination {

@@ -7432,8 +7432,8 @@ border-color: #bbf7d0; /* Changed from #d1fae5 */
 
 .suppliers-page .suppliers-data-table--compact :where(th, td).table-component__selection-cell input:indeterminate {
   border-color: #059669 !important;
-  background-color: #059669 !important;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.2 5h7.6' fill='none' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+  background-color: #ffffff !important;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.2 5h7.6' fill='none' stroke='%23059669' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") !important;
 }
 
 .suppliers-page .suppliers-data-table--compact .table-component__table tbody tr.is-selected > td {

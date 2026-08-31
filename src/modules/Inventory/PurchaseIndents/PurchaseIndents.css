@@ -937,7 +937,7 @@
 
 .purchases-page .purchases-page__table .table-component__selection-cell input:indeterminate {
   border-color: #059669;
-  background: #059669 linear-gradient(#fff, #fff) center / 8px 2px no-repeat;
+  background: #ffffff linear-gradient(#059669, #059669) center / 8px 2px no-repeat;
 }
 
 .purchases-page .purchases-page__table .table-component__pagination {

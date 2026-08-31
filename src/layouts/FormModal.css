@@ -381,7 +381,7 @@
 
 .form-modal--delete-confirmation .form-modal__header {
   align-items: center;
-  padding: 22px 24px 14px;
+  padding: 14px 24px 8px;
   border-bottom: 0;
   background: #fff;
 }
@@ -407,10 +407,11 @@
 }
 
 .form-modal--delete-confirmation .form-modal__body {
-  padding: 0 24px 22px;
+  padding: 6px 24px 22px;
 }
 
 .form-modal--delete-confirmation .form-modal__body p {
+  margin: 0;
   color: #475569;
   font-size: 14px;
   line-height: 1.55;
@@ -520,11 +521,11 @@
   }
 
   .form-modal--delete-confirmation .form-modal__header {
-    padding: 20px 20px 14px;
+    padding: 14px 20px 8px;
   }
 
   .form-modal--delete-confirmation .form-modal__body {
-    padding: 0 20px 20px;
+    padding: 6px 20px 20px;
   }
 
   .form-modal--delete-confirmation .form-modal__body :where(
