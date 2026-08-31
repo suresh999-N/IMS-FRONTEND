@@ -747,7 +747,7 @@ export default function ProductVariants() {
                         const val = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
                         setFormValues((prev) => ({ ...prev, variantName: val }))
                       }}
-                      placeholder="e.g. Medium - Red, 64GB"
+                      placeholder="e.g. medium - red, 64GB"
                       required
                     />
                     {serverErrors.variantName && (

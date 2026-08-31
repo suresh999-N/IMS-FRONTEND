@@ -8,11 +8,11 @@ function getStatusClass(status) {
     return 'status-active'
   }
 
-  if (['blocked', 'disabled', 'archived'].includes(normalized)) {
-    return 'status-critical'
+  if (['blocked', 'disabled', 'archived', 'inactive'].includes(normalized)) {
+    return 'status-inactive'
   }
 
-  if (['inactive', 'pending', 'prospect'].includes(normalized)) {
+  if (['pending', 'prospect'].includes(normalized)) {
     return 'status-pending'
   }
 

@@ -386,7 +386,7 @@ export default function Attributes() {
                   onChange={(e) => setFormValues({ name: e.target.value })}
                   error={serverErrors.name}
                   required
-                  placeholder="e.g. Size, Color, Material"
+                  placeholder="e.g. size, color, material"
                   disabled={isSaving}
                 />
               </div>
@@ -403,7 +403,7 @@ export default function Attributes() {
               </button>
               <button
                 type="button"
-                className="button"
+                className="button button-secondary"
                 onClick={handleCloseForm}
                 disabled={isSaving}
               >

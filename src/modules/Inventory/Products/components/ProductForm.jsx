@@ -928,14 +928,35 @@ export default function ProductForm({
   }
 
   function handleGenerateBarcode() {
-    setFormData((currentValue) => ({
-      ...currentValue,
-      barcode: generateBarcode(),
-    }))
-    setTouched((currentValue) => ({
-      ...currentValue,
-      barcode: true,
-    }))
+    try {
+      const nextBarcode = generateBarcode()
+
+      if (!nextBarcode) {
+        throw new Error('Failed to generate barcode.')
+      }
+
+      setFormData((currentValue) => ({
+        ...currentValue,
+        barcode: nextBarcode,
+      }))
+      setTouched((currentValue) => ({
+        ...currentValue,
+        barcode: true,
+      }))
+
+      showToast({
+        type: 'success',
+        title: 'Barcode Generated',
+        message: `Generated barcode: ${nextBarcode}`,
+      })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to generate barcode.'
+      showToast({
+        type: 'error',
+        title: 'Barcode Error',
+        message,
+      })
+    }
   }
 
   function handleSubmit(event) {
@@ -1408,7 +1429,7 @@ export default function ProductForm({
             <Save size={16} />
             {actionLabel}
           </button>
-          <button type="button" className="button" onClick={handleCancel} disabled={isSaving}>
+          <button type="button" className="button button-secondary" onClick={handleCancel} disabled={isSaving}>
             <RotateCcw size={16} />
             {isEdit ? 'Cancel' : 'Clear'}
           </button>

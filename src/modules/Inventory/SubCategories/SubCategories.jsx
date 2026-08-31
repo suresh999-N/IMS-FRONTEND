@@ -616,7 +616,7 @@ function SubCategoryForm({
         </button>
         <button
           type="button"
-          className="button"
+          className="button button-secondary"
           onClick={onCancel}
           disabled={isSubmitting}
         >

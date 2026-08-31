@@ -68,7 +68,7 @@ export function getStatusBadgeType(status) {
   const normalized = normalizeStatusValue(status)
   if (normalized === 'archived') return 'pending'
   if (normalized === 'blocked') return 'cancelled'
-  if (normalized === 'inactive') return 'pending'
+  if (normalized === 'inactive') return 'inactive'
   if (['paid', 'received', 'reconciled', 'active'].includes(normalized)) return 'received'
   return 'ordered'
 }
