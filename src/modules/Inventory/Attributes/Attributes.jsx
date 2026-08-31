@@ -419,14 +419,14 @@ export default function Attributes() {
         <FormModal
           title="Delete Attribute"
           onClose={() => setDeleteTarget(null)}
-          className="form-modal--delete-confirm"
+          className="form-modal--delete-confirmation"
         >
           <p>
             Are you sure you want to delete{' '}
             <strong>{deleteTarget.name || deleteTarget.attributeName || 'this attribute'}</strong>?
             This action cannot be undone.
           </p>
-          <div className="resource-form__footer">
+          <div className="button-row resource-form__footer">
             <button
               type="button"
               className="button button-secondary"
