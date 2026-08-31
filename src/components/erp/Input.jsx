@@ -25,7 +25,8 @@ export default function Input({ className = '', name, type, autoCapitalize, onCh
     onChange(event)
   }
 
-  const computedStyle = isAutoCap ? { textTransform: 'capitalize', ...style } : style
+  const hasValue = props.value !== undefined && props.value !== null && String(props.value).length > 0
+  const computedStyle = isAutoCap && hasValue ? { textTransform: 'capitalize', ...style } : style
 
   return (
     <input

@@ -54,7 +54,7 @@ export default function ResetPassword() {
 
   const otpDisplayError = touched.otp && otpError
   const passwordDisplayError = touched.password && passwordError
-  const confirmPasswordDisplayError = (touched.confirmPassword || Boolean(confirmPassword)) && confirmPasswordError
+  const confirmPasswordDisplayError = touched.confirmPassword && confirmPasswordError
 
   const isFormValid = !otpError && !passwordError && !confirmPasswordError
 
@@ -151,7 +151,10 @@ export default function ResetPassword() {
                 type="text"
                 placeholder="6-digit code"
                 value={otp}
-                onChange={(event) => setOtp(event.target.value.replace(/\D/g, ''))}
+                onChange={(event) => {
+                  setError('')
+                  setOtp(event.target.value.replace(/\D/g, ''))
+                }}
                 onBlur={() => setTouched((prev) => ({ ...prev, otp: true }))}
                 inputMode="numeric"
                 maxLength={6}
@@ -170,7 +173,10 @@ export default function ResetPassword() {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="New password"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(event) => {
+                  setError('')
+                  setPassword(event.target.value)
+                }}
                 onBlur={() => setTouched((prev) => ({ ...prev, password: true }))}
                 autoComplete="new-password"
               />
@@ -204,7 +210,10 @@ export default function ResetPassword() {
                 type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="Confirm password"
                 value={confirmPassword}
-                onChange={(event) => setConfirmPassword(event.target.value)}
+                onChange={(event) => {
+                  setError('')
+                  setConfirmPassword(event.target.value)
+                }}
                 onBlur={() => setTouched((prev) => ({ ...prev, confirmPassword: true }))}
                 autoComplete="new-password"
               />

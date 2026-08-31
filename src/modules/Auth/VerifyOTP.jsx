@@ -16,11 +16,20 @@ import loginLeftPanel from '../../assets/auth/login-left-panel.png'
 import { getAuthErrorMessage } from './authCopy'
 import './Auth.css'
 
+function cleanSuccessMessage(rawMessage, fallback = 'A verification code has been sent to your email.') {
+  const text = String(rawMessage || '').trim()
+  if (!text) return fallback
+  if (/registered|exist|if the email/i.test(text)) {
+    return 'A verification code has been sent to your email.'
+  }
+  return text
+}
+
 export default function VerifyOTP() {
   const navigate = useNavigate()
   const location = useLocation()
   const email = location.state?.email || ''
-  const initialMessage = location.state?.message || ''
+  const initialMessage = cleanSuccessMessage(location.state?.message)
   const [otp, setOtp] = useState('')
   const [error, setError] = useState('')
   const [message, setMessage] = useState(initialMessage)
@@ -119,7 +128,7 @@ export default function VerifyOTP() {
       setResendLoading(true)
       const response = await resendLoginOtp(email)
       if (response.success) {
-        setMessage(response.message || 'A new verification code has been sent to your email.')
+        setMessage('A new verification code has been sent to your email.')
       } else {
         setError(response.error || 'Unable to resend verification code.')
       }
@@ -196,7 +205,10 @@ export default function VerifyOTP() {
                 value={otp}
                 autoComplete="one-time-code"
                 inputMode="numeric"
-                onChange={(event) => setOtp(event.target.value.replace(/\D/g, ''))}
+                onChange={(event) => {
+                  setError('')
+                  setOtp(event.target.value.replace(/\D/g, ''))
+                }}
                 maxLength={6}
                 autoFocus
               />

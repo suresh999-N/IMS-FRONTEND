@@ -158,7 +158,7 @@ export const RESOURCE_CONFIGS = {
     byId: API_ENDPOINTS.productAttributes.byId,
     idFields: ['attributeId'],
     fields: [
-      { name: 'name', label: 'Attribute', required: true, minLength: 2 },
+      { name: 'name', label: 'Attribute', required: true, minLength: 2, placeholder: 'e.g. size, color, material' },
     ],
     columns: [
       { key: 'attributeId', label: 'ID', sortable: true },
@@ -1244,7 +1244,7 @@ export const RESOURCE_CONFIGS = {
         },
       },
       { key: 'emailVerificationStatus', label: 'Verification', format: 'status', sortable: true },
-      { key: 'isActive', label: 'Active', format: 'boolean', sortable: true },
+      { key: 'isActive', label: 'Status', format: 'boolean', sortable: true },
     ],
     rowActions: [
       {

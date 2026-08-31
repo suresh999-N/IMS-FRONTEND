@@ -387,7 +387,7 @@ export default function Units() {
                         const val = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
                         setFormValues((prev) => ({ ...prev, name: val }))
                       }}
-                      placeholder="e.g. Kilogram"
+                      placeholder="e.g. kilogram"
                       required
                     />
                     {serverErrors.name && <span className="error-text">{serverErrors.name}</span>}
@@ -419,7 +419,7 @@ export default function Units() {
               </button>
               <button
                 type="button"
-                className="button"
+                className="button button-secondary"
                 onClick={handleCloseModal}
                 disabled={isSaving}
               >

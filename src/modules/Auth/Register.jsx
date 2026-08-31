@@ -205,11 +205,11 @@ export default function Register() {
 
         if (!specificError) {
           if (/email/i.test(rawErrStr)) {
-            specificError = "Email Address: Email address is already registered or invalid.";
-            setServerFieldErrors(prev => ({ ...prev, email: "Email address is already registered or invalid." }));
+            specificError = "Email Address: Enter a valid email address.";
+            setServerFieldErrors(prev => ({ ...prev, email: "Enter a valid email address." }));
           } else if (/phone|mobile/i.test(rawErrStr)) {
-            specificError = "Mobile Number: Mobile number is already registered or invalid.";
-            setServerFieldErrors(prev => ({ ...prev, phoneNumber: "Mobile number is already registered or invalid." }));
+            specificError = "Mobile Number: Enter a valid 10-digit mobile number.";
+            setServerFieldErrors(prev => ({ ...prev, phoneNumber: "Enter a valid 10-digit mobile number." }));
           } else if (/password/i.test(rawErrStr)) {
             specificError = "Password: Password does not meet security requirements.";
             setServerFieldErrors(prev => ({ ...prev, password: "Password does not meet security requirements." }));
@@ -247,8 +247,7 @@ export default function Register() {
   const emailDisplayError = serverFieldErrors.email || (touched.email && emailError);
   const phoneDisplayError = serverFieldErrors.phoneNumber || (touched.phoneNumber && phoneError);
   const passwordDisplayError = serverFieldErrors.password || (touched.password && passwordError);
-  const confirmPasswordDisplayError =
-    (touched.confirmPassword || Boolean(formData.confirmPassword)) && confirmPasswordError;
+  const confirmPasswordDisplayError = touched.confirmPassword && confirmPasswordError;
 
   return (
     <div

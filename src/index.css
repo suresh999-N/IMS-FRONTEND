@@ -81,6 +81,15 @@ textarea {
   -webkit-tap-highlight-color: transparent;
 }
 
+input::placeholder,
+textarea::placeholder,
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder,
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+  text-transform: none !important;
+}
+
 /* Disable Edge, IE, Chrome, and WebKit native password reveal/clear buttons to prevent duplicate/inverted eye icons */
 input::-ms-reveal,
 input::-ms-clear,
@@ -382,20 +391,20 @@ select {
     background-color var(--transition);
 }
 
-input[autocapitalize="words"],
-textarea[autocapitalize="words"],
-input[name*="name" i],
-input[name*="title" i],
-input[name*="brand" i],
-input[name*="category" i],
-input[name*="department" i],
-input[name*="designation" i],
-input[name*="city" i],
-input[name*="state" i],
-input[name*="country" i],
-input[name*="address" i],
-input[name*="supplier" i],
-input[name*="customer" i] {
+input[autocapitalize="words"]:not(:placeholder-shown),
+textarea[autocapitalize="words"]:not(:placeholder-shown),
+input[name*="name" i]:not(:placeholder-shown),
+input[name*="title" i]:not(:placeholder-shown),
+input[name*="brand" i]:not(:placeholder-shown),
+input[name*="category" i]:not(:placeholder-shown),
+input[name*="department" i]:not(:placeholder-shown),
+input[name*="designation" i]:not(:placeholder-shown),
+input[name*="city" i]:not(:placeholder-shown),
+input[name*="state" i]:not(:placeholder-shown),
+input[name*="country" i]:not(:placeholder-shown),
+input[name*="address" i]:not(:placeholder-shown),
+input[name*="supplier" i]:not(:placeholder-shown),
+input[name*="customer" i]:not(:placeholder-shown) {
   text-transform: capitalize;
 }
 
@@ -823,6 +832,7 @@ select:focus {
 .button-secondary:hover:not(:disabled) {
   background: #ffffff;
   border-color: #cbd5e1;
+  color: #0f172a;
 }
 
 .button:disabled {

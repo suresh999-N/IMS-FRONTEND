@@ -945,99 +945,49 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
 
   const handleInputChange = (event) => {
     const { name, value, type, checked } = event.target;
+    const tagName = event.target.tagName;
+    let nextData = { ...formData };
 
     if (name === "phone") {
-      setFormData({
+      nextData = {
         ...formData,
         phone: value.replace(/\D/g, "").slice(0, 10),
-      });
-      return;
-    }
-
-    if (name === "lowStockLimit") {
-      setFormData({
+      };
+    } else if (name === "lowStockLimit") {
+      nextData = {
         ...formData,
         lowStockLimit: value.replace(/\D/g, ""),
-      });
-      return;
-    }
-
-    if (type === "checkbox") {
+      };
+    } else if (type === "checkbox") {
       const booleanValue = Boolean(checked);
 
       if (name === "collapseSidebar") {
-        setFormData((previousData) => ({
-          ...previousData,
-          collapseSidebar: booleanValue,
-        }));
+        nextData = { ...formData, collapseSidebar: booleanValue };
         setIsSettingsSidebarCollapsed(booleanValue);
-        return;
+      } else if (name === "lowStockAlert") {
+        nextData = { ...formData, lowStockAlert: booleanValue };
+      } else if (name === "barcodeEnabled") {
+        nextData = { ...formData, barcodeEnabled: booleanValue, enableBarcode: booleanValue };
+      } else if (name === "lowStockAlerts") {
+        nextData = { ...formData, lowStockAlerts: booleanValue, lowStockNotifications: booleanValue };
+      } else if (name === "orderNotifications") {
+        nextData = { ...formData, orderNotifications: booleanValue, salesNotifications: booleanValue };
+      } else if (name === "paymentReminder") {
+        nextData = { ...formData, paymentReminder: booleanValue, purchaseNotifications: booleanValue };
+      } else if (name === "twoStepVerification") {
+        nextData = { ...formData, twoStepVerification: booleanValue, enableTwoFactorAuth: booleanValue };
+      } else {
+        nextData = { ...formData, [name]: booleanValue };
       }
-
-      if (name === "lowStockAlert") {
-        setFormData((previousData) => ({
-          ...previousData,
-          lowStockAlert: booleanValue,
-        }));
-        return;
-      }
-
-      if (name === "barcodeEnabled") {
-        setFormData((previousData) => ({
-          ...previousData,
-          barcodeEnabled: booleanValue,
-          enableBarcode: booleanValue,
-        }));
-        return;
-      }
-
-      if (name === "lowStockAlerts") {
-        setFormData((previousData) => ({
-          ...previousData,
-          lowStockAlerts: booleanValue,
-          lowStockNotifications: booleanValue,
-        }));
-        return;
-      }
-
-      if (name === "orderNotifications") {
-        setFormData((previousData) => ({
-          ...previousData,
-          orderNotifications: booleanValue,
-          salesNotifications: booleanValue,
-        }));
-        return;
-      }
-
-      if (name === "paymentReminder") {
-        setFormData((previousData) => ({
-          ...previousData,
-          paymentReminder: booleanValue,
-          purchaseNotifications: booleanValue,
-        }));
-        return;
-      }
-
-      if (name === "twoStepVerification") {
-        setFormData((previousData) => ({
-          ...previousData,
-          twoStepVerification: booleanValue,
-          enableTwoFactorAuth: booleanValue,
-        }));
-        return;
-      }
-
-      setFormData((previousData) => ({
-        ...previousData,
-        [name]: booleanValue,
-      }));
-      return;
+    } else {
+      nextData = { ...formData, [name]: value };
     }
 
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData(nextData);
+
+    if (type === "checkbox" || tagName === "SELECT") {
+      handleSaveSettings(nextData);
+    }
   };
 
   const handleLogoUpload = async (event) => {
@@ -1097,19 +1047,23 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
         ""
       );
 
+      let nextData = { ...formData };
       if (uploadedLogo) {
-        setFormData({
+        nextData = {
           ...formData,
           companyLogo: uploadedLogo,
-        });
+        };
+        setFormData(nextData);
       } else {
         const reader = new FileReader();
 
         reader.onload = () => {
-          setFormData({
+          nextData = {
             ...formData,
             companyLogo: reader.result,
-          });
+          };
+          setFormData(nextData);
+          handleSaveSettings(nextData);
         };
 
         reader.readAsDataURL(file);
@@ -1119,6 +1073,10 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
         ...errors,
         companyLogo: "",
       });
+
+      if (uploadedLogo) {
+        handleSaveSettings(nextData);
+      }
     } catch (error) {
       console.error("Logo upload error:", error);
       setApiError(error.message || "Logo upload failed.");
@@ -1145,14 +1103,18 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
         "Logo remove failed."
       );
 
-      setFormData({
+      const nextData = {
         ...formData,
         companyLogo: "",
-      });
+      };
+
+      setFormData(nextData);
 
       if (logoInputRef.current) {
         logoInputRef.current.value = "";
       }
+
+      handleSaveSettings(nextData);
     } catch (error) {
       console.error("Logo remove error:", error);
       setApiError(error.message || "Logo remove failed.");
@@ -1165,10 +1127,12 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
     const nextValue = !isSettingsSidebarCollapsed;
 
     setIsSettingsSidebarCollapsed(nextValue);
-    setFormData({
+    const nextData = {
       ...formData,
       collapseSidebar: nextValue,
-    });
+    };
+    setFormData(nextData);
+    handleSaveSettings(nextData);
   };
 
   const handleToggleRoleStatus = async (role) => {
@@ -1230,35 +1194,35 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
     }
   };
 
-  const validateSettings = () => {
+  const validateSettings = (dataToValidate = formData) => {
     const newErrors = {};
 
     if (activeTab === "general") {
-      if (!String(formData.companyName || "").trim()) {
+      if (!String(dataToValidate.companyName || "").trim()) {
         newErrors.companyName = st.validation.companyName;
       }
 
-      if (!String(formData.email || "").trim()) {
+      if (!String(dataToValidate.email || "").trim()) {
         newErrors.email = st.validation.emailRequired;
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dataToValidate.email)) {
         newErrors.email = st.validation.emailInvalid;
       }
 
-      if (!String(formData.phone || "").trim()) {
+      if (!String(dataToValidate.phone || "").trim()) {
         newErrors.phone = st.validation.phoneRequired;
-      } else if (!/^\d{10}$/.test(formData.phone)) {
+      } else if (!/^\d{10}$/.test(dataToValidate.phone)) {
         newErrors.phone = st.validation.phoneInvalid;
       }
 
-      if (!String(formData.address || "").trim()) {
+      if (!String(dataToValidate.address || "").trim()) {
         newErrors.address = st.validation.address;
       }
     }
 
     if (activeTab === "inventory") {
-      if (!String(formData.lowStockLimit || formData.defaultReorderLevel || "").trim()) {
+      if (!String(dataToValidate.lowStockLimit || dataToValidate.defaultReorderLevel || "").trim()) {
         newErrors.lowStockLimit = st.validation.lowStockRequired;
-      } else if (Number(formData.lowStockLimit || formData.defaultReorderLevel) <= 0) {
+      } else if (Number(dataToValidate.lowStockLimit || dataToValidate.defaultReorderLevel) <= 0) {
         newErrors.lowStockLimit = st.validation.lowStockInvalid;
       }
     }
@@ -1266,7 +1230,7 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      setApiError("Please correct the highlighted fields before saving.");
+      setApiError("Please correct the highlighted fields.");
       return false;
     }
 
@@ -1274,57 +1238,59 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
     return true;
   };
 
-  const handleSaveSettings = async () => {
+  const handleSaveSettings = async (overrideData) => {
+    const dataToSave = overrideData || formData;
+
     if (activeTab === "roles") {
       setApiError("");
-      setSuccessMessage("User & role settings saved successfully.");
-      setTimeout(() => setSuccessMessage(""), 2500);
+      setSuccessMessage("User & role settings updated successfully.");
+      setTimeout(() => setSuccessMessage(""), 2000);
       return;
     }
 
-    if (!validateSettings()) return;
+    if (!validateSettings(dataToSave)) return;
 
     try {
       setSavingSettings(true);
       setSuccessMessage("");
       setApiError("");
 
-      const settingId = getSettingId(formData);
+      const settingId = getSettingId(dataToSave);
       const { confirmedSettings } = await saveSystemSettingsWithRetry(
         settingId,
-        formData
+        dataToSave
       );
 
       const finalSettings = {
-        ...formData,
+        ...dataToSave,
         ...confirmedSettings,
-        companyName: formData.companyName,
-        email: formData.email,
-        phone: formData.phone,
-        address: formData.address,
-        allowNegativeStock: Boolean(formData.allowNegativeStock),
-        defaultReorderLevel: formData.defaultReorderLevel || formData.lowStockLimit,
-        lowStockLimit: formData.lowStockLimit || formData.defaultReorderLevel,
-        stockValuationMethod: formData.stockValuationMethod || "FIFO",
-        lowStockAlert: Boolean(formData.lowStockAlert),
-        lowStockAlerts: Boolean(formData.lowStockAlerts),
-        lowStockNotifications: Boolean(formData.lowStockNotifications ?? formData.lowStockAlerts),
-        defaultUnitType: formData.defaultUnitType || formData.defaultUnit || "pcs",
-        defaultUnit: formData.defaultUnit || formData.defaultUnitType || "pcs",
-        enableBarcode: Boolean(formData.enableBarcode ?? formData.barcodeEnabled),
-        barcodeEnabled: Boolean(formData.barcodeEnabled ?? formData.enableBarcode),
-        autoStockUpdate: Boolean(formData.autoStockUpdate),
-        emailNotifications: Boolean(formData.emailNotifications),
-        purchaseNotifications: Boolean(formData.purchaseNotifications ?? formData.paymentReminder),
-        paymentReminder: Boolean(formData.paymentReminder ?? formData.purchaseNotifications),
-        salesNotifications: Boolean(formData.salesNotifications ?? formData.orderNotifications),
-        orderNotifications: Boolean(formData.orderNotifications ?? formData.salesNotifications),
-        systemAlerts: Boolean(formData.systemAlerts),
-        themeMode: formData.themeMode || "light",
-        language: formData.language || "english",
-        collapseSidebar: Boolean(formData.collapseSidebar),
-        enableTwoFactorAuth: Boolean(formData.enableTwoFactorAuth ?? formData.twoStepVerification),
-        twoStepVerification: Boolean(formData.twoStepVerification ?? formData.enableTwoFactorAuth),
+        companyName: dataToSave.companyName,
+        email: dataToSave.email,
+        phone: dataToSave.phone,
+        address: dataToSave.address,
+        allowNegativeStock: Boolean(dataToSave.allowNegativeStock),
+        defaultReorderLevel: dataToSave.defaultReorderLevel || dataToSave.lowStockLimit,
+        lowStockLimit: dataToSave.lowStockLimit || dataToSave.defaultReorderLevel,
+        stockValuationMethod: dataToSave.stockValuationMethod || "FIFO",
+        lowStockAlert: Boolean(dataToSave.lowStockAlert),
+        lowStockAlerts: Boolean(dataToSave.lowStockAlerts),
+        lowStockNotifications: Boolean(dataToSave.lowStockNotifications ?? dataToSave.lowStockAlerts),
+        defaultUnitType: dataToSave.defaultUnitType || dataToSave.defaultUnit || "pcs",
+        defaultUnit: dataToSave.defaultUnit || dataToSave.defaultUnitType || "pcs",
+        enableBarcode: Boolean(dataToSave.enableBarcode ?? dataToSave.barcodeEnabled),
+        barcodeEnabled: Boolean(dataToSave.barcodeEnabled ?? dataToSave.enableBarcode),
+        autoStockUpdate: Boolean(dataToSave.autoStockUpdate),
+        emailNotifications: Boolean(dataToSave.emailNotifications),
+        purchaseNotifications: Boolean(dataToSave.purchaseNotifications ?? dataToSave.paymentReminder),
+        paymentReminder: Boolean(dataToSave.paymentReminder ?? dataToSave.purchaseNotifications),
+        salesNotifications: Boolean(dataToSave.salesNotifications ?? dataToSave.orderNotifications),
+        orderNotifications: Boolean(dataToSave.orderNotifications ?? dataToSave.salesNotifications),
+        systemAlerts: Boolean(dataToSave.systemAlerts),
+        themeMode: dataToSave.themeMode || "light",
+        language: dataToSave.language || "english",
+        collapseSidebar: Boolean(dataToSave.collapseSidebar),
+        enableTwoFactorAuth: Boolean(dataToSave.enableTwoFactorAuth ?? dataToSave.twoStepVerification),
+        twoStepVerification: Boolean(dataToSave.twoStepVerification ?? dataToSave.enableTwoFactorAuth),
       };
 
       setFormData(finalSettings);
@@ -1340,7 +1306,7 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
       setSuccessMessage(st.validation.success || "Settings saved successfully.");
       setTimeout(() => {
         setSuccessMessage("");
-      }, 2500);
+      }, 2000);
     } catch (error) {
       console.error("Settings save error:", error);
       setApiError(error.message || "Unable to save settings.");
@@ -1437,17 +1403,6 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
                 disabled={loadingSettings || savingSettings}
               >
                 {st.roles.managePermissions}
-              </button>
-            )}
-
-            {activeTab !== "roles" && (
-              <button
-                className="settings-final-save-btn button button-primary"
-                onClick={handleSaveSettings}
-                disabled={savingSettings || uploadingLogo || loadingSettings}
-                style={{ marginLeft: 'auto' }}
-              >
-                {savingSettings ? "Saving..." : st.saveChanges}
               </button>
             )}
           </div>
@@ -1656,22 +1611,12 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
             </div>
 
             <div className="settings-footer-actions">
-              {activeTab !== "roles" && (
-                <button
-                  className="settings-final-save-btn"
-                  onClick={handleSaveSettings}
-                  disabled={savingSettings || uploadingLogo || loadingSettings}
-                >
-                  {savingSettings ? "Saving..." : st.saveChanges}
-                </button>
-              )}
-
               <button
                 className="settings-cancel-btn"
                 onClick={onClose}
                 disabled={savingSettings || uploadingLogo || loadingSettings}
               >
-                {activeTab === "roles" ? "Close" : st.cancel}
+                Close
               </button>
             </div>
           </div>

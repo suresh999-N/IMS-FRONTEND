@@ -58,9 +58,7 @@ export default function ForgotPassword() {
       navigate('/verify-otp', {
         state: {
           email: sanitizeEmailInput(email),
-          message:
-            result.message ||
-            'If the email is registered, a reset code is on its way.',
+          message: 'A verification code has been sent to your email.',
         },
       })
     } catch {
@@ -111,7 +109,7 @@ export default function ForgotPassword() {
         <div className="login-card">
           <div className="auth-login-lock" aria-hidden="true"><KeyRound size={29} /></div>
           <h2>Forgot Password?</h2>
-          <p className="sub">Enter your registered email to receive a reset code</p>
+          <p className="sub">Enter your email address to receive a reset code</p>
 
           {error ? <div className="error-box">{error}</div> : null}
 
@@ -124,7 +122,10 @@ export default function ForgotPassword() {
                 {...emailInputProps}
                 placeholder="Email address"
                 value={email}
-                onChange={(event) => setEmail(sanitizeEmailInput(event.target.value))}
+                onChange={(event) => {
+                  setError('')
+                  setEmail(sanitizeEmailInput(event.target.value))
+                }}
               />
             </div>
 

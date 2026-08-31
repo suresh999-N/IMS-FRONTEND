@@ -315,9 +315,7 @@ export default function VerifyEmail() {
 
     setResendState({
       status: "success",
-      message:
-        response.message ||
-        "A new verification code/link has been sent to your email.",
+      message: "A new verification code has been sent to your email.",
     });
   }
 

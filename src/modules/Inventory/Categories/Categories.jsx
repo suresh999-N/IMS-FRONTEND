@@ -454,7 +454,7 @@ function CategoryForm({
           <Save size={16} />
           {isSubmitting ? 'Saving...' : 'Save Category'}
         </button>
-        <button type="button" className="button" onClick={onCancel} disabled={isSubmitting}>
+        <button type="button" className="button button-secondary" onClick={onCancel} disabled={isSubmitting}>
           Cancel
         </button>
       </div>
