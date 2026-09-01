@@ -187,22 +187,28 @@
 
 /* Search input */
 
-.resource-center__page--categories .resource-center__inventory-table .search-input-container {
-  flex: 0 1 540px;
-  width: 540px;
+.resource-center__page--categories .resource-center__inventory-table :where(.erp-search-bar, .search-input-container) {
+  flex: 0 1 360px;
+  width: min(100%, 360px);
+  min-width: 220px;
   max-width: 100%;
-  min-width: 0;
   margin: 0;
 }
 
 .resource-center__page--categories .resource-center__inventory-table .search-wrapper,
-.resource-center__page--categories .resource-center__inventory-table .search-wrapper input,
+.resource-center__page--categories .resource-center__inventory-table .search-wrapper input {
+  min-height: 38px;
+  height: 38px;
+  border-radius: 10px;
+  font-size: 13.5px;
+}
+
 .resource-center__page--categories .resource-center__inventory-table .button,
 .resource-center__page--categories .resource-center__inventory-table .table-component__columns-trigger {
-  min-height: 34px;
-  height: 34px;
-  border-radius: 7px;
-  font-size: 12.5px;
+  min-height: 38px;
+  height: 38px;
+  border-radius: 10px;
+  font-size: 13px;
 }
 
 .resource-center__page--categories .resource-center__inventory-table .search-wrapper:focus-within {
@@ -470,7 +476,7 @@
 
   .resource-center__page--categories .resource-center__inventory-table .table-component__toolbar-left,
   .resource-center__page--categories .resource-center__inventory-table .table-component__toolbar-right,
-  .resource-center__page--categories .resource-center__inventory-table .search-input-container {
+  .resource-center__page--categories .resource-center__inventory-table :where(.erp-search-bar, .search-input-container) {
     width: 100%;
     max-width: none;
   }

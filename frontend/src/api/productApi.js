@@ -594,9 +594,11 @@ export function normalizeProduct(product, references = {}) {
         ? 'Archived'
         : rawStatus === 'inactive'
         ? 'Inactive'
-        : isLowStock
-          ? 'Low Stock'
-          : 'Active',
+        : stock <= 0
+          ? 'Out Of Stock'
+          : isLowStock
+            ? 'Low Stock'
+            : 'In Stock',
     image: imageUrl,
     imageUrl,
     createdAt: product?.createdAt ?? product?.CreatedAt ?? '',

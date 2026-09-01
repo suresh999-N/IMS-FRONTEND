@@ -55,17 +55,6 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;')
 }
 
-function formatReferenceDate(value) {
-  if (!value) return '-'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '-'
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(date)
-}
-
 function exportBrandsCsv(items) {
   const headers = ['Brand Name', 'Description']
   const rows = items.map((item) => [
@@ -234,8 +223,6 @@ function BrandForm({ editingBrand, items, onSubmit, onCancel, isSubmitting }) {
 function BrandsHeader({ canCreate, summary, onAdd }) {
   const metrics = [
     { key: 'total', label: 'Brands', value: summary.total, tone: 'success' },
-    { key: 'described', label: 'With Description', value: summary.described, tone: 'info' },
-    { key: 'undescribed', label: 'Without Description', value: summary.undescribed, tone: 'warning' },
   ]
 
   return (
@@ -323,11 +310,8 @@ export default function Brands() {
   }, [items])
 
   const summary = useMemo(() => {
-    const described = items.filter((item) => cleanText(item.description)).length
     return {
       total: items.length,
-      described,
-      undescribed: Math.max(items.length - described, 0),
     }
   }, [items])
 

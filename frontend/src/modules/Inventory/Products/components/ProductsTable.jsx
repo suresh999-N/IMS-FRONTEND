@@ -48,7 +48,7 @@ function getProductStatusLabel(product) {
   if (/inactive|archived/i.test(rawStatus)) return 'Inactive'
   if (stock <= 0) return 'Out Of Stock'
   if (/low/i.test(rawStatus) || stock <= reorderLevel) return 'Low Stock'
-  return rawStatus || 'Active'
+  return 'In Stock'
 }
 
 function isProductArchived(product) {
@@ -98,7 +98,7 @@ function exportProductsExcel(products) {
       <td>${escapeHtml(product.unit)}</td>
       <td>${escapeHtml(product.price)}</td>
       <td>${escapeHtml(product.stock)}</td>
-      <td>${escapeHtml(product.status)}</td>
+      <td>${escapeHtml(getProductStatusLabel(product))}</td>
     </tr>
   `).join('')
   const html = `
@@ -156,7 +156,7 @@ function printProductsPdf(products) {
       <td>${escapeHtml(product.unit)}</td>
       <td>${escapeHtml(product.price)}</td>
       <td>${escapeHtml(product.stock)}</td>
-      <td>${escapeHtml(product.status)}</td>
+      <td>${escapeHtml(getProductStatusLabel(product))}</td>
     </tr>
   `).join('')
   const printWindow = window.open('', '_blank', 'width=1100,height=800')
@@ -228,7 +228,7 @@ function printProductsPdf(products) {
 
 export default function ProductTable({
   products,
-  canCreate,
+  canCreate: _canCreate,
   canEdit,
   canDelete,
   filters = { category: 'all', brand: 'all', status: 'all' },
@@ -241,7 +241,7 @@ export default function ProductTable({
   onRestore,
   onDelete,
   onBulkDelete,
-  onCreate,
+  onCreate: _onCreate,
   isRestoreDisabled = false,
   loading = false,
   emptyMessage = 'No products available.',

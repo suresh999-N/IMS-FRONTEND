@@ -1028,7 +1028,7 @@ export default function Categories() {
               </button>
             </FilterBar>
           }
-          searchPlaceholder="Search categories by name, parent, or description..."
+          searchPlaceholder="Search categories by name, parent..."
           emptyMessage="No categories found."
           renderMobileCard={renderCategoryMobileCard}
           enableRowSelection
