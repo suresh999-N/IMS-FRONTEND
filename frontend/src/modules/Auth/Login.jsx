@@ -197,7 +197,7 @@ export default function Login() {
           {error ? <div className="error-box">{error}</div> : null}
  
           <form onSubmit={handleSubmit}>
-            <label className="auth-login-label" htmlFor="login-identifier">Email Address or Phone Number</label>
+            <label className="auth-login-label" htmlFor="login-identifier">Email or Phone Number</label>
             <div className={`input-box ${emailDisplayError ? 'input-box--error' : ''}`}>
               {/^[0-9+\s-()]+$/.test(formData.email) ? (
                 <Phone size={16} />
@@ -219,7 +219,7 @@ export default function Login() {
             {emailDisplayError && (
               <span className="field-error-text">{emailDisplayError}</span>
             )}
- 
+
             <label className="auth-login-label" htmlFor="login-password">Password</label>
             <div className={`input-box ${passwordDisplayError ? 'input-box--error' : ''}`}>
               <LockKeyhole size={16} />
@@ -253,7 +253,7 @@ export default function Login() {
             {passwordDisplayError && (
               <span className="field-error-text">{passwordDisplayError}</span>
             )}
- 
+
             <div className="auth-login-options-row">
               <label className="auth-login-remember" htmlFor="login-remember-me">
                 <input
@@ -272,7 +272,7 @@ export default function Login() {
               {loading ? 'Logging in...' : 'Login'}
             </button>
 
-            <div className="auth-divider">
+            <div className="auth-login-divider">
               <span>or</span>
             </div>
 
