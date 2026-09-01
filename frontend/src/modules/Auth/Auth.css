@@ -764,7 +764,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin: 8px 0 12px;
+  margin: 12px 0 20px;
   font-size: 13px;
 }
 
@@ -795,8 +795,7 @@
   outline-offset: 1px;
 }
 
-.auth-login-options-row a,
-.auth-wrapper--login .links a {
+.auth-login-options-row a {
   color: #15803d;
   font-weight: 650;
   font-size: 13.5px;
@@ -804,26 +803,9 @@
   transition: color 0.18s ease, text-decoration 0.18s ease;
 }
 
-.auth-wrapper--login .links a:hover {
+.auth-login-options-row a:hover {
   color: #166534;
   text-decoration: underline;
-}
-
-.auth-wrapper--login .links a:focus-visible {
-  outline: 2px solid #22c55e;
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-.auth-login-secondary-row {
-  justify-content: flex-start !important;
-  gap: 6px;
-  margin-bottom: 22px !important;
-}
-
-.auth-login-secondary-row span {
-  color: #64748b;
-  font-size: 13.5px;
 }
 
 .auth-wrapper--login form > button[type='submit'] {
@@ -838,7 +820,7 @@
   border-radius: 8px;
   background: linear-gradient(90deg, #16a34a 0%, #15803d 100%);
   color: #ffffff;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(22, 163, 74, 0.28);
@@ -860,6 +842,65 @@
 .auth-wrapper--login form > button[type='submit']:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.45), 0 6px 20px rgba(22, 163, 74, 0.35);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 24px 0 20px;
+  width: 100%;
+}
+
+.auth-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #cbd5e1;
+  z-index: 1;
+}
+
+.auth-divider span {
+  position: relative;
+  z-index: 2;
+  background: #ffffff;
+  padding: 0 14px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.auth-login-signup-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+  text-align: center;
+}
+
+.auth-login-signup-prompt span {
+  color: #64748b;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.auth-login-signup-prompt a {
+  color: #15803d;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.18s ease, text-decoration 0.18s ease;
+}
+
+.auth-login-signup-prompt a:hover {
+  color: #166534;
+  text-decoration: underline;
 }
 
 @media (max-width: 1024px) {

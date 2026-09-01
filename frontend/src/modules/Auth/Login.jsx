@@ -208,7 +208,7 @@ export default function Login() {
                 id="login-identifier"
                 type="text"
                 name="email"
-                placeholder="Email or Phone Number"
+                placeholder="Enter your email or phone number"
                 value={formData.email}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -227,7 +227,7 @@ export default function Login() {
                 id="login-password"
                 type={showPassword ? 'text' : 'password'}
                 name="password"
-                placeholder="Password"
+                placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -268,15 +268,18 @@ export default function Login() {
               <Link to="/forgot-password">Forgot password?</Link>
             </div>
 
-            <div className="links auth-login-secondary-row">
-              <span>Don't have an account?</span>
-              <Link to="/register">Create account</Link>
-            </div>
- 
             <button type="submit" disabled={loading}>
-              <LogIn size={18} />
               {loading ? 'Logging in...' : 'Login'}
             </button>
+
+            <div className="auth-divider">
+              <span>or</span>
+            </div>
+
+            <div className="auth-login-signup-prompt">
+              <span>Don't have an account?</span>
+              <Link to="/register">Create Account</Link>
+            </div>
           </form>
         </div>
       </div>
