@@ -862,6 +862,54 @@
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.45), 0 6px 20px rgba(22, 163, 74, 0.35);
 }
 
+.auth-login-divider {
+  display: flex;
+  align-items: center;
+  margin: 22px 0 16px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.auth-login-divider::before,
+.auth-login-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.auth-login-divider span {
+  padding: 0 12px;
+  color: #64748b;
+}
+
+.auth-login-signup-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.auth-login-signup-prompt span {
+  color: #64748b;
+  font-size: 13.5px;
+}
+
+.auth-login-signup-prompt a {
+  color: #15803d;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 0.18s ease, text-decoration 0.18s ease;
+}
+
+.auth-login-signup-prompt a:hover {
+  color: #166534;
+  text-decoration: underline;
+}
+
 @media (max-width: 1024px) {
   .auth-wrapper--login {
     display: grid;

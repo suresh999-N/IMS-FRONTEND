@@ -8,6 +8,7 @@ import {
   RotateCcw,
   Save,
   Trash2,
+  X,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import CurrencyInput from "../../../../components/CurrencyInput";
@@ -238,29 +239,6 @@ function getInitialForm(initialValues) {
   })
 }
 
-function createAddOption(setOptions) {
-  return (draft) => {
-    const label = normalizeString(draft.name)
-
-    if (!label) {
-      return null
-    }
-
-    const id = label.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-    const nextOption = { id, label }
-
-    setOptions((currentValue) => {
-      if (currentValue.some((option) => option.label.toLowerCase() === label.toLowerCase())) {
-        return currentValue
-      }
-
-      return [nextOption, ...currentValue]
-    })
-
-    return nextOption
-  }
-}
-
 function toOption(item) {
   const id =
     item?.id ??
@@ -296,23 +274,6 @@ function toOption(item) {
     value: String(id),
     label: String(label),
   }
-}
-
-function isActiveMasterRecord(item) {
-  const deleted = item?.isDeleted ?? item?.IsDeleted ?? item?.is_deleted
-  if (deleted === true || deleted === 1 || String(deleted).toLowerCase() === 'true') {
-    return false
-  }
-
-  const status = String(item?.status ?? item?.Status ?? 'active').trim().toLowerCase()
-  return status !== 'inactive' && status !== 'deleted'
-}
-
-function mapMasterOptions(records = []) {
-  return (Array.isArray(records) ? records : [])
-    .filter(isActiveMasterRecord)
-    .map(toOption)
-    .filter((item) => item.id && item.label)
 }
 
 function getProductEntityId(product) {
@@ -1446,7 +1407,7 @@ export default function ProductForm({
             {actionLabel}
           </button>
           <button type="button" className="button button-secondary" onClick={handleCancel} disabled={isSaving}>
-            <RotateCcw size={16} />
+            {isEdit ? <X size={16} /> : <RotateCcw size={16} />}
             {isEdit ? 'Cancel' : 'Clear'}
           </button>
         </div>

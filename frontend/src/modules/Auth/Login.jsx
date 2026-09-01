@@ -197,7 +197,7 @@ export default function Login() {
           {error ? <div className="error-box">{error}</div> : null}
  
           <form onSubmit={handleSubmit}>
-            <label className="auth-login-label" htmlFor="login-identifier">Email Address or Phone Number</label>
+            <label className="auth-login-label" htmlFor="login-identifier">Email or Phone Number</label>
             <div className={`input-box ${emailDisplayError ? 'input-box--error' : ''}`}>
               {/^[0-9+\s-()]+$/.test(formData.email) ? (
                 <Phone size={16} />
@@ -208,7 +208,7 @@ export default function Login() {
                 id="login-identifier"
                 type="text"
                 name="email"
-                placeholder="Email or Phone Number"
+                placeholder="Enter your email or phone number"
                 value={formData.email}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -219,7 +219,7 @@ export default function Login() {
             {emailDisplayError && (
               <span className="field-error-text">{emailDisplayError}</span>
             )}
- 
+
             <label className="auth-login-label" htmlFor="login-password">Password</label>
             <div className={`input-box ${passwordDisplayError ? 'input-box--error' : ''}`}>
               <LockKeyhole size={16} />
@@ -227,7 +227,7 @@ export default function Login() {
                 id="login-password"
                 type={showPassword ? 'text' : 'password'}
                 name="password"
-                placeholder="Password"
+                placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -253,7 +253,7 @@ export default function Login() {
             {passwordDisplayError && (
               <span className="field-error-text">{passwordDisplayError}</span>
             )}
- 
+
             <div className="auth-login-options-row">
               <label className="auth-login-remember" htmlFor="login-remember-me">
                 <input
@@ -268,15 +268,18 @@ export default function Login() {
               <Link to="/forgot-password">Forgot password?</Link>
             </div>
 
-            <div className="links auth-login-secondary-row">
-              <span>Don't have an account?</span>
-              <Link to="/register">Create account</Link>
-            </div>
- 
             <button type="submit" disabled={loading}>
-              <LogIn size={18} />
               {loading ? 'Logging in...' : 'Login'}
             </button>
+
+            <div className="auth-login-divider">
+              <span>or</span>
+            </div>
+
+            <div className="auth-login-signup-prompt">
+              <span>Don't have an account?</span>
+              <Link to="/register">Create Account</Link>
+            </div>
           </form>
         </div>
       </div>

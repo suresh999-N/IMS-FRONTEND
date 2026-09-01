@@ -286,8 +286,44 @@ button.dashboard-status:active {
   border-radius: 8px;
   color: #ffffff;
   box-shadow: 0 3px 6px rgba(15, 23, 42, 0.06);
+<<<<<<< HEAD
   margin-left: 0 !important;
   margin-right: 0 !important;
+=======
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.dashboard-stat__content {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  gap: 4px;
+  margin-top: auto;
+}
+
+.dashboard-stat__value {
+  min-width: 0;
+  width: 100%;
+  display: block !important;
+  color: var(--dashboard-text);
+  font-size: clamp(20px, 1.5vw, 24px);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left !important;
+  margin-left: 0 !important;
+  margin-right: auto !important;
+  align-self: flex-start !important;
+>>>>>>> f7d117babd6d288f996171e9c59aa06f79b35216
 }
 
 .dashboard-stat__label,
@@ -310,12 +346,16 @@ button.dashboard-status:active {
 .analytics-card__content {
   width: 100%;
   min-width: 0;
+<<<<<<< HEAD
   display: flex;
   flex-direction: column;
   align-items: flex-start !important;
   text-align: left !important;
   gap: 6px;
   margin-top: 10px;
+=======
+  align-self: center !important;
+>>>>>>> f7d117babd6d288f996171e9c59aa06f79b35216
 }
 
 .dashboard-stat__value,
@@ -348,7 +388,9 @@ button.dashboard-status:active {
   justify-content: flex-start !important;
   align-self: flex-start !important;
   border-radius: 999px;
-  padding: 3px 9px;
+  padding: 3px 8px !important;
+  margin-left: -8px !important;
+  margin-right: auto !important;
   background: #f0f9ff;
   color: #0369a1;
   font-size: 11px;
@@ -358,10 +400,13 @@ button.dashboard-status:active {
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: left !important;
+<<<<<<< HEAD
   margin-left: 0 !important;
   margin-right: auto !important;
   margin-top: 0;
   margin-bottom: 0;
+=======
+>>>>>>> f7d117babd6d288f996171e9c59aa06f79b35216
 }
 
 .dashboard-stat__trend.is-up {

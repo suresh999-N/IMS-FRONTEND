@@ -325,9 +325,11 @@
   flex: 1 1 auto;
 }
 
-.table-component__toolbar :where(.search-input-container) {
-  flex: 1 1 320px;
-  max-width: 560px;
+.table-component__toolbar :where(.erp-search-bar, .search-input-container) {
+  flex: 0 1 360px;
+  width: min(100%, 360px);
+  min-width: 220px;
+  max-width: 100%;
 }
 
 .table-component__toolbar :where(.search-input-container, .search-wrapper) {

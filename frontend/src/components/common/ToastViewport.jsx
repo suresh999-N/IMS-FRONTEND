@@ -57,8 +57,21 @@ export default function ToastViewport() {
                 const titleText = String(toast.title || '').trim()
                 const msgText = String(toast.message || '').trim()
                 const isGenericTitle = ['success', 'error', 'warning', 'notification', 'info'].includes(titleText.toLowerCase())
-                const rootWord = titleText.toLowerCase().replace(/s$/, '')
-                const isRedundant = !titleText || isGenericTitle || (msgText && rootWord && msgText.toLowerCase().includes(rootWord))
+                const normalizeWord = (w) => w.toLowerCase().replace(/ies$/, 'y').replace(/s$/, '')
+                const titleNormalized = normalizeWord(titleText)
+                const titleWords = titleText
+                  .toLowerCase()
+                  .split(/[\s_-]+/)
+                  .map(normalizeWord)
+                  .filter((w) => w.length > 2)
+
+                const isRedundant =
+                  !titleText ||
+                  isGenericTitle ||
+                  (msgText && (
+                    msgText.toLowerCase().includes(titleNormalized) ||
+                    titleWords.some((w) => msgText.toLowerCase().includes(w))
+                  ))
 
                 if (isRedundant || !msgText) {
                   return null

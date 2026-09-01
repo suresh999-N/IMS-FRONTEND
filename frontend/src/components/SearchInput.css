@@ -48,4 +48,5 @@
 
 .search-wrapper input::placeholder {
   color: var(--muted);
+  text-overflow: ellipsis;
 }

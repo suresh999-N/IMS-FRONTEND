@@ -63,12 +63,12 @@ function ProductsHeader({ canCreate, summary, activeStatusFilter, onFilterStatus
     },
     {
       key: 'inventoryValue',
-      filterValue: 'Active',
+      filterValue: 'In Stock',
       label: 'Value',
       value: summary.inventoryValueLabel,
       tone: 'info',
-      isActive: activeStatusFilter === 'Active',
-      title: 'Filter active inventory products',
+      isActive: activeStatusFilter === 'In Stock',
+      title: 'Filter in-stock inventory products',
     },
   ]
 
@@ -105,7 +105,7 @@ function ProductsHeader({ canCreate, summary, activeStatusFilter, onFilterStatus
 }
 
 const PRODUCT_STATUS_FILTER_OPTIONS = [
-  { value: 'Active', label: 'Active' },
+  { value: 'In Stock', label: 'In Stock' },
   { value: 'Low Stock', label: 'Low Stock' },
   { value: 'Out Of Stock', label: 'Out Of Stock' },
   { value: 'Archived', label: 'Archived' },
@@ -283,7 +283,7 @@ function getProductDisplayStatus(product) {
     return 'Low Stock'
   }
 
-  return rawStatus || 'Active'
+  return 'In Stock'
 }
 
 function isProductArchived(product) {
@@ -1043,8 +1043,8 @@ export default function Products({
                 ? 'No low-stock products found.'
                 : filters.status === 'Archived'
                   ? 'No archived products found.'
-                  : filters.status === 'Active'
-                    ? 'No active products available.'
+                  : filters.status === 'In Stock'
+                    ? 'No in-stock products available.'
                     : 'No products available.'
         }
         loading={isLoading}

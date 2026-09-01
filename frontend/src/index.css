@@ -1787,9 +1787,15 @@ button.status-badge:disabled,
   min-height: var(--erp-summary-card-height);
 }
 
-:where(.stat-card, [class*='__summary-card']) {
+:where(.stat-card, [class*='__summary-card'], .dashboard-stat) {
   align-items: flex-start !important;
   text-align: left !important;
+}
+
+:where(.stat-card, [class*='__summary-card'], .dashboard-stat) :where(h3, strong, p, span, [class*='__value'], [class*='__label'], [class*='__caption'], [class*='__trend'], [class*='__helper']) {
+  text-align: left !important;
+  margin-left: 0 !important;
+  align-self: flex-start !important;
 }
 
 :where([class*='__summary-card']) {

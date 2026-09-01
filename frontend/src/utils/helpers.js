@@ -440,9 +440,11 @@ export function syncProductsWithStock(products, stock, warehouses) {
     const status =
       String(product.status).toLowerCase() === 'inactive'
         ? 'Inactive'
-        : quantity <= Number(product.reorderLevel || 0)
-          ? 'Low Stock'
-          : 'Active'
+        : quantity <= 0
+          ? 'Out Of Stock'
+          : quantity <= Number(product.reorderLevel || 0)
+            ? 'Low Stock'
+            : 'In Stock'
 
     return {
       ...product,
