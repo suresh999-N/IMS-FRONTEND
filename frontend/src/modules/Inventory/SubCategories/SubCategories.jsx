@@ -627,11 +627,24 @@ function SubCategoryForm({
   )
 }
 
+function getSubCategoryStatus(row) {
+  const rawStatus = readResourceValue(row, 'status', '')
+  const norm = String(rawStatus ?? '').trim().toLowerCase()
+  if (!norm || norm === 'active') return 'active'
+  return norm
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // SubCategoriesHeader component
 // ─────────────────────────────────────────────────────────────────────────────
 
-function SubCategoriesHeader({ canCreate, summary, onAdd }) {
+function SubCategoriesHeader({ canCreate, summary, activeStatus, onFilterStatus, onAdd }) {
+  const metrics = [
+    { key: 'all', label: `${summary.total} Records`, tone: 'success' },
+    { key: 'active', label: `${summary.active} Active`, tone: 'info' },
+    { key: 'draft', label: `${summary.pending} Draft`, tone: 'warning' },
+  ]
+
   return (
     <header
       className="resource-center__inventory-header"
@@ -641,17 +654,22 @@ function SubCategoriesHeader({ canCreate, summary, onAdd }) {
         <h1>SubCategories</h1>
         <div
           className="resource-center__inventory-metrics"
-          aria-label="SubCategory metrics"
+          role="region"
+          aria-label="SubCategory metrics filter controls"
         >
-          <span className="resource-center__inventory-metric resource-center__inventory-metric--success">
-            {summary.total} Records
-          </span>
-          <span className="resource-center__inventory-metric resource-center__inventory-metric--info">
-            {summary.active} Active
-          </span>
-          <span className="resource-center__inventory-metric resource-center__inventory-metric--warning">
-            {summary.pending} Draft
-          </span>
+          {metrics.map((metric) => (
+            <button
+              type="button"
+              key={metric.key}
+              onClick={() => onFilterStatus?.(metric.key)}
+              className={`resource-center__inventory-metric resource-center__inventory-metric--${metric.tone} ${
+                activeStatus === metric.key ? 'is-active' : ''
+              }`}
+              aria-pressed={activeStatus === metric.key}
+            >
+              {metric.label}
+            </button>
+          ))}
         </div>
       </div>
       <div className="resource-center__inventory-header-actions">
@@ -705,15 +723,23 @@ export default function SubCategories() {
 
   // ── Derived values ─────────────────────────────────────────────────────────
   const summary = useMemo(() => {
-    const statusCounts = rows.reduce((result, row) => {
-      const status = String(readResourceValue(row, 'status', 'active') || 'active').toLowerCase()
-      if (status) result[status] = (result[status] ?? 0) + 1
-      return result
-    }, {})
+    let activeCount = 0
+    let draftCount = 0
+    let inactiveCount = 0
+
+    rows.forEach((row) => {
+      const status = getSubCategoryStatus(row)
+      if (status === 'active') activeCount += 1
+      else if (status === 'draft') draftCount += 1
+      else if (status === 'inactive') inactiveCount += 1
+    })
+
     return {
       total: rows.length,
-      active: statusCounts.active ?? 0,
-      pending: hasSubCategoryDraft ? 1 : 0,
+      active: activeCount,
+      inactive: inactiveCount,
+      draft: draftCount,
+      pending: draftCount > 0 ? draftCount : (hasSubCategoryDraft ? 1 : 0),
     }
   }, [rows, hasSubCategoryDraft])
 
@@ -725,11 +751,7 @@ export default function SubCategories() {
 
   const filteredRows = useMemo(() => {
     if (statusFilter === 'all') return rows
-    return rows.filter(
-      (row) =>
-        String(readResourceValue(row, 'status', 'active') || 'active').toLowerCase() ===
-        statusFilter,
-    )
+    return rows.filter((row) => getSubCategoryStatus(row) === statusFilter)
   }, [rows, statusFilter])
 
   // ── Draft helpers ──────────────────────────────────────────────────────────
@@ -1114,6 +1136,7 @@ export default function SubCategories() {
           <option value="all">All Statuses</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
+          <option value="draft">Draft</option>
         </select>
       </label>
     </FilterBar>
@@ -1143,6 +1166,8 @@ export default function SubCategories() {
         <SubCategoriesHeader
           canCreate={canCreate}
           summary={summary}
+          activeStatus={statusFilter}
+          onFilterStatus={(statusKey) => setStatusFilter(statusKey)}
           onAdd={openCreate}
         />
 

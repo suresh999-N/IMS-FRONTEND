@@ -604,6 +604,8 @@ export default function ProductTable({
         columnStorageKey="ims.products.table.visibleColumns.workspace.v2"
         keyField="productId"
         searchPlaceholder="Search products by name, SKU, or category"
+        searchTerm={filters.search || ''}
+        onSearchChange={(value) => onFilterChange?.('search', value)}
         emptyMessage={emptyMessage}
         loading={loading}
         showSearch={!hasSelectedProducts}

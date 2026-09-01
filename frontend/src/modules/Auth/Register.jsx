@@ -69,7 +69,7 @@ export default function Register() {
 
   // Compute field errors dynamically
   const nameError = getNameError(formData.name, { required: true, label: "Full Name" });
-  const emailError = getEmailError(formData.email, { required: true });
+  const emailError = getEmailError(formData.email, { required: true, label: "Email address" });
   const phoneError = getPhoneError(formData.phoneNumber, "Mobile number");
   const passwordError = getPasswordError(formData.password);
   const confirmPasswordError = getConfirmPasswordError(formData.password, formData.confirmPassword);
@@ -132,7 +132,6 @@ export default function Register() {
 
     if (!isFormValid || clientErrors.length > 0) {
       const fieldNames = clientErrors.map(item => item.field);
-      const detailedMessages = clientErrors.map(item => `${item.field}: ${item.error}`);
 
       setError(
         clientErrors.length === 1
@@ -317,10 +316,12 @@ export default function Register() {
                   maxLength={50}
                   onBlur={handleBlur}
                   autoComplete="name"
+                  aria-invalid={Boolean(nameDisplayError)}
+                  aria-describedby={nameDisplayError ? "fullName-error" : undefined}
                 />
               </div>
               {nameDisplayError && (
-                <span className="field-error-text">{nameDisplayError}</span>
+                <span id="fullName-error" className="field-error-text" role="alert">{nameDisplayError}</span>
               )}
             </div>
 
@@ -338,10 +339,12 @@ export default function Register() {
                   value={formData.email}
                   onChange={handleChange}
                   onBlur={handleBlur}
+                  aria-invalid={Boolean(emailDisplayError)}
+                  aria-describedby={emailDisplayError ? "email-error" : undefined}
                 />
               </div>
               {emailDisplayError && (
-                <span className="field-error-text">{emailDisplayError}</span>
+                <span id="email-error" className="field-error-text" role="alert">{emailDisplayError}</span>
               )}
             </div>
 
@@ -360,10 +363,12 @@ export default function Register() {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   autoComplete="tel"
+                  aria-invalid={Boolean(phoneDisplayError)}
+                  aria-describedby={phoneDisplayError ? "phoneNumber-error" : undefined}
                 />
               </div>
               {phoneDisplayError && (
-                <span className="field-error-text">{phoneDisplayError}</span>
+                <span id="phoneNumber-error" className="field-error-text" role="alert">{phoneDisplayError}</span>
               )}
             </div>
 
@@ -382,6 +387,8 @@ export default function Register() {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   autoComplete="new-password"
+                  aria-invalid={Boolean(passwordDisplayError)}
+                  aria-describedby={passwordDisplayError ? "password-error" : undefined}
                 />
                 {formData.password ? (
                   <button
@@ -400,7 +407,7 @@ export default function Register() {
                 ) : null}
               </div>
               {passwordDisplayError && (
-                <span className="field-error-text">{passwordDisplayError}</span>
+                <span id="password-error" className="field-error-text" role="alert">{passwordDisplayError}</span>
               )}
             </div>
 
@@ -422,6 +429,8 @@ export default function Register() {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   autoComplete="new-password"
+                  aria-invalid={Boolean(confirmPasswordDisplayError)}
+                  aria-describedby={confirmPasswordDisplayError ? "confirmPassword-error" : undefined}
                 />
                 {formData.confirmPassword ? (
                   <button
@@ -442,7 +451,7 @@ export default function Register() {
                 ) : null}
               </div>
               {confirmPasswordDisplayError && (
-                <span className="field-error-text">{confirmPasswordDisplayError}</span>
+                <span id="confirmPassword-error" className="field-error-text" role="alert">{confirmPasswordDisplayError}</span>
               )}
             </div>
 

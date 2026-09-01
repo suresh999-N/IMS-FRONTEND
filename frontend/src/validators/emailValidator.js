@@ -63,66 +63,66 @@ export function sanitizeEmailInput(value) {
 
 export function getEmailError(value, options = {}) {
   const opts = typeof options === 'string' ? { label: options } : options
-  const { required = true } = opts
+  const { required = true, label = 'Email address' } = opts
   const raw = String(value ?? '')
-  const email = sanitizeEmailInput(value)
+  const trimmed = raw.trim()
 
-  if (!email) {
-    return required ? 'Please enter a valid email address.' : ''
+  if (!trimmed) {
+    return required ? `${label} is required.` : ''
   }
 
-  if (/\s/.test(raw) || email.length > EMAIL_MAX_LENGTH) {
-    return 'Please enter a valid email address.'
+  if (/\s/.test(trimmed) || trimmed.length > EMAIL_MAX_LENGTH) {
+    return 'Enter a valid email address.'
   }
 
-  if (email.includes('..')) {
-    return 'Please enter a valid email address.'
+  if (trimmed.includes('..')) {
+    return 'Enter a valid email address.'
   }
 
-  const parts = email.split('@')
+  const parts = trimmed.split('@')
   if (parts.length !== 2) {
-    return 'Please enter a valid email address.'
+    return 'Enter a valid email address.'
   }
 
   const [localPart, domainPart] = parts
   if (!localPart || !domainPart) {
-    return 'Please enter a valid email address.'
+    return 'Enter a valid email address.'
   }
 
   if (localPart.length < 1 || localPart.length > 64) {
-    return 'Please enter a valid email address.'
+    return 'Enter a valid email address.'
   }
 
   if (localPart.startsWith('.') || localPart.endsWith('.')) {
-    return 'Please enter a valid email address.'
+    return 'Enter a valid email address.'
   }
 
   if (!/^[a-z0-9._%+-]+$/i.test(localPart)) {
-    return 'Please enter a valid email address.'
+    return 'Enter a valid email address.'
   }
 
   if (domainPart.startsWith('.') || domainPart.endsWith('.') || domainPart.startsWith('-') || domainPart.endsWith('-')) {
-    return 'Please enter a valid email address.'
+    return 'Enter a valid email address.'
   }
 
-  if (COMMON_DOMAIN_TYPOS[domainPart]) {
-    return `Invalid domain "${domainPart}". Did you mean "${COMMON_DOMAIN_TYPOS[domainPart]}"?`
+  if (COMMON_DOMAIN_TYPOS[domainPart.toLowerCase()]) {
+    return `Invalid domain "${domainPart}". Did you mean "${COMMON_DOMAIN_TYPOS[domainPart.toLowerCase()]}"?`
   }
 
   const domainParts = domainPart.split('.')
   if (domainParts.length < 2) {
-    return 'Please enter a valid email address.'
+    return 'Enter a valid email address.'
   }
 
   for (const part of domainParts) {
-    if (!part || part.startsWith('-') || part.endsWith('-') || !/^[a-z0-9-]+$/i.test(part)) {
-      return 'Please enter a valid email address.'
+    if (!part || part.startsWith('-') || part.endsWith('-') || !/^[a-z0-9-]+$/i.test(part) || part.length > 63) {
+      return 'Enter a valid email address.'
     }
   }
 
   const tld = domainParts[domainParts.length - 1]
-  if (!tld || !/^[a-z]+$/i.test(tld) || tld.length < 2) {
-    return 'Please enter a valid email address.'
+  if (!tld || !/^[a-z]+$/i.test(tld) || tld.length < 2 || tld.length > 24) {
+    return 'Enter a valid email address.'
   }
 
   return ''

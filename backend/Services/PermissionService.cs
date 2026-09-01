@@ -1,4 +1,4 @@
-﻿using IMSBackend.Data;
+using IMSBackend.Data;
 using IMSBackend.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,9 +33,9 @@ namespace IMSBackend.Services
                     x.Role.RoleName == roleName &&
                     x.Module.ModuleKey == moduleKey);
 
-            if (permission == null)
+            if (permission == null || !permission.Role.IsActive)
             {
-                Console.WriteLine("Permission NOT FOUND");
+                Console.WriteLine("Permission NOT FOUND or Role INACTIVE");
                 return false;
             }
 
@@ -108,12 +108,13 @@ namespace IMSBackend.Services
             string action)
         {
             var permission = await _context.RolePermissions
+                .Include(x => x.Role)
                 .Include(x => x.Module)
                 .FirstOrDefaultAsync(x =>
                     x.RoleId == roleId &&
                     x.Module.ModuleKey == moduleKey);
 
-            if (permission == null)
+            if (permission == null || !permission.Role.IsActive)
                 return false;
 
             return action.ToLower() switch

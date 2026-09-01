@@ -461,6 +461,7 @@ export default function Products({
     category: 'all',
     brand: 'all',
     status: 'all',
+    search: '',
   })
   const productsLengthRef = useRef(products.length)
   const latestRequestIdRef = useRef(0)
@@ -958,10 +959,23 @@ export default function Products({
   }
 
   function handleMetricFilterClick(targetStatus) {
-    setFilters((currentValue) => ({
-      ...currentValue,
-      status: currentValue.status === targetStatus && targetStatus !== 'all' ? 'all' : targetStatus,
-    }))
+    if (searchParams.get('filter')) {
+      navigate('/inventory/products', { replace: true })
+    }
+
+    if (targetStatus === 'all') {
+      setFilters({
+        category: 'all',
+        brand: 'all',
+        status: 'all',
+        search: '',
+      })
+    } else {
+      setFilters((currentValue) => ({
+        ...currentValue,
+        status: currentValue.status === targetStatus ? 'all' : targetStatus,
+      }))
+    }
   }
 
   const productSummary = useMemo(() => {

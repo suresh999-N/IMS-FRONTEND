@@ -64,26 +64,64 @@ function sortByName(items) {
   )
 }
 
-function getLegacyChildren(categories, parentId) {
-  return sortByName(
-    categories.filter((category) => parentIdOf(category) === String(parentId ?? '')),
-  )
-}
-
 function childSubCategoriesOf(category) {
   return Array.isArray(category?.childSubCategories)
     ? sortByName(category.childSubCategories)
     : []
 }
 
-function getSubcategoryCount(category) {
-  const children = childSubCategoriesOf(category)
-  const count = Number(category?.subcategoryCount)
-  return Number.isFinite(count) ? count : children.length
+function getAllChildren(category, allCategories = []) {
+  const catId = categoryIdOf(category)
+  if (!catId) return []
+
+  const childMap = new Map()
+
+  allCategories.forEach((item) => {
+    const itemParentId = parentIdOf(item)
+    const itemId = categoryIdOf(item)
+    if (itemParentId && itemParentId === catId && itemId !== catId) {
+      childMap.set(`cat-${itemId}`, {
+        ...item,
+        id: itemId,
+        name: item.name,
+        description: item.description || '',
+        parentId: catId,
+        parentName: category.name,
+        status: item.status || 'Active',
+        sourceType: 'category',
+      })
+    }
+  })
+
+  const legacyChildren = childSubCategoriesOf(category)
+  legacyChildren.forEach((sub) => {
+    const subId = String(sub.id || sub.subCategoryId || '')
+    const key = subId ? `sub-${subId}` : `sub-name-${comparable(sub.name)}`
+    if (!childMap.has(key)) {
+      childMap.set(key, {
+        ...sub,
+        id: subId || `sub-${comparable(sub.name)}`,
+        subCategoryId: subId,
+        name: sub.name,
+        description: sub.description || '',
+        parentId: catId,
+        parentName: category.name,
+        status: sub.status || 'Active',
+        sourceType: 'subcategory',
+      })
+    }
+  })
+
+  return sortByName(Array.from(childMap.values()))
 }
 
-function hasChildSubCategories(category) {
-  return getSubcategoryCount(category) > 0 || childSubCategoriesOf(category).length > 0
+function getCategoryChildCount(category, allCategories = []) {
+  if (!category) return 0
+  return getAllChildren(category, allCategories).length
+}
+
+function hasChildSubCategories(category, allCategories = []) {
+  return getCategoryChildCount(category, allCategories) > 0
 }
 
 function getDescendantIds(categories, categoryId) {
@@ -130,39 +168,68 @@ function buildPath(categories, category) {
 }
 
 function buildVisibleRows(categories, expandedIds) {
-  const rows = []
+  const categoryMap = new Map()
+  categories.forEach((item) => {
+    categoryMap.set(categoryIdOf(item), item)
+  })
 
-  sortByName(categories).forEach((category) => {
-    const categoryId = categoryIdOf(category)
-    const children = childSubCategoriesOf(category)
-    const childCount = getSubcategoryCount(category)
-    const hasChildren = childCount > 0 || children.length > 0
+  const rootCategories = categories.filter((item) => {
+    const pId = parentIdOf(item)
+    return !pId || !categoryMap.has(pId)
+  })
+
+  const rows = []
+  const visitedNodeIds = new Set()
+
+  function processNode(node, depth = 0, parentPath = '') {
+    const nodeCatId = categoryIdOf(node)
+    if (!nodeCatId || visitedNodeIds.has(nodeCatId)) return
+    visitedNodeIds.add(nodeCatId)
+
+    const children = getAllChildren(node, categories)
+    const childCount = children.length
+    const hasChildren = childCount > 0
+    const sortPath = parentPath ? `${parentPath} / ${node.name}` : node.name
+    const parentObj = parentIdOf(node) ? categoryMap.get(parentIdOf(node)) : null
 
     rows.push({
-      ...category,
-      id: categoryId,
-      rowType: 'category',
-      depth: 0,
+      ...node,
+      id: nodeCatId,
+      rowType: depth === 0 ? 'category' : 'subcategory',
+      parentCategoryId: parentIdOf(node),
+      parentName: parentObj ? parentObj.name : (node.parentName || node.categoryName || 'Main category'),
+      depth,
       childCount,
       hasChildren,
-      sortPath: category.name,
+      sortPath,
     })
 
-    if (expandedIds.has(categoryId)) {
+    if (hasChildren && expandedIds.has(nodeCatId)) {
       children.forEach((child) => {
-        rows.push({
-          ...child,
-          id: `${categoryId}-sub-${child.id}`,
-          rowType: 'subcategory',
-          parentCategoryId: categoryId,
-          parentName: category.name,
-          depth: 1,
-          childCount: 0,
-          hasChildren: false,
-          sortPath: `${category.name} / ${child.name}`,
-        })
+        const childInMap = categoryMap.get(categoryIdOf(child))
+        if (childInMap) {
+          processNode(childInMap, depth + 1, sortPath)
+        } else {
+          const childId = `${nodeCatId}-sub-${child.id}`
+          const childSubChildren = getAllChildren(child, categories)
+          rows.push({
+            ...child,
+            id: childId,
+            rowType: 'subcategory',
+            parentCategoryId: nodeCatId,
+            parentName: node.name,
+            depth: depth + 1,
+            childCount: 0,
+            hasChildren: childSubChildren.length > 0,
+            sortPath: `${sortPath} / ${child.name}`,
+          })
+        }
       })
     }
+  }
+
+  sortByName(rootCategories).forEach((root) => {
+    processNode(root, 0, '')
   })
 
   return rows
@@ -571,7 +638,7 @@ export default function Categories() {
   function toggleCategory(category) {
     const id = categoryIdOf(category)
 
-    if (!hasChildSubCategories(category)) {
+    if (!hasChildSubCategories(category, categories)) {
       return
     }
 
@@ -606,6 +673,10 @@ export default function Categories() {
       return
     }
 
+    if (values.parentId) {
+      setExpandedIds((currentValue) => new Set([...currentValue, String(values.parentId)]))
+    }
+
     await loadCategories({ force: true })
 
     showToast({
@@ -617,10 +688,9 @@ export default function Categories() {
   }
 
   function handleDeleteClick(category) {
-    const children = childSubCategoriesOf(category)
-    const legacyChildren = getLegacyChildren(categories, categoryIdOf(category))
+    const childCount = getCategoryChildCount(category, categories)
 
-    if (children.length > 0 || legacyChildren.length > 0) {
+    if (childCount > 0) {
       showToast({
         type: 'error',
         title: 'Categories',
@@ -695,44 +765,48 @@ export default function Categories() {
       searchValue: (category) =>
         `${category.name} ${category.description} ${category.parentName ?? ''} ${category.categoryName ?? ''} ${buildPath(categories, category)}`,
       sortValue: (category) => category.sortPath ?? buildPath(categories, category),
-      render: (category) => (
-        <div
-          className={`catalog-page__tree-cell ${
-            category.rowType === 'subcategory' ? 'catalog-page__tree-cell--child' : ''
-          }`}
-          style={{ '--catalog-depth': category.depth }}
-        >
-          <span className="catalog-page__tree-spacer" aria-hidden="true" />
-          {category.rowType === 'category' && category.hasChildren ? (
-            <button
-              type="button"
-              className="catalog-page__tree-toggle"
-              onClick={(event) => {
-                event.stopPropagation()
-                toggleCategory(category)
-              }}
-              aria-label={`${expandedIds.has(category.id) ? 'Collapse' : 'Expand'} ${category.name}`}
-              title="Toggle subcategories"
-            >
-              {expandedIds.has(category.id) ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            </button>
-          ) : (
-            <span className="catalog-page__tree-toggle-placeholder" aria-hidden="true" />
-          )}
-          {category.rowType === 'subcategory' ? (
-            <span className="catalog-page__tree-branch" aria-hidden="true" />
-          ) : null}
-          {category.rowType === 'subcategory' ? (
-            <FileText size={16} className="catalog-page__tree-icon catalog-page__child-icon" />
-          ) : (
-            <Boxes size={16} className="catalog-page__tree-icon" />
-          )}
-          <div className="catalog-page__entity">
-            <strong>{category.name}</strong>
-            {category.description ? <span>{category.description}</span> : null}
+      render: (category) => {
+        const depth = category.depth || 0
+        const isChild = depth > 0 || category.rowType === 'subcategory'
+        const catId = categoryIdOf(category)
+        const isExpanded = expandedIds.has(catId)
+
+        return (
+          <div
+            className={`catalog-page__tree-cell ${isChild ? 'catalog-page__tree-cell--child' : ''}`}
+            style={{ paddingLeft: depth > 0 ? `${depth * 24}px` : undefined }}
+          >
+            {category.hasChildren ? (
+              <button
+                type="button"
+                className="catalog-page__tree-toggle"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  toggleCategory(category)
+                }}
+                aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${category.name}`}
+                title="Toggle subcategories"
+              >
+                {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </button>
+            ) : (
+              <span className="catalog-page__tree-toggle-placeholder" aria-hidden="true" />
+            )}
+            {isChild ? (
+              <span className="catalog-page__tree-branch" aria-hidden="true" />
+            ) : null}
+            {isChild ? (
+              <FileText size={16} className="catalog-page__tree-icon catalog-page__child-icon" />
+            ) : (
+              <Boxes size={16} className="catalog-page__tree-icon" />
+            )}
+            <div className="catalog-page__entity">
+              <strong>{category.name}</strong>
+              {category.description ? <span>{category.description}</span> : null}
+            </div>
           </div>
-        </div>
-      ),
+        )
+      },
     },
     {
       key: 'description',

@@ -245,7 +245,8 @@ export default function TableComponent({
   columnStorageKey = '',
   enableRowSelection = false,
   selectedRowKeys,
-  onSelectionChange,
+  searchTerm: externalSearchTerm,
+  onSearchChange,
   fitExplicitColumnsToContainer = true,
   showHorizontalScrollbar = false,
 }) {
@@ -253,7 +254,10 @@ export default function TableComponent({
   const tableContainerRef = useRef(null)
   const horizontalScrollbarRef = useRef(null)
   const selectAllCheckboxRef = useRef(null)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [internalSearchTerm, setInternalSearchTerm] = useState('')
+  const isSearchControlled = externalSearchTerm !== undefined
+  const searchTerm = isSearchControlled ? externalSearchTerm : internalSearchTerm
+  const setSearchTerm = isSearchControlled ? (onSearchChange || (() => {})) : setInternalSearchTerm
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(defaultPageSize)
   const [isColumnMenuOpen, setIsColumnMenuOpen] = useState(false)
@@ -338,7 +342,7 @@ export default function TableComponent({
 
   useEffect(() => {
     setPage(1)
-  }, [searchTerm, pageSize, rows.length])
+  }, [searchTerm, pageSize, rows])
 
   useEffect(() => {
     if (!tableContainerRef.current) {

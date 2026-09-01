@@ -331,7 +331,23 @@ function getSkuError(value) {
   return ''
 }
 
-function getFieldError(name, value, mode) {
+function getFieldError(name, value, mode, options = {}) {
+  if (name === 'categoryId') {
+    if (!value || value === '' || value === '0') {
+      return 'Category is required.'
+    }
+
+    const categoryList = options.categories ?? []
+    if (categoryList.length > 0) {
+      const isValid = categoryList.some((category) => String(category.id) === String(value))
+      if (!isValid) {
+        return 'Please select a valid category.'
+      }
+    }
+
+    return ''
+  }
+
   if (mode === 'create' && createRequiredFields.includes(name)) {
     const label = {
       categoryId: 'Category',
@@ -598,15 +614,15 @@ export default function ProductForm({
   const errors = useMemo(() => {
     const fieldsToValidate = Array.from(
       new Set(
-        isEdit ? changedFields : createRequiredFields,
+        isEdit ? [...changedFields, 'categoryId'] : [...createRequiredFields, 'categoryId'],
       ),
     )
 
     return fieldsToValidate.reduce((nextErrors, field) => {
-      const error = getFieldError(field, formData[field], mode)
+      const error = getFieldError(field, formData[field], mode, { categories })
       return error ? { ...nextErrors, [field]: error } : nextErrors
     }, {})
-  }, [changedFields, formData, isEdit, mode])
+  }, [changedFields, categories, formData, isEdit, mode])
 
   const hasChanges = isEdit ? changedFields.length > 0 || variantsChanged : true
   const isFormValid = Object.keys(errors).length === 0

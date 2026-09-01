@@ -139,6 +139,17 @@ export const RESOURCE_CONFIGS = {
         type: 'textarea',
         placeholder: 'Optional internal description',
       },
+      {
+        name: 'status',
+        label: 'Status',
+        type: 'select',
+        defaultValue: 'Active',
+        options: [
+          { value: 'Active', label: 'Active' },
+          { value: 'Inactive', label: 'Inactive' },
+          { value: 'Draft', label: 'Draft' },
+        ],
+      },
     ],
     columns: [
       { key: 'name', label: 'SubCategory', sortable: true },
