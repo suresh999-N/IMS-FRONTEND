@@ -130,7 +130,7 @@ export default function Register() {
       { field: 'Confirm Password', key: 'confirmPassword', error: confirmPasswordError },
     ].filter(item => Boolean(item.error));
 
-    if (clientErrors.length > 0) {
+    if (!isFormValid || clientErrors.length > 0) {
       const fieldNames = clientErrors.map(item => item.field);
       const detailedMessages = clientErrors.map(item => `${item.field}: ${item.error}`);
 
@@ -451,7 +451,7 @@ export default function Register() {
               <Link to="/login">Login</Link>
             </div>
 
-            <button type="submit" disabled={loading || (Object.values(touched).every(Boolean) && !isFormValid)}>
+            <button type="submit" disabled={loading || !isFormValid}>
               <UserPlus size={18} />
               {loading ? "Creating..." : "Create account"}
             </button>

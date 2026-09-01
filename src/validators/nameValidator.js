@@ -51,14 +51,10 @@ export function shouldAutoCapitalizeField(fieldName = '', fieldType = '') {
 }
 
 export function sanitizeNameInput(value, maxLength = NAME_MAX_LENGTH) {
-  const cleaned = stripUnsafeNameText(value)
+  return stripUnsafeNameText(value)
     .normalize('NFKC')
     .replace(/[<>]/g, '')
-    .replace(/^\s+/, '')
-    .replace(/\s{2,}/g, ' ')
     .slice(0, maxLength)
-
-  return autoCapitalizeWords(cleaned)
 }
 
 export function getNameError(value, options = {}) {
@@ -71,10 +67,17 @@ export function getNameError(value, options = {}) {
     allowAmpersand = false,
     allowNumbers = false,
   } = opts
-  const cleanValue = sanitizeNameInput(value, max).trim()
+
+  const rawValue = String(value ?? '')
+  const cleanValue = rawValue.trim()
 
   if (!cleanValue) {
     return required ? `${label} is required.` : ''
+  }
+
+  // Reject leading spaces or excessive consecutive spaces
+  if (/^\s/.test(rawValue) || /\s{2,}/.test(rawValue)) {
+    return 'Name cannot contain leading or consecutive spaces.'
   }
 
   if (cleanValue.length < min) {
@@ -85,14 +88,23 @@ export function getNameError(value, options = {}) {
     return `${label} cannot exceed ${max} characters.`
   }
 
-  // Reject numeric characters when allowNumbers is false (default for name fields)
+  // Reject numeric characters when allowNumbers is false
   if (!allowNumbers && /\d/.test(cleanValue)) {
-    return `${label} must contain alphabetic characters only and cannot contain numbers.`
+    return 'Name must contain only valid letters.'
   }
 
   // Reject strings without alphabetic characters
-  if (!/[A-Za-z]/.test(cleanValue)) {
-    return `${label} must contain alphabetic characters.`
+  if (!/[a-zA-Z\p{L}]/u.test(cleanValue)) {
+    return 'Name must contain only valid letters.'
+  }
+
+  // Validate allowed characters: letters, spaces, hyphens, and apostrophes
+  const pattern = (allowNumbers || allowAmpersand)
+    ? /^(?=.*[a-zA-Z\p{L}])[a-zA-Z\p{L}0-9 .&'-]+$/u
+    : /^(?=.*[a-zA-Z\p{L}])[a-zA-Z\p{L}\s'-]+$/u
+
+  if (!pattern.test(cleanValue)) {
+    return 'Name must contain only valid letters.'
   }
 
   // Reject 3 or more consecutive identical characters (e.g. "aaa")
@@ -100,45 +112,37 @@ export function getNameError(value, options = {}) {
     return `${label} contains invalid repeated characters.`
   }
 
-  // Reject single words longer than 15 characters (person names don't have single words > 15 chars)
+  // Reject single words longer than 20 characters
   const nameWords = cleanValue.split(/[\s'-]+/)
-  if (nameWords.some(word => word.length > 15)) {
-    return `${label} cannot contain words longer than 15 characters.`
-  }
-
-  // General valid characters for person names: letters, spaces, hyphens (-), apostrophes ('), periods (.)
-  const pattern = (allowNumbers || allowAmpersand)
-    ? /^(?=.*[\p{L}a-zA-Z])[\p{L}a-zA-Z0-9 .&'-]+$/u
-    : /^(?=.*[\p{L}a-zA-Z])[\p{L}a-zA-Z .'-]+$/u
-  if (!pattern.test(cleanValue)) {
-    return `${label} can contain letters, spaces, hyphens, and apostrophes only.`
+  if (nameWords.some(word => word.length > 20)) {
+    return `${label} cannot contain words longer than 20 characters.`
   }
 
   // Gibberish / keyboard mashing validation
   const lower = cleanValue.toLowerCase()
 
-  // Reject 4 or more repeated identical characters (e.g., "aaaa", "zzzz")
+  // Reject 4 or more repeated identical characters
   if (/(.)\1{3,}/i.test(cleanValue)) {
-    return `Enter a valid ${label.toLowerCase()}.`
+    return 'Please enter a valid name.'
   }
 
   // Reject repeated character blocks (e.g., "asdfasdf", "ababab")
   if (/(.{2,4})\1{2,}/i.test(cleanValue)) {
-    return `Enter a valid ${label.toLowerCase()}.`
+    return 'Please enter a valid name.'
   }
 
   // Keyboard row walks
   const keyboardWalks = ['qwerty', 'asdfgh', 'zxcvbn', 'qwertz', 'azerty', 'yuiop', 'ghjkl', 'fghjk', 'xcvbn']
   if (keyboardWalks.some((walk) => lower.includes(walk))) {
-    return `Enter a valid ${label.toLowerCase()}.`
+    return 'Please enter a valid name.'
   }
 
   // Reject words with 5+ characters that have no vowels
   const words = cleanValue.split(/\s+/)
   for (const word of words) {
-    const lettersOnly = word.replace(/[^A-Za-z]/g, '')
-    if (lettersOnly.length >= 5 && !/[aeiouyAEIOUY]/.test(lettersOnly)) {
-      return `Enter a valid ${label.toLowerCase()}.`
+    const lettersOnly = word.replace(/[^a-zA-Z\p{L}]/gu, '')
+    if (lettersOnly.length >= 5 && !/[aeiouyAEIOUY]/i.test(lettersOnly)) {
+      return 'Please enter a valid name.'
     }
   }
 

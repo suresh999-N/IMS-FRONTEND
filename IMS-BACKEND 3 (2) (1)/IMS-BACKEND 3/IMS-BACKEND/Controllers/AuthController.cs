@@ -70,6 +70,17 @@ namespace IMSBackend.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto dto, CancellationToken cancellationToken)
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState
+                    .Where(item => item.Value?.Errors.Count > 0)
+                    .ToDictionary(
+                        item => item.Key,
+                        item => item.Value!.Errors.Select(error => error.ErrorMessage).ToArray());
+
+                return BadRequest(ApiResponse<object>.Fail("Validation failed.", errors, HttpContext.TraceIdentifier));
+            }
+
             try
             {
                 var email = NormalizeEmail(dto.Email);
