@@ -295,6 +295,7 @@ button.dashboard-status:active {
   display: flex;
   flex-direction: column;
   align-items: flex-start !important;
+  justify-content: flex-start !important;
   text-align: left !important;
   gap: 4px;
   margin-top: auto;
@@ -316,6 +317,7 @@ button.dashboard-status:active {
   text-align: left !important;
   margin-left: 0 !important;
   margin-right: auto !important;
+  align-self: flex-start !important;
 }
 
 .dashboard-stat__label {
@@ -330,6 +332,7 @@ button.dashboard-status:active {
   text-align: left !important;
   flex: 1 1 auto;
   min-width: 0;
+  align-self: center !important;
 }
 
 .dashboard-panel__header span,
@@ -352,7 +355,9 @@ button.dashboard-status:active {
   justify-content: flex-start !important;
   align-self: flex-start !important;
   border-radius: 999px;
-  padding: 3px 9px;
+  padding: 3px 8px !important;
+  margin-left: -8px !important;
+  margin-right: auto !important;
   background: #f0f9ff;
   color: #0369a1;
   font-size: 11px;
@@ -362,8 +367,6 @@ button.dashboard-status:active {
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: left !important;
-  margin-left: 0 !important;
-  margin-right: auto !important;
 }
 
 .dashboard-stat__trend.is-up {
