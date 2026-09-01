@@ -816,7 +816,14 @@
 }
 
 .auth-login-secondary-row {
+  justify-content: flex-start !important;
+  gap: 6px;
   margin-bottom: 22px !important;
+}
+
+.auth-login-secondary-row span {
+  color: #64748b;
+  font-size: 13.5px;
 }
 
 .auth-wrapper--login form > button[type='submit'] {

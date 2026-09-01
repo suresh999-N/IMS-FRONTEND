@@ -295,7 +295,7 @@ function SearchInput({ inputRef, query, isOpen, isLoading, listboxId, activeOpti
         ref={inputRef}
         type="search"
         value={query}
-        placeholder="Search anything in IMS..."
+        placeholder="Search products, customers, suppliers, or invoices"
         aria-label="Global search"
         aria-expanded={isOpen}
         aria-controls={listboxId}
@@ -867,7 +867,7 @@ export default function GlobalSearch() {
         <input
           type="text"
           value={query}
-          placeholder="Search anything in IMS..."
+          placeholder="Search products, customers, suppliers, or invoices"
           aria-label="Global search trigger"
           readOnly
           onFocus={() => setIsOpen(true)}

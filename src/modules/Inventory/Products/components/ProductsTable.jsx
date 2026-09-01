@@ -603,7 +603,7 @@ export default function ProductTable({
         defaultVisibleColumnKeys={['name', 'sku', 'category', 'stock', 'price', 'status', 'actions']}
         columnStorageKey="ims.products.table.visibleColumns.workspace.v2"
         keyField="productId"
-        searchPlaceholder="Search Products..."
+        searchPlaceholder="Search products by name, SKU, or category"
         emptyMessage={emptyMessage}
         loading={loading}
         showSearch={!hasSelectedProducts}

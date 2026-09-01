@@ -20,7 +20,7 @@ export default function SearchableSelect(props) {
     placeholder = 'Select option',
     error,
     showError,
-    searchPlaceholder = 'Search...',
+    searchPlaceholder = 'Search options',
     hideLabel = false,
     disabled = false,
     className = '',

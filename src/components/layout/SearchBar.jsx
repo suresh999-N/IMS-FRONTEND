@@ -19,7 +19,7 @@ export default function SearchBar() {
   return (
     <form className="app-header__search" role="search" onSubmit={(event) => event.preventDefault()}>
       <Search size={17} aria-hidden="true" />
-      <input ref={inputRef} type="search" placeholder="Search inventory, people, reports..." />
+      <input ref={inputRef} type="search" placeholder="Search inventory, people, or reports" />
       <kbd>Ctrl K</kbd>
     </form>
   )

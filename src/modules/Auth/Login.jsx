@@ -269,6 +269,7 @@ export default function Login() {
             </div>
 
             <div className="links auth-login-secondary-row">
+              <span>Don't have an account?</span>
               <Link to="/register">Create account</Link>
             </div>
  

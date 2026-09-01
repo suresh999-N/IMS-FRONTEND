@@ -32,7 +32,7 @@ export default function CreatableSearchableSelect({
   onBlur,
   options,
   placeholder = 'Select option',
-  searchPlaceholder = 'Search or create...',
+  searchPlaceholder = 'Search or create option',
   error,
   showError,
   disabled = false,

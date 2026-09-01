@@ -340,7 +340,7 @@ export default function Units() {
           columns={columns}
           rows={filteredUnits}
           keyField="id"
-          searchPlaceholder="Search Units by Name or Symbol..."
+          searchPlaceholder="Search units by name or symbol"
           loading={isLoading}
           showSearch={true}
           splitToolbar

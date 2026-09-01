@@ -666,7 +666,7 @@ export default function ProductVariants() {
           columns={columns}
           rows={filteredVariants}
           keyField="variantId"
-          searchPlaceholder="Search Product Variants..."
+          searchPlaceholder="Search variants by name, SKU, or attribute"
           loading={isLoading}
           showSearch={true}
           splitToolbar
@@ -707,7 +707,7 @@ export default function ProductVariants() {
                       id="productId"
                       name="productId"
                       placeholder="Select product"
-                      searchPlaceholder="Search products..."
+                      searchPlaceholder="Search products by name"
                       options={products.map((p) => {
                         const pId = String(p.productId ?? p.id ?? '')
                         const pName = p.name ?? p.Name ?? `Product ${pId}`

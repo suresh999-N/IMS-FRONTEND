@@ -28,6 +28,50 @@ const ATTRIBUTE_DEFAULT_COLUMNS = ['name', 'actions']
 
 const config = RESOURCE_CONFIGS.productAttributes
 
+function validateAttributeName(name, existingAttributes = [], editingId = null) {
+  const trimmed = (name || '').trim()
+
+  if (!trimmed) {
+    return 'Attribute Name is required.'
+  }
+
+  if (trimmed.length < 2) {
+    return 'Please enter a valid attribute name (e.g., Size, Color, Material).'
+  }
+
+  // Must contain at least one letter
+  if (!/[a-zA-Z]/.test(trimmed)) {
+    return 'Please enter a valid attribute name (e.g., Size, Color, Material).'
+  }
+
+  // Allowed characters: letters, numbers, spaces, hyphens, slashes, parentheses
+  if (!/^[a-zA-Z0-9\s\-/()]+$/.test(trimmed)) {
+    return 'Please enter a valid attribute name (e.g., Size, Color, Material).'
+  }
+
+  // Check for random gibberish / key mashing (e.g., 5+ chars with 0 vowels or 6+ consecutive consonants)
+  const lettersOnly = trimmed.replace(/[^a-zA-Z]/g, '')
+  if (lettersOnly.length >= 5 && !/[aeiouyAEIOUY]/.test(lettersOnly)) {
+    return 'Please enter a valid attribute name (e.g., Size, Color, Material).'
+  }
+  if (/[bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ]{6,}/.test(trimmed)) {
+    return 'Please enter a valid attribute name (e.g., Size, Color, Material).'
+  }
+
+  // Duplicate check
+  const isDuplicate = existingAttributes.some(
+    (attr) =>
+      (attr.name || '').trim().toLowerCase() === trimmed.toLowerCase() &&
+      String(attr.attributeId ?? attr.id) !== String(editingId ?? ''),
+  )
+
+  if (isDuplicate) {
+    return 'Attribute name already exists.'
+  }
+
+  return ''
+}
+
 export default function Attributes() {
   const { hasPermission } = useAuth()
   const [attributes, setAttributes] = useState([])
@@ -40,6 +84,8 @@ export default function Attributes() {
   const [deleteTarget, setDeleteTarget] = useState(null)
 
   const [formValues, setFormValues] = useState({ name: '' })
+  const [touched, setTouched] = useState({ name: false })
+  const [wasSubmitted, setWasSubmitted] = useState(false)
   const [serverErrors, setServerErrors] = useState({})
 
   const canCreate = hasPermission('productAttributes', 'create')
@@ -120,6 +166,8 @@ export default function Attributes() {
   function handleOpenCreate() {
     setEditingItem(null)
     setFormValues({ name: '' })
+    setTouched({ name: false })
+    setWasSubmitted(false)
     setServerErrors({})
     setIsFormOpen(true)
   }
@@ -127,6 +175,8 @@ export default function Attributes() {
   function handleOpenEdit(item) {
     setEditingItem(item)
     setFormValues({ name: item.name || '' })
+    setTouched({ name: false })
+    setWasSubmitted(false)
     setServerErrors({})
     setIsFormOpen(true)
   }
@@ -135,13 +185,24 @@ export default function Attributes() {
     setIsFormOpen(false)
     setEditingItem(null)
     setFormValues({ name: '' })
+    setTouched({ name: false })
+    setWasSubmitted(false)
     setServerErrors({})
   }
 
   async function handleFormSubmit(e) {
     e.preventDefault()
-    if (!formValues.name.trim()) {
-      setServerErrors({ name: 'Attribute name is required.' })
+    setWasSubmitted(true)
+    setTouched({ name: true })
+
+    const currentValidationError = validateAttributeName(
+      formValues.name,
+      attributes,
+      editingItem?.attributeId,
+    )
+
+    if (currentValidationError) {
+      setServerErrors({ name: currentValidationError })
       return
     }
 
@@ -172,6 +233,8 @@ export default function Attributes() {
       setIsFormOpen(false)
       setEditingItem(null)
       setFormValues({ name: '' })
+      setTouched({ name: false })
+      setWasSubmitted(false)
       await loadData({ force: true, showLoading: false })
     } catch (err) {
       showToast({
@@ -299,7 +362,13 @@ export default function Attributes() {
   )
 
   // ── Modal Forms ────────────────────────────────────────────────────────────
-  const isFormValid = formValues.name.trim().length >= 2
+  const validationError = validateAttributeName(
+    formValues.name,
+    attributes,
+    editingItem?.attributeId,
+  )
+  const displayError = serverErrors.name || ((touched.name || wasSubmitted) ? validationError : '')
+  const isFormValid = !validationError
   const hasFormChanges = editingItem ? formValues.name.trim() !== (editingItem.name || '') : formValues.name.trim() !== ''
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -354,7 +423,7 @@ export default function Attributes() {
             columns={columns}
             rows={attributes}
             keyField="attributeId"
-            searchPlaceholder="Search Attributes..."
+            searchPlaceholder="Search attributes by name"
             loading={isLoading}
             showSearch={true}
             splitToolbar
@@ -383,8 +452,12 @@ export default function Attributes() {
                   label="Attribute Name *"
                   name="name"
                   value={formValues.name}
-                  onChange={(e) => setFormValues({ name: e.target.value })}
-                  error={serverErrors.name}
+                  onChange={(e) => {
+                    setFormValues({ name: e.target.value })
+                    setServerErrors({})
+                  }}
+                  onBlur={() => setTouched({ name: true })}
+                  error={displayError}
                   required
                   placeholder="e.g. size, color, material"
                   disabled={isSaving}
@@ -396,7 +469,7 @@ export default function Attributes() {
               <button
                 type="submit"
                 className="button button-primary"
-                disabled={!isFormValid || !hasFormChanges || isSaving}
+                disabled={isSaving || (editingItem && !hasFormChanges)}
               >
                 <Save size={16} />
                 {isSaving ? 'Saving...' : 'Save Attribute'}
