@@ -1,9 +1,13 @@
-﻿using IMSBackend.DTOs.Suppliers;
+using System.ComponentModel.DataAnnotations;
+using IMSBackend.DTOs.Suppliers;
 
 public class UpdateSupplierDto
 {
     public string? SupplierCode { get; set; }
+
+    [RegularExpression(@"^[A-Za-z\s]+$", ErrorMessage = "Name can contain only letters and spaces.")]
     public string? Name { get; set; }
+
     public string? Category { get; set; }
     public string? GstNumber { get; set; }
     public string? PanNumber { get; set; }

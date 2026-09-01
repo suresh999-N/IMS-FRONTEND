@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IMSBackend.Models
@@ -14,19 +14,19 @@ namespace IMSBackend.Models
         public int PurchaseIndentId { get; set; }
 
         [ForeignKey(nameof(PurchaseIndentId))]
-        public PurchaseIndent PurchaseIndent { get; set; }
+        public PurchaseIndent PurchaseIndent { get; set; } = null!;
 
         [Column("product_id")]
         public int ProductId { get; set; }
 
         [ForeignKey(nameof(ProductId))]
-        public Product Product { get; set; }
+        public Product Product { get; set; } = null!;
 
         [Column("unit_id")]
         public int UnitId { get; set; }
 
         [ForeignKey(nameof(UnitId))]
-        public Unit Unit { get; set; }
+        public Unit Unit { get; set; } = null!;
 
         [Column("required_qty")]
         public decimal RequiredQty { get; set; }

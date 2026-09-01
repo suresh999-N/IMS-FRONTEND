@@ -1,0 +1,45 @@
+2026-08-09 01:22:16.414 +05:30 [INF] Refresh Token Cleanup Service Started.
+2026-08-09 01:22:16.948 +05:30 [ERR] Hosting failed to start
+System.IO.IOException: Failed to bind to address http://127.0.0.1:5237: address already in use.
+ ---> Microsoft.AspNetCore.Connections.AddressInUseException: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+ ---> System.Net.Sockets.SocketException (10048): Only one usage of each socket address (protocol/network address/port) is normally permitted.
+   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
+   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.LocalhostListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+2026-08-09 01:24:36.199 +05:30 [INF] Refresh Token Cleanup Service Started.
+2026-08-09 01:24:36.375 +05:30 [INF] IMS Backend started successfully. Swagger: http://localhost:5237/swagger
+2026-08-09 01:24:42.782 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 01:24:42.905 +05:30 [INF] GET /api/Notifications/unread-count => 200 (373 ms)
+2026-08-09 01:24:57.220 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 01:24:57.228 +05:30 [INF] GET /api/Notifications/unread-count => 200 (44 ms)
+2026-08-09 01:25:12.501 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 01:25:12.505 +05:30 [INF] GET /api/Notifications/unread-count => 200 (14 ms)
+2026-08-09 01:25:27.182 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 01:25:27.186 +05:30 [INF] GET /api/Notifications/unread-count => 200 (16 ms)
+2026-08-09 01:26:14.496 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 01:26:14.501 +05:30 [INF] GET /api/Notifications/unread-count => 200 (10 ms)
+2026-08-09 01:27:14.619 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 01:27:14.624 +05:30 [INF] GET /api/Notifications/unread-count => 200 (13 ms)
+2026-08-09 01:27:46.504 +05:30 [INF] GET /swagger/index.html => 200 (243 ms)
+2026-08-09 01:27:48.797 +05:30 [INF] GET /swagger/v1/swagger.json => 200 (1821 ms)
+2026-08-09 01:28:14.569 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 01:28:14.572 +05:30 [INF] GET /api/Notifications/unread-count => 200 (13 ms)

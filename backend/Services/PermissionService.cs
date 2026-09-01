@@ -13,24 +13,18 @@ namespace IMSBackend.Services
             _context = context;
         }
 
-        /// <summary>
-        /// Check whether a role has permission for a module and action.
-        /// </summary>
+        // =========================================================
+        // CHECK PERMISSION BY ROLE NAME
+        // =========================================================
         public async Task<bool> HasPermission(
-    string roleName,
-    string moduleKey,
-    string action)
+            string roleName,
+            string moduleKey,
+            string action)
         {
             Console.WriteLine("========== Permission Check ==========");
-            Console.WriteLine($"Role      : {roleName}");
-            Console.WriteLine($"Module    : {moduleKey}");
-            Console.WriteLine($"Action    : {action}");
-
-
-            Console.WriteLine($"Role : {roleName}");
+            Console.WriteLine($"Role   : {roleName}");
             Console.WriteLine($"Module : {moduleKey}");
             Console.WriteLine($"Action : {action}");
-
 
             var permission = await _context.RolePermissions
                 .Include(x => x.Role)
@@ -61,14 +55,13 @@ namespace IMSBackend.Services
             Console.WriteLine($"Final Result = {result}");
 
             return result;
-            
-        
         }
 
-        /// <summary>
-        /// Returns all permissions for a role.
-        /// </summary>
-        public async Task<List<RolePermission>> GetPermissionsAsync(string roleName)
+        // =========================================================
+        // GET ALL PERMISSIONS BY ROLE NAME
+        // =========================================================
+        public async Task<List<RolePermission>> GetPermissionsAsync(
+            string roleName)
         {
             return await _context.RolePermissions
                 .Include(x => x.Role)
@@ -78,12 +71,12 @@ namespace IMSBackend.Services
                 .ToListAsync();
         }
 
-        /// <summary>
-        /// Returns permission for a single module.
-        /// </summary>
+        // =========================================================
+        // GET SINGLE MODULE PERMISSION
+        // =========================================================
         public async Task<RolePermission?> GetModulePermissionAsync(
-    string roleName,
-    string moduleKey)
+            string roleName,
+            string moduleKey)
         {
             return await _context.RolePermissions
                 .Include(x => x.Role)
@@ -93,11 +86,11 @@ namespace IMSBackend.Services
                     x.Module.ModuleKey == moduleKey);
         }
 
-        /// <summary>
-        /// Returns all permissions using RoleId.
-        /// (Future use)
-        /// </summary>
-        public async Task<List<RolePermission>> GetPermissionsByRoleIdAsync(int roleId)
+        // =========================================================
+        // GET PERMISSIONS BY ROLE ID
+        // =========================================================
+        public async Task<List<RolePermission>> GetPermissionsByRoleIdAsync(
+            int roleId)
         {
             return await _context.RolePermissions
                 .Include(x => x.Module)
@@ -106,15 +99,14 @@ namespace IMSBackend.Services
                 .ToListAsync();
         }
 
-        /// <summary>
-        /// Checks permission using RoleId.
-        /// (Future use)
-        /// </summary>
+        // =========================================================
+        // CHECK PERMISSION BY ROLE ID
+        // =========================================================
         public async Task<bool> HasPermissionAsync(
             int roleId,
             string moduleKey,
-             string action)
-             {
+            string action)
+        {
             var permission = await _context.RolePermissions
                 .Include(x => x.Module)
                 .FirstOrDefaultAsync(x =>
@@ -134,9 +126,73 @@ namespace IMSBackend.Services
             };
         }
 
-        /// <summary>
-        /// Update permissions for a role.
-        /// </summary>
+        // =========================================================
+        // ENSURE PERMISSIONS FOR ONE ROLE
+        // =========================================================
+        public async Task EnsurePermissionsForRoleAsync(int roleId)
+        {
+            // Get all active modules
+            var modules = await _context.Modules
+                .Where(x => x.IsActive)
+                .ToListAsync();
+
+            // Get modules that already have a permission
+            // record for this role
+            var existingModuleIds = await _context.RolePermissions
+                .Where(x => x.RoleId == roleId)
+                .Select(x => x.ModuleId)
+                .ToListAsync();
+
+            // Find modules without a permission record
+            var missingModules = modules
+                .Where(x => !existingModuleIds.Contains(x.ModuleId))
+                .ToList();
+
+            if (!missingModules.Any())
+                return;
+
+            var newPermissions = missingModules
+                .Select(module => new RolePermission
+                {
+                    RoleId = roleId,
+                    ModuleId = module.ModuleId,
+
+                    // IMPORTANT:
+                    // New permission records start with
+                    // NO ACCESS.
+                    CanView = false,
+                    CanAdd = false,
+                    CanEdit = false,
+                    CanDelete = false
+                })
+                .ToList();
+
+            await _context.RolePermissions
+                .AddRangeAsync(newPermissions);
+
+            await _context.SaveChangesAsync();
+        }
+
+        // =========================================================
+        // ENSURE PERMISSIONS FOR ALL EXISTING ROLES
+        // =========================================================
+        public async Task EnsurePermissionsForAllRolesAsync()
+        {
+            // Get all active roles
+            var roles = await _context.Roles
+                .Where(x => x.IsActive)
+                .Select(x => x.RoleId)
+                .ToListAsync();
+
+            foreach (var roleId in roles)
+            {
+                await EnsurePermissionsForRoleAsync(roleId);
+            }
+        }
+
+        // =========================================================
+        // UPDATE PERMISSIONS FOR A ROLE
+        // =========================================================
         public async Task UpdatePermissionsAsync(
             int roleId,
             List<RolePermission> permissions)
@@ -147,7 +203,8 @@ namespace IMSBackend.Services
 
             _context.RolePermissions.RemoveRange(existingPermissions);
 
-            await _context.RolePermissions.AddRangeAsync(permissions);
+            await _context.RolePermissions
+                .AddRangeAsync(permissions);
 
             await _context.SaveChangesAsync();
         }

@@ -7,9 +7,11 @@ namespace IMSBackend.Models
         public int Id { get; set; }
 
         [Required]
+        [MaxLength(50)]
         public string Name { get; set; } = string.Empty;
 
         [Required]
+        [MaxLength(254)]
         public string Email { get; set; } = string.Empty;
 
         [Required]
@@ -19,6 +21,7 @@ namespace IMSBackend.Models
 
         public bool IsActive { get; set; } = true;
 
+        [MaxLength(10)]
         public string? PhoneNumber { get; set; }
 
         public string? EmployeeId { get; set; }

@@ -22,21 +22,21 @@ namespace IMSBackend.Controllers
         public async Task<IActionResult> GetSummary(CancellationToken cancellationToken)
         {
             var totalProducts =
-                await _context.Products.CountAsync(x => !x.IsDeleted, cancellationToken);
+                await _context.Products.AsNoTracking().CountAsync(x => !x.IsDeleted, cancellationToken);
 
             var totalCustomers =
-                await _context.Customers.CountAsync(cancellationToken);
+                await _context.Customers.AsNoTracking().CountAsync(cancellationToken);
 
             var totalSuppliers =
-                await _context.Suppliers.CountAsync(cancellationToken);
+                await _context.Suppliers.AsNoTracking().CountAsync(cancellationToken);
 
             var totalSales =
-                await _context.Invoices
+                await _context.Invoices.AsNoTracking()
                     .Where(x => !x.IsCancelled)
                     .SumAsync(x => (decimal?)x.TotalAmount, cancellationToken) ?? 0;
 
             var totalPurchases =
-                await _context.PurchaseOrders
+                await _context.PurchaseOrders.AsNoTracking()
                     .Where(x => !x.IsCancelled)
                     .SumAsync(x => (decimal?)x.TotalAmount, cancellationToken) ?? 0;
 
@@ -139,8 +139,8 @@ namespace IMSBackend.Controllers
         [HttpGet("monthly-sales")]
         public async Task<IActionResult> GetMonthlySales(CancellationToken cancellationToken)
         {
-            var monthlySales = await (
-                from invoice in _context.Invoices
+            var rawSales = await (
+                from invoice in _context.Invoices.AsNoTracking()
                 where invoice.InvoiceDate != null &&
                       !invoice.IsCancelled
                 group invoice by new
@@ -149,7 +149,7 @@ namespace IMSBackend.Controllers
                     invoice.InvoiceDate!.Value.Month
                 }
                 into grouped
-                orderby grouped.Key.Year, grouped.Key.Month
+                orderby grouped.Key.Year descending, grouped.Key.Month descending
                 select new
                 {
                     Year = grouped.Key.Year,
@@ -157,16 +157,35 @@ namespace IMSBackend.Controllers
                     TotalSales = grouped.Sum(x => x.TotalAmount),
                     TotalInvoices = grouped.Count()
                 })
+                .Take(12)
                 .ToListAsync(cancellationToken);
 
-            return Ok(monthlySales);
+            var monthlySales = rawSales
+                .OrderBy(x => x.Year).ThenBy(x => x.Month)
+                .Select(x => new
+                {
+                    year = x.Year,
+                    month = x.Month,
+                    monthLabel = new DateTime(x.Year, x.Month, 1).ToString("MMM yyyy"),
+                    totalSales = x.TotalSales,
+                    totalInvoices = x.TotalInvoices
+                })
+                .ToList();
+
+            return Ok(new
+            {
+                success = true,
+                monthlySales,
+                data = monthlySales,
+                message = (string?)null
+            });
         }
 
         [HttpGet("monthly-purchases")]
         public async Task<IActionResult> GetMonthlyPurchases(CancellationToken cancellationToken)
         {
-            var monthlyPurchases = await (
-                from po in _context.PurchaseOrders
+            var rawPurchases = await (
+                from po in _context.PurchaseOrders.AsNoTracking()
                 where po.OrderDate != null &&
                       !po.IsCancelled
                 group po by new
@@ -175,7 +194,7 @@ namespace IMSBackend.Controllers
                     po.OrderDate!.Value.Month
                 }
                 into grouped
-                orderby grouped.Key.Year, grouped.Key.Month
+                orderby grouped.Key.Year descending, grouped.Key.Month descending
                 select new
                 {
                     Year = grouped.Key.Year,
@@ -183,7 +202,20 @@ namespace IMSBackend.Controllers
                     TotalPurchases = grouped.Sum(x => x.TotalAmount),
                     TotalOrders = grouped.Count()
                 })
+                .Take(12)
                 .ToListAsync(cancellationToken);
+
+            var monthlyPurchases = rawPurchases
+                .OrderBy(x => x.Year).ThenBy(x => x.Month)
+                .Select(x => new
+                {
+                    year = x.Year,
+                    month = x.Month,
+                    monthLabel = new DateTime(x.Year, x.Month, 1).ToString("MMM yyyy"),
+                    totalPurchases = x.TotalPurchases,
+                    totalOrders = x.TotalOrders
+                })
+                .ToList();
 
             return Ok(monthlyPurchases);
         }
@@ -211,15 +243,15 @@ namespace IMSBackend.Controllers
             var activities = auditLogs.Select(x => new
             {
                 id = x.LogId,
-                type = x.Action ?? x.Module ?? "ACTIVITY",
-                module = x.Module,
-                recordId = x.RecordId,
-                tableName = x.TableName,
+                date = DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc),
                 userName = x.UserId.HasValue && userNames.TryGetValue(x.UserId.Value, out var userName)
                     ? userName
                     : null,
+                type = x.Action ?? x.Module ?? "ACTIVITY",
+                module = x.Module,
                 description = x.Description ?? x.Action ?? "Activity recorded",
-                date = DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)
+                recordId = x.RecordId,
+                tableName = x.TableName
             });
 
             return Ok(activities);

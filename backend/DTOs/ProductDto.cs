@@ -1,5 +1,8 @@
-﻿public class ProductDto
+using System.ComponentModel.DataAnnotations;
+
+public class ProductDto
 {
+    [RegularExpression(@"^[A-Za-z\s]+$", ErrorMessage = "Name can contain only letters and spaces.")]
     public string Name { get; set; } = string.Empty;
     public string SKU { get; set; } = string.Empty;
     public string Barcode { get; set; } = string.Empty;

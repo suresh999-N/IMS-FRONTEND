@@ -25,8 +25,8 @@ namespace IMSBackend.Controllers
             var units = await _context.Units
                 .AsNoTracking()
                 .Where(unit => !unit.IsDeleted)
-                .OrderByDescending(unit => unit.UnitId)
-                .ToListAsync(cancellationToken);
+                .OrderBy(unit => unit.Name)
+                .ToListAsync();
 
             return Ok(ApiResponse<List<Unit>>.Ok(
                 units,
@@ -188,6 +188,11 @@ namespace IMSBackend.Controllers
             if (string.IsNullOrWhiteSpace(name))
             {
                 return "Unit name is required.";
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-z\s]+$"))
+            {
+                return "Name can contain only letters and spaces.";
             }
 
             if (string.IsNullOrWhiteSpace(shortName))

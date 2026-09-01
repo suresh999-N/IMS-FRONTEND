@@ -94,7 +94,7 @@ namespace IMSBackend.Controllers
 
                     LineTotal = receiptItem != null ? receiptItem.LineTotal : null
                 }
-            ).OrderByDescending(x => x.GrnId).ToListAsync();
+            ).ToListAsync();
 
             var result = data
                 .GroupBy(x => x.GrnId)
@@ -115,6 +115,10 @@ namespace IMSBackend.Controllers
                     ReceiptDate = grn.First().ReceiptDate,
                     Status = grn.First().Status,
                     Notes = grn.First().Notes,
+
+                    Received = grn.Sum(x => x.QuantityReceived ?? 0),
+
+                    TotalAmount = grn.Sum(x => x.LineTotal ?? 0),
 
                     Items = grn
                         .Where(x => x.ProductId != null)

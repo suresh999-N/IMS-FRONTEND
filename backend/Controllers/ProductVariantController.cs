@@ -30,7 +30,9 @@ namespace IMSBackend.Controllers
         {
             var product = await _context.Products
                 .AsNoTracking()
-                .FirstOrDefaultAsync(item => item.ProductId == productId && !item.IsDeleted, cancellationToken);
+                .FirstOrDefaultAsync(
+                    item => item.ProductId == productId && !item.IsDeleted,
+                    cancellationToken);
 
             if (product == null)
             {
@@ -55,7 +57,9 @@ namespace IMSBackend.Controllers
             var duplicateSku = await _context.ProductVariants
                 .AsNoTracking()
                 .AnyAsync(
-                    item => item.ProductId == productId && item.SKU == variantSku,
+                    item =>
+                        item.ProductId == productId &&
+                        item.SKU == variantSku,
                     cancellationToken);
 
             if (duplicateSku)
@@ -79,13 +83,29 @@ namespace IMSBackend.Controllers
             try
             {
                 _context.ProductVariants.Add(variant);
+
                 await _context.SaveChangesAsync(cancellationToken);
-                await UpsertVariantAttributes(variant.VariantId, dto.Attributes, cancellationToken);
+
+                await UpsertVariantAttributes(
+                    variant.VariantId,
+                    dto.Attributes,
+                    cancellationToken);
+
                 await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (InvalidOperationException exception)
+            {
+                return BadRequest(
+                    ApiResponse<object>.Fail(
+                        exception.Message,
+                        traceId: HttpContext.TraceIdentifier));
             }
             catch (DbUpdateException exception)
             {
-                LogDbUpdateException(exception, "Variant create failed.");
+                LogDbUpdateException(
+                    exception,
+                    "Variant create failed.");
+
                 return StatusCode(
                     StatusCodes.Status500InternalServerError,
                     ApiResponse<object>.Fail(
@@ -100,32 +120,46 @@ namespace IMSBackend.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAll(
+            CancellationToken cancellationToken)
         {
             var variants = await _context.ProductVariants
-                .Include(v => v.VariantAttributes)
-                    .ThenInclude(va => va.Attribute)
-                .Include(v => v.VariantAttributes)
-                    .ThenInclude(va => va.AttributeValue)
                 .AsNoTracking()
-                .OrderByDescending(v => v.VariantId)
+                .Select(pv => new
+                {
+                    pv.VariantId,
+                    pv.ProductId,
+                    pv.VariantName,
+                    pv.SKU,
+                    pv.Price,
+                    pv.CostPrice,
+
+                    Attributes = _context.VariantAttributeValues
+                        .Where(vav => vav.VariantId == pv.VariantId)
+                        .Join(
+                            _context.Attributes,
+                            vav => vav.AttributeId,
+                            a => a.AttributeId,
+                            (vav, a) => a.Name)
+                        .FirstOrDefault()
+                })
                 .ToListAsync(cancellationToken);
 
-            return Ok(ApiResponse<List<ProductVariant>>.Ok(
+            return Ok(ApiResponse<object>.Ok(
                 variants,
                 traceId: HttpContext.TraceIdentifier));
         }
 
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetById(
+            int id,
+            CancellationToken cancellationToken)
         {
             var variant = await _context.ProductVariants
-                .Include(v => v.VariantAttributes)
-                    .ThenInclude(va => va.Attribute)
-                .Include(v => v.VariantAttributes)
-                    .ThenInclude(va => va.AttributeValue)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(item => item.VariantId == id, cancellationToken);
+                .FirstOrDefaultAsync(
+                    item => item.VariantId == id,
+                    cancellationToken);
 
             if (variant == null)
             {
@@ -146,7 +180,9 @@ namespace IMSBackend.Controllers
             CancellationToken cancellationToken)
         {
             var variant = await _context.ProductVariants
-                .FirstOrDefaultAsync(item => item.VariantId == id, cancellationToken);
+                .FirstOrDefaultAsync(
+                    item => item.VariantId == id,
+                    cancellationToken);
 
             if (variant == null)
             {
@@ -157,7 +193,11 @@ namespace IMSBackend.Controllers
 
             var product = await _context.Products
                 .AsNoTracking()
-                .FirstOrDefaultAsync(item => item.ProductId == variant.ProductId && !item.IsDeleted, cancellationToken);
+                .FirstOrDefaultAsync(
+                    item =>
+                        item.ProductId == variant.ProductId &&
+                        !item.IsDeleted,
+                    cancellationToken);
 
             if (product == null)
             {
@@ -167,6 +207,7 @@ namespace IMSBackend.Controllers
             }
 
             var validationError = ValidateVariantDraft(dto);
+
             if (validationError != null)
             {
                 return BadRequest(ApiResponse<object>.Fail(
@@ -195,22 +236,43 @@ namespace IMSBackend.Controllers
                     traceId: HttpContext.TraceIdentifier));
             }
 
-            variant.VariantName = string.IsNullOrWhiteSpace(dto.VariantName)
-                ? variant.VariantName
-                : dto.VariantName.Trim();
+            variant.VariantName =
+                string.IsNullOrWhiteSpace(dto.VariantName)
+                    ? variant.VariantName
+                    : dto.VariantName.Trim();
+
             variant.SKU = variantSku;
-            variant.Price = (product.Price ?? 0) + (dto.PriceDelta ?? 0);
+
+            variant.Price =
+                (product.Price ?? 0) +
+                (dto.PriceDelta ?? 0);
+
             variant.CostPrice = product.CostPrice;
 
             try
             {
                 await _context.SaveChangesAsync(cancellationToken);
-                await UpsertVariantAttributes(variant.VariantId, dto.Attributes, cancellationToken);
+
+                await UpsertVariantAttributes(
+                    variant.VariantId,
+                    dto.Attributes,
+                    cancellationToken);
+
                 await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (InvalidOperationException exception)
+            {
+                return BadRequest(
+                    ApiResponse<object>.Fail(
+                        exception.Message,
+                        traceId: HttpContext.TraceIdentifier));
             }
             catch (DbUpdateException exception)
             {
-                LogDbUpdateException(exception, "Variant update failed.");
+                LogDbUpdateException(
+                    exception,
+                    "Variant update failed.");
+
                 return StatusCode(
                     StatusCodes.Status500InternalServerError,
                     ApiResponse<object>.Fail(
@@ -225,10 +287,14 @@ namespace IMSBackend.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+        public async Task<IActionResult> Delete(
+            int id,
+            CancellationToken cancellationToken)
         {
             var variant = await _context.ProductVariants
-                .FirstOrDefaultAsync(item => item.VariantId == id, cancellationToken);
+                .FirstOrDefaultAsync(
+                    item => item.VariantId == id,
+                    cancellationToken);
 
             if (variant == null)
             {
@@ -242,13 +308,19 @@ namespace IMSBackend.Controllers
                 var attributes = await _context.VariantAttributeValues
                     .Where(item => item.VariantId == id)
                     .ToListAsync(cancellationToken);
+
                 _context.VariantAttributeValues.RemoveRange(attributes);
+
                 _context.ProductVariants.Remove(variant);
+
                 await _context.SaveChangesAsync(cancellationToken);
             }
             catch (DbUpdateException exception)
             {
-                LogDbUpdateException(exception, "Variant delete failed.");
+                LogDbUpdateException(
+                    exception,
+                    "Variant delete failed.");
+
                 return StatusCode(
                     StatusCodes.Status500InternalServerError,
                     ApiResponse<object>.Fail(
@@ -262,8 +334,14 @@ namespace IMSBackend.Controllers
                 HttpContext.TraceIdentifier));
         }
 
-        private static string? ValidateVariantDraft(ProductVariantCreateDto dto)
+        private static string? ValidateVariantDraft(
+            ProductVariantCreateDto dto)
         {
+            if (!string.IsNullOrWhiteSpace(dto.VariantName) && !System.Text.RegularExpressions.Regex.IsMatch(dto.VariantName.Trim(), @"^[A-Za-z\s]+$"))
+            {
+                return "Name can contain only letters and spaces.";
+            }
+
             if ((dto.PriceDelta ?? 0) < 0)
             {
                 return "Variant price adjustment cannot be negative.";
@@ -277,83 +355,144 @@ namespace IMSBackend.Controllers
             return null;
         }
 
+        private static string NormalizeSku(string? sku)
+            => sku?.Trim().ToUpperInvariant() ?? string.Empty;
+
+
+        // ============================================================
+        // Variant Attribute Handling
+        // ============================================================
+
         private async Task UpsertVariantAttributes(
             int variantId,
             IReadOnlyCollection<VariantAttributeValueDto>? attributes,
             CancellationToken cancellationToken)
         {
             var desiredAttributes = (attributes ?? [])
-                .Where(attribute => attribute.AttributeId > 0 && attribute.ValueId > 0)
-                .GroupBy(attribute => new { attribute.AttributeId, attribute.ValueId })
+                .Where(attribute => attribute.AttributeId > 0)
+                .GroupBy(attribute => attribute.AttributeId)
                 .Select(group => group.First())
                 .ToList();
-            var existingAttributes = await _context.VariantAttributeValues
-                .Where(item => item.VariantId == variantId)
-                .ToListAsync(cancellationToken);
 
+            var existingAttributes =
+                await _context.VariantAttributeValues
+                    .Where(item => item.VariantId == variantId)
+                    .ToListAsync(cancellationToken);
+
+            // No attributes requested.
+            // Preserve the existing business behavior:
+            // remove existing attributes.
             if (desiredAttributes.Count == 0)
             {
                 if (existingAttributes.Count > 0)
                 {
-                    _context.VariantAttributeValues.RemoveRange(existingAttributes);
+                    _context.VariantAttributeValues
+                        .RemoveRange(existingAttributes);
                 }
 
                 return;
             }
 
+            // Store the resolved ValueId separately.
+            // This avoids modifying the DTO itself.
+            var resolvedValueIds = new Dictionary<int, int>();
+
             foreach (var attribute in desiredAttributes)
             {
-                var valueMatchesAttribute = await _context.AttributeValues
-                    .AsNoTracking()
-                    .AnyAsync(
-                        item =>
-                            item.AttributeId == attribute.AttributeId &&
-                            item.ValueId == attribute.ValueId,
-                        cancellationToken);
+                int? valueId = attribute.ValueId;
+
+                // Frontend currently sends AttributeId but may not
+                // send ValueId during Edit.
+                //
+                // If ValueId is missing, use the existing ValueId
+                // belonging to this Variant + Attribute.
+                if (!valueId.HasValue)
+                {
+                    var existingAttribute = existingAttributes
+                        .FirstOrDefault(
+                            item =>
+                                item.AttributeId ==
+                                attribute.AttributeId);
+
+                    if (existingAttribute != null)
+                    {
+                        valueId = existingAttribute.ValueId;
+                    }
+                }
+
+                // If there is still no ValueId, we cannot create
+                // a valid VariantAttributeValue.
+                if (!valueId.HasValue)
+                {
+                    throw new InvalidOperationException(
+                        $"ValueId is required for attribute {attribute.AttributeId}.");
+                }
+
+                // Keep the existing business validation.
+                var valueMatchesAttribute =
+                    await _context.AttributeValues
+                        .AsNoTracking()
+                        .AnyAsync(
+                            item =>
+                                item.AttributeId ==
+                                    attribute.AttributeId &&
+                                item.ValueId == valueId.Value,
+                            cancellationToken);
 
                 if (!valueMatchesAttribute)
                 {
                     throw new InvalidOperationException(
-                        $"Invalid value {attribute.ValueId} for attribute {attribute.AttributeId}.");
+                        $"Invalid value {valueId.Value} for attribute {attribute.AttributeId}.");
                 }
+
+                resolvedValueIds[attribute.AttributeId] =
+                    valueId.Value;
             }
 
+            // Remove attributes that are no longer requested.
             foreach (var existingAttribute in existingAttributes)
             {
                 var stillRequested = desiredAttributes.Any(
                     attribute =>
-                        attribute.AttributeId == existingAttribute.AttributeId &&
-                        attribute.ValueId == existingAttribute.ValueId);
+                        attribute.AttributeId ==
+                        existingAttribute.AttributeId);
 
                 if (!stillRequested)
                 {
-                    _context.VariantAttributeValues.Remove(existingAttribute);
+                    _context.VariantAttributeValues
+                        .Remove(existingAttribute);
                 }
             }
 
+            // Add attributes that don't already exist.
+            //
+            // Existing attributes are intentionally not changed here,
+            // preserving your original business behavior.
             foreach (var attribute in desiredAttributes)
             {
                 var alreadyExists = existingAttributes.Any(
                     item =>
-                        item.AttributeId == attribute.AttributeId &&
-                        item.ValueId == attribute.ValueId);
+                        item.AttributeId ==
+                        attribute.AttributeId);
 
                 if (!alreadyExists)
                 {
-                    _context.VariantAttributeValues.Add(new VariantAttributeValue
-                    {
-                        VariantId = variantId,
-                        AttributeId = attribute.AttributeId,
-                        ValueId = attribute.ValueId
-                    });
+                    _context.VariantAttributeValues.Add(
+                        new VariantAttributeValue
+                        {
+                            VariantId = variantId,
+                            AttributeId = attribute.AttributeId,
+                            ValueId =
+                                resolvedValueIds[
+                                    attribute.AttributeId]
+                        });
                 }
             }
         }
 
-        private static string NormalizeSku(string? sku)
-            => sku?.Trim().ToUpperInvariant() ?? string.Empty;
 
-        private static string GetInnermostMessage(Exception exception)
+        private static string GetInnermostMessage(
+            Exception exception)
         {
             var current = exception;
 
@@ -367,13 +506,16 @@ namespace IMSBackend.Controllers
                 : current.Message;
         }
 
-        private void LogDbUpdateException(DbUpdateException exception, string message)
+        private void LogDbUpdateException(
+            DbUpdateException exception,
+            string message)
         {
             _logger.LogError(
                 exception,
                 "{Message} InnerException: {InnerException}. TraceId: {TraceId}",
                 message,
-                exception.InnerException?.ToString() ?? "No inner exception",
+                exception.InnerException?.ToString()
+                    ?? "No inner exception",
                 HttpContext.TraceIdentifier);
         }
     }

@@ -1,4 +1,4 @@
-﻿
+
 
 using IMSBackend.Data;
 using IMSBackend.DTOs;
@@ -93,9 +93,14 @@ namespace IMSBackend.Controllers
 
         // UPDATE PROFILE
         [HttpPut("{userId}")]
-        public async Task<IActionResult> UpdateProfile(int userId, UpdateProfileDto dto)
+        public async Task<IActionResult> UpdateProfile(
+            int userId,
+            UpdateProfileDto dto,
+            CancellationToken cancellationToken)
         {
-            var user = await _context.Users.FindAsync(userId);
+            var user = await _context.Users.FindAsync(
+                new object[] { userId },
+                cancellationToken);
 
             if (user == null)
             {
@@ -108,16 +113,22 @@ namespace IMSBackend.Controllers
                 return BadRequest("Name is required");
             }
 
-            // Email Validation
-            if (string.IsNullOrWhiteSpace(dto.Email))
+            // Manual Name Regex Validation
+            if (!System.Text.RegularExpressions.Regex.IsMatch(
+                dto.Name.Trim(),
+                @"^[A-Za-z\s]+$"))
             {
-                return BadRequest("Email is required");
+                return BadRequest(
+                    "Name can contain only letters and spaces.");
             }
 
+            var email = dto.Email.Trim().ToLowerInvariant();
+            var phone = dto.PhoneNumber?.Trim();
+
             // Duplicate Email Check
-            var emailExists = await _context.Users.AnyAsync(x =>
-                x.Email == dto.Email &&
-                x.Id != userId);
+            var emailExists = await _context.Users.AnyAsync(
+                x => x.Email == email && x.Id != userId,
+                cancellationToken);
 
             if (emailExists)
             {
@@ -126,15 +137,15 @@ namespace IMSBackend.Controllers
 
             // Update Fields
             user.Name = dto.Name.Trim();
-            user.Email = dto.Email.Trim();
-            user.PhoneNumber = dto.PhoneNumber;
+            user.Email = email;
+            user.PhoneNumber = phone;
             user.EmployeeId = dto.EmployeeId;
             user.Department = dto.Department;
             user.Warehouse = dto.Warehouse;
             user.ProfilePhoto = dto.ProfilePhoto;
             user.UpdatedAt = DateTime.Now;
 
-
+            // Audit Log
             _context.AuditLogs.Add(new AuditLog
             {
                 UserId = user.Id,
@@ -146,7 +157,7 @@ namespace IMSBackend.Controllers
                 CreatedAt = DateTime.Now
             });
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             return Ok(new
             {

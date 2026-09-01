@@ -1,9 +1,10 @@
-﻿
-using IMSBackend.Data;
+﻿using IMSBackend.Data;
 using IMSBackend.DTOs;
 using IMSBackend.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 
 namespace IMSBackend.Controllers
@@ -40,54 +41,105 @@ namespace IMSBackend.Controllers
         [HttpGet("role/{roleId}")]
         public async Task<IActionResult> GetPermissionsByRole(int roleId)
         {
-            var role = await _context.Roles
-                .Where(x => x.RoleId == roleId)
-                .Select(x => new
-                {
-                    x.RoleId,
-                    x.RoleName,
-                    x.Description,
-                    x.IsActive
-                })
-                .FirstOrDefaultAsync();
+            var roleExists = await _context.Roles
+                .AnyAsync(x => x.RoleId == roleId);
 
-            if (role == null)
+            if (!roleExists)
             {
-                return NotFound("Role not found");
+                return NotFound(new
+                {
+                    message = "Role not found"
+                });
             }
 
             var permissions = await _context.RolePermissions
-    .Include(x => x.Module)
-    .Where(x => x.RoleId == roleId)
-    .Select(x => new
-    {
-        x.PermissionId,
-        x.RoleId,
-        x.ModuleId,
+                .AsNoTracking()
+                .Where(x =>
+                    x.RoleId == roleId &&
+                    x.Module.IsActive)
+                .Select(x => new
+                {
+                    permissionId = x.PermissionId,
+                    moduleName = x.Module.ModuleName,
+                    moduleKey = x.Module.ModuleKey,
+                    canView = x.CanView,
+                    canAdd = x.CanAdd,
+                    canEdit = x.CanEdit,
+                    canDelete = x.CanDelete
+                })
+                .OrderBy(x => x.moduleName)
+                .ToListAsync();
 
-        moduleKey = x.Module.ModuleKey,
-        moduleName = x.Module.ModuleName,
-        category = x.Module.Category,
-        displayOrder = x.Module.DisplayOrder,
-
-        x.CanView,
-        x.CanAdd,
-        x.CanEdit,
-        x.CanDelete
-    })
-    .OrderBy(x => x.displayOrder)
-    .ToListAsync();
-
-            return Ok(new
-            {
-                role,
-                permissions
-            });
+            return Ok(permissions);
         }
 
 
 
 
+
+        // =====================================
+        // GET CURRENT USER PERMISSIONS
+        // =====================================
+        // GET: api/Permissions/my-permissions
+        [Authorize]
+        [HttpGet("my-permissions")]
+        public async Task<IActionResult> GetMyPermissions()
+        {
+            var roleName = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (string.IsNullOrWhiteSpace(roleName))
+            {
+                return Unauthorized(new
+                {
+                    message = "Role not found in authentication token"
+                });
+            }
+
+            var role = await _context.Roles
+                .FirstOrDefaultAsync(x => x.RoleName == roleName);
+
+            if (role == null)
+            {
+                return NotFound(new
+                {
+                    message = "Role not found"
+                });
+            }
+
+            var permissions = await _context.RolePermissions
+                .Include(x => x.Module)
+                .Where(x =>
+                    x.RoleId == role.RoleId &&
+                    x.Module.IsActive)
+                .Select(x => new
+                {
+                    x.PermissionId,
+                    x.RoleId,
+                    x.ModuleId,
+                    moduleKey = x.Module.ModuleKey,
+                    moduleName = x.Module.ModuleName,
+                    category = x.Module.Category,
+                    displayOrder = x.Module.DisplayOrder,
+                    x.CanView,
+                    x.CanAdd,
+                    x.CanEdit,
+                    x.CanDelete
+                })
+                .OrderBy(x => x.displayOrder)
+                .ToListAsync();
+
+            return Ok(new
+            {
+                role = new
+                {
+                    role.RoleId,
+                    role.RoleName,
+                    role.Description,
+                    role.IsActive
+                },
+                permissions
+            });
+        }
 
 
         // =====================================

@@ -39,6 +39,22 @@ namespace IMSBackend.Controllers
             return Ok(item);
         }
 
+        [HttpGet("transfer/{transferId}")]
+        public IActionResult GetByTransferId(int transferId)
+        {
+            var transferExists = _context.StockTransfers
+                .Any(t => t.TransferId == transferId);
+
+            if (!transferExists)
+                return NotFound("Stock transfer not found.");
+
+            var items = _context.StockTransferItems
+                .Where(i => i.TransferId == transferId)
+                .ToList();
+
+            return Ok(items);
+        }
+
         // =========================
         // 🔹 CREATE
         // =========================
@@ -199,5 +215,6 @@ namespace IMSBackend.Controllers
 
             return Ok("Deleted successfully");
         }
+
     }
 }

@@ -20,9 +20,13 @@
 
         public DateTime? ReceiptDate { get; set; }
 
+        public decimal TotalAmount { get; set; }
+
         public string? Status { get; set; }
 
         public string? Notes { get; set; }
+
+        public decimal Received { get; set; }
 
         public List<GoodsReceiptItemResponseDto> Items { get; set; } = new();
     }

@@ -28,12 +28,12 @@ namespace IMSBackend.Controllers
                 .Include(category => category.SubCategories.Where(subCategory => !subCategory.IsDeleted))
                 .AsNoTracking()
                 .Where(category => !category.IsDeleted)
-                .OrderByDescending(category => category.CategoryId)
-                .ToListAsync(cancellationToken);
+                .OrderBy(category => category.Name)
+                .ToListAsync();
             var totalSubCategories = await _context.SubCategories
                 .AsNoTracking()
                 .Where(subCategory => !subCategory.IsDeleted)
-                .CountAsync(cancellationToken);
+                .CountAsync();
 
             var response = new CategoryListResponseDto
             {
@@ -253,6 +253,11 @@ namespace IMSBackend.Controllers
             if (string.IsNullOrWhiteSpace(name))
             {
                 return "Category name is required.";
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-z\s]+$"))
+            {
+                return "Name can contain only letters and spaces.";
             }
 
             if (dto.ParentId.HasValue)

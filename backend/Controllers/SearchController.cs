@@ -76,7 +76,7 @@ namespace IMSBackend.Controllers
                     Route = $"/inventory/products/{product.ProductId}",
                     Icon = "package"
                 })
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private Task<List<SearchResultDto>> SearchCategories(string likePattern, CancellationToken cancellationToken)
@@ -97,7 +97,7 @@ namespace IMSBackend.Controllers
                     Route = "/inventory/categories",
                     Icon = "folder"
                 })
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private Task<List<SearchResultDto>> SearchSubCategories(string likePattern, CancellationToken cancellationToken)
@@ -118,7 +118,7 @@ namespace IMSBackend.Controllers
                     Route = "/inventory/subcategories",
                     Icon = "layers"
                 })
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private Task<List<SearchResultDto>> SearchBrands(string likePattern, CancellationToken cancellationToken)
@@ -139,7 +139,7 @@ namespace IMSBackend.Controllers
                     Route = "/inventory/brands",
                     Icon = "tag"
                 })
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private Task<List<SearchResultDto>> SearchCustomers(string likePattern, CancellationToken cancellationToken)
@@ -161,7 +161,7 @@ namespace IMSBackend.Controllers
                     Route = $"/people/customers/{customer.CustomerId}",
                     Icon = "user"
                 })
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private Task<List<SearchResultDto>> SearchSuppliers(string likePattern, CancellationToken cancellationToken)
@@ -186,7 +186,7 @@ namespace IMSBackend.Controllers
                     Route = $"/people/suppliers/{supplier.SupplierId}",
                     Icon = "building"
                 })
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private Task<List<SearchResultDto>> SearchInvoices(string likePattern, CancellationToken cancellationToken)
@@ -213,7 +213,7 @@ namespace IMSBackend.Controllers
                         Icon = "receipt"
                     })
                 .Take(ModuleResultLimit)
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private Task<List<SearchResultDto>> SearchInvoiceItems(string likePattern, CancellationToken cancellationToken)
@@ -245,7 +245,7 @@ namespace IMSBackend.Controllers
                         Icon = "receipt"
                     })
                 .Take(ModuleResultLimit)
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private Task<List<SearchResultDto>> SearchPurchaseOrders(string likePattern, CancellationToken cancellationToken)
@@ -272,7 +272,7 @@ namespace IMSBackend.Controllers
                         Icon = "file"
                     })
                 .Take(ModuleResultLimit)
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private Task<List<SearchResultDto>> SearchPurchaseOrderItems(string likePattern, CancellationToken cancellationToken)
@@ -304,7 +304,7 @@ namespace IMSBackend.Controllers
                         Icon = "file"
                     })
                 .Take(ModuleResultLimit)
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private Task<List<SearchResultDto>> SearchGoodsReceipts(string likePattern, CancellationToken cancellationToken)
@@ -335,7 +335,7 @@ namespace IMSBackend.Controllers
                         Icon = "truck"
                     })
                 .Take(ModuleResultLimit)
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private Task<List<SearchResultDto>> SearchGoodsReceiptItems(string likePattern, CancellationToken cancellationToken)
@@ -366,7 +366,7 @@ namespace IMSBackend.Controllers
                         Icon = "truck"
                     })
                 .Take(ModuleResultLimit)
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private Task<List<SearchResultDto>> SearchStockTransactions(string likePattern, CancellationToken cancellationToken)
@@ -400,7 +400,7 @@ namespace IMSBackend.Controllers
                         Icon = "activity"
                     })
                 .Take(ModuleResultLimit)
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private Task<List<SearchResultDto>> SearchWarehouses(string likePattern, CancellationToken cancellationToken)
@@ -422,7 +422,7 @@ namespace IMSBackend.Controllers
                     Route = "/warehouses",
                     Icon = "warehouse"
                 })
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private Task<List<SearchResultDto>> SearchSupplierPayments(string likePattern, CancellationToken cancellationToken)
@@ -450,7 +450,7 @@ namespace IMSBackend.Controllers
                         Icon = "payment"
                     })
                 .Take(ModuleResultLimit)
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private Task<List<SearchResultDto>> SearchCustomerPayments(string likePattern, CancellationToken cancellationToken)
@@ -482,7 +482,7 @@ namespace IMSBackend.Controllers
                         Icon = "payment"
                     })
                 .Take(ModuleResultLimit)
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private Task<List<SearchResultDto>> SearchUsers(string likePattern, CancellationToken cancellationToken)
@@ -507,7 +507,7 @@ namespace IMSBackend.Controllers
                     Route = "/users",
                     Icon = "user"
                 })
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private Task<List<SearchResultDto>> SearchRoles(string likePattern, CancellationToken cancellationToken)
@@ -528,7 +528,7 @@ namespace IMSBackend.Controllers
                     Route = "/roles",
                     Icon = "shield"
                 })
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         private static string EscapeLikePattern(string value)

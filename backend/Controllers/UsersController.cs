@@ -1,28 +1,61 @@
-﻿using IMSBackend.Data;
+using IMSBackend.Data;
 using IMSBackend.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using IMSBackend.DTOs;
+using IMSBackend.Services;
+using System.Security.Claims;
 
 namespace IMSBackend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly PermissionService _permissionService;
 
-        public UsersController(AppDbContext context)
+        private const string UsersModuleKey = "users";
+
+        public UsersController(
+            AppDbContext context,
+            PermissionService permissionService)
         {
             _context = context;
+            _permissionService = permissionService;
         }
 
-        // =========================
+        // ============================================================
         // GET ALL USERS
-        // =========================
+        // ============================================================
         [HttpGet]
         public async Task<IActionResult> GetUsers()
         {
+            var currentUserRole = GetCurrentUserRole();
+
+            if (string.IsNullOrWhiteSpace(currentUserRole))
+            {
+                return Unauthorized(new
+                {
+                    message = "User role not found in token."
+                });
+            }
+
+            var hasViewPermission = await _permissionService.HasPermission(
+                currentUserRole,
+                UsersModuleKey,
+                "view");
+
+            if (!hasViewPermission)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new
+                {
+                    message = "You do not have permission to view users."
+                });
+            }
+
             var users = await _context.Users
                 .Select(x => new
                 {
@@ -38,12 +71,35 @@ namespace IMSBackend.Controllers
             return Ok(users);
         }
 
-        // =========================
+        // ============================================================
         // GET USER BY ID
-        // =========================
+        // ============================================================
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUser(int id)
         {
+            var currentUserRole = GetCurrentUserRole();
+
+            if (string.IsNullOrWhiteSpace(currentUserRole))
+            {
+                return Unauthorized(new
+                {
+                    message = "User role not found in token."
+                });
+            }
+
+            var hasViewPermission = await _permissionService.HasPermission(
+                currentUserRole,
+                UsersModuleKey,
+                "view");
+
+            if (!hasViewPermission)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new
+                {
+                    message = "You do not have permission to view users."
+                });
+            }
+
             var user = await _context.Users
                 .Where(x => x.Id == id)
                 .Select(x => new
@@ -61,23 +117,51 @@ namespace IMSBackend.Controllers
             {
                 return NotFound(new
                 {
-                    message = "User not found"
+                    message = "User not found."
                 });
             }
 
             return Ok(user);
         }
 
-        // =========================
-        // =========================
+        // ============================================================
         // CREATE USER
-        // =========================
+        // ============================================================
         [HttpPost]
         public async Task<IActionResult> CreateUser(CreateUserDto dto)
         {
-            // Check email already exists
+            if (!string.IsNullOrWhiteSpace(dto.Name) && !System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+            {
+                return BadRequest(new { message = "Name can contain only letters and spaces." });
+            }
+            var currentUserRole = GetCurrentUserRole();
+
+            if (string.IsNullOrWhiteSpace(currentUserRole))
+            {
+                return Unauthorized(new
+                {
+                    message = "User role not found in token."
+                });
+            }
+
+            var hasAddPermission = await _permissionService.HasPermission(
+                currentUserRole,
+                UsersModuleKey,
+                "add");
+
+            if (!hasAddPermission)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new
+                {
+                    message = "You do not have permission to create users."
+                });
+            }
+
+            var email = dto.Email.Trim().ToLowerInvariant();
+            var phone = dto.PhoneNumber.Trim();
+
             var emailExists = await _context.Users
-                .AnyAsync(x => x.Email == dto.Email.Trim().ToLower());
+                .AnyAsync(x => x.Email == email);
 
             if (emailExists)
             {
@@ -87,9 +171,8 @@ namespace IMSBackend.Controllers
                 });
             }
 
-            // Check phone number already exists
             var phoneExists = await _context.Users
-                .AnyAsync(x => x.PhoneNumber == dto.PhoneNumber);
+                .AnyAsync(x => x.PhoneNumber == phone);
 
             if (phoneExists)
             {
@@ -99,7 +182,6 @@ namespace IMSBackend.Controllers
                 });
             }
 
-            // Password confirmation
             if (dto.Password != dto.ConfirmPassword)
             {
                 return BadRequest(new
@@ -111,16 +193,12 @@ namespace IMSBackend.Controllers
             var user = new User
             {
                 Name = dto.Name.Trim(),
-                Email = dto.Email.Trim().ToLower(),
-                PhoneNumber = dto.PhoneNumber,
+                Email = email,
+                PhoneNumber = phone,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 Role = dto.Role,
-
                 IsActive = dto.IsActive,
-
-                // IMPORTANT: Admin-created users are already verified
                 IsEmailVerified = true,
-
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 TokenVersion = 1
@@ -136,14 +214,47 @@ namespace IMSBackend.Controllers
             });
         }
 
-        // =========================
+        // ============================================================
         // UPDATE USER
-        // =========================
+        // ============================================================
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(
-    int id,
-    UpdateUserDto dto)
+            int id,
+            UpdateUserDto dto)
         {
+            var currentUserId = GetCurrentUserId();
+            var currentUserRole = GetCurrentUserRole();
+
+            if (currentUserId == null)
+            {
+                return Unauthorized(new
+                {
+                    message = "Current user could not be identified."
+                });
+            }
+
+            if (string.IsNullOrWhiteSpace(currentUserRole))
+            {
+                return Unauthorized(new
+                {
+                    message = "User role not found in token."
+                });
+            }
+
+            // Only users with CanEdit permission can edit users.
+            var hasEditPermission = await _permissionService.HasPermission(
+                currentUserRole,
+                UsersModuleKey,
+                "edit");
+
+            if (!hasEditPermission)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new
+                {
+                    message = "You do not have permission to edit users."
+                });
+            }
+
             var user = await _context.Users
                 .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -155,10 +266,33 @@ namespace IMSBackend.Controllers
                 });
             }
 
-            // Check duplicate email
+            // ========================================================
+            // PREVENT CURRENT LOGGED-IN USER FROM CHANGING
+            // THEIR OWN ACTIVE / INACTIVE STATUS
+            //
+            // Admin can still edit their own name, email, phone,
+            // and role. Only their own status change is blocked.
+            // ========================================================
+            if (currentUserId.Value == id &&
+                dto.IsActive != user.IsActive)
+            {
+                return BadRequest(new
+                {
+                    message = "You cannot change your own active/inactive status."
+                });
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.Name) && !System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+            {
+                return BadRequest(new { message = "Name can contain only letters and spaces." });
+            }
+
+            var email = dto.Email.Trim().ToLowerInvariant();
+            var phone = dto.PhoneNumber.Trim();
+
             var emailExists = await _context.Users
                 .AnyAsync(x =>
-                    x.Email == dto.Email &&
+                    x.Email == email &&
                     x.Id != id);
 
             if (emailExists)
@@ -169,10 +303,9 @@ namespace IMSBackend.Controllers
                 });
             }
 
-            // Check duplicate phone number
             var phoneExists = await _context.Users
                 .AnyAsync(x =>
-                    x.PhoneNumber == dto.PhoneNumber &&
+                    x.PhoneNumber == phone &&
                     x.Id != id);
 
             if (phoneExists)
@@ -184,8 +317,8 @@ namespace IMSBackend.Controllers
             }
 
             user.Name = dto.Name.Trim();
-            user.Email = dto.Email.Trim().ToLower();
-            user.PhoneNumber = dto.PhoneNumber;
+            user.Email = email;
+            user.PhoneNumber = phone;
             user.Role = dto.Role;
             user.IsActive = dto.IsActive;
             user.UpdatedAt = DateTime.UtcNow;
@@ -198,12 +331,53 @@ namespace IMSBackend.Controllers
             });
         }
 
-        // =========================
+        // ============================================================
         // DELETE USER
-        // =========================
+        // ============================================================
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
+            var currentUserId = GetCurrentUserId();
+            var currentUserRole = GetCurrentUserRole();
+
+            if (currentUserId == null)
+            {
+                return Unauthorized(new
+                {
+                    message = "Current user could not be identified."
+                });
+            }
+
+            if (string.IsNullOrWhiteSpace(currentUserRole))
+            {
+                return Unauthorized(new
+                {
+                    message = "User role not found in token."
+                });
+            }
+
+            var hasDeletePermission = await _permissionService.HasPermission(
+                currentUserRole,
+                UsersModuleKey,
+                "delete");
+
+            if (!hasDeletePermission)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new
+                {
+                    message = "You do not have permission to delete users."
+                });
+            }
+
+            // Current logged-in user can NEVER delete himself.
+            if (currentUserId.Value == id)
+            {
+                return BadRequest(new
+                {
+                    message = "You cannot delete your own account."
+                });
+            }
+
             var user = await _context.Users
                 .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -211,11 +385,10 @@ namespace IMSBackend.Controllers
             {
                 return NotFound(new
                 {
-                    message = "User not found"
+                    message = "User not found."
                 });
             }
 
-            // Delete login history first
             var loginHistory = await _context.LoginHistories
                 .Where(x => x.UserId == id)
                 .ToListAsync();
@@ -231,8 +404,33 @@ namespace IMSBackend.Controllers
 
             return Ok(new
             {
-                message = "User deleted successfully"
+                message = "User deleted successfully."
             });
+        }
+
+        // ============================================================
+        // GET CURRENT USER ID FROM JWT
+        // ============================================================
+        private int? GetCurrentUserId()
+        {
+            var userIdClaim =
+                User.FindFirst("UserId")?.Value
+                ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (int.TryParse(userIdClaim, out var userId))
+            {
+                return userId;
+            }
+
+            return null;
+        }
+
+        // ============================================================
+        // GET CURRENT USER ROLE FROM JWT
+        // ============================================================
+        private string? GetCurrentUserRole()
+        {
+            return User.FindFirst(ClaimTypes.Role)?.Value;
         }
     }
 }

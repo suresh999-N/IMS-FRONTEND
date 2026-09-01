@@ -1,4 +1,4 @@
-using IMSBackend.Data;
+﻿using IMSBackend.Data;
 using IMSBackend.DTOs;
 using IMSBackend.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -29,8 +29,7 @@ namespace IMSBackend.Controllers
             var warehouses = await _context.Warehouses
                 .AsNoTracking()
                 .Where(w => !w.IsDeleted)
-                .OrderByDescending(w => w.CreatedAt ?? DateTime.MinValue)
-                .ThenByDescending(w => w.WarehouseId)
+                .OrderBy(w => w.Name)
                 .ToListAsync(cancellationToken);
 
             var stocks = await _context.Stocks

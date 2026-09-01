@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IMSBackend.Models
@@ -14,6 +14,7 @@ namespace IMSBackend.Models
         public int CategoryId { get; set; }
 
         [Column("name")]
+        [RegularExpression(@"^[A-Za-z\s]+$", ErrorMessage = "Name can contain only letters and spaces.")]
         public string Name { get; set; } = string.Empty;
 
         [Column("description")]

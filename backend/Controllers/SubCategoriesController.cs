@@ -132,6 +132,10 @@ namespace IMSBackend.Controllers
         public async Task<IActionResult> CreateSubCategory(
             SubCategory model)
         {
+            if (string.IsNullOrWhiteSpace(model.Name) || !System.Text.RegularExpressions.Regex.IsMatch(model.Name.Trim(), @"^[A-Za-z\s]+$"))
+            {
+                return BadRequest(new { message = "Name can contain only letters and spaces." });
+            }
             var categoryExists = await _context.Categories
                 .AsNoTracking()
                 .AnyAsync(category =>
@@ -187,6 +191,11 @@ namespace IMSBackend.Controllers
                 {
                     message = "SubCategory not found"
                 });
+            }
+
+            if (string.IsNullOrWhiteSpace(model.Name) || !System.Text.RegularExpressions.Regex.IsMatch(model.Name.Trim(), @"^[A-Za-z\s]+$"))
+            {
+                return BadRequest(new { message = "Name can contain only letters and spaces." });
             }
 
             var categoryExists = await _context.Categories

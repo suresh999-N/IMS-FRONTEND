@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using IMSBackend.Data;
 using IMSBackend.Models;
 
@@ -42,6 +42,9 @@ namespace IMSBackend.Controllers
             if (string.IsNullOrWhiteSpace(dto.Name))
                 return BadRequest("Name is required");
 
+            if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+                return BadRequest("Name can contain only letters and spaces.");
+
             var attribute = new ProductAttribute
             {
                 Name = dto.Name
@@ -64,6 +67,9 @@ namespace IMSBackend.Controllers
 
             if (string.IsNullOrWhiteSpace(dto.Name))
                 return BadRequest("Name is required");
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+                return BadRequest("Name can contain only letters and spaces.");
 
             attribute.Name = dto.Name;
 

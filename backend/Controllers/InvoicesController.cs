@@ -51,6 +51,9 @@ namespace IMSBackend.Controllers
                 join customer in _context.Customers.AsNoTracking()
                     on invoice.CustomerId equals customer.CustomerId into customerGroup
                 from customer in customerGroup.DefaultIfEmpty()
+                join warehouse in _context.Warehouses.AsNoTracking()
+                    on invoice.WarehouseId equals warehouse.WarehouseId into warehouseGroup
+                from warehouse in warehouseGroup.DefaultIfEmpty()
                 where !invoice.IsCancelled
                 select new
                 {
@@ -58,8 +61,10 @@ namespace IMSBackend.Controllers
                     invoice.InvoiceId,
                     invoice.SoId,
                     invoice.CustomerId,
+                    invoice.WarehouseId,
                     CustomerName = customer != null ? customer.Name : "No customer",
                     CustomerEmail = customer != null ? customer.Email : null,
+                    WarehouseName = warehouse != null ? warehouse.Name : "All Warehouses",
                     invoice.InvoiceNumber,
                     invoice.InvoiceDate,
                     invoice.DueDate,
@@ -68,26 +73,28 @@ namespace IMSBackend.Controllers
                     invoice.PaidAmount,
                     invoice.BalanceAmount,
                     PaymentMethod = _context.CustomerPayments
-                        .Where(p => p.InvoiceId == invoice.InvoiceId && !p.IsCancelled)
-                        .OrderBy(p => p.PaymentId)
-                        .Select(p => p.PaymentMethod)
-                        .FirstOrDefault() ?? "N/A",
+    .Where(payment =>
+        payment.InvoiceId == invoice.InvoiceId &&
+        !payment.IsCancelled)
+    .OrderBy(payment => payment.PaymentId)
+    .Select(payment => payment.PaymentMethod)
+    .FirstOrDefault() ?? "N/A",
                     ReturnedAmount = _context.SalesReturns
                         .Where(returnItem =>
                             returnItem.InvoiceId == invoice.InvoiceId &&
                             (returnItem.Status == "Processed" || returnItem.Status == "Refunded"))
-                        .Sum(returnItem => (decimal?)returnItem.TotalReturnAmount) ?? 0,
+                        .Sum(returnItem => (decimal?)returnItem.GrandTotal) ?? 0,
                     ReturnStatus = (_context.SalesReturns
                         .Where(returnItem =>
                             returnItem.InvoiceId == invoice.InvoiceId &&
                             (returnItem.Status == "Processed" || returnItem.Status == "Refunded"))
-                        .Sum(returnItem => (decimal?)returnItem.TotalReturnAmount) ?? 0) <= 0
+                        .Sum(returnItem => (decimal?)returnItem.GrandTotal) ?? 0) <= 0
                         ? null
                         : ((_context.SalesReturns
                             .Where(returnItem =>
                                 returnItem.InvoiceId == invoice.InvoiceId &&
                                 (returnItem.Status == "Processed" || returnItem.Status == "Refunded"))
-                            .Sum(returnItem => (decimal?)returnItem.TotalReturnAmount) ?? 0) >= invoice.TotalAmount
+                            .Sum(returnItem => (decimal?)returnItem.GrandTotal) ?? 0) >= invoice.TotalAmount
                             ? "Fully Returned"
                             : "Partially Returned"),
                     ItemCount = _context.InvoiceItems.Count(item => item.InvoiceId == invoice.InvoiceId)
@@ -209,6 +216,35 @@ namespace IMSBackend.Controllers
                     traceId: HttpContext.TraceIdentifier));
             }
 
+
+            if (dto.PaidAmount > 0 &&
+    !string.IsNullOrWhiteSpace(dto.PaymentMethod))
+            {
+                var allowedPaymentMethods = new[]
+                {
+        "Cash",
+        "Bank Transfer",
+        "UPI",
+        "Card",
+        "Cheque"
+    };
+
+                var isValidPaymentMethod = allowedPaymentMethods
+                    .Any(x => string.Equals(
+                        x,
+                        dto.PaymentMethod.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+
+                if (!isValidPaymentMethod)
+                {
+                    return BadRequest(ApiResponse<object>.Fail(
+                        "Invalid payment method. Allowed values are Cash, Bank Transfer, UPI, Card, and Cheque.",
+                        traceId: HttpContext.TraceIdentifier));
+                }
+            }
+
+
+
             var openingPaymentReference = dto.ReferenceNumber?.Trim();
             if (dto.PaidAmount > 0 && !string.IsNullOrWhiteSpace(openingPaymentReference))
             {
@@ -247,6 +283,38 @@ namespace IMSBackend.Controllers
                     "Selected customer was not found.",
                     traceId: HttpContext.TraceIdentifier));
             }
+
+            // Warehouse selection:
+            // null or 0 = All Warehouses
+            // positive value = specific warehouse
+            var selectedWarehouseId = dto.WarehouseId.GetValueOrDefault();
+
+            if (selectedWarehouseId < 0)
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    "Invalid warehouse selection.",
+                    traceId: HttpContext.TraceIdentifier));
+            }
+
+            if (selectedWarehouseId > 0)
+            {
+                var warehouseExists = await _context.Warehouses
+                    .AsNoTracking()
+                    .AnyAsync(
+                        warehouse => warehouse.WarehouseId == selectedWarehouseId,
+                        cancellationToken);
+
+                if (!warehouseExists)
+                {
+                    return BadRequest(ApiResponse<object>.Fail(
+                        "Selected warehouse was not found.",
+                        traceId: HttpContext.TraceIdentifier));
+                }
+            }
+
+            int? warehouseId = selectedWarehouseId > 0
+                ? selectedWarehouseId
+                : null;
 
             var productIds = lines
                 .Select(item => item.ProductId)
@@ -300,6 +368,12 @@ namespace IMSBackend.Controllers
                 var stockQuery = _context.Stocks
                     .Where(stock => stock.ProductId == demand.ProductId);
 
+                if (warehouseId.HasValue)
+                {
+                    stockQuery = stockQuery.Where(
+                        stock => stock.WarehouseId == warehouseId.Value);
+                }
+
                 if (demand.VariantId.HasValue)
                 {
                     stockQuery = stockQuery.Where(stock => stock.VariantId == demand.VariantId);
@@ -334,6 +408,7 @@ namespace IMSBackend.Controllers
                 {
                     SoId = dto.SoId,
                     CustomerId = customer.CustomerId,
+                    WarehouseId = warehouseId,
                     InvoiceNumber = invoiceNumber,
                     InvoiceDate = invoiceDate,
                     DueDate = dto.DueDate,
@@ -401,9 +476,7 @@ namespace IMSBackend.Controllers
                         InvoiceId = invoice.InvoiceId,
                         Amount = dto.PaidAmount,
                         PaymentDate = invoiceDate,
-                        PaymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod)
-                            ? "Bank Transfer"
-                            : dto.PaymentMethod.Trim(),
+                        PaymentMethod = dto.PaymentMethod?.Trim(),
                         ReferenceNumber = openingPaymentReference,
                         Notes = $"Opening payment recorded during invoice {invoice.InvoiceNumber} creation."
                     };
@@ -813,6 +886,12 @@ namespace IMSBackend.Controllers
                     stock.ProductId == line.ProductId &&
                     stock.Quantity > 0);
 
+            if (invoice.WarehouseId.HasValue)
+            {
+                stockQuery = stockQuery.Where(
+                    stock => stock.WarehouseId == invoice.WarehouseId.Value);
+            }
+
             if (line.VariantId.HasValue)
             {
                 stockQuery = stockQuery.Where(stock => stock.VariantId == line.VariantId);
@@ -894,12 +973,15 @@ namespace IMSBackend.Controllers
             return await _context.Invoices
                 .AsNoTracking()
                 .Include(invoice => invoice.Customer)
+                .Include(invoice => invoice.Warehouse)
                 .Include(invoice => invoice.InvoiceItems!)
                     .ThenInclude(item => item.Product)
                 .FirstOrDefaultAsync(invoice => invoice.InvoiceId == id, cancellationToken);
         }
 
-        private async Task<object> ToInvoiceResponse(Invoice invoice, CancellationToken cancellationToken)
+        private async Task<object> ToInvoiceResponse(
+    Invoice invoice,
+    CancellationToken cancellationToken)
         {
             var returnRows = await (
                 from salesReturn in _context.SalesReturns.AsNoTracking()
@@ -910,9 +992,11 @@ namespace IMSBackend.Controllers
                 select new
                 {
                     ReturnId = salesReturn.SalesReturnId,
-                    ReturnNumber = string.IsNullOrEmpty(salesReturn.ReturnNumber) ? $"RET-{salesReturn.SalesReturnId:000}" : salesReturn.ReturnNumber,
+                    ReturnNumber = string.IsNullOrEmpty(salesReturn.ReturnNumber)
+                        ? $"RET-{salesReturn.SalesReturnId:000}"
+                        : salesReturn.ReturnNumber,
                     salesReturn.Status,
-                    TotalAmount = (decimal?)salesReturn.TotalReturnAmount,
+                    TotalAmount = (decimal?)salesReturn.GrandTotal,
                     returnItem.ProductId,
                     returnItem.VariantId,
                     Quantity = (decimal?)returnItem.ReturnQuantity,
@@ -928,7 +1012,10 @@ namespace IMSBackend.Controllers
                             returnItem.ProductId == item.ProductId &&
                             returnItem.VariantId == item.VariantId)
                         .ToList();
-                    var returnedQuantity = matchingReturns.Sum(returnItem => returnItem.Quantity ?? 0);
+
+                    var returnedQuantity = matchingReturns
+                        .Sum(returnItem => returnItem.Quantity ?? 0);
+
                     var returnReferences = matchingReturns
                         .Select(returnItem => returnItem.ReturnNumber)
                         .Distinct()
@@ -949,14 +1036,27 @@ namespace IMSBackend.Controllers
                         item.TaxAmount,
                         item.Total,
                         ReturnedQuantity = returnedQuantity,
-                        ReturnedAmount = matchingReturns.Sum(returnItem => (returnItem.Quantity ?? 0) * (returnItem.Price ?? 0)),
+                        ReturnedAmount = matchingReturns.Sum(
+                            returnItem => (returnItem.Quantity ?? 0) *
+                                          (returnItem.Price ?? 0)),
                         ReturnReferences = returnReferences
                     };
                 })
                 .Cast<object>()
                 .ToList() ?? new List<object>();
 
-            var returnedAmount = returnRows.Sum(item => item.TotalAmount ?? 0);
+            var returnedAmount = returnRows
+                .Sum(item => item.TotalAmount ?? 0);
+
+            // Get payment method from the related CustomerPayment record
+            var paymentMethod = await _context.CustomerPayments
+                .AsNoTracking()
+                .Where(payment =>
+                    payment.InvoiceId == invoice.InvoiceId &&
+                    !payment.IsCancelled)
+                .OrderBy(payment => payment.PaymentId)
+                .Select(payment => payment.PaymentMethod)
+                .FirstOrDefaultAsync(cancellationToken);
 
             return new
             {
@@ -964,8 +1064,12 @@ namespace IMSBackend.Controllers
                 invoice.InvoiceId,
                 invoice.SoId,
                 invoice.CustomerId,
+                invoice.WarehouseId,
+
                 CustomerName = invoice.Customer?.Name ?? "No customer",
                 CustomerEmail = invoice.Customer?.Email,
+                WarehouseName = invoice.Warehouse?.Name ?? "All Warehouses",
+
                 invoice.InvoiceNumber,
                 invoice.InvoiceDate,
                 invoice.DueDate,
@@ -973,26 +1077,33 @@ namespace IMSBackend.Controllers
                 invoice.TotalAmount,
                 invoice.PaidAmount,
                 invoice.BalanceAmount,
-                PaymentMethod = _context.CustomerPayments
-                    .Where(p => p.InvoiceId == invoice.InvoiceId && !p.IsCancelled)
-                    .OrderBy(p => p.PaymentId)
-                    .Select(p => p.PaymentMethod)
-                    .FirstOrDefault() ?? "N/A",
+
+                // Payment method from CustomerPayment
+                PaymentMethod = paymentMethod ?? "N/A",
+
                 ReturnedAmount = returnedAmount,
-                AdjustedOutstanding = Math.Max(0m, invoice.BalanceAmount),
+
+                AdjustedOutstanding = Math.Max(
+                    0m,
+                    invoice.BalanceAmount),
+
                 ReturnStatus = returnedAmount <= 0
                     ? null
                     : returnedAmount >= invoice.TotalAmount
                         ? "Fully Returned"
                         : "Partially Returned",
+
                 ReturnReferences = returnRows
                     .Select(item => item.ReturnNumber)
                     .Distinct()
                     .ToList(),
+
                 ItemCount = items.Count,
+
                 Items = items
             };
         }
+
 
         private async Task<string> GenerateInvoiceNumber(CancellationToken cancellationToken)
         {

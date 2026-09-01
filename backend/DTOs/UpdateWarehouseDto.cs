@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace IMSBackend.DTOs
 {
@@ -6,6 +6,7 @@ namespace IMSBackend.DTOs
     {
         [Required]
         [StringLength(150, MinimumLength = 3)]
+        [RegularExpression(@"^[A-Za-z\s]+$", ErrorMessage = "Name can contain only letters and spaces.")]
         public string Name { get; set; } = string.Empty;
 
         [Required]
@@ -19,6 +20,7 @@ namespace IMSBackend.DTOs
 
         [Required]
         [StringLength(150, MinimumLength = 3)]
+        [RegularExpression(@"^[A-Za-z\s]+$", ErrorMessage = "Name can contain only letters and spaces.")]
         public string ManagerName { get; set; } = string.Empty;
 
         [Required]

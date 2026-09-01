@@ -353,8 +353,8 @@ var totalRecords = await query.CountAsync();
 
 
 
-// ================= PAGINATION =================
-var suppliers = await query
+            // ================= PAGINATION =================
+            var supplierData = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(x => new
@@ -371,9 +371,43 @@ var suppliers = await query
                     x.Status,
                     x.CreatedAt,
                     x.IsDeleted,
-                    x.DeletedAt
+                    x.DeletedAt,
+
+                    Purchases = _context.PurchaseOrders
+                        .Where(po =>
+                            po.SupplierId == x.SupplierId &&
+                            !po.IsCancelled)
+                        .Sum(po => (decimal?)po.TotalAmount) ?? 0m,
+
+                    PaidAmount = _context.SupplierPayments
+                        .Where(payment =>
+                            payment.SupplierId == x.SupplierId &&
+                            !payment.IsCancelled)
+                        .Sum(payment => (decimal?)payment.Amount) ?? 0m
                 })
                 .ToListAsync();
+
+            var suppliers = supplierData
+                .Select(x => new
+                {
+                    x.SupplierId,
+                    x.SupplierCode,
+                    x.Name,
+                    x.Category,
+                    x.GstNumber,
+                    x.PanNumber,
+                    x.Phone,
+                    x.Email,
+                    x.Website,
+                    x.Status,
+                    x.CreatedAt,
+                    x.IsDeleted,
+                    x.DeletedAt,
+
+                    Purchases = x.Purchases,
+                    Outstanding = x.Purchases - x.PaidAmount
+                })
+                .ToList();
 
             // ================= RESPONSE =================
             return Ok(new
@@ -714,6 +748,30 @@ var suppliers = await query
                     return BadRequest(new
                     {
                         message = "Supplier name is required."
+                    });
+                }
+
+                if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+                {
+                    return BadRequest(new
+                    {
+                        message = "Name can contain only letters and spaces."
+                    });
+                }
+
+                if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+                {
+                    return BadRequest(new
+                    {
+                        message = "Name can contain only letters and spaces."
+                    });
+                }
+
+                if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+                {
+                    return BadRequest(new
+                    {
+                        message = "Name can contain only letters and spaces."
                     });
                 }
 

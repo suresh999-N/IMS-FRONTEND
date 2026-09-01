@@ -39,6 +39,22 @@ namespace IMSBackend.Controllers
             return Ok(item);
         }
 
+        [HttpGet("adjustment/{adjustmentId}")]
+        public IActionResult GetByAdjustmentId(int adjustmentId)
+        {
+            var adjustmentExists = _context.StockAdjustments
+                .Any(a => a.AdjustmentId == adjustmentId);
+
+            if (!adjustmentExists)
+                return NotFound("Stock adjustment not found.");
+
+            var items = _context.StockAdjustmentItems
+                .Where(i => i.AdjustmentId == adjustmentId)
+                .ToList();
+
+            return Ok(items);
+        }
+
         // =========================
         // 🔹 CREATE
         // =========================

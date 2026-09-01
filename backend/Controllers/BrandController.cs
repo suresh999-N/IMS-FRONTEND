@@ -31,7 +31,7 @@ namespace IMSBackend.Controllers
             var brands = await _context.Brands
                 .AsNoTracking()
                 .Where(brand => !brand.IsDeleted)
-                .OrderByDescending(brand => brand.BrandId)
+                .OrderBy(brand => brand.Name)
                 .ToListAsync(cancellationToken);
 
             return Ok(ApiResponse<List<Brand>>.Ok(
@@ -217,6 +217,11 @@ namespace IMSBackend.Controllers
             if (string.IsNullOrWhiteSpace(name))
             {
                 return "Brand name is required.";
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-z\s]+$"))
+            {
+                return "Name can contain only letters and spaces.";
             }
 
             var normalizedName = name.ToLowerInvariant();

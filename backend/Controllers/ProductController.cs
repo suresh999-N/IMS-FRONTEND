@@ -79,81 +79,72 @@ namespace IMSBackend.Controllers
                 _ => query.OrderByDescending(x => x.ProductId)
             };
 
-            // ================= PAGINATION =================
-            var products = await query
-                
+            // ================= PAGINATION & BATCH LOOKUPS =================
+            var productList = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(x => new
-                {
-                    x.ProductId,
-                    x.Name,
-                    x.SKU,
-                    x.Barcode,
-
-                    x.CategoryId,
-
-                    CategoryName =
-                        _context.Categories
-                            .Where(c => c.CategoryId == x.CategoryId && !c.IsDeleted)
-                            .Select(c => c.Name)
-                            .FirstOrDefault(),
-
-
-
-                    x.SubCategoryId,
-
-                    SubCategoryName =
-                        x.SubCategory != null && !x.SubCategory.IsDeleted
-                            ? x.SubCategory.Name
-                            : "No subcategory",
-
-                    x.BrandId,
-
-                    BrandName =
-                        _context.Brands
-                            .Where(brand => brand.BrandId == x.BrandId && !brand.IsDeleted)
-                            .Select(brand => brand.Name)
-                            .FirstOrDefault(),
-
-                    x.UnitId,
-
-                    UnitName =
-                        _context.Units
-                            .Where(unit => unit.UnitId == x.UnitId && !unit.IsDeleted)
-                            .Select(unit => unit.Name)
-                            .FirstOrDefault(),
-
-                    x.Price,
-                    x.CostPrice,
-                    Stock = _context.Stocks
-                        .Where(stock => stock.ProductId == x.ProductId)
-                        .Sum(stock => (decimal?)stock.Quantity) ?? 0,
-                    x.ReorderLevel,
-
-                    x.SupplierId,
-
-                    SupplierName =
-                        _context.Suppliers
-                            .Where(supplier => supplier.SupplierId == x.SupplierId)
-                            .Select(supplier => supplier.Name)
-                            .FirstOrDefault(),
-
-                    x.WarehouseId,
-                    WarehouseName =
-                        _context.Warehouses
-                            .Where(warehouse => warehouse.WarehouseId == x.WarehouseId)
-                            .Select(warehouse => warehouse.Name)
-                            .FirstOrDefault(),
-                    x.Status,
-                    x.IsArchived,
-                    x.Description,
-                    x.CreatedAt,
-                    x.UpdatedAt,
-
-                    imageUrl = x.ImageUrl
-                })
                 .ToListAsync();
+
+            var productIds = productList.Select(p => p.ProductId).ToList();
+            var categoryIds = productList.Where(p => p.CategoryId.HasValue).Select(p => p.CategoryId!.Value).Distinct().ToList();
+            var subCategoryIds = productList.Where(p => p.SubCategoryId.HasValue).Select(p => p.SubCategoryId!.Value).Distinct().ToList();
+            var brandIds = productList.Where(p => p.BrandId.HasValue).Select(p => p.BrandId!.Value).Distinct().ToList();
+            var unitIds = productList.Where(p => p.UnitId.HasValue).Select(p => p.UnitId!.Value).Distinct().ToList();
+            var supplierIds = productList.Where(p => p.SupplierId.HasValue).Select(p => p.SupplierId!.Value).Distinct().ToList();
+            var warehouseIds = productList.Where(p => p.WarehouseId.HasValue).Select(p => p.WarehouseId!.Value).Distinct().ToList();
+
+            var categoryDict = categoryIds.Count == 0 ? new Dictionary<int, string>() :
+                await _context.Categories.AsNoTracking().Where(c => categoryIds.Contains(c.CategoryId) && !c.IsDeleted).ToDictionaryAsync(c => c.CategoryId, c => c.Name ?? string.Empty);
+            var subCategoryDict = subCategoryIds.Count == 0 ? new Dictionary<int, string>() :
+                await _context.SubCategories.AsNoTracking().Where(s => subCategoryIds.Contains(s.SubCategoryId) && !s.IsDeleted).ToDictionaryAsync(s => s.SubCategoryId, s => s.Name ?? string.Empty);
+            var brandDict = brandIds.Count == 0 ? new Dictionary<int, string>() :
+                await _context.Brands.AsNoTracking().Where(b => brandIds.Contains(b.BrandId) && !b.IsDeleted).ToDictionaryAsync(b => b.BrandId, b => b.Name ?? string.Empty);
+            var unitDict = unitIds.Count == 0 ? new Dictionary<int, string>() :
+                await _context.Units.AsNoTracking().Where(u => unitIds.Contains(u.UnitId) && !u.IsDeleted).ToDictionaryAsync(u => u.UnitId, u => u.Name ?? string.Empty);
+            var supplierDict = supplierIds.Count == 0 ? new Dictionary<int, string>() :
+                await _context.Suppliers.AsNoTracking().Where(s => supplierIds.Contains(s.SupplierId)).ToDictionaryAsync(s => s.SupplierId, s => s.Name ?? string.Empty);
+            var warehouseDict = warehouseIds.Count == 0 ? new Dictionary<int, string>() :
+                await _context.Warehouses.AsNoTracking().Where(w => warehouseIds.Contains(w.WarehouseId)).ToDictionaryAsync(w => w.WarehouseId, w => w.Name ?? string.Empty);
+            var stockDict = productIds.Count == 0 ? new Dictionary<int, decimal>() :
+                await _context.Stocks.AsNoTracking().Where(s => productIds.Contains(s.ProductId)).GroupBy(s => s.ProductId).Select(g => new { ProductId = g.Key, TotalStock = g.Sum(s => (decimal?)s.Quantity) ?? 0m }).ToDictionaryAsync(x => x.ProductId, x => x.TotalStock);
+
+            var products = productList.Select(x => new
+            {
+                x.ProductId,
+                x.Name,
+                x.SKU,
+                x.Barcode,
+
+                x.CategoryId,
+                CategoryName = x.CategoryId.HasValue && categoryDict.TryGetValue(x.CategoryId.Value, out var cName) ? cName : null,
+
+                x.SubCategoryId,
+                SubCategoryName = x.SubCategoryId.HasValue && subCategoryDict.TryGetValue(x.SubCategoryId.Value, out var scName) ? scName : "No subcategory",
+
+                x.BrandId,
+                BrandName = x.BrandId.HasValue && brandDict.TryGetValue(x.BrandId.Value, out var bName) ? bName : null,
+
+                x.UnitId,
+                UnitName = x.UnitId.HasValue && unitDict.TryGetValue(x.UnitId.Value, out var uName) ? uName : null,
+
+                x.Price,
+                x.CostPrice,
+                Stock = stockDict.TryGetValue(x.ProductId, out var sQty) ? sQty : 0m,
+                x.ReorderLevel,
+
+                x.SupplierId,
+                SupplierName = x.SupplierId.HasValue && supplierDict.TryGetValue(x.SupplierId.Value, out var supName) ? supName : null,
+
+                x.WarehouseId,
+                WarehouseName = x.WarehouseId.HasValue && warehouseDict.TryGetValue(x.WarehouseId.Value, out var wName) ? wName : null,
+                x.Status,
+                x.IsArchived,
+                x.Description,
+                x.CreatedAt,
+                x.UpdatedAt,
+
+                imageUrl = x.ImageUrl
+            }).ToList();
 
             // ================= RESPONSE =================
             return Ok(new
@@ -235,6 +226,13 @@ namespace IMSBackend.Controllers
             {
                 return BadRequest(ApiResponse<object>.Fail(
                     "Product name and SKU are required.",
+                    traceId: HttpContext.TraceIdentifier));
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(product.Name.Trim(), @"^[A-Za-z\s]+$"))
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    "Name can contain only letters and spaces.",
                     traceId: HttpContext.TraceIdentifier));
             }
 
@@ -499,6 +497,13 @@ namespace IMSBackend.Controllers
             {
                 return BadRequest(ApiResponse<object>.Fail(
                     "Product name and SKU are required.",
+                    traceId: HttpContext.TraceIdentifier));
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(updated.Name.Trim(), @"^[A-Za-z\s]+$"))
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    "Name can contain only letters and spaces.",
                     traceId: HttpContext.TraceIdentifier));
             }
 
@@ -1448,13 +1453,13 @@ namespace IMSBackend.Controllers
                         item.AttributeId == attribute.AttributeId &&
                         item.ValueId == attribute.ValueId);
 
-                if (!alreadyExists)
+                if (!alreadyExists && attribute.ValueId.HasValue)
                 {
                     _context.VariantAttributeValues.Add(new VariantAttributeValue
                     {
                         VariantId = variantId,
                         AttributeId = attribute.AttributeId,
-                        ValueId = attribute.ValueId
+                        ValueId = attribute.ValueId.Value
                     });
                 }
             }
@@ -1550,6 +1555,11 @@ namespace IMSBackend.Controllers
             if (string.IsNullOrWhiteSpace(dto.Name))
             {
                 return "Product name is required.";
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+            {
+                return "Name can contain only letters and spaces.";
             }
 
             if (string.IsNullOrWhiteSpace(dto.SKU))
@@ -1844,6 +1854,10 @@ namespace IMSBackend.Controllers
 
             foreach (var variant in variants)
             {
+                if (!string.IsNullOrWhiteSpace(variant.VariantName) && !System.Text.RegularExpressions.Regex.IsMatch(variant.VariantName.Trim(), @"^[A-Za-z\s]+$"))
+                {
+                    return "Name can contain only letters and spaces.";
+                }
                 if ((variant.PriceDelta ?? 0) < 0)
                 {
                     return "Variant price adjustment cannot be negative.";

@@ -1,4 +1,4 @@
-﻿using IMSBackend.Data;
+using IMSBackend.Data;
 using IMSBackend.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
@@ -46,7 +46,7 @@ namespace IMSBackend.Controllers
     .FirstOrDefault() ?? "",
 
                     BinId = b.BinId,
-                    BinCode = b.BinCode,
+                    BinCode = b.BinCode ?? "",
 
                     Quantity = bs.Quantity
                 };

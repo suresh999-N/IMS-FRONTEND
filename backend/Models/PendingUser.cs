@@ -1,18 +1,23 @@
-﻿public class PendingUser
+using System.ComponentModel.DataAnnotations;
+
+public class PendingUser
 {
     public int Id { get; set; }
 
-    public string Name { get; set; }
+    [MaxLength(50)]
+    public string Name { get; set; } = string.Empty;
 
-    public string Email { get; set; }
+    [MaxLength(254)]
+    public string Email { get; set; } = string.Empty;
 
-    public string PhoneNumber { get; set; }
+    [MaxLength(10)]
+    public string PhoneNumber { get; set; } = string.Empty;
 
-    public string PasswordHash { get; set; }
+    public string PasswordHash { get; set; } = string.Empty;
 
-    public string Role { get; set; }
+    public string Role { get; set; } = string.Empty;
 
-    public string EmailVerificationToken { get; set; }
+    public string EmailVerificationToken { get; set; } = string.Empty;
 
     public DateTime EmailVerificationTokenExpiry { get; set; }
 }

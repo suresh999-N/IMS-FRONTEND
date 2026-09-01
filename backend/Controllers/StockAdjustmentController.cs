@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using IMSBackend.Data;
 using IMSBackend.DTOs;
 using IMSBackend.Models;
@@ -22,7 +22,7 @@ namespace IMSBackend.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            return Ok(_context.StockAdjustments.OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.AdjustmentId).ToList());
+            return Ok(_context.StockAdjustments.ToList());
         }
 
         // =========================
@@ -96,7 +96,17 @@ namespace IMSBackend.Controllers
             if (adjustment == null)
                 return NotFound();
 
+            var associatedItems = _context.StockAdjustmentItems
+                .Where(item => item.AdjustmentId == id)
+                .ToList();
+
+            if (associatedItems.Any())
+            {
+                _context.StockAdjustmentItems.RemoveRange(associatedItems);
+            }
+
             _context.StockAdjustments.Remove(adjustment);
+
             _context.SaveChanges();
 
             return Ok("Deleted successfully");

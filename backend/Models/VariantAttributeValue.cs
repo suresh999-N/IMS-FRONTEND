@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IMSBackend.Models
@@ -18,12 +18,5 @@ namespace IMSBackend.Models
 
         [Column("value_id")]
         public int ValueId { get; set; }
-
-        // Navigation properties
-        [ForeignKey("AttributeId")]
-        public virtual ProductAttribute? Attribute { get; set; }
-
-        [ForeignKey("ValueId")]
-        public virtual AttributeValue? AttributeValue { get; set; }
     }
 }

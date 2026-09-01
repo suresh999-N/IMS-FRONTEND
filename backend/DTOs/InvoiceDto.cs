@@ -6,6 +6,10 @@
 
         public int? CustomerId { get; set; }
 
+        // null = All Warehouses
+        // value = selected warehouse ID
+        public int? WarehouseId { get; set; }
+
         public DateTime? InvoiceDate { get; set; }
 
         public DateTime? DueDate { get; set; }

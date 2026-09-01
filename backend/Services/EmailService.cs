@@ -1,4 +1,4 @@
-﻿using MailKit.Net.Smtp;
+using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
@@ -21,12 +21,40 @@ namespace IMSBackend.Services
             byte[]? attachment = null,
             string? attachmentName = null)
         {
+            var senderName = _configuration["EmailSettings:SenderName"];
+            var senderEmail = _configuration["EmailSettings:SenderEmail"];
+            var smtpServer = _configuration["EmailSettings:SmtpServer"];
+            var portStr = _configuration["EmailSettings:Port"];
+            var username = _configuration["EmailSettings:Username"];
+            var password = _configuration["EmailSettings:Password"];
+
+            if (string.IsNullOrWhiteSpace(senderEmail))
+            {
+                throw new InvalidOperationException("EmailSettings:SenderEmail is not configured.");
+            }
+            if (string.IsNullOrWhiteSpace(smtpServer))
+            {
+                throw new InvalidOperationException("EmailSettings:SmtpServer is not configured.");
+            }
+            if (!int.TryParse(portStr, out var port))
+            {
+                throw new InvalidOperationException("EmailSettings:Port is invalid or not configured.");
+            }
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new InvalidOperationException("EmailSettings:Username is not configured.");
+            }
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                throw new InvalidOperationException("EmailSettings:Password is not configured.");
+            }
+
             var email = new MimeMessage();
 
             email.From.Add(
                 new MailboxAddress(
-                    _configuration["EmailSettings:SenderName"],
-                    _configuration["EmailSettings:SenderEmail"]));
+                    senderName,
+                    senderEmail));
 
             email.To.Add(
                 MailboxAddress.Parse(toEmail));
@@ -55,13 +83,13 @@ namespace IMSBackend.Services
             using var smtp = new SmtpClient();
 
             await smtp.ConnectAsync(
-                _configuration["EmailSettings:SmtpServer"],
-                int.Parse(_configuration["EmailSettings:Port"]!),
+                smtpServer,
+                port,
                 SecureSocketOptions.SslOnConnect);
 
             await smtp.AuthenticateAsync(
-                _configuration["EmailSettings:Username"],
-                _configuration["EmailSettings:Password"]);
+                username,
+                password);
 
             await smtp.SendAsync(email);
 

@@ -1,7 +1,13 @@
-﻿namespace IMSBackend.DTOs.Suppliers
+using System.ComponentModel.DataAnnotations;
+
+namespace IMSBackend.DTOs.Suppliers
 {
     public class SupplierContactDto
     {
+        [RegularExpression(
+            @"^[A-Za-z\s]+$",
+            ErrorMessage = "Name can contain only letters and spaces."
+        )]
         public string? Name { get; set; }
 
         public string? Designation { get; set; }

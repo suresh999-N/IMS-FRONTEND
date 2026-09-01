@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IMSBackend.Models
@@ -59,7 +59,7 @@ namespace IMSBackend.Models
         public DateTime? DeletedAt { get; set; }
 
         [ForeignKey(nameof(RequestedBy))]
-        public User RequestedByUser { get; set; }
+        public User RequestedByUser { get; set; } = null!;
 
         public ICollection<PurchaseIndentItem> Items { get; set; }
             = new List<PurchaseIndentItem>();

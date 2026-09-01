@@ -29,7 +29,13 @@ namespace IMSBackend.Controllers
         [HttpGet]
         public async Task<IActionResult> GetPurchaseOrders()
         {
-            var data = await (
+            var indents = await _context.PurchaseIndents
+                .AsNoTracking()
+                .Where(indent => !indent.IsDeleted && indent.IndentNumber != null)
+                .Select(indent => new { indent.PurchaseIndentId, indent.IndentNumber })
+                .ToListAsync();
+
+            var rawData = await (
                 from purchaseOrder in _context.PurchaseOrders.AsNoTracking()
                 join supplier in _context.Suppliers.AsNoTracking()
                     on purchaseOrder.SupplierId equals supplier.SupplierId into suppliers
@@ -41,6 +47,7 @@ namespace IMSBackend.Controllers
                     on purchaseItem.ProductId equals product.ProductId into products
                 from product in products.DefaultIfEmpty()
                 where !purchaseOrder.IsCancelled
+                orderby purchaseOrder.PoId descending
                 select new
                 {
                     Id = purchaseOrder.PoId,
@@ -65,28 +72,40 @@ namespace IMSBackend.Controllers
                                 ? "partial"
                                 : "pending"),
                     purchaseOrder.TotalAmount,
-                    purchaseOrder.Notes,
-                    purchaseOrder.CreatedAt,
-                    SourceIndentId = _context.PurchaseIndents
-                        .AsNoTracking()
-                        .Where(indent =>
-                            !indent.IsDeleted &&
-                            indent.IndentNumber != null &&
-                            purchaseOrder.Notes != null &&
-                            purchaseOrder.Notes.Contains(indent.IndentNumber))
-                        .Select(indent => (int?)indent.PurchaseIndentId)
-                        .FirstOrDefault(),
-                    IndentNumber = _context.PurchaseIndents
-                        .AsNoTracking()
-                        .Where(indent =>
-                            !indent.IsDeleted &&
-                            indent.IndentNumber != null &&
-                            purchaseOrder.Notes != null &&
-                            purchaseOrder.Notes.Contains(indent.IndentNumber))
-                        .Select(indent => indent.IndentNumber)
-                        .FirstOrDefault()
+                    purchaseOrder.Notes
                 }
-            ).OrderByDescending(x => x.CreatedAt ?? DateTime.MinValue).ThenByDescending(x => x.PoId).ToListAsync();
+            ).ToListAsync();
+
+            var data = rawData.Select(item =>
+            {
+                var matchedIndent = !string.IsNullOrWhiteSpace(item.Notes)
+                    ? indents.FirstOrDefault(indent => item.Notes.Contains(indent.IndentNumber!))
+                    : null;
+
+                return new
+                {
+                    item.Id,
+                    item.PoId,
+                    item.PoNumber,
+                    item.SupplierId,
+                    item.Supplier,
+                    item.SupplierName,
+                    item.ProductId,
+                    item.ProductName,
+                    item.ProductSku,
+                    item.VariantId,
+                    item.Quantity,
+                    item.Price,
+                    item.OrderDate,
+                    item.ExpectedDate,
+                    item.Status,
+                    item.ReceivingStatus,
+                    item.TotalAmount,
+                    item.Notes,
+                    SourceIndentId = matchedIndent != null ? (int?)matchedIndent.PurchaseIndentId : null,
+                    IndentNumber = matchedIndent?.IndentNumber
+                };
+            }).ToList();
 
             return Ok(data);
         }
@@ -564,7 +583,6 @@ namespace IMSBackend.Controllers
                     VariantName = variant != null ? variant.VariantName : null,
 
                     OrderedQty = item.Quantity,
-                    ReceivedQuantity = item.ReceivedQuantity ?? 0,
                     item.Price,
                     item.Discount,
                     item.Tax,
@@ -587,5 +605,266 @@ namespace IMSBackend.Controllers
                 HttpContext.TraceIdentifier));
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdatePurchaseOrder(
+            int id,
+            [FromBody] UpdatePurchaseOrderDto dto,
+            CancellationToken cancellationToken)
+        {
+            if (dto == null)
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    "Update payload is required.",
+                    traceId: HttpContext.TraceIdentifier));
+            }
+
+            var po = await _context.PurchaseOrders
+                .FirstOrDefaultAsync(item => item.PoId == id && !item.IsCancelled, cancellationToken);
+
+            if (po == null)
+            {
+                return NotFound(ApiResponse<object>.Fail(
+                    "Purchase order was not found.",
+                    traceId: HttpContext.TraceIdentifier));
+            }
+
+            var hasReceipts = await _context.GoodsReceipts
+                .AsNoTracking()
+                .AnyAsync(item => item.PoId == id && !item.IsCancelled, cancellationToken);
+
+            if (hasReceipts || po.Status == "received" || po.Status == "partially_received" ||
+                po.ReceivingStatus == "received" || po.ReceivingStatus == "partial")
+            {
+                return Conflict(ApiResponse<object>.Fail(
+                    "Purchase order cannot be updated because receiving has already started or been completed.",
+                    traceId: HttpContext.TraceIdentifier));
+            }
+
+            if (dto.SupplierId > 0)
+            {
+                var supplierExists = await _context.Suppliers
+                    .AsNoTracking()
+                    .AnyAsync(item => item.SupplierId == dto.SupplierId, cancellationToken);
+
+                if (!supplierExists)
+                {
+                    return BadRequest(ApiResponse<object>.Fail(
+                        "Selected supplier was not found.",
+                        traceId: HttpContext.TraceIdentifier));
+                }
+
+                po.SupplierId = dto.SupplierId;
+            }
+
+            var itemList = new List<UpdatePurchaseOrderItemDto>();
+
+            if (dto.Items != null && dto.Items.Count > 0)
+            {
+                itemList = dto.Items;
+            }
+            else if (dto.ProductId.HasValue && dto.ProductId.Value > 0)
+            {
+                itemList.Add(new UpdatePurchaseOrderItemDto
+                {
+                    ProductId = dto.ProductId.Value,
+                    VariantId = dto.VariantId,
+                    Quantity = dto.Quantity ?? 1,
+                    Price = dto.Price ?? 0,
+                    Discount = dto.Discount ?? 0,
+                    Tax = dto.Tax ?? 0
+                });
+            }
+
+            if (itemList.Count == 0)
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    "Purchase order must contain at least one valid item.",
+                    traceId: HttpContext.TraceIdentifier));
+            }
+
+            foreach (var itemDto in itemList)
+            {
+                if (itemDto.ProductId <= 0 || itemDto.Quantity <= 0 || itemDto.Price < 0)
+                {
+                    return BadRequest(ApiResponse<object>.Fail(
+                        "Product ID, quantity greater than zero, and non-negative price are required for all items.",
+                        traceId: HttpContext.TraceIdentifier));
+                }
+
+                var productExists = await _context.Products
+                    .AsNoTracking()
+                    .AnyAsync(p => p.ProductId == itemDto.ProductId && !p.IsDeleted, cancellationToken);
+
+                if (!productExists)
+                {
+                    return BadRequest(ApiResponse<object>.Fail(
+                        $"Product with ID '{itemDto.ProductId}' was not found.",
+                        traceId: HttpContext.TraceIdentifier));
+                }
+
+                if (itemDto.VariantId.HasValue && itemDto.VariantId.Value > 0)
+                {
+                    var variantExists = await _context.ProductVariants
+                        .AsNoTracking()
+                        .AnyAsync(v => v.VariantId == itemDto.VariantId.Value && v.ProductId == itemDto.ProductId, cancellationToken);
+
+                    if (!variantExists)
+                    {
+                        return BadRequest(ApiResponse<object>.Fail(
+                            $"Variant with ID '{itemDto.VariantId.Value}' was not found for product '{itemDto.ProductId}'.",
+                            traceId: HttpContext.TraceIdentifier));
+                    }
+                }
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+
+            try
+            {
+                if (dto.OrderDate.HasValue && dto.OrderDate.Value != default)
+                {
+                    po.OrderDate = dto.OrderDate.Value;
+                }
+
+                var effectiveExpectedDate = dto.GetEffectiveExpectedDate();
+                if (effectiveExpectedDate.HasValue)
+                {
+                    po.ExpectedDate = effectiveExpectedDate.Value;
+                }
+
+                if (dto.Notes != null)
+                {
+                    po.Notes = dto.Notes.Trim();
+                }
+
+                var existingItems = await _context.PurchaseOrderItems
+                    .Where(item => item.PoId == id)
+                    .ToListAsync(cancellationToken);
+
+                decimal grandTotal = 0;
+                var updatedItemIds = new HashSet<int>();
+
+                foreach (var itemDto in itemList)
+                {
+                    var subtotal = itemDto.Quantity * itemDto.Price;
+                    var discountAmount = subtotal * itemDto.Discount / 100;
+                    var taxableAmount = subtotal - discountAmount;
+                    var taxAmount = taxableAmount * itemDto.Tax / 100;
+                    var itemTotal = taxableAmount + taxAmount;
+
+                    grandTotal += itemTotal;
+
+                    PurchaseOrderItem? existingItem = null;
+
+                    if (itemDto.Id.HasValue && itemDto.Id.Value > 0)
+                    {
+                        existingItem = existingItems.FirstOrDefault(i => i.Id == itemDto.Id.Value);
+                    }
+                    else
+                    {
+                        existingItem = existingItems.FirstOrDefault(i =>
+                            i.ProductId == itemDto.ProductId &&
+                            i.VariantId == itemDto.VariantId &&
+                            !updatedItemIds.Contains(i.Id));
+                    }
+
+                    if (existingItem != null)
+                    {
+                        existingItem.ProductId = itemDto.ProductId;
+                        existingItem.VariantId = itemDto.VariantId;
+                        existingItem.Quantity = itemDto.Quantity;
+                        existingItem.Price = itemDto.Price;
+                        existingItem.Discount = itemDto.Discount;
+                        existingItem.Tax = itemDto.Tax;
+                        existingItem.Total = itemTotal;
+                        updatedItemIds.Add(existingItem.Id);
+                    }
+                    else
+                    {
+                        var newItem = new PurchaseOrderItem
+                        {
+                            PoId = id,
+                            ProductId = itemDto.ProductId,
+                            VariantId = itemDto.VariantId,
+                            Quantity = itemDto.Quantity,
+                            Price = itemDto.Price,
+                            Discount = itemDto.Discount,
+                            Tax = itemDto.Tax,
+                            Total = itemTotal
+                        };
+                        _context.PurchaseOrderItems.Add(newItem);
+                    }
+                }
+
+                var itemsToRemove = existingItems.Where(i => !updatedItemIds.Contains(i.Id)).ToList();
+                if (itemsToRemove.Count > 0)
+                {
+                    _context.PurchaseOrderItems.RemoveRange(itemsToRemove);
+                }
+
+                po.TotalAmount = grandTotal;
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                await _auditLogService.LogAsync(
+                    "UPDATE_PURCHASE_ORDER",
+                    "Purchases",
+                    po.PoId,
+                    $"Purchase Order {po.PoNumber} updated",
+                    "purchase_orders",
+                    cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
+
+                var responseItems = await (
+                    from item in _context.PurchaseOrderItems.AsNoTracking()
+                    join product in _context.Products.AsNoTracking() on item.ProductId equals product.ProductId into productGroup
+                    from product in productGroup.DefaultIfEmpty()
+                    join variant in _context.ProductVariants.AsNoTracking() on item.VariantId equals variant.VariantId into variantGroup
+                    from variant in variantGroup.DefaultIfEmpty()
+                    where item.PoId == id
+                    select new
+                    {
+                        item.Id,
+                        item.ProductId,
+                        ProductName = product != null ? product.Name : null,
+                        item.VariantId,
+                        VariantName = variant != null ? variant.VariantName : null,
+                        OrderedQty = item.Quantity,
+                        item.Price,
+                        item.Discount,
+                        item.Tax,
+                        item.Total
+                    }).ToListAsync(cancellationToken);
+
+                return Ok(ApiResponse<object>.Ok(
+                    new
+                    {
+                        po.PoId,
+                        po.PoNumber,
+                        po.SupplierId,
+                        po.OrderDate,
+                        po.ExpectedDate,
+                        po.Status,
+                        po.ReceivingStatus,
+                        po.TotalAmount,
+                        po.Notes,
+                        Items = responseItems
+                    },
+                    "Purchase order updated successfully.",
+                    HttpContext.TraceIdentifier));
+            }
+            catch (DbUpdateException exception)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                LogDbUpdateException(exception, "Purchase order update failed.");
+
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    ApiResponse<object>.Fail(
+                        GetDbUpdateUserMessage(exception),
+                        traceId: HttpContext.TraceIdentifier));
+            }
+        }
     }
 }

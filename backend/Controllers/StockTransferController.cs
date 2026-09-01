@@ -25,7 +25,7 @@ namespace IMSBackend.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            return Ok(_context.StockTransfers.AsNoTracking().OrderByDescending(x => x.TransferId).ToList());
+            return Ok(_context.StockTransfers.AsNoTracking().ToList());
         }
 
         [HttpGet("{id}")]
@@ -91,8 +91,10 @@ namespace IMSBackend.Controllers
             {
                 FromWarehouseId = dto.FromWarehouseId,
                 ToWarehouseId = dto.ToWarehouseId,
-                TransferDate = dto.TransferDate == default ? DateTime.UtcNow : dto.TransferDate,
-                Status = dto.Status ?? "completed"
+                TransferDate = dto.TransferDate == default
+        ? DateTime.UtcNow
+        : dto.TransferDate,
+                Status = "pending"
             };
 
             _context.StockTransfers.Add(transfer);
@@ -305,7 +307,17 @@ namespace IMSBackend.Controllers
             if (transfer == null)
                 return NotFound();
 
+            var associatedItems = _context.StockTransferItems
+                .Where(item => item.TransferId == id)
+                .ToList();
+
+            if (associatedItems.Any())
+            {
+                _context.StockTransferItems.RemoveRange(associatedItems);
+            }
+
             _context.StockTransfers.Remove(transfer);
+
             _context.SaveChanges();
 
             return Ok("Deleted successfully");

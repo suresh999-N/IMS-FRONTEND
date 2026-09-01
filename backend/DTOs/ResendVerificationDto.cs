@@ -1,4 +1,4 @@
-﻿public class ResendVerificationDto
+public class ResendVerificationDto
 {
-    public string Email { get; set; }
+    public string Email { get; set; } = string.Empty;
 }

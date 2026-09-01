@@ -41,7 +41,7 @@ public sealed class ApiExceptionMiddleware
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             context.Response.ContentType = "application/json";
 
-            var message = "Something went wrong while processing the request.";
+            var message = "Unable to process request at this time. Please check server connectivity and try again.";
 
             var response = ApiResponse<object>.Fail(message, traceId: context.TraceIdentifier);
             await JsonSerializer.SerializeAsync(

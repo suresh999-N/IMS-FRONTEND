@@ -10,9 +10,9 @@
 
         public string? Status { get; set; }
 
-        public int? CreatedBy { get; set; }
+        public string? CreatedBy { get; set; }
 
-        public int? ApprovedBy { get; set; }
+        public string? ApprovedBy { get; set; }
 
         public string? Notes { get; set; }
     }

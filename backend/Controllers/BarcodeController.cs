@@ -1,5 +1,6 @@
-﻿using IMSBackend.Data;
+using IMSBackend.Data;
 using IMSBackend.Models;
+using IMSBackend.Attributes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ZXing;
@@ -7,7 +8,6 @@ using ZXing.Common;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-
 
 namespace IMSBackend.Controllers
 {
@@ -26,6 +26,7 @@ namespace IMSBackend.Controllers
         // GET ALL BARCODES
         // =========================
         [HttpGet]
+        [Permission("barcode", "view")]
         public async Task<IActionResult> GetBarcodes()
         {
             var data = await _context.Barcodes
@@ -35,11 +36,13 @@ namespace IMSBackend.Controllers
             return Ok(data);
         }
 
-
-
+        // =========================
+        // GENERATE BARCODE
+        // =========================
         [HttpPost("generate")]
-        public async Task<IActionResult> GenerateBarcode(
-    int productId)
+        [Permission("barcode", "add")]
+        [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+        public async Task<IActionResult> GenerateBarcode(int productId)
         {
             var product = await _context.Products
                 .FirstOrDefaultAsync(x =>
@@ -53,7 +56,6 @@ namespace IMSBackend.Controllers
                     message = "Product not found"
                 });
             }
-
 
             var writer = new BarcodeWriterPixelData
             {
@@ -92,28 +94,24 @@ namespace IMSBackend.Controllers
                 bitmap.UnlockBits(bitmapData);
             }
 
-            var folderPath =
-                Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "wwwroot",
-                    "uploads",
-                    "barcodes");
+            var folderPath = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot",
+                "uploads",
+                "barcodes");
 
             if (!Directory.Exists(folderPath))
             {
                 Directory.CreateDirectory(folderPath);
             }
 
-            var fileName =
-                Guid.NewGuid() + ".png";
+            var fileName = Guid.NewGuid() + ".png";
 
-            var filePath =
-                Path.Combine(folderPath, fileName);
+            var filePath = Path.Combine(folderPath, fileName);
 
             bitmap.Save(filePath, ImageFormat.Png);
 
-            var imageUrl =
-                $"/uploads/barcodes/{fileName}";
+            var imageUrl = $"/uploads/barcodes/{fileName}";
 
             var barcode = new Barcode
             {

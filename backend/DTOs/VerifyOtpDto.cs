@@ -1,13 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace IMSBackend.DTOs
 {
     public class VerifyOtpDto
     {
-        [Required]
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
-        [Required]
+        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+        [MaxLength(254, ErrorMessage = "Email address cannot exceed 254 characters.")]
+        public string? Email { get; set; }
+
+        [Required(ErrorMessage = "OTP code is required.")]
         public string Otp { get; set; } = string.Empty;
     }
 }

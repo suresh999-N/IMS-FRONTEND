@@ -556,16 +556,16 @@ namespace IMSBackend.Controllers
         // =====================================
         [HttpGet]
         public async Task<IActionResult> GetCustomers(
-    int page = 1,
-    int pageSize = 500,
-    string? search = null,
-    string sortBy = "customerId",
-    string sortOrder = "desc")
+            int page = 1,
+            int pageSize = 50,
+            string? search = null,
+            string sortBy = "customerId",
+            string sortOrder = "desc")
         {
             page = Math.Max(page, 1);
-            pageSize = Math.Clamp(pageSize, 1, 500);
+            pageSize = Math.Clamp(pageSize, 1, 100);
 
-            var query = _context.Customers.AsQueryable();
+            var query = _context.Customers.AsNoTracking().AsQueryable();
 
             // ================= SEARCH =================
             if (!string.IsNullOrWhiteSpace(search))
@@ -593,10 +593,10 @@ namespace IMSBackend.Controllers
                 ("city", "asc") => query.OrderBy(x => x.City),
                 ("city", "desc") => query.OrderByDescending(x => x.City),
 
-                ("createdat", "asc") => query.OrderBy(x => x.CreatedAt).ThenBy(x => x.CustomerId),
-                ("createdat", "desc") => query.OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.CustomerId),
+                ("createdat", "asc") => query.OrderBy(x => x.CreatedAt),
+                ("createdat", "desc") => query.OrderByDescending(x => x.CreatedAt),
 
-                _ => query.OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.CustomerId)
+                _ => query.OrderByDescending(x => x.CustomerId)
             };
 
             // ================= PAGINATION =================
@@ -621,14 +621,88 @@ namespace IMSBackend.Controllers
                 })
                 .ToListAsync();
 
+            // ================= CUSTOMER IDS =================
+            var customerIds = customers
+                .Select(x => x.CustomerId)
+                .ToList();
+
+            // ================= ORDERS COUNT =================
+            var orderCounts = await _context.SalesOrders
+                .AsNoTracking()
+                .Where(x =>
+                    x.CustomerId.HasValue &&
+                    customerIds.Contains(x.CustomerId.Value))
+                .GroupBy(x => x.CustomerId!.Value)
+                .Select(g => new
+                {
+                    CustomerId = g.Key,
+                    Orders = g.Count()
+                })
+                .ToDictionaryAsync(
+                    x => x.CustomerId,
+                    x => x.Orders);
+
+            // ================= PURCHASE TOTAL =================
+            // Purchases are calculated from invoices.
+            // Cancelled invoices are excluded.
+            var purchaseTotals = await _context.Invoices
+                .AsNoTracking()
+                .Where(x =>
+                    x.CustomerId.HasValue &&
+                    customerIds.Contains(x.CustomerId.Value) &&
+                    !x.IsCancelled)
+                .GroupBy(x => x.CustomerId!.Value)
+                .Select(g => new
+                {
+                    CustomerId = g.Key,
+                    Purchases = g.Sum(x => x.TotalAmount)
+                })
+                .ToDictionaryAsync(
+                    x => x.CustomerId,
+                    x => x.Purchases);
+
+            // ================= FINAL CUSTOMER DATA =================
+            var customerData = customers
+                .Select(customer => new
+                {
+                    customer.CustomerId,
+                    customer.CustomerCode,
+                    customer.Name,
+                    customer.Company,
+                    customer.Phone,
+                    customer.Email,
+                    customer.City,
+                    customer.CreditLimit,
+                    customer.OutstandingBalance,
+
+                    Orders = orderCounts.TryGetValue(
+                        customer.CustomerId,
+                        out var orderCount)
+                        ? orderCount
+                        : 0,
+
+                    Purchases = purchaseTotals.TryGetValue(
+                        customer.CustomerId,
+                        out var purchaseTotal)
+                        ? purchaseTotal
+                        : 0m,
+
+                    customer.Status,
+                    customer.CreatedAt,
+                    customer.created_at,
+                    customer.UpdatedAt
+                })
+                .ToList();
+
             // ================= RESPONSE =================
             return Ok(new
             {
                 page,
                 pageSize,
                 totalRecords,
-                totalPages = (int)Math.Ceiling((double)totalRecords / pageSize),
-                data = customers
+                totalPages = (int)Math.Ceiling(
+                    (double)totalRecords / pageSize),
+                data = customerData
             });
         }
 
@@ -663,6 +737,13 @@ namespace IMSBackend.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateCustomer(CustomerDto dto)
         {
+            if (!string.IsNullOrWhiteSpace(dto.Name) && !System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+            {
+                return ValidationError(new Dictionary<string, string[]>
+                {
+                    { "Name", new[] { "Name can contain only letters and spaces." } }
+                });
+            }
             var city = string.IsNullOrWhiteSpace(dto.City) ? Clean(dto.Address) : Clean(dto.City);
             var taxNumber = CustomerDto.NormalizeGstNumber(
                 string.IsNullOrWhiteSpace(dto.GstNumber) ? dto.TaxNumber : dto.GstNumber);
@@ -831,6 +912,7 @@ namespace IMSBackend.Controllers
             });
         }
 
+
         // =====================================
         // UPDATE CUSTOMER
         // =====================================
@@ -839,6 +921,13 @@ namespace IMSBackend.Controllers
             int id,
             CustomerDto dto)
         {
+            if (!string.IsNullOrWhiteSpace(dto.Name) && !System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+            {
+                return ValidationError(new Dictionary<string, string[]>
+                {
+                    { "Name", new[] { "Name can contain only letters and spaces." } }
+                });
+            }
             var customer = await _context.Customers
                 .FirstOrDefaultAsync(x => x.CustomerId == id);
 

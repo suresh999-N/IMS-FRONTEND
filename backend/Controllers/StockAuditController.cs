@@ -22,7 +22,21 @@ namespace IMSBackend.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            return Ok(_context.StockAudits.OrderByDescending(x => x.AuditId).ToList());
+            var audits = _context.StockAudits
+                .Select(audit => new
+                {
+                    audit.AuditId,
+                    audit.WarehouseId,
+                    audit.AuditDate,
+                    audit.AuditType,
+                    audit.Status,
+                    audit.CreatedBy,
+                    audit.ApprovedBy,
+                    audit.Notes
+                })
+                .ToList();
+
+            return Ok(audits);
         }
 
         // =========================
@@ -31,7 +45,20 @@ namespace IMSBackend.Controllers
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var audit = _context.StockAudits.Find(id);
+            var audit = _context.StockAudits
+                .Where(a => a.AuditId == id)
+                .Select(a => new
+                {
+                    a.AuditId,
+                    a.WarehouseId,
+                    a.AuditDate,
+                    a.AuditType,
+                    a.Status,
+                    a.CreatedBy,
+                    a.ApprovedBy,
+                    a.Notes
+                })
+                .FirstOrDefault();
 
             if (audit == null)
                 return NotFound("Stock audit not found.");
@@ -60,9 +87,7 @@ namespace IMSBackend.Controllers
             };
 
             if (string.IsNullOrWhiteSpace(dto.AuditType))
-            {
                 return BadRequest("AuditType is required.");
-            }
 
             if (!validAuditTypes.Contains(dto.AuditType))
             {
@@ -82,9 +107,7 @@ namespace IMSBackend.Controllers
             };
 
             if (string.IsNullOrWhiteSpace(dto.Status))
-            {
                 return BadRequest("Status is required.");
-            }
 
             if (!validStatuses.Contains(dto.Status))
             {
@@ -108,7 +131,17 @@ namespace IMSBackend.Controllers
             _context.StockAudits.Add(audit);
             _context.SaveChanges();
 
-            return Ok(audit);
+            return Ok(new
+            {
+                audit.AuditId,
+                audit.WarehouseId,
+                audit.AuditDate,
+                audit.AuditType,
+                audit.Status,
+                audit.CreatedBy,
+                audit.ApprovedBy,
+                audit.Notes
+            });
         }
 
         // =========================
@@ -137,9 +170,7 @@ namespace IMSBackend.Controllers
             };
 
             if (string.IsNullOrWhiteSpace(dto.AuditType))
-            {
                 return BadRequest("AuditType is required.");
-            }
 
             if (!validAuditTypes.Contains(dto.AuditType))
             {
@@ -159,9 +190,7 @@ namespace IMSBackend.Controllers
             };
 
             if (string.IsNullOrWhiteSpace(dto.Status))
-            {
                 return BadRequest("Status is required.");
-            }
 
             if (!validStatuses.Contains(dto.Status))
             {
@@ -181,7 +210,17 @@ namespace IMSBackend.Controllers
 
             _context.SaveChanges();
 
-            return Ok(audit);
+            return Ok(new
+            {
+                audit.AuditId,
+                audit.WarehouseId,
+                audit.AuditDate,
+                audit.AuditType,
+                audit.Status,
+                audit.CreatedBy,
+                audit.ApprovedBy,
+                audit.Notes
+            });
         }
 
         // =========================
@@ -195,7 +234,17 @@ namespace IMSBackend.Controllers
             if (audit == null)
                 return NotFound("Stock audit not found.");
 
+            var associatedItems = _context.StockAuditItems
+                .Where(item => item.AuditId == id)
+                .ToList();
+
+            if (associatedItems.Any())
+            {
+                _context.StockAuditItems.RemoveRange(associatedItems);
+            }
+
             _context.StockAudits.Remove(audit);
+
             _context.SaveChanges();
 
             return Ok("Deleted successfully.");

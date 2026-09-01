@@ -1,16 +1,21 @@
-using IMSBackend.Contracts;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using IMSBackend.Data;
 using IMSBackend.DTOs.PurchaseReturns;
 using IMSBackend.Models;
 using IMSBackend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
 
 namespace IMSBackend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PurchaseReturnsController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -27,753 +32,1230 @@ namespace IMSBackend.Controllers
             _logger = logger;
         }
 
-        // =========================================================
-        // 1. GET SUPPLIERS DROPDOWN
-        // =========================================================
-        [HttpGet("suppliers")]
-        public async Task<IActionResult> GetSuppliersDropdown()
+        private string GetCurrentUserName()
         {
-            var suppliers = await _context.Suppliers
-                .AsNoTracking()
-                .Where(s => !s.IsDeleted)
-                .OrderBy(s => s.Name)
-                .Select(s => new
-                {
-                    supplierId = s.SupplierId,
-                    supplierCode = s.SupplierCode,
-                    name = s.Name
-                })
-                .ToListAsync();
+            return User.FindFirst(ClaimTypes.Name)?.Value ??
+                   User.FindFirst(ClaimTypes.Email)?.Value ??
+                   User.FindFirst("username")?.Value ??
+                   "System";
+        }
 
-            return Ok(ApiResponse<object>.Ok(suppliers, "Suppliers retrieved successfully."));
+        private static PurchaseReturnResponseDto MapToDto(PurchaseReturn r)
+        {
+            return new PurchaseReturnResponseDto
+            {
+                ReturnId = r.PurchaseReturnId,
+
+                ReturnNumber = !string.IsNullOrWhiteSpace(r.ReturnNumber)
+                    ? r.ReturnNumber
+                    : $"PR-{r.PurchaseReturnId:D5}",
+
+                SupplierId = r.SupplierId,
+
+                SupplierName = r.Supplier?.Name ?? "—",
+
+                SupplierCode = r.Supplier?.SupplierCode ?? string.Empty,
+
+                GrnId = r.GrnId,
+
+                GrnNumber =
+                    r.GoodsReceipt != null &&
+                    !string.IsNullOrEmpty(r.GoodsReceipt.GrnNumber)
+                        ? r.GoodsReceipt.GrnNumber
+                        : $"GRN-{r.GrnId:D6}",
+
+                GrnDate = r.GoodsReceipt?.ReceiptDate,
+
+                ReturnDate = r.ReturnDate,
+
+                TotalAmount = r.TotalReturnAmount,
+
+                Reason = r.Reason,
+
+                // These columns no longer exist in purchase_returns.
+                Notes = null,
+
+                Status = string.IsNullOrWhiteSpace(r.Status)
+                    ? "Draft"
+                    : r.Status,
+
+                SubmittedBy = null,
+                SubmittedAt = null,
+
+                ApprovedBy = null,
+                ApprovedAt = null,
+
+                RejectedBy = null,
+                RejectedAt = null,
+
+                RejectionReason = null,
+
+                CompletedBy = null,
+                CompletedAt = null,
+
+                CreatedBy = null,
+
+                CreatedAt = r.CreatedAt,
+
+                UpdatedAt = r.UpdatedAt ?? r.CreatedAt,
+
+                ItemCount = r.Items?.Count ?? 0,
+
+                TotalQuantity = r.Items?.Sum(i => i.ReturnQuantity) ?? 0,
+
+                Items = r.Items?.Select(i => new PurchaseReturnItemResponseDto
+                {
+                    Id = i.PurchaseReturnItemId,
+
+                    ReturnId = i.PurchaseReturnId,
+
+                    ProductId = i.ProductId,
+
+                    ProductName = i.Product?.Name
+                        ?? $"Product #{i.ProductId}",
+
+                    Sku = i.Product?.SKU ?? "—",
+
+                    VariantId = i.VariantId,
+
+                    VariantName =
+                        i.ProductVariant?.VariantName
+                        ?? i.ProductVariant?.SKU,
+
+                    Quantity = i.ReturnQuantity,
+
+                    Price = i.Price
+
+                }).ToList()
+                ?? new List<PurchaseReturnItemResponseDto>()
+            };
         }
 
         // =========================================================
-        // 2. GET GRNs FOR SUPPLIER
+        // GET: api/PurchaseReturns
         // =========================================================
-        [HttpGet("grns")]
-        public async Task<IActionResult> GetGrnsForSupplier([FromQuery] int supplierId)
+
+        [HttpGet]
+        public async Task<IActionResult> GetPurchaseReturns(
+            [FromQuery] string? search = null,
+            [FromQuery] string? status = null)
         {
-            if (supplierId <= 0)
-            {
-                return BadRequest(ApiResponse<object>.Fail(
-                    "A valid Supplier ID is required.",
-                    traceId: HttpContext.TraceIdentifier));
-            }
-
-            var grns = await (
-                from grn in _context.GoodsReceipts.AsNoTracking()
-                join s in _context.Suppliers.AsNoTracking() on grn.SupplierId equals s.SupplierId into suppliers
-                from s in suppliers.DefaultIfEmpty()
-                where grn.SupplierId == supplierId && !grn.IsCancelled
-                orderby grn.GrnId descending
-                select new GrnForReturnResponseDto
-                {
-                    GrnId = grn.GrnId,
-                    GrnNumber = grn.GrnNumber,
-                    SupplierId = grn.SupplierId,
-                    SupplierName = s != null ? s.Name : null,
-                    ReceiptDate = grn.ReceiptDate,
-                    Status = grn.Status
-                }
-            ).ToListAsync();
-
-            return Ok(ApiResponse<List<GrnForReturnResponseDto>>.Ok(grns, "GRNs retrieved successfully."));
-        }
-
-        // =========================================================
-        // 3. GET GRN ITEMS FOR RETURN
-        // =========================================================
-        [HttpGet("grn/{grnId}/items")]
-        public async Task<IActionResult> GetGrnItemsForReturn(int grnId)
-        {
-            var grn = await _context.GoodsReceipts
-                .AsNoTracking()
-                .FirstOrDefaultAsync(g => g.GrnId == grnId && !g.IsCancelled);
-
-            if (grn == null)
-            {
-                return NotFound(ApiResponse<object>.Fail(
-                    "Goods receipt record was not found.",
-                    traceId: HttpContext.TraceIdentifier));
-            }
-
-            // Fetch GRN items
-            var grnItems = await (
-                from item in _context.GoodsReceiptItems.AsNoTracking()
-                join p in _context.Products.AsNoTracking() on item.ProductId equals p.ProductId into products
-                from p in products.DefaultIfEmpty()
-                join v in _context.ProductVariants.AsNoTracking() on item.VariantId equals v.VariantId into variants
-                from v in variants.DefaultIfEmpty()
-                where item.GrnId == grnId && item.ProductId.HasValue
-                select new
-                {
-                    ProductId = item.ProductId!.Value,
-                    ProductName = p != null ? p.Name : null,
-                    ProductSku = p != null ? p.SKU : null,
-                    VariantId = item.VariantId,
-                    VariantName = v != null ? v.VariantName : null,
-                    ReceivedQuantity = item.QuantityReceived ?? 0m,
-                    Price = item.Price ?? 0m
-                }
-            ).ToListAsync();
-
-            // Fetch previous returns for this GRN to compute remaining returnable quantities
-            var previousReturns = await (
-                from ret in _context.PurchaseReturns.AsNoTracking()
-                join retItem in _context.PurchaseReturnItems.AsNoTracking() on ret.PurchaseReturnId equals retItem.PurchaseReturnId
-                where ret.GrnId == grnId
-                select new
-                {
-                    retItem.ProductId,
-                    retItem.VariantId,
-                    retItem.ReturnQuantity
-                }
-            ).ToListAsync();
-
-            var result = new List<GrnItemForReturnResponseDto>();
-
-            foreach (var item in grnItems)
-            {
-                var prevQty = previousReturns
-                    .Where(r => r.ProductId == item.ProductId && r.VariantId == item.VariantId)
-                    .Sum(r => r.ReturnQuantity);
-
-                var remaining = Math.Max(0m, item.ReceivedQuantity - prevQty);
-
-                result.Add(new GrnItemForReturnResponseDto
-                {
-                    ProductId = item.ProductId,
-                    ProductName = item.ProductName,
-                    ProductSku = item.ProductSku,
-                    VariantId = item.VariantId,
-                    VariantName = item.VariantName,
-                    ReceivedQuantity = item.ReceivedQuantity,
-                    PreviousReturnedQuantity = prevQty,
-                    RemainingReturnableQuantity = remaining,
-                    Price = item.Price
-                });
-            }
-
-            return Ok(ApiResponse<List<GrnItemForReturnResponseDto>>.Ok(result, "GRN items retrieved successfully."));
-        }
-
-        // =========================================================
-        // 4. CREATE PURCHASE RETURN
-        // =========================================================
-        [HttpPost]
-        public async Task<IActionResult> CreatePurchaseReturn([FromBody] CreatePurchaseReturnDto dto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ApiResponse<object>.Fail(
-                    "Invalid input data.",
-                    traceId: HttpContext.TraceIdentifier));
-            }
-
-            if (dto.Items == null || dto.Items.Count == 0)
-            {
-                return BadRequest(ApiResponse<object>.Fail(
-                    "At least one return item is required.",
-                    traceId: HttpContext.TraceIdentifier));
-            }
-
-            var supplier = await _context.Suppliers
-                .AsNoTracking()
-                .FirstOrDefaultAsync(s => s.SupplierId == dto.SupplierId && !s.IsDeleted);
-
-            if (supplier == null)
-            {
-                return BadRequest(ApiResponse<object>.Fail(
-                    "Selected supplier was not found.",
-                    traceId: HttpContext.TraceIdentifier));
-            }
-
-            var grn = await _context.GoodsReceipts
-                .AsNoTracking()
-                .FirstOrDefaultAsync(g => g.GrnId == dto.GrnId && !g.IsCancelled);
-
-            if (grn == null)
-            {
-                return BadRequest(ApiResponse<object>.Fail(
-                    "Selected Goods Receipt (GRN) was not found.",
-                    traceId: HttpContext.TraceIdentifier));
-            }
-
-            if (grn.SupplierId != dto.SupplierId)
-            {
-                return BadRequest(ApiResponse<object>.Fail(
-                    "Selected Goods Receipt (GRN) does not belong to the selected supplier.",
-                    traceId: HttpContext.TraceIdentifier));
-            }
-
-            // Fetch GRN items for validation & authoritative price
-            var grnItems = await _context.GoodsReceiptItems
-                .AsNoTracking()
-                .Where(gi => gi.GrnId == dto.GrnId && gi.ProductId.HasValue)
-                .ToListAsync();
-
-            // Fetch previous returns to calculate remaining returnable quantity per item
-            var previousReturnItems = await (
-                from ret in _context.PurchaseReturns.AsNoTracking()
-                join retItem in _context.PurchaseReturnItems.AsNoTracking() on ret.PurchaseReturnId equals retItem.PurchaseReturnId
-                where ret.GrnId == dto.GrnId
-                select new
-                {
-                    retItem.ProductId,
-                    retItem.VariantId,
-                    retItem.ReturnQuantity
-                }
-            ).ToListAsync();
-
-            await using var transaction = await _context.Database.BeginTransactionAsync();
-
             try
             {
-                var returnNumber = await GenerateUniqueReturnNumberAsync();
-                var now = DateTime.UtcNow;
+                var query = _context.PurchaseReturns
+                    .Include(r => r.Supplier)
+                    .Include(r => r.GoodsReceipt)
+                    .Include(r => r.Items)
+                        .ThenInclude(i => i.Product)
+                    .Include(r => r.Items)
+                        .ThenInclude(i => i.ProductVariant)
+                    .AsNoTracking();
 
-                var purchaseReturn = new PurchaseReturn
+                if (!string.IsNullOrWhiteSpace(status) &&
+                    status != "all" &&
+                    status != "All")
                 {
-                    ReturnNumber = returnNumber,
-                    SupplierId = (int?)dto.SupplierId,
-                    GrnId = (int?)dto.GrnId,
-                    ReturnDate = dto.ReturnDate == default ? now.Date : dto.ReturnDate,
-                    Reason = dto.Reason.Trim(),
-                    Status = "Completed",
-                    CreatedAt = now
-                };
+                    var st = status.Trim().ToLower();
 
-                _context.PurchaseReturns.Add(purchaseReturn);
-                await _context.SaveChangesAsync();
-
-                decimal totalReturnAmount = 0m;
-                var createdItems = new List<PurchaseReturnItem>();
-
-                foreach (var itemDto in dto.Items)
-                {
-                    if (itemDto.ReturnQuantity <= 0)
-                    {
-                        await transaction.RollbackAsync();
-                        return BadRequest(ApiResponse<object>.Fail(
-                            $"Return quantity for Product ID {itemDto.ProductId} must be greater than zero.",
-                            traceId: HttpContext.TraceIdentifier));
-                    }
-
-                    var matchingGrnItem = grnItems.FirstOrDefault(gi =>
-                        gi.ProductId == itemDto.ProductId &&
-                        gi.VariantId == itemDto.VariantId);
-
-                    if (matchingGrnItem == null)
-                    {
-                        await transaction.RollbackAsync();
-                        return BadRequest(ApiResponse<object>.Fail(
-                            $"Product ID {itemDto.ProductId} (Variant ID: {itemDto.VariantId?.ToString() ?? "N/A"}) is not present in the selected GRN.",
-                            traceId: HttpContext.TraceIdentifier));
-                    }
-
-                    var receivedQty = matchingGrnItem.QuantityReceived ?? 0m;
-                    var price = matchingGrnItem.Price ?? 0m;
-
-                    var prevReturnedQty = previousReturnItems
-                        .Where(r => r.ProductId == itemDto.ProductId && r.VariantId == itemDto.VariantId)
-                        .Sum(r => r.ReturnQuantity);
-
-                    var remainingReturnableQty = Math.Max(0m, receivedQty - prevReturnedQty);
-
-                    if (itemDto.ReturnQuantity > remainingReturnableQty)
-                    {
-                        await transaction.RollbackAsync();
-                        return BadRequest(ApiResponse<object>.Fail(
-                            $"Return quantity ({itemDto.ReturnQuantity}) for Product ID {itemDto.ProductId} exceeds remaining returnable quantity ({remainingReturnableQty}).",
-                            traceId: HttpContext.TraceIdentifier));
-                    }
-
-                    var lineTotal = itemDto.ReturnQuantity * price;
-                    totalReturnAmount += lineTotal;
-
-                    var returnItem = new PurchaseReturnItem
-                    {
-                        PurchaseReturnId = purchaseReturn.PurchaseReturnId,
-                        ProductId = itemDto.ProductId,
-                        VariantId = itemDto.VariantId,
-                        ReceivedQuantity = receivedQty,
-                        ReturnQuantity = itemDto.ReturnQuantity,
-                        Price = price,
-                        Total = lineTotal,
-                        CreatedAt = now
-                    };
-
-                    _context.PurchaseReturnItems.Add(returnItem);
-                    createdItems.Add(returnItem);
-
-                    // Update stock movements and stock balance if warehouse is present
-                    if (grn.WarehouseId.HasValue)
-                    {
-                        _context.StockMovements.Add(new StockMovement
-                        {
-                            ProductId = itemDto.ProductId,
-                            VariantId = itemDto.VariantId,
-                            WarehouseId = grn.WarehouseId.Value,
-                            MovementType = "PURCHASE_RETURN",
-                            Quantity = itemDto.ReturnQuantity,
-                            ReferenceId = purchaseReturn.PurchaseReturnId,
-                            ReferenceType = "purchase_return",
-                            Notes = $"Stock reduced for purchase return {returnNumber}",
-                            CreatedAt = now
-                        });
-
-                        var stockRow = await _context.Stocks
-                            .FirstOrDefaultAsync(s =>
-                                s.ProductId == itemDto.ProductId &&
-                                s.VariantId == itemDto.VariantId &&
-                                s.WarehouseId == grn.WarehouseId.Value);
-
-                        if (stockRow != null)
-                        {
-                            stockRow.Quantity = Math.Max(0m, stockRow.Quantity - itemDto.ReturnQuantity);
-                        }
-                    }
+                    query = query.Where(r =>
+                        r.Status != null &&
+                        r.Status.ToLower() == st);
                 }
 
-                purchaseReturn.TotalReturnAmount = totalReturnAmount;
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    var s = search.Trim().ToLower();
 
-                // Log audit trail
-                await _auditLogService.LogAsync(
-                    "Create",
-                    "Purchase Return",
-                    purchaseReturn.PurchaseReturnId,
-                    $"Purchase Return {returnNumber} created for Supplier {supplier.Name}",
-                    "purchase_returns");
+                    query = query.Where(r =>
+                        (
+                            r.Supplier != null &&
+                            r.Supplier.Name != null &&
+                            r.Supplier.Name.ToLower().Contains(s)
+                        )
+                        ||
+                        (
+                            r.GoodsReceipt != null &&
+                            (
+                                (
+                                    r.GoodsReceipt.GrnNumber != null &&
+                                    r.GoodsReceipt.GrnNumber
+                                        .ToLower()
+                                        .Contains(s)
+                                )
+                                ||
+                                r.GoodsReceipt.GrnId
+                                    .ToString()
+                                    .Contains(s)
+                            )
+                        )
+                        ||
+                        r.PurchaseReturnId
+                            .ToString()
+                            .Contains(s)
+                        ||
+                        (
+                            r.ReturnNumber != null &&
+                            r.ReturnNumber
+                                .ToLower()
+                                .Contains(s)
+                        )
+                        ||
+                        (
+                            r.Reason != null &&
+                            r.Reason
+                                .ToLower()
+                                .Contains(s)
+                        )
+                        ||
+                        (
+                            r.Status != null &&
+                            r.Status
+                                .ToLower()
+                                .Contains(s)
+                        )
+                    );
+                }
 
-                var responseDto = await BuildPurchaseReturnResponseDtoAsync(purchaseReturn.PurchaseReturnId);
+                var list = await query
+                    .OrderByDescending(r => r.ReturnDate)
+                    .ThenByDescending(r => r.PurchaseReturnId)
+                    .ToListAsync();
 
-                return Ok(ApiResponse<PurchaseReturnResponseDto>.Ok(
-                    responseDto,
-                    "Purchase return created successfully.",
-                    HttpContext.TraceIdentifier));
+                var response = list
+                    .Select(MapToDto)
+                    .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = response,
+                    message = "Purchase returns retrieved successfully."
+                });
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Failed to create purchase return for GRN {GrnId}", dto.GrnId);
+                _logger.LogError(
+                    ex,
+                    "Error fetching purchase returns");
 
-                return StatusCode(500, ApiResponse<object>.Fail(
-                    "An error occurred while processing the purchase return.",
-                    traceId: HttpContext.TraceIdentifier));
-            }
-        }
-
-        // =========================================================
-        // 5. GET PURCHASE RETURNS LIST
-        // =========================================================
-        [HttpGet]
-        public async Task<IActionResult> GetPurchaseReturns([FromQuery] string? search, [FromQuery] int? supplierId)
-        {
-            var query = _context.PurchaseReturns
-                .AsNoTracking()
-                .AsQueryable();
-
-            if (supplierId.HasValue && supplierId.Value > 0)
-            {
-                query = query.Where(r => r.SupplierId == supplierId.Value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                var term = search.Trim().ToLower();
-                query = query.Where(r =>
-                    r.ReturnNumber.ToLower().Contains(term) ||
-                    r.Reason.ToLower().Contains(term) ||
-                    (r.Supplier != null && r.Supplier.Name != null && r.Supplier.Name.ToLower().Contains(term)) ||
-                    (r.GoodsReceipt != null && r.GoodsReceipt.GrnNumber.ToLower().Contains(term)));
-            }
-
-            var list = await (
-                from r in query
-                join s in _context.Suppliers.AsNoTracking() on r.SupplierId equals (int?)s.SupplierId into suppliers
-                from s in suppliers.DefaultIfEmpty()
-                join grn in _context.GoodsReceipts.AsNoTracking() on r.GrnId equals (int?)grn.GrnId into grns
-                from grn in grns.DefaultIfEmpty()
-                orderby r.PurchaseReturnId descending
-                select new PurchaseReturnResponseDto
+                return StatusCode(500, new
                 {
-                    PurchaseReturnId = r.PurchaseReturnId,
-                    ReturnNumber = r.ReturnNumber,
-                    SupplierId = r.SupplierId,
-                    SupplierName = s != null ? s.Name : null,
-                    GrnId = r.GrnId,
-                    GrnNumber = grn != null ? grn.GrnNumber : null,
-                    ReturnDate = r.ReturnDate,
-                    Reason = r.Reason,
-                    TotalReturnAmount = r.TotalReturnAmount,
-                    Status = r.Status,
-                    CreatedAt = r.CreatedAt
-                }
-            ).ToListAsync();
-
-            return Ok(ApiResponse<List<PurchaseReturnResponseDto>>.Ok(list, "Purchase returns retrieved successfully."));
+                    success = false,
+                    message = "Error loading purchase returns."
+                });
+            }
         }
 
         // =========================================================
-        // 6. GET PURCHASE RETURN BY ID
+        // GET: api/PurchaseReturns/5
         // =========================================================
+
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetPurchaseReturnById(int id)
+        public async Task<IActionResult> GetPurchaseReturn(int id)
         {
-            var responseDto = await BuildPurchaseReturnResponseDtoAsync(id);
-
-            if (responseDto == null)
-            {
-                return NotFound(ApiResponse<object>.Fail(
-                    "Purchase return record was not found.",
-                    traceId: HttpContext.TraceIdentifier));
-            }
-
-            return Ok(ApiResponse<PurchaseReturnResponseDto>.Ok(responseDto, "Purchase return retrieved successfully."));
-        }
-
-        // =========================================================
-        // 7. UPDATE PURCHASE RETURN
-        // =========================================================
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePurchaseReturn(int id, [FromBody] UpdatePurchaseReturnDto dto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ApiResponse<object>.Fail(
-                    "Invalid input data.",
-                    traceId: HttpContext.TraceIdentifier));
-            }
-
-            var purchaseReturn = await _context.PurchaseReturns
-                .Include(r => r.Items)
-                .FirstOrDefaultAsync(r => r.PurchaseReturnId == id);
-
-            if (purchaseReturn == null)
-            {
-                return NotFound(ApiResponse<object>.Fail(
-                    "Purchase return record was not found.",
-                    traceId: HttpContext.TraceIdentifier));
-            }
-
-            if (string.Equals(purchaseReturn.Status, "Finalized", StringComparison.OrdinalIgnoreCase))
-            {
-                return BadRequest(ApiResponse<object>.Fail(
-                    "Finalized purchase returns cannot be edited.",
-                    traceId: HttpContext.TraceIdentifier));
-            }
-
-            var supplier = await _context.Suppliers
-                .AsNoTracking()
-                .FirstOrDefaultAsync(s => s.SupplierId == dto.SupplierId && !s.IsDeleted);
-
-            if (supplier == null)
-            {
-                return BadRequest(ApiResponse<object>.Fail(
-                    "Selected supplier was not found.",
-                    traceId: HttpContext.TraceIdentifier));
-            }
-
-            var grn = await _context.GoodsReceipts
-                .AsNoTracking()
-                .FirstOrDefaultAsync(g => g.GrnId == dto.GrnId && !g.IsCancelled);
-
-            if (grn == null)
-            {
-                return BadRequest(ApiResponse<object>.Fail(
-                    "Selected Goods Receipt (GRN) was not found.",
-                    traceId: HttpContext.TraceIdentifier));
-            }
-
-            if (grn.SupplierId != dto.SupplierId)
-            {
-                return BadRequest(ApiResponse<object>.Fail(
-                    "Selected Goods Receipt (GRN) does not belong to the selected supplier.",
-                    traceId: HttpContext.TraceIdentifier));
-            }
-
-            var grnItems = await _context.GoodsReceiptItems
-                .AsNoTracking()
-                .Where(gi => gi.GrnId == dto.GrnId && gi.ProductId.HasValue)
-                .ToListAsync();
-
-            var otherReturnItems = await (
-                from ret in _context.PurchaseReturns.AsNoTracking()
-                join retItem in _context.PurchaseReturnItems.AsNoTracking() on ret.PurchaseReturnId equals retItem.PurchaseReturnId
-                where ret.GrnId == dto.GrnId && ret.PurchaseReturnId != id
-                select new
-                {
-                    retItem.ProductId,
-                    retItem.VariantId,
-                    retItem.ReturnQuantity
-                }
-            ).ToListAsync();
-
-            await using var transaction = await _context.Database.BeginTransactionAsync();
-
             try
             {
-                var now = DateTime.UtcNow;
+                var ret = await _context.PurchaseReturns
+                    .Include(r => r.Supplier)
+                    .Include(r => r.GoodsReceipt)
+                    .Include(r => r.Items)
+                        .ThenInclude(i => i.Product)
+                    .Include(r => r.Items)
+                        .ThenInclude(i => i.ProductVariant)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(
+                        r => r.PurchaseReturnId == id);
 
-                purchaseReturn.SupplierId = (int?)dto.SupplierId;
-                purchaseReturn.GrnId = (int?)dto.GrnId;
-                purchaseReturn.ReturnDate = dto.ReturnDate == default ? purchaseReturn.ReturnDate : dto.ReturnDate;
-                purchaseReturn.Reason = dto.Reason.Trim();
-                purchaseReturn.UpdatedAt = now;
-
-                _context.PurchaseReturnItems.RemoveRange(purchaseReturn.Items);
-
-                decimal totalReturnAmount = 0m;
-
-                foreach (var itemDto in dto.Items)
+                if (ret == null)
                 {
-                    if (itemDto.ReturnQuantity <= 0)
+                    return NotFound(new
                     {
-                        await transaction.RollbackAsync();
-                        return BadRequest(ApiResponse<object>.Fail(
-                            $"Return quantity for Product ID {itemDto.ProductId} must be greater than zero.",
-                            traceId: HttpContext.TraceIdentifier));
-                    }
-
-                    var matchingGrnItem = grnItems.FirstOrDefault(gi =>
-                        gi.ProductId == itemDto.ProductId &&
-                        gi.VariantId == itemDto.VariantId);
-
-                    if (matchingGrnItem == null)
-                    {
-                        await transaction.RollbackAsync();
-                        return BadRequest(ApiResponse<object>.Fail(
-                            $"Product ID {itemDto.ProductId} (Variant ID: {itemDto.VariantId?.ToString() ?? "N/A"}) is not present in the selected GRN.",
-                            traceId: HttpContext.TraceIdentifier));
-                    }
-
-                    var receivedQty = matchingGrnItem.QuantityReceived ?? 0m;
-                    var price = matchingGrnItem.Price ?? 0m;
-
-                    var prevReturnedQty = otherReturnItems
-                        .Where(r => r.ProductId == itemDto.ProductId && r.VariantId == itemDto.VariantId)
-                        .Sum(r => r.ReturnQuantity);
-
-                    var remainingReturnableQty = Math.Max(0m, receivedQty - prevReturnedQty);
-
-                    if (itemDto.ReturnQuantity > remainingReturnableQty)
-                    {
-                        await transaction.RollbackAsync();
-                        return BadRequest(ApiResponse<object>.Fail(
-                            $"Return quantity ({itemDto.ReturnQuantity}) for Product ID {itemDto.ProductId} exceeds remaining returnable quantity ({remainingReturnableQty}).",
-                            traceId: HttpContext.TraceIdentifier));
-                    }
-
-                    var lineTotal = itemDto.ReturnQuantity * price;
-                    totalReturnAmount += lineTotal;
-
-                    _context.PurchaseReturnItems.Add(new PurchaseReturnItem
-                    {
-                        PurchaseReturnId = purchaseReturn.PurchaseReturnId,
-                        ProductId = itemDto.ProductId,
-                        VariantId = itemDto.VariantId,
-                        ReceivedQuantity = receivedQty,
-                        ReturnQuantity = itemDto.ReturnQuantity,
-                        Price = price,
-                        Total = lineTotal,
-                        CreatedAt = now
+                        success = false,
+                        message =
+                            $"Purchase return PR-{id:D5} not found."
                     });
                 }
 
-                purchaseReturn.TotalReturnAmount = totalReturnAmount;
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                await _auditLogService.LogAsync(
-                    "Update",
-                    "Purchase Return",
-                    purchaseReturn.PurchaseReturnId,
-                    $"Purchase Return {purchaseReturn.ReturnNumber} updated",
-                    "purchase_returns");
-
-                var responseDto = await BuildPurchaseReturnResponseDtoAsync(purchaseReturn.PurchaseReturnId);
-
-                return Ok(ApiResponse<PurchaseReturnResponseDto>.Ok(
-                    responseDto,
-                    "Purchase return updated successfully.",
-                    HttpContext.TraceIdentifier));
+                return Ok(new
+                {
+                    success = true,
+                    data = MapToDto(ret),
+                    message =
+                        "Purchase return details retrieved successfully."
+                });
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Failed to update purchase return ID {PurchaseReturnId}", id);
+                _logger.LogError(
+                    ex,
+                    "Error fetching purchase return #{Id}",
+                    id);
 
-                return StatusCode(500, ApiResponse<object>.Fail(
-                    "An error occurred while updating the purchase return.",
-                    traceId: HttpContext.TraceIdentifier));
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message =
+                        "Error loading purchase return details."
+                });
             }
         }
 
         // =========================================================
-        // 8. DELETE PURCHASE RETURN
+        // GET: api/PurchaseReturns/suppliers
         // =========================================================
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePurchaseReturn(int id)
+
+        [HttpGet("suppliers")]
+        public async Task<IActionResult> GetSuppliers()
         {
-            var purchaseReturn = await _context.PurchaseReturns
-                .Include(r => r.Items)
-                .FirstOrDefaultAsync(r => r.PurchaseReturnId == id);
-
-            if (purchaseReturn == null)
+            try
             {
-                return NotFound(ApiResponse<object>.Fail(
-                    "Purchase return record was not found.",
-                    traceId: HttpContext.TraceIdentifier));
+                var suppliers = await _context.Suppliers
+                    .Where(s => !s.IsDeleted)
+                    .OrderBy(s => s.Name)
+                    .Select(s => new
+                    {
+                        s.SupplierId,
+
+                        Id = s.SupplierId,
+
+                        s.Name,
+
+                        s.SupplierCode,
+
+                        s.Email,
+
+                        s.Phone
+                    })
+                    .ToListAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = suppliers
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error fetching suppliers");
+
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Error loading suppliers list."
+                });
+            }
+        }
+
+        // =========================================================
+        // GET: api/PurchaseReturns/grns
+        // =========================================================
+
+        [HttpGet("grns")]
+        public async Task<IActionResult> GetGoodsReceipts(
+            [FromQuery] int? supplierId = null)
+        {
+            try
+            {
+                var query =
+                    _context.GoodsReceipts.AsNoTracking();
+
+                if (supplierId.HasValue &&
+                    supplierId.Value > 0)
+                {
+                    query = query.Where(
+                        g => g.SupplierId ==
+                             supplierId.Value);
+                }
+
+                var list = await query
+                    .OrderByDescending(g => g.ReceiptDate)
+                    .Select(g => new
+                    {
+                        GrnId = g.GrnId,
+
+                        Id = g.GrnId,
+
+                        GrnNumber =
+                            !string.IsNullOrEmpty(g.GrnNumber)
+                                ? g.GrnNumber
+                                : $"GRN-{g.GrnId:D6}",
+
+                        ReceiptDate = g.ReceiptDate,
+
+                        SupplierId = g.SupplierId ?? 0
+                    })
+                    .ToListAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = list
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error fetching goods receipts");
+
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message =
+                        "Error loading goods receipts list."
+                });
+            }
+        }
+
+        // =========================================================
+        // GET: api/PurchaseReturns/grn/{grnId}/items
+        // =========================================================
+
+        [HttpGet("grn/{grnId}/items")]
+        public async Task<IActionResult> GetGrnItems(int grnId)
+        {
+            try
+            {
+                var grnItems =
+                    await _context.GoodsReceiptItems
+                        .Where(gi => gi.GrnId == grnId)
+                        .AsNoTracking()
+                        .ToListAsync();
+
+                if (!grnItems.Any())
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        data = new List<object>()
+                    });
+                }
+
+                var productIds = grnItems
+                    .Select(gi => gi.ProductId ?? 0)
+                    .Where(id => id > 0)
+                    .Distinct()
+                    .ToList();
+
+                var variantIds = grnItems
+                    .Select(gi => gi.VariantId ?? 0)
+                    .Where(id => id > 0)
+                    .Distinct()
+                    .ToList();
+
+                var products = await _context.Products
+                    .Where(p =>
+                        productIds.Contains(p.ProductId))
+                    .ToDictionaryAsync(
+                        p => p.ProductId);
+
+                var variants =
+                    await _context.ProductVariants
+                        .Where(v =>
+                            variantIds.Contains(v.VariantId))
+                        .ToDictionaryAsync(
+                            v => v.VariantId);
+
+                var items = grnItems.Select(i =>
+                {
+                    decimal qty =
+                        i.QuantityReceived ?? 0;
+
+                    decimal rawPrice =
+                        i.Price ?? 0;
+
+                    decimal discount =
+                        i.Discount ?? 0;
+
+                    decimal tax =
+                        i.Tax ??
+                        i.TaxPercentage ??
+                        0;
+
+                    decimal lineTotal =
+                        i.LineTotal ?? 0;
+
+                    decimal unitCost = 0;
+
+                    if (lineTotal > 0 &&
+                        qty > 0)
+                    {
+                        unitCost = Math.Round(
+                            lineTotal / qty,
+                            2);
+                    }
+                    else if (rawPrice > 0)
+                    {
+                        decimal taxable =
+                            rawPrice *
+                            (1m - (discount / 100m));
+
+                        unitCost = Math.Round(
+                            taxable *
+                            (1m + (tax / 100m)),
+                            2);
+                    }
+
+                    return new
+                    {
+                        GrnItemId = i.Id,
+
+                        ProductId =
+                            i.ProductId ?? 0,
+
+                        ProductName =
+                            (
+                                i.ProductId.HasValue &&
+                                products.ContainsKey(
+                                    i.ProductId.Value)
+                            )
+                                ? products[
+                                    i.ProductId.Value
+                                  ].Name
+                                : $"Product #{i.ProductId}",
+
+                        Sku =
+                            (
+                                i.ProductId.HasValue &&
+                                products.ContainsKey(
+                                    i.ProductId.Value)
+                            )
+                                ? products[
+                                    i.ProductId.Value
+                                  ].SKU
+                                : "—",
+
+                        VariantId = i.VariantId,
+
+                        VariantName =
+                            (
+                                i.VariantId.HasValue &&
+                                variants.ContainsKey(
+                                    i.VariantId.Value)
+                            )
+                                ? (
+                                    variants[
+                                        i.VariantId.Value
+                                    ].VariantName
+                                    ??
+                                    variants[
+                                        i.VariantId.Value
+                                    ].SKU
+                                  )
+                                : null,
+
+                        ReceivedQuantity = qty,
+
+                        RawUnitPrice = rawPrice,
+
+                        Discount = discount,
+
+                        Tax = tax,
+
+                        TaxPercentage = tax,
+
+                        LineTotal = lineTotal,
+
+                        UnitCost = unitCost,
+
+                        FinalPurchasePrice = unitCost,
+
+                        Price = unitCost,
+
+                        UnitPrice = unitCost
+                    };
+                }).ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = items
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error fetching GRN items for GRN #{GrnId}",
+                    grnId);
+
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message =
+                        "Error loading GRN items."
+                });
+            }
+        }
+
+        // =========================================================
+        // POST: api/PurchaseReturns
+        // Create Draft
+        // =========================================================
+
+        [HttpPost]
+        public async Task<IActionResult> CreatePurchaseReturn(
+            [FromBody] CreatePurchaseReturnDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Invalid data provided.",
+                    errors = ModelState
+                });
             }
 
-            if (string.Equals(purchaseReturn.Status, "Finalized", StringComparison.OrdinalIgnoreCase))
+            if (dto.Items == null ||
+                !dto.Items.Any())
             {
-                return BadRequest(ApiResponse<object>.Fail(
-                    "Finalized purchase returns cannot be deleted.",
-                    traceId: HttpContext.TraceIdentifier));
+                return BadRequest(new
+                {
+                    success = false,
+                    message =
+                        "At least one return item must be added."
+                });
             }
 
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            using var transaction =
+                await _context.Database
+                    .BeginTransactionAsync();
 
             try
             {
-                _context.PurchaseReturnItems.RemoveRange(purchaseReturn.Items);
-                _context.PurchaseReturns.Remove(purchaseReturn);
+                // -------------------------------------------------
+                // Get the selected GRN.
+                // -------------------------------------------------
+
+                var grn =
+                    await _context.GoodsReceipts
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(
+                            g => g.GrnId == dto.GrnId);
+
+                if (grn == null)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Selected GRN was not found."
+                    });
+                }
+
+                // -------------------------------------------------
+                // Get items from the selected GRN.
+                // Price and received quantity come from GRN.
+                // -------------------------------------------------
+
+                var grnItems =
+                    await _context.GoodsReceiptItems
+                        .Where(
+                            gi => gi.GrnId == dto.GrnId)
+                        .AsNoTracking()
+                        .ToListAsync();
+
+                if (!grnItems.Any())
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message =
+                            "No items found for the selected GRN."
+                    });
+                }
+
+                var returnItems =
+                    new List<PurchaseReturnItem>();
+
+                decimal totalReturnAmount = 0;
+
+                foreach (var dtoItem in dto.Items)
+                {
+                    var grnItem =
+                        grnItems.FirstOrDefault(gi =>
+                            (gi.ProductId ?? 0)
+                                == dtoItem.ProductId
+                            &&
+                            gi.VariantId
+                                == dtoItem.VariantId);
+
+                    if (grnItem == null)
+                    {
+                        return BadRequest(new
+                        {
+                            success = false,
+                            message =
+                                $"Product #{dtoItem.ProductId} was not found in the selected GRN."
+                        });
+                    }
+
+                    decimal receivedQuantity =
+                        grnItem.QuantityReceived ?? 0;
+
+                    decimal rawPrice =
+                        grnItem.Price ?? 0;
+
+                    decimal discount =
+                        grnItem.Discount ?? 0;
+
+                    decimal tax =
+                        grnItem.Tax ??
+                        grnItem.TaxPercentage ??
+                        0;
+
+                    decimal lineTotal =
+                        grnItem.LineTotal ?? 0;
+
+                    decimal unitCost = 0;
+
+                    if (lineTotal > 0 &&
+                        receivedQuantity > 0)
+                    {
+                        unitCost = Math.Round(
+                            lineTotal /
+                            receivedQuantity,
+                            2);
+                    }
+                    else if (rawPrice > 0)
+                    {
+                        decimal taxable =
+                            rawPrice *
+                            (1m -
+                             (discount / 100m));
+
+                        unitCost = Math.Round(
+                            taxable *
+                            (1m +
+                             (tax / 100m)),
+                            2);
+                    }
+
+                    decimal itemTotal =
+                        Math.Round(
+                            dtoItem.ReturnQuantity *
+                            unitCost,
+                            2);
+
+                    returnItems.Add(
+                        new PurchaseReturnItem
+                        {
+                            ProductId =
+                                dtoItem.ProductId,
+
+                            VariantId =
+                                dtoItem.VariantId,
+
+                            ReceivedQuantity =
+                                receivedQuantity,
+
+                            ReturnQuantity =
+                                dtoItem.ReturnQuantity,
+
+                            Price =
+                                unitCost,
+
+                            Total =
+                                itemTotal,
+
+                            CreatedAt =
+                                DateTime.Now
+                        });
+
+                    totalReturnAmount += itemTotal;
+                }
+
+                var currentUser =
+                    GetCurrentUserName();
+
+                var purchaseReturn =
+                    new PurchaseReturn
+                    {
+                        SupplierId =
+                            dto.SupplierId,
+
+                        GrnId =
+                            dto.GrnId,
+
+                        ReturnDate =
+                                 dto.ReturnDate,
+
+                        Reason =
+                            dto.Reason ?? string.Empty,
+
+                        TotalReturnAmount =
+                            totalReturnAmount,
+
+                        Status =
+                            "Draft",
+
+                        CreatedAt =
+                            DateTime.Now,
+
+                        UpdatedAt =
+                            DateTime.Now,
+
+                        Items =
+                            returnItems
+                    };
+
+                // -------------------------------------------------
+                // Temporary unique return number.
+                // After insert, it is replaced with PR-{ID}.
+                // -------------------------------------------------
+
+                purchaseReturn.ReturnNumber =
+                    $"TEMP-{Guid.NewGuid():N}";
+
+                _context.PurchaseReturns.Add(
+                    purchaseReturn);
 
                 await _context.SaveChangesAsync();
+
+                // -------------------------------------------------
+                // Generate final return number using DB ID.
+                // -------------------------------------------------
+
+                purchaseReturn.ReturnNumber =
+                    $"PR-{purchaseReturn.PurchaseReturnId:D5}";
+
+                await _context.SaveChangesAsync();
+
                 await transaction.CommitAsync();
 
-                await _auditLogService.LogAsync(
-                    "Delete",
-                    "Purchase Return",
-                    id,
-                    $"Purchase Return {purchaseReturn.ReturnNumber} deleted",
-                    "purchase_returns");
+                _logger.LogInformation(
+                    "Created Purchase Return {ReturnNumber} in Draft status by {User}",
+                    purchaseReturn.ReturnNumber,
+                    currentUser);
 
-                return Ok(ApiResponse<object>.Ok(
-                    null,
-                    "Purchase return deleted successfully.",
-                    HttpContext.TraceIdentifier));
+                return Ok(new
+                {
+                    success = true,
+
+                    data = new
+                    {
+                        returnId =
+                            purchaseReturn
+                                .PurchaseReturnId,
+
+                        returnNumber =
+                            purchaseReturn
+                                .ReturnNumber
+                    },
+
+                    message =
+                        $"Purchase Return {purchaseReturn.ReturnNumber} created as Draft."
+                });
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                _logger.LogError(ex, "Failed to delete purchase return ID {PurchaseReturnId}", id);
 
-                return StatusCode(500, ApiResponse<object>.Fail(
-                    "An error occurred while deleting the purchase return.",
-                    traceId: HttpContext.TraceIdentifier));
+                _logger.LogError(
+                    ex,
+                    "Error creating purchase return");
+
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message =
+                        "Error creating purchase return: "
+                        + ex.Message
+                });
             }
         }
 
         // =========================================================
-        // PRIVATE HELPER METHODS
+        // POST: api/PurchaseReturns/{id}/submit
         // =========================================================
 
-        private async Task<string> GenerateUniqueReturnNumberAsync()
+        [HttpPost("{id}/submit")]
+        public async Task<IActionResult>
+            SubmitPurchaseReturn(int id)
         {
-            var maxId = await _context.PurchaseReturns.MaxAsync(r => (int?)r.PurchaseReturnId) ?? 0;
-            for (int attempt = 0; attempt < 10; attempt++)
+            var ret =
+                await _context.PurchaseReturns
+                    .FirstOrDefaultAsync(
+                        r => r.PurchaseReturnId == id);
+
+            if (ret == null)
             {
-                var candidate = $"PRR-{(maxId + 1 + attempt):D6}";
-
-                var exists = await _context.PurchaseReturns
-                    .AnyAsync(r => r.ReturnNumber == candidate);
-
-                if (!exists)
+                return NotFound(new
                 {
-                    return candidate;
-                }
+                    success = false,
+                    message =
+                        "Purchase return not found."
+                });
             }
 
-            return $"PRR-{DateTime.UtcNow.Ticks.ToString()[^6..]}";
+            if (ret.Status != "Draft" &&
+                ret.Status != "Rejected")
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message =
+                        $"Cannot submit purchase return in '{ret.Status}' status."
+                });
+            }
+
+            var currentUser =
+                GetCurrentUserName();
+
+            ret.Status =
+                "Pending Approval";
+
+            ret.UpdatedAt =
+                DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "Purchase Return {ReturnNumber} submitted for approval by {User}",
+                ret.ReturnNumber,
+                currentUser);
+
+            return Ok(new
+            {
+                success = true,
+                message =
+                    $"Purchase Return {ret.ReturnNumber} submitted for approval."
+            });
         }
 
-        private static string GenerateRandomAlphaNumeric(int length)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            var bytes = new byte[length];
-            RandomNumberGenerator.Fill(bytes);
+        // =========================================================
+        // POST: api/PurchaseReturns/{id}/approve
+        // =========================================================
 
-            var result = new char[length];
-            for (int i = 0; i < length; i++)
+        [HttpPost("{id}/approve")]
+        public async Task<IActionResult>
+            ApprovePurchaseReturn(int id)
+        {
+            var ret =
+                await _context.PurchaseReturns
+                    .Include(r => r.Items)
+                    .FirstOrDefaultAsync(
+                        r => r.PurchaseReturnId == id);
+
+            if (ret == null)
             {
-                result[i] = chars[bytes[i] % chars.Length];
+                return NotFound(new
+                {
+                    success = false,
+                    message =
+                        "Purchase return not found."
+                });
             }
 
-            return new string(result);
+            if (ret.Status != "Pending Approval" &&
+                ret.Status != "Draft")
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message =
+                        $"Cannot approve purchase return in '{ret.Status}' status."
+                });
+            }
+
+            using var transaction =
+                await _context.Database
+                    .BeginTransactionAsync();
+
+            try
+            {
+                var currentUser =
+                    GetCurrentUserName();
+
+                ret.Status =
+                    "Approved";
+
+                ret.UpdatedAt =
+                    DateTime.Now;
+
+                // -------------------------------------------------
+                // Existing business logic:
+                // stock deduction happens on approval.
+                // -------------------------------------------------
+
+                var grn =
+                    await _context.GoodsReceipts
+                        .FirstOrDefaultAsync(
+                            g => g.GrnId == ret.GrnId);
+
+                int defaultWarehouseId =
+                    grn?.WarehouseId ?? 1;
+
+                foreach (var item in ret.Items)
+                {
+                    var stock =
+                        await _context.Stocks
+                            .FirstOrDefaultAsync(s =>
+                                s.WarehouseId
+                                    == defaultWarehouseId
+                                &&
+                                s.ProductId
+                                    == item.ProductId
+                                &&
+                                s.VariantId
+                                    == item.VariantId);
+
+                    if (stock != null)
+                    {
+                        stock.Quantity =
+                            Math.Max(
+                                0,
+                                stock.Quantity -
+                                item.ReturnQuantity);
+                    }
+
+                    var stockMovement =
+                        new StockMovement
+                        {
+                            ProductId =
+                                item.ProductId,
+
+                            VariantId =
+                                item.VariantId,
+
+                            WarehouseId =
+                                defaultWarehouseId,
+
+                            MovementType =
+                                "return_out",
+
+                            Quantity =
+                                item.ReturnQuantity,
+
+                            ReferenceId =
+                                ret.PurchaseReturnId,
+
+                            ReferenceType =
+                                "PurchaseReturn",
+
+                            Notes =
+                                $"Approved Purchase Return {ret.ReturnNumber} to Supplier #{ret.SupplierId}",
+
+                            CreatedAt =
+                                DateTime.Now
+                        };
+
+                    _context.StockMovements.Add(
+                        stockMovement);
+                }
+
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                _logger.LogInformation(
+                    "Purchase Return {ReturnNumber} approved by {User}",
+                    ret.ReturnNumber,
+                    currentUser);
+
+                return Ok(new
+                {
+                    success = true,
+                    message =
+                        $"Purchase Return {ret.ReturnNumber} approved and inventory updated."
+                });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+
+                _logger.LogError(
+                    ex,
+                    "Error approving purchase return #{Id}",
+                    id);
+
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message =
+                        "Error approving purchase return."
+                });
+            }
         }
 
-        private async Task<PurchaseReturnResponseDto?> BuildPurchaseReturnResponseDtoAsync(int purchaseReturnId)
-        {
-            var header = await (
-                from r in _context.PurchaseReturns.AsNoTracking()
-                join s in _context.Suppliers.AsNoTracking() on r.SupplierId equals (int?)s.SupplierId into suppliers
-                from s in suppliers.DefaultIfEmpty()
-                join grn in _context.GoodsReceipts.AsNoTracking() on r.GrnId equals (int?)grn.GrnId into grns
-                from grn in grns.DefaultIfEmpty()
-                where r.PurchaseReturnId == purchaseReturnId
-                select new
-                {
-                    r.PurchaseReturnId,
-                    r.ReturnNumber,
-                    r.SupplierId,
-                    SupplierName = s != null ? s.Name : null,
-                    r.GrnId,
-                    GrnNumber = grn != null ? grn.GrnNumber : null,
-                    r.ReturnDate,
-                    r.Reason,
-                    r.TotalReturnAmount,
-                    r.Status,
-                    r.CreatedAt
-                }
-            ).FirstOrDefaultAsync();
+        // =========================================================
+        // POST: api/PurchaseReturns/{id}/reject
+        // =========================================================
 
-            if (header == null)
+        [HttpPost("{id}/reject")]
+        public async Task<IActionResult>
+            RejectPurchaseReturn(
+                int id,
+                [FromBody] RejectPurchaseReturnDto dto)
+        {
+            var ret =
+                await _context.PurchaseReturns
+                    .FirstOrDefaultAsync(
+                        r => r.PurchaseReturnId == id);
+
+            if (ret == null)
             {
-                return null;
+                return NotFound(new
+                {
+                    success = false,
+                    message =
+                        "Purchase return not found."
+                });
             }
 
-            var items = await (
-                from item in _context.PurchaseReturnItems.AsNoTracking()
-                join p in _context.Products.AsNoTracking() on item.ProductId equals p.ProductId into products
-                from p in products.DefaultIfEmpty()
-                join v in _context.ProductVariants.AsNoTracking() on item.VariantId equals v.VariantId into variants
-                from v in variants.DefaultIfEmpty()
-                where item.PurchaseReturnId == purchaseReturnId
-                select new PurchaseReturnItemResponseDto
-                {
-                    PurchaseReturnItemId = item.PurchaseReturnItemId,
-                    ProductId = item.ProductId,
-                    ProductName = p != null ? p.Name : null,
-                    ProductSku = p != null ? p.SKU : null,
-                    VariantId = item.VariantId,
-                    VariantName = v != null ? v.VariantName : null,
-                    ReceivedQuantity = item.ReceivedQuantity,
-                    ReturnQuantity = item.ReturnQuantity,
-                    Price = item.Price,
-                    Total = item.Total
-                }
-            ).ToListAsync();
-
-            return new PurchaseReturnResponseDto
+            if (ret.Status != "Pending Approval")
             {
-                PurchaseReturnId = header.PurchaseReturnId,
-                ReturnNumber = header.ReturnNumber,
-                SupplierId = header.SupplierId,
-                SupplierName = header.SupplierName,
-                GrnId = header.GrnId,
-                GrnNumber = header.GrnNumber,
-                ReturnDate = header.ReturnDate,
-                Reason = header.Reason,
-                TotalReturnAmount = header.TotalReturnAmount,
-                Status = header.Status,
-                CreatedAt = header.CreatedAt,
-                Items = items
-            };
+                return BadRequest(new
+                {
+                    success = false,
+                    message =
+                        $"Cannot reject purchase return in '{ret.Status}' status."
+                });
+            }
+
+            var currentUser =
+                GetCurrentUserName();
+
+            ret.Status =
+                "Rejected";
+
+            ret.UpdatedAt =
+                DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "Purchase Return {ReturnNumber} rejected by {User}. Reason: {Reason}",
+                ret.ReturnNumber,
+                currentUser,
+                dto?.Reason);
+
+            return Ok(new
+            {
+                success = true,
+                message =
+                    $"Purchase Return {ret.ReturnNumber} rejected."
+            });
+        }
+
+        // =========================================================
+        // POST: api/PurchaseReturns/{id}/complete
+        // =========================================================
+
+        [HttpPost("{id}/complete")]
+        public async Task<IActionResult>
+            CompletePurchaseReturn(int id)
+        {
+            var ret =
+                await _context.PurchaseReturns
+                    .FirstOrDefaultAsync(
+                        r => r.PurchaseReturnId == id);
+
+            if (ret == null)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message =
+                        "Purchase return not found."
+                });
+            }
+
+            if (ret.Status != "Approved")
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message =
+                        $"Cannot complete purchase return in '{ret.Status}' status."
+                });
+            }
+
+            var currentUser =
+                GetCurrentUserName();
+
+            ret.Status =
+                "Completed";
+
+            ret.UpdatedAt =
+                DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "Purchase Return {ReturnNumber} completed by {User}",
+                ret.ReturnNumber,
+                currentUser);
+
+            return Ok(new
+            {
+                success = true,
+                message =
+                    $"Purchase Return {ret.ReturnNumber} marked as Completed."
+            });
+        }
+
+        // =========================================================
+        // DELETE: api/PurchaseReturns/5
+        // =========================================================
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult>
+            DeletePurchaseReturn(int id)
+        {
+            try
+            {
+                var ret =
+                    await _context.PurchaseReturns
+                        .Include(r => r.Items)
+                        .FirstOrDefaultAsync(
+                            r =>
+                                r.PurchaseReturnId == id);
+
+                if (ret == null)
+                {
+                    return NotFound(new
+                    {
+                        success = false,
+                        message =
+                            "Purchase return not found."
+                    });
+                }
+
+                string returnNumber =
+                    ret.ReturnNumber;
+
+                _context.PurchaseReturnItems
+                    .RemoveRange(ret.Items);
+
+                _context.PurchaseReturns
+                    .Remove(ret);
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message =
+                        $"Purchase return {returnNumber} deleted successfully."
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error deleting purchase return #{Id}",
+                    id);
+
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message =
+                        "Error deleting purchase return."
+                });
+            }
         }
     }
 }

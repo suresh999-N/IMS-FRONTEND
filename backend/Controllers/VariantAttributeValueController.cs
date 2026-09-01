@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using IMSBackend.Data;
 using IMSBackend.Models;
 
@@ -37,11 +37,16 @@ namespace IMSBackend.Controllers
         [HttpPost]
         public IActionResult Create(VariantAttributeValueDto dto, int variantId)
         {
+            if (!dto.ValueId.HasValue)
+            {
+                return BadRequest(new { message = "ValueId is required." });
+            }
+
             var entity = new VariantAttributeValue
             {
                 VariantId = variantId,   // ✅ from request
                 AttributeId = dto.AttributeId,
-                ValueId = dto.ValueId
+                ValueId = dto.ValueId.Value
             };
 
             _context.VariantAttributeValues.Add(entity);

@@ -208,16 +208,24 @@ namespace IMSBackend.Data
 
 
             // =========================================================
-            // USER
+            // USER & PENDING USER
             // =========================================================
 
-            modelBuilder.Entity<User>()
-                .Property(user => user.Email)
-                .HasMaxLength(256);
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.Property(user => user.Name).HasMaxLength(50);
+                entity.Property(user => user.Email).HasMaxLength(254);
+                entity.Property(user => user.PhoneNumber).HasMaxLength(10);
+                entity.HasIndex(user => user.Email).IsUnique();
+                entity.HasIndex(user => user.PhoneNumber).IsUnique();
+            });
 
-            modelBuilder.Entity<User>()
-                .HasIndex(user => user.Email)
-                .IsUnique();
+            modelBuilder.Entity<PendingUser>(entity =>
+            {
+                entity.Property(user => user.Name).HasMaxLength(50);
+                entity.Property(user => user.Email).HasMaxLength(254);
+                entity.Property(user => user.PhoneNumber).HasMaxLength(10);
+            });
 
 
             // =========================================================
@@ -669,7 +677,7 @@ namespace IMSBackend.Data
                 .IsUnique();
 
             modelBuilder.Entity<SalesReturn>()
-                .Property(x => x.TotalReturnAmount)
+                .Property(x => x.GrandTotal)
                 .HasPrecision(18, 2);
 
             modelBuilder.Entity<SalesReturnItem>()

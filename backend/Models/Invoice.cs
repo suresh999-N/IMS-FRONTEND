@@ -16,6 +16,14 @@ namespace IMSBackend.Models
         [Column("customer_id")]
         public int? CustomerId { get; set; }
 
+        // =========================================================
+        // WAREHOUSE
+        // null = All Warehouses
+        // value = specific warehouse
+        // =========================================================
+        [Column("warehouse_id")]
+        public int? WarehouseId { get; set; }
+
         [Column("invoice_number")]
         public string? InvoiceNumber { get; set; }
 
@@ -52,6 +60,9 @@ namespace IMSBackend.Models
 
         [ForeignKey("CustomerId")]
         public Customer? Customer { get; set; }
+
+        [ForeignKey("WarehouseId")]
+        public Warehouse? Warehouse { get; set; }
 
         public ICollection<InvoiceItem>? InvoiceItems { get; set; }
     }

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IMSBackend.Models
@@ -23,10 +23,10 @@ namespace IMSBackend.Models
         public string? Status { get; set; }
 
         [Column("created_by")]
-        public int? CreatedBy { get; set; }
+        public string? CreatedBy { get; set; }
 
         [Column("approved_by")]
-        public int? ApprovedBy { get; set; }
+        public string? ApprovedBy { get; set; }
 
         [Column("notes")]
         public string? Notes { get; set; }

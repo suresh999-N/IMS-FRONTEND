@@ -12,9 +12,12 @@ namespace IMSBackend.DTOs
             @"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][A-Z0-9]Z[A-Z0-9]$",
             RegexOptions.Compiled);
         private static readonly Regex CustomerNameRegex = new(
-            @"^[A-Za-z &.-]+$",
+            @"^[A-Za-z\s]+$",
             RegexOptions.Compiled);
 
+        [RegularExpression(
+            @"^[A-Za-z\s]+$",
+            ErrorMessage = "Name can contain only letters and spaces.")]
         [Required(ErrorMessage = "Customer name is required.")]
         [MinLength(2, ErrorMessage = "Customer name must be at least 2 characters.")]
         public string Name { get; set; } = string.Empty;
@@ -80,7 +83,7 @@ namespace IMSBackend.DTOs
                 if (!CustomerNameRegex.IsMatch(name))
                 {
                     yield return new ValidationResult(
-                        "Customer name can contain only letters, spaces, &, -, and .",
+                        "Customer name can contain only letters and spaces.",
                         [nameof(Name)]);
                 }
             }
@@ -250,6 +253,9 @@ namespace IMSBackend.DTOs
 
     public class CustomerContactDto
     {
+        [RegularExpression(
+            @"^[A-Za-z\s]+$",
+            ErrorMessage = "Name can contain only letters and spaces.")]
         public string? ContactName { get; set; }
         public string? Role { get; set; }
         public string? Designation { get; set; }
