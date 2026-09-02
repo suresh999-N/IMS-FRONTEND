@@ -245,6 +245,7 @@ export default function TableComponent({
   columnStorageKey = '',
   enableRowSelection = false,
   selectedRowKeys,
+  onSelectionChange,
   searchTerm: externalSearchTerm,
   onSearchChange,
   fitExplicitColumnsToContainer = true,

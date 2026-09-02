@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  SlidersHorizontal,
+  Download,
   Pencil,
   Plus,
+  Printer,
   RefreshCw,
   Save,
   Trash2,
+  Check,
 } from 'lucide-react'
 import {
   listResource,
@@ -27,6 +29,72 @@ const ATTRIBUTE_COLUMNS_STORAGE_KEY = 'ims.attributes.table.visibleColumns.v1'
 const ATTRIBUTE_DEFAULT_COLUMNS = ['name', 'actions']
 
 const config = RESOURCE_CONFIGS.productAttributes
+
+function escapeCsvValue(val) {
+  const str = String(val ?? '')
+  if (/[",\n\r]/.test(str)) {
+    return `"${str.replace(/"/g, '""')}"`
+  }
+  return str
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function exportAttributesCsv(items) {
+  const headers = ['Attribute Name', 'Values']
+  const rows = items.map((item) => [
+    item.name || '',
+    (item.values || []).join('; '),
+  ])
+  const csv = [headers, ...rows]
+    .map((row) => row.map(escapeCsvValue).join(','))
+    .join('\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'Attributes.csv'
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+function printAttributes(items) {
+  const rows = items
+    .map(
+      (item) => `
+    <tr>
+      <td><strong>${escapeHtml(item.name || 'Unnamed Attribute')}</strong></td>
+      <td>${escapeHtml((item.values || []).join(', ') || 'No values')}</td>
+    </tr>
+  `,
+    )
+    .join('')
+  const printWindow = window.open('', '_blank')
+  if (!printWindow) return
+  printWindow.document.write(`<!doctype html><html><head><title>Product Attributes</title><style>
+    body { margin: 28px; color: #111827; font: 13px Arial, sans-serif; }
+    h1 { margin: 0 0 16px; font-size: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px 10px; border: 1px solid #dbe4f0; text-align: left; vertical-align: top; }
+    th { background: #f8fafc; color: #475569; font-size: 12px; }
+  </style></head><body>
+    <h1>Product Attributes</h1>
+    <table>
+      <thead><tr><th>Attribute Name</th><th>Values</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </body></html>`)
+  printWindow.document.close()
+  printWindow.focus()
+  printWindow.print()
+}
 
 function validateAttributeName(name, existingAttributes = [], editingId = null) {
   const trimmed = (name || '').trim()
@@ -75,13 +143,17 @@ function validateAttributeName(name, existingAttributes = [], editingId = null) 
 export default function Attributes() {
   const { hasPermission } = useAuth()
   const [attributes, setAttributes] = useState([])
+  const [selectedAttributeIds, setSelectedAttributeIds] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
   const [error, setError] = useState('')
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [bulkDeleteTarget, setBulkDeleteTarget] = useState(null)
 
   const [formValues, setFormValues] = useState({ name: '' })
   const [touched, setTouched] = useState({ name: false })
@@ -91,6 +163,44 @@ export default function Attributes() {
   const canCreate = hasPermission('productAttributes', 'create')
   const canEdit = hasPermission('productAttributes', 'edit')
   const canDelete = hasPermission('productAttributes', 'delete')
+
+  // Filtered attributes based on search
+  const filteredAttributes = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase()
+    if (!term) return attributes
+    return attributes.filter((attr) => {
+      const text = `${attr.name || ''} ${attr.values?.join(' ') || ''}`.toLowerCase()
+      return text.includes(term)
+    })
+  }, [attributes, searchTerm])
+
+  // Reconcile stale selections
+  useEffect(() => {
+    if (selectedAttributeIds.length === 0) return
+    const validIdSet = new Set(filteredAttributes.map((attr) => String(attr.attributeId ?? attr.id)))
+    setSelectedAttributeIds((prev) => {
+      const filtered = prev.filter((id) => validIdSet.has(String(id)))
+      return filtered.length === prev.length ? prev : filtered
+    })
+  }, [attributes, filteredAttributes, selectedAttributeIds])
+
+  // Bulk action enablement - central source of truth
+  const totalFilteredCount = filteredAttributes.length
+  const hasMultipleRecords = totalFilteredCount > 1
+  const bulkActionsAllowed = hasMultipleRecords
+  const selectedCount = selectedAttributeIds.length
+  const selectedAttributeSet = useMemo(
+    () => new Set(selectedAttributeIds.map(String)),
+    [selectedAttributeIds],
+  )
+  const selectedAttributes = useMemo(
+    () => filteredAttributes.filter((attr) => selectedAttributeSet.has(String(attr.attributeId ?? attr.id))),
+    [filteredAttributes, selectedAttributeSet],
+  )
+
+  const canBulkDelete = canDelete && bulkActionsAllowed && selectedCount >= 2
+  const canBulkExport = bulkActionsAllowed && (selectedCount >= 2 || (selectedCount === 0 && hasMultipleRecords))
+  const canBulkPrint = bulkActionsAllowed && (selectedCount >= 2 || (selectedCount === 0 && hasMultipleRecords))
 
   // ── Load Data ──────────────────────────────────────────────────────────────
   const loadData = useCallback(async (options = {}) => {
@@ -276,10 +386,62 @@ export default function Attributes() {
     }
   }
 
+  // ── Bulk Handlers ─────────────────────────────────────────────────────────
+  function handleBulkDelete() {
+    if (!canBulkDelete) return
+    setBulkDeleteTarget(selectedAttributes)
+  }
+
+  async function confirmBulkDelete() {
+    if (!canBulkDelete || !bulkDeleteTarget || bulkDeleteTarget.length < 2) return
+    setIsBulkDeleting(true)
+
+    try {
+      const results = await Promise.all(
+        bulkDeleteTarget.map((attr) => deleteResource(config, attr.attributeId ?? attr.id)),
+      )
+      const failed = results.filter((res) => !res.success)
+      if (failed.length > 0) {
+        throw new Error('Failed to delete some attributes.')
+      }
+
+      showToast({
+        type: 'success',
+        title: 'Attributes',
+        message: `${bulkDeleteTarget.length} attributes deleted successfully.`,
+      })
+
+      setSelectedAttributeIds([])
+      setBulkDeleteTarget(null)
+      await loadData({ force: true, showLoading: false })
+    } catch (err) {
+      showToast({
+        type: 'error',
+        title: 'Attributes',
+        message: err instanceof Error ? err.message : 'Unable to delete selected attributes.',
+      })
+    } finally {
+      setIsBulkDeleting(false)
+    }
+  }
+
+  function handleExport() {
+    if (!canBulkExport) return
+    const exportData = selectedCount >= 2 ? selectedAttributes : filteredAttributes
+    if (exportData.length === 0) return
+    exportAttributesCsv(exportData)
+  }
+
+  function handlePrint() {
+    if (!canBulkPrint) return
+    const printData = selectedCount >= 2 ? selectedAttributes : filteredAttributes
+    if (printData.length === 0) return
+    printAttributes(printData)
+  }
+
   // ── Column Definitions ─────────────────────────────────────────────────────
   const columns = useMemo(
     () => [
-
       {
         key: 'name',
         label: 'Attribute Name',
@@ -344,9 +506,67 @@ export default function Attributes() {
   // ── Toolbar Rendering ──────────────────────────────────────────────────────
   const primaryToolbarContent = null
 
+  const selectionSummary = selectedCount > 0 ? (
+    <div className="attributes__selection-summary" aria-live="polite">
+      <Check size={14} />
+      <strong>{selectedCount} selected</strong>
+    </div>
+  ) : null
+
   const toolbarContent = useMemo(
     () => (
       <FilterBar className="attributes__toolbar-actions" ariaLabel="Attribute table actions">
+        {selectionSummary}
+        <button
+          type="button"
+          className="button button-secondary"
+          onClick={handleExport}
+          disabled={!canBulkExport}
+          title={
+            !bulkActionsAllowed
+              ? 'Bulk export is disabled when only 1 attribute exists'
+              : selectedCount === 1
+                ? 'Select at least 2 attributes or clear selection to export'
+                : ''
+          }
+        >
+          <Download size={15} />
+          Export
+        </button>
+        <button
+          type="button"
+          className="button button-secondary"
+          onClick={handlePrint}
+          disabled={!canBulkPrint}
+          title={
+            !bulkActionsAllowed
+              ? 'Bulk print is disabled when only 1 attribute exists'
+              : selectedCount === 1
+                ? 'Select at least 2 attributes or clear selection to print'
+                : ''
+          }
+        >
+          <Printer size={15} />
+          Print
+        </button>
+        {canDelete ? (
+          <button
+            type="button"
+            className="button button-secondary button-danger"
+            onClick={handleBulkDelete}
+            disabled={!canBulkDelete || isBulkDeleting}
+            title={
+              !bulkActionsAllowed
+                ? 'Bulk delete is disabled when only 1 attribute exists'
+                : selectedCount < 2
+                  ? 'Select at least 2 attributes for bulk delete'
+                  : ''
+            }
+          >
+            <Trash2 size={15} />
+            {isBulkDeleting ? 'Deleting...' : 'Delete'}
+          </button>
+        ) : null}
         <button
           type="button"
           className="button button-secondary"
@@ -358,7 +578,21 @@ export default function Attributes() {
         </button>
       </FilterBar>
     ),
-    [isLoading, loadData],
+    [
+      selectionSummary,
+      handleExport,
+      canBulkExport,
+      handlePrint,
+      canBulkPrint,
+      canDelete,
+      handleBulkDelete,
+      canBulkDelete,
+      isBulkDeleting,
+      loadData,
+      isLoading,
+      bulkActionsAllowed,
+      selectedCount,
+    ],
   )
 
   // ── Modal Forms ────────────────────────────────────────────────────────────
@@ -421,11 +655,16 @@ export default function Attributes() {
           <DataTable
             className="resource-center__inventory-table"
             columns={columns}
-            rows={attributes}
+            rows={filteredAttributes}
             keyField="attributeId"
             searchPlaceholder="Search attributes by name"
             loading={isLoading}
             showSearch={true}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            enableRowSelection={true}
+            selectedRowKeys={selectedAttributeIds}
+            onSelectionChange={setSelectedAttributeIds}
             splitToolbar
             fitExplicitColumnsToContainer
             filterContent={primaryToolbarContent}
@@ -487,7 +726,7 @@ export default function Attributes() {
         </FormModal>
       ) : null}
 
-      {/* Delete Confirmation Modal */}
+      {/* Single Delete Confirmation Modal */}
       {deleteTarget ? (
         <FormModal
           title="Delete Attribute"
@@ -516,6 +755,39 @@ export default function Attributes() {
             >
               <Trash2 size={16} />
               {isDeleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </FormModal>
+      ) : null}
+
+      {/* Bulk Delete Confirmation Modal */}
+      {bulkDeleteTarget ? (
+        <FormModal
+          title="Delete Selected Attributes"
+          onClose={() => setBulkDeleteTarget(null)}
+          className="form-modal--delete-confirmation"
+        >
+          <p>
+            Are you sure you want to delete <strong>{bulkDeleteTarget.length} selected attributes</strong>?
+            This action cannot be undone.
+          </p>
+          <div className="button-row resource-form__footer">
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={() => setBulkDeleteTarget(null)}
+              disabled={isBulkDeleting}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="button button-danger"
+              onClick={confirmBulkDelete}
+              disabled={isBulkDeleting}
+            >
+              <Trash2 size={16} />
+              {isBulkDeleting ? 'Deleting...' : 'Delete Selected Attributes'}
             </button>
           </div>
         </FormModal>
