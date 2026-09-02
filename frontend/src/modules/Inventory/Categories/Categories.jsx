@@ -153,7 +153,6 @@ function getCategoryChildCount(category, allCategories = []) {
 function hasChildSubCategories(category, allCategories = []) {
   return getCategoryChildCount(category, allCategories) > 0
 }
-}
 
 function getDescendantIds(categories, categoryId) {
   const result = new Set()
