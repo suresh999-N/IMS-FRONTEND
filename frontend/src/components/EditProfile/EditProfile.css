@@ -70,8 +70,8 @@
 }
 
 .edit-profile-close-btn {
-  width: 38px;
-  height: 38px;
+  width: 24px !important;
+  height: 24px !important;
   border: none;
   background: transparent;
   color: var(--ims-text);
@@ -245,16 +245,18 @@
 }
 
 .edit-cancel-btn {
-  background: var(--ims-card);
-  color: var(--ims-text);
-  border: 1px solid var(--ims-border);
+  background: var(--color-danger-50, #fef2f2);
+  background-color: var(--color-danger-50, #fef2f2);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
   order: 2;
 }
 
 .edit-cancel-btn:hover {
-  background: var(--ims-primary-soft);
-  color: var(--ims-primary-dark);
-  border-color: var(--ims-primary-border);
+  background: var(--color-danger-100, #fee2e2);
+  background-color: var(--color-danger-100, #fee2e2);
+  color: #b91c1c;
+  border-color: rgba(239, 68, 68, 0.5);
 }
 
 .edit-profile-modal::-webkit-scrollbar {

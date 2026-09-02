@@ -255,7 +255,7 @@ export default function SupplierContactsTab({
             <strong id="supplier-contact-remove-title">Remove contact?</strong>
             <p>Are you sure you want to remove this contact?</p>
             <div className="supplier-bank-confirm-dialog__actions">
-              <button type="button" className="button" onClick={() => setRemoveIndex(null)}>
+              <button type="button" className="button button-cancel" onClick={() => setRemoveIndex(null)}>
                 Cancel
               </button>
               <button type="button" className="button button-danger" onClick={confirmRemove}>

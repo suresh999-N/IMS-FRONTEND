@@ -2157,7 +2157,7 @@ export default function CustomerForm({
             <span aria-hidden="true" />
           )}
           <div className="customer-form__action-buttons">
-            <button type="button" className="button" onClick={onCancel} disabled={isSubmitting}>
+            <button type="button" className="button button-cancel" onClick={onCancel} disabled={isSubmitting}>
               <X size={16} />
               {isReadOnly ? 'Close' : 'Cancel'}
             </button>

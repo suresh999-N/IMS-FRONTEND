@@ -111,7 +111,7 @@ export default function BarcodeForm({
             <Save size={16} />
             {isSaving ? 'Generating...' : 'Generate'}
           </button>
-          <button type="button" className="button" onClick={onCancel}>
+          <button type="button" className="button button-cancel" onClick={onCancel}>
             <RotateCcw size={16} />
             Cancel
           </button>

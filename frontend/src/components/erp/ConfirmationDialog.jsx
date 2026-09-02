@@ -26,7 +26,7 @@ export default function ConfirmationDialog({
       <div className="erp-confirmation-dialog__content">
         {message ? <p className="erp-confirmation-dialog__message">{message}</p> : null}
         <div className="erp-confirmation-dialog__actions">
-          <button type="button" className="button button-secondary" onClick={onCancel} disabled={isSubmitting}>
+          <button type="button" className="button button-secondary button-cancel" onClick={onCancel} disabled={isSubmitting}>
             {cancelLabel}
           </button>
           <button

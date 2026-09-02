@@ -207,9 +207,8 @@ export default function LowStockAlert({ lowStockProducts = [], onClose }) {
         <div className="low-stock-alert__loading">
           <AlertTriangle className="text-danger" size={24} style={{ marginBottom: '8px' }} />
           <p>Failed to retrieve inventory levels. Please try again later.</p>
-          <button
+          <button className="button button-cancel button-secondary"
             type="button"
-            className="button button-secondary"
             onClick={onClose}
             style={{ marginTop: '16px', minWidth: '100px' }}
           >
@@ -322,7 +321,7 @@ export default function LowStockAlert({ lowStockProducts = [], onClose }) {
 
         {/* Footer/Action Area */}
         <div className="low-stock-modal-footer">
-          <button type="button" className="button button-secondary" onClick={onClose}>
+          <button type="button" className="button button-secondary button-cancel" onClick={onClose}>
             Close
           </button>
         </div>

@@ -443,9 +443,8 @@ export default function WarehouseForm({
       </div>
 
       <div className="warehouse-form__footer">
-        <button
+        <button className="button button-cancel button-secondary"
           type="button"
-          className="button button-secondary"
           onClick={onCancel}
           disabled={isSubmitting}
         >

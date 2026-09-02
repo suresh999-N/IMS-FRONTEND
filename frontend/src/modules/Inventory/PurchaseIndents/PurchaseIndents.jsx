@@ -1521,7 +1521,7 @@ export default function PurchaseIndentsScreen({
               <p className="delete-confirmation__warning">This action cannot be undone.</p>
             </div>
             <div className="button-row">
-              <button type="button" className="button button-secondary" onClick={() => setDeleteTarget(null)} disabled={isDeleting}>
+              <button type="button" className="button button-secondary button-cancel" onClick={() => setDeleteTarget(null)} disabled={isDeleting}>
                 Cancel
               </button>
               <button type="button" className="button button-danger" onClick={confirmDelete} disabled={isDeleting}>
@@ -1784,7 +1784,7 @@ export default function PurchaseIndentsScreen({
               <p className="delete-confirmation__warning">This action cannot be undone.</p>
             </div>
             <div className="button-row">
-              <button type="button" className="button button-secondary" onClick={() => setShowBulkDeleteConfirm(false)} disabled={isDeleting}>
+              <button type="button" className="button button-secondary button-cancel" onClick={() => setShowBulkDeleteConfirm(false)} disabled={isDeleting}>
                 Cancel
               </button>
               <button type="button" className="button button-danger" onClick={handleBulkDelete} disabled={isDeleting}>

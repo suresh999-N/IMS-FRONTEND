@@ -97,6 +97,18 @@
   color: var(--danger);
 }
 
+.erp-button--cancel {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: var(--color-danger-50, #fef2f2);
+  color: var(--cancel-text, #dc2626);
+}
+
+.erp-button--cancel:hover:not(:disabled) {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: var(--color-danger-100, #fee2e2);
+  color: var(--cancel-text-hover, #b91c1c);
+}
+
 .erp-input,
 .erp-select {
   min-height: var(--touch-target);
@@ -593,4 +605,15 @@ button.erp-action-menu__trigger--icon,
   .erp-action-buttons {
     justify-content: flex-start;
   }
+}
+
+.erp-drawer__close {
+  width: 24px !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
 }

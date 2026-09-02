@@ -1234,9 +1234,8 @@ export default function Products({
                 `${isProductArchived(deleteTarget) ? 'Permanently delete' : 'Delete'} ${deleteTarget.name || 'this product'} and clean inventory dependencies in the required order? This cannot be undone.`}
             </p>
             <div className="button-row">
-              <button
+              <button className="button button-cancel button-secondary"
                 type="button"
-                className="button button-secondary"
                 onClick={() => setDeleteTarget(null)}
                 disabled={isDeleting}
               >
@@ -1283,9 +1282,8 @@ export default function Products({
               ) : null}
             </ul>
             <div className="button-row">
-              <button
+              <button className="button button-cancel button-secondary"
                 type="button"
-                className="button button-secondary"
                 onClick={() => setBulkDeleteTarget(null)}
                 disabled={isDeleting}
               >

@@ -832,9 +832,8 @@ export default function Customers() {
               </ul>
             </div>
             <div className="button-row customer-delete-dialog__actions">
-              <button
+              <button className="button button-cancel button-secondary"
                 type="button"
-                className="button button-secondary"
                 onClick={() => setBulkDeleteTarget(null)}
                 disabled={isDeleting}
               >
@@ -871,9 +870,8 @@ export default function Customers() {
               </span>
             </div>
             <div className="customers-status-confirm__actions">
-              <button
+              <button className="button button-cancel button-secondary"
                 type="button"
-                className="button button-secondary"
                 onClick={() => setStatusConfirmTarget(null)}
                 disabled={isUpdatingStatus}
               >

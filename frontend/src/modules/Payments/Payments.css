@@ -1354,8 +1354,8 @@
 }
 
 .payment-drawer__close {
-  width: 36px;
-  min-height: 36px;
+  width: 24px !important;
+  min-height: 24px !important;
   padding: 0 !important;
 }
 

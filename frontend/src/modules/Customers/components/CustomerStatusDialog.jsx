@@ -107,9 +107,8 @@ export default function CustomerStatusDialog({
         {error ? <p className="customer-status-form__error page-error-banner" role="alert">{error}</p> : null}
 
         <div className="customer-status-form__actions">
-          <button
+          <button className="button button-cancel"
             type="button"
-            className="button"
             onClick={onClose}
             disabled={isSubmitting}
           >

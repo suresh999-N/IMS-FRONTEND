@@ -1329,7 +1329,7 @@ export default function SupplierForm({
       <div className="supplier-form__actions">
         {!readOnly && isDirty ? <span className="supplier-form__dirty-note">Unsaved changes</span> : <span aria-hidden="true" />}
         <div className="supplier-form__action-buttons">
-          <button type="button" className="button" onClick={onCancel} disabled={isSubmitting}>
+          <button type="button" className="button button-cancel" onClick={onCancel} disabled={isSubmitting}>
             <RotateCcw size={16} />
             {readOnly ? 'Close' : 'Cancel'}
           </button>

@@ -203,9 +203,8 @@ function BrandForm({ editingBrand, items, onSubmit, onCancel, isSubmitting }) {
           )}
           {isSubmitting ? 'Saving...' : 'Save Brand'}
         </button>
-        <button
+        <button className="button button-cancel button-secondary"
           type="button"
-          className="button button-secondary"
           onClick={onCancel}
           disabled={isSubmitting}
         >
@@ -621,9 +620,8 @@ export default function Brands() {
                 <p className="delete-confirmation__warning">This action cannot be undone.</p>
               </div>
               <div className="button-row">
-                <button
+                <button className="button button-cancel button-secondary"
                   type="button"
-                  className="button button-secondary"
                   onClick={() => setDeleteTarget(null)}
                   disabled={isDeleting}
                 >

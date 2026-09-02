@@ -1406,7 +1406,7 @@ export default function ProductForm({
             <Save size={16} />
             {actionLabel}
           </button>
-          <button type="button" className="button button-secondary" onClick={handleCancel} disabled={isSaving}>
+          <button type="button" className="button button-secondary button-cancel" onClick={handleCancel} disabled={isSaving}>
             {isEdit ? <X size={16} /> : <RotateCcw size={16} />}
             {isEdit ? 'Cancel' : 'Clear'}
           </button>

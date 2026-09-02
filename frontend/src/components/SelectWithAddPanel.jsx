@@ -15,9 +15,8 @@ export default function SelectWithAddPanel({
     <div className="select-add__panel">
       <div className="select-add__panel-header">
         <strong>{addTitle}</strong>
-        <button
+        <button className="button button-cancel select-add__icon-button"
           type="button"
-          className="button select-add__icon-button"
           onClick={onCancel}
         >
           <X size={14} />
@@ -64,7 +63,7 @@ export default function SelectWithAddPanel({
           <Check size={16} />
           Save
         </button>
-        <button type="button" className="button" onClick={onCancel}>
+        <button type="button" className="button button-cancel" onClick={onCancel}>
           <X size={16} />
           Cancel
         </button>

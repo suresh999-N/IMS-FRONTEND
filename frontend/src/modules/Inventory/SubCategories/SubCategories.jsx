@@ -614,9 +614,8 @@ function SubCategoryForm({
           )}
           {isSubmitting ? 'Saving...' : mode === 'edit' ? 'Save Changes' : 'Create'}
         </button>
-        <button
+        <button className="button button-cancel button-secondary"
           type="button"
-          className="button button-secondary"
           onClick={onCancel}
           disabled={isSubmitting}
         >
@@ -1257,9 +1256,8 @@ export default function SubCategories() {
                 <p className="delete-confirmation__warning">This action cannot be undone.</p>
               </div>
               <div className="button-row">
-                <button
+                <button className="button button-cancel button-secondary"
                   type="button"
-                  className="button button-secondary"
                   onClick={() => setDeleteTarget(null)}
                   disabled={isDeleting}
                 >

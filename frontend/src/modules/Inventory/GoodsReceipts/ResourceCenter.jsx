@@ -1634,13 +1634,13 @@ function ResourceForm({
               {isSubmitting ? <LoaderCircle size={16} className="animate-spin" /> : <Save size={16} />}
               {isSubmitting ? 'Saving...' : mode === 'edit' ? 'Save Changes' : 'Create'}
             </button>
-            <button type="button" className="button" onClick={onCancel} disabled={isSubmitting}>
+            <button type="button" className="button button-cancel" onClick={onCancel} disabled={isSubmitting}>
               Cancel
             </button>
           </>
         ) : (
           <>
-            <button type="button" className="button" onClick={onCancel} disabled={isSubmitting}>
+            <button type="button" className="button button-cancel" onClick={onCancel} disabled={isSubmitting}>
               Cancel
             </button>
             {isSubCategoriesForm && mode === 'create' ? (
@@ -3009,7 +3009,7 @@ function ResourcePage({ config }) {
               the SubCategory or discard the draft.
             </p>
             <div className="button-row resource-center__draft-actions">
-              <button type="button" className="button button-secondary" onClick={handleDiscardDraftAndClose}>
+              <button type="button" className="button button-secondary button-cancel" onClick={handleDiscardDraftAndClose}>
                 Discard
               </button>
               <button type="button" className="button button-secondary" onClick={() => setIsDraftClosePromptOpen(false)}>
@@ -3041,9 +3041,8 @@ function ResourcePage({ config }) {
               <p className="delete-confirmation__warning">This action cannot be undone.</p>
             </div>
             <div className="button-row">
-              <button
+              <button className="button button-cancel button-secondary"
                 type="button"
-                className="button button-secondary"
                 onClick={() => setDeleteTarget(null)}
                 disabled={isDeleting}
               >

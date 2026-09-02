@@ -724,7 +724,7 @@ export default function Purchases({
               <p className="delete-confirmation__warning">This action cannot be undone.</p>
             </div>
             <div className="button-row">
-              <button type="button" className="button button-secondary" onClick={() => setDeleteTarget(null)}>
+              <button type="button" className="button button-secondary button-cancel" onClick={() => setDeleteTarget(null)}>
                 Cancel
               </button>
               <button type="button" className="button button-danger" onClick={confirmDelete}>
