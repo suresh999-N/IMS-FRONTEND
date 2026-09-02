@@ -639,9 +639,9 @@ function getSubCategoryStatus(row) {
 
 function SubCategoriesHeader({ canCreate, summary, activeStatus, onFilterStatus, onAdd }) {
   const metrics = [
-    { key: 'all', label: `${summary.total} Records`, tone: 'success' },
-    { key: 'active', label: `${summary.active} Active`, tone: 'info' },
-    { key: 'draft', label: `${summary.pending} Draft`, tone: 'warning' },
+    { key: 'all', label: `${summary.total} Records`, tone: 'info' },
+    { key: 'active', label: `${summary.active} Active`, tone: 'success' },
+    { key: 'inactive', label: `${summary.inactive} Inactive`, tone: 'warning' },
   ]
 
   return (
@@ -723,24 +723,20 @@ export default function SubCategories() {
   // ── Derived values ─────────────────────────────────────────────────────────
   const summary = useMemo(() => {
     let activeCount = 0
-    let draftCount = 0
     let inactiveCount = 0
 
     rows.forEach((row) => {
-      const status = getSubCategoryStatus(row)
-      if (status === 'active') activeCount += 1
-      else if (status === 'draft') draftCount += 1
-      else if (status === 'inactive') inactiveCount += 1
+      const status = String(readResourceValue(row, 'status', 'active')).toLowerCase()
+      if (status === 'inactive') inactiveCount += 1
+      else activeCount += 1
     })
 
     return {
       total: rows.length,
       active: activeCount,
       inactive: inactiveCount,
-      draft: draftCount,
-      pending: draftCount > 0 ? draftCount : (hasSubCategoryDraft ? 1 : 0),
     }
-  }, [rows, hasSubCategoryDraft])
+  }, [rows])
 
   const selectedSubCategories = useMemo(
     () => rows.filter((row) => selectedIds.includes(String(row.id || ''))),
@@ -1019,9 +1015,9 @@ export default function SubCategories() {
         style: { width: 96, minWidth: 96 },
         headerStyle: { width: 96, minWidth: 96 },
         render: (row) => {
-          const status = readResourceValue(row, 'status', 'active')
+          const status = readResourceValue(row, 'status', 'Active')
           return (
-            <StatusBadge type={getStatusType(status)}>
+            <StatusBadge status={status}>
               {formatStatusLabel(status)}
             </StatusBadge>
           )
