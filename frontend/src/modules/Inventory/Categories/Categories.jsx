@@ -4,6 +4,7 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  ClipboardList,
   Download,
   FileText,
   Pencil,
@@ -572,6 +573,7 @@ export default function Categories() {
   const [error, setError] = useState('')
   const [formState, setFormState] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [subcategoriesViewTarget, setSubcategoriesViewTarget] = useState(null)
   const [selectedCategoryIds, setSelectedCategoryIds] = useState([])
   const [statusFilter, setStatusFilter] = useState('all')
 
@@ -921,13 +923,28 @@ export default function Categories() {
       mobileLabel: 'Subcats',
       sortable: true,
       sortValue: (category) => (category.rowType === 'subcategory' ? 0 : Number(category.childCount ?? 0)),
-      render: (category) => (
-        category.rowType === 'subcategory' ? (
-          <span className="catalog-page__muted-value">—</span>
-        ) : (
-          <span className="catalog-page__subcat-text">{category.childCount}</span>
-        )
-      ),
+      render: (category) => {
+        if (category.rowType === 'subcategory') {
+          return <span className="catalog-page__muted-value">—</span>
+        }
+        const childCount = category.childCount || 0
+        if (childCount > 0) {
+          return (
+            <button
+              type="button"
+              className="catalog-page__subcat-badge-btn"
+              onClick={(e) => {
+                e.stopPropagation()
+                setSubcategoriesViewTarget(category)
+              }}
+              title="View subcategories in separate grid"
+            >
+              {childCount} Subcategories
+            </button>
+          )
+        }
+        return <span className="catalog-page__subcat-text">0</span>
+      },
     },
     {
       key: 'status',
@@ -967,12 +984,18 @@ export default function Categories() {
       hideable: false,
       render: (category) => (
         <div className="catalog-page__row-actions">
-          {canEdit || canDelete ? (
+          {canEdit || canDelete || (category.childCount > 0) ? (
             <ActionMenu
               iconOnly
               className="inventory-row-action-menu"
               label={`Actions for ${category.name}`}
               actions={[
+                category.childCount > 0 ? {
+                  key: 'view-subcategories',
+                  label: 'View Subcategories',
+                  icon: ClipboardList,
+                  onClick: () => setSubcategoriesViewTarget(category),
+                } : null,
                 canEdit ? {
                   key: 'edit',
                   label: 'Edit',
@@ -1243,6 +1266,100 @@ export default function Categories() {
                 Delete
               </button>
             </div>
+          </div>
+        </FormModal>
+      ) : null}
+
+      {subcategoriesViewTarget ? (
+        <FormModal
+          title={`${subcategoriesViewTarget.name} — Subcategories`}
+          onClose={() => setSubcategoriesViewTarget(null)}
+          dialogClassName="catalog-category-subcategories-modal"
+        >
+          <div className="catalog-subcategories-drawer">
+            <div className="catalog-subcategories-drawer__header">
+              <div>
+                <strong>{subcategoriesViewTarget.name}</strong>
+                <span className="subtext">
+                  {getAllChildren(subcategoriesViewTarget, categories).length} Subcategories
+                </span>
+              </div>
+              {canCreate ? (
+                <button
+                  type="button"
+                  className="button button-primary button-sm"
+                  onClick={() => {
+                    setFormState({ category: null, initialParentId: subcategoriesViewTarget.id })
+                  }}
+                >
+                  <Plus size={14} /> Add Subcategory
+                </button>
+              ) : null}
+            </div>
+
+            {getAllChildren(subcategoriesViewTarget, categories).length > 0 ? (
+              <div className="catalog-subcategories-drawer__table-wrapper">
+                <table className="catalog-subcategories-mini-table">
+                  <thead>
+                    <tr>
+                      <th>Subcategory Name</th>
+                      <th>Description</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getAllChildren(subcategoriesViewTarget, categories).map((sub) => (
+                      <tr key={sub.id}>
+                        <td>
+                          <strong>{sub.name}</strong>
+                        </td>
+                        <td>{sub.description || 'No description provided'}</td>
+                        <td>
+                          <StatusBadge status={sub.status || 'Active'}>
+                            {sub.status || 'Active'}
+                          </StatusBadge>
+                        </td>
+                        <td>
+                          <div className="catalog-page__row-actions">
+                            {canEdit ? (
+                              <button
+                                type="button"
+                                className="button button-text button-sm"
+                                title="Edit subcategory"
+                                onClick={() => {
+                                  setSubcategoriesViewTarget(null)
+                                  setFormState({ category: sub, initialParentId: subcategoriesViewTarget.id })
+                                }}
+                              >
+                                <Pencil size={14} />
+                              </button>
+                            ) : null}
+                            {canDelete ? (
+                              <button
+                                type="button"
+                                className="button button-text button-danger button-sm"
+                                title="Delete subcategory"
+                                onClick={() => {
+                                  setSubcategoriesViewTarget(null)
+                                  handleDeleteClick(sub)
+                                }}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            ) : null}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="catalog-subcategories-drawer__empty">
+                No subcategories created under {subcategoriesViewTarget.name} yet.
+              </div>
+            )}
           </div>
         </FormModal>
       ) : null}
