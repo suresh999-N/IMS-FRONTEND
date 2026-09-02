@@ -793,7 +793,7 @@ export default function Categories() {
       mobilePrimary: true,
       mobileLabel: 'Category',
       searchValue: (category) =>
-        `${category.name} ${category.description || ''} ${categoryParentLabel(categories, category)} ${buildPath(categories, category)}`,
+        `${category.name} ${category.description} ${category.parentName ?? ''} ${category.categoryName ?? ''} ${buildPath(categories, category)}`,
       sortValue: (category) => category.sortPath ?? buildPath(categories, category),
       render: (category) => {
         const depth = category.depth || 0
@@ -845,8 +845,6 @@ export default function Categories() {
       className: 'catalog-page__description-column',
       mobileDescription: true,
       sortable: true,
-      searchValue: (category) =>
-        `${category.description || ''} ${category.description ? '' : 'No description provided'}`,
       sortValue: (category) => (category.description || '').toLowerCase(),
       render: (category) => (
         <span className={`catalog-page__cell-description ${category.description ? '' : 'is-empty'}`}>
@@ -863,7 +861,6 @@ export default function Categories() {
       headerStyle: { width: CATEGORY_COLUMN_WIDTHS.parentId, minWidth: CATEGORY_COLUMN_WIDTHS.parentId, maxWidth: CATEGORY_COLUMN_WIDTHS.parentId },
       mobileLabel: 'Parent',
       sortable: true,
-      searchValue: (category) => categoryParentLabel(categories, category),
       sortValue: (category) => categoryParentLabel(categories, category).toLowerCase(),
       render: (category) => {
         const label = categoryParentLabel(categories, category)
@@ -1149,7 +1146,7 @@ export default function Categories() {
               </button>
             </FilterBar>
           }
-          searchPlaceholder="Search categories by name, parent, or description..."
+          searchPlaceholder="Search categories by name, parent..."
           emptyMessage="No categories found."
           renderMobileCard={renderCategoryMobileCard}
           enableRowSelection
