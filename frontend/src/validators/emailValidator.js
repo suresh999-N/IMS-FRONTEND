@@ -116,8 +116,17 @@ export function getEmailError(value, options = {}) {
     }
   }
 
-  const tld = domainParts[domainParts.length - 1]
+  const lowerDomain = domainPart.toLowerCase()
+  if (COMMON_DOMAIN_TYPOS[lowerDomain]) {
+    return `Enter a valid email address (did you mean ${COMMON_DOMAIN_TYPOS[lowerDomain]}?).`
+  }
+
+  const tld = domainParts[domainParts.length - 1].toLowerCase()
   if (!tld || !/^[a-z]+$/i.test(tld) || tld.length < 2 || tld.length > 24) {
+    return 'Enter a valid email address.'
+  }
+
+  if (TYPO_TLDS.has(tld) && !lowerDomain.endsWith('.co.in') && !lowerDomain.endsWith('.co.uk') && !lowerDomain.endsWith('.co.jp') && !lowerDomain.endsWith('.co.za')) {
     return 'Enter a valid email address.'
   }
 

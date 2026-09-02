@@ -1203,12 +1203,12 @@ export const RESOURCE_CONFIGS = {
         required: true,
         minLength: 2,
         maxLength: 50,
-        pattern: /^(?!.*([\p{L}a-zA-Z])\1\1)(?=.*[\p{L}a-zA-Z])[\p{L}a-zA-Z]{1,15}(?:[ .'-][\p{L}a-zA-Z]{1,15})*$/u,
-        patternMessage: 'Name can only contain letters, spaces, dots, hyphens, and apostrophes. Single words cannot exceed 15 characters, and characters cannot be repeated consecutively more than twice.'
+        pattern: /^(?!.*([a-zA-Z])\1\1)[a-zA-Z]{1,15}(?:[ .'-][a-zA-Z]{1,15})*$/,
+        patternMessage: 'Name can only contain letters, spaces, dots, hyphens, and apostrophes. Single words cannot exceed 15 characters, and characters cannot repeat more than twice.'
       },
       { name: 'email', label: 'Mail', type: 'email', required: true },
-      { name: 'phoneNumber', label: 'Phone No', type: 'tel', required: true, minLength: 10, maxLength: 10, validation: { pattern: /^[6-9]\d{9}$/, message: 'Mobile number must start with 6, 7, 8, or 9 and be exactly 10 digits.' } },
-      { name: 'password', label: 'Password', type: 'password', requiredOnCreate: true, minLength: 8, createOnly: true, helperText: 'At least 8 chars with uppercase, lowercase, number & symbol' },
+      { name: 'phoneNumber', label: 'Phone No', type: 'tel', required: true, minLength: 10, maxLength: 10, pattern: /^[6-9]\d{9}$/, patternMessage: 'Mobile number must start with 6, 7, 8, or 9 and be exactly 10 digits.' },
+      { name: 'password', label: 'Password', type: 'password', requiredOnCreate: true, minLength: 8, createOnly: true, pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/, patternMessage: 'Password must be at least 8 chars with uppercase, lowercase, number & symbol.', helperText: 'At least 8 chars with uppercase, lowercase, number & symbol' },
       { name: 'confirmPassword', label: 'Confirm Password', type: 'password', requiredOnCreate: true, createOnly: true },
       {
         name: 'role',
