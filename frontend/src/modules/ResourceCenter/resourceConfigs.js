@@ -53,7 +53,7 @@ const notificationTypes = [
 ]
 
 const readOnlyTimestamps = [
-  { key: 'createdAt', label: 'Created', format: 'date' },
+  { key: 'createdAt', label: 'Created Date', format: 'date' },
   { key: 'updatedAt', label: 'Updated', format: 'date' },
 ]
 
@@ -155,7 +155,7 @@ export const RESOURCE_CONFIGS = {
       { key: 'name', label: 'SubCategory', sortable: true },
       { key: 'categoryName', label: 'Category', sortable: true },
       { key: 'status', label: 'Status', format: 'status', sortable: true },
-      { key: 'createdAt', label: 'Created', format: 'date', sortable: true },
+      { key: 'createdAt', label: 'Created Date', format: 'date', sortable: true },
     ],
   },
   productAttributes: {
@@ -1116,7 +1116,7 @@ export const RESOURCE_CONFIGS = {
       { key: 'type', label: 'Type', format: 'status', sortable: true },
       { key: 'message', label: 'Message', sortable: true },
       { key: 'isRead', label: 'Read', format: 'boolean', sortable: true },
-      { key: 'createdAt', label: 'Created', format: 'date', sortable: true },
+      { key: 'createdAt', label: 'Created Date', format: 'date', sortable: true },
     ],
     rowActions: [
       {
@@ -1176,7 +1176,7 @@ export const RESOURCE_CONFIGS = {
         },
       },
       { key: 'description', label: 'Description', sortable: true, tableWidth: 320 },
-      { key: 'createdAt', label: 'Created', format: 'date', sortable: true, tableWidth: 140 },
+      { key: 'createdAt', label: 'Created Date', format: 'date', sortable: true, tableWidth: 140 },
     ],
   },
   users: {

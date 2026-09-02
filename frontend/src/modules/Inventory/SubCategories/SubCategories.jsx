@@ -1030,7 +1030,7 @@ export default function SubCategories() {
       },
       {
         key: 'createdAt',
-        label: 'Created',
+        label: 'Created Date',
         sortable: true,
         className: 'subcategories-col-date',
         tableWidth: 170,

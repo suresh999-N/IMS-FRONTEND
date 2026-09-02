@@ -11,6 +11,7 @@ import {
   createUnit,
   deleteUnit,
   formatUnitTitle,
+  getCanonicalUnitStem,
   getUnits,
   normalizeUnit,
   updateUnit,
@@ -70,7 +71,22 @@ export default function Units() {
       const rawList = response.data ?? []
       const normalized = rawList.map(normalizeUnit)
 
-      setUnits(normalized)
+      // Deduplicate near-duplicate entries by canonical unit stem
+      const uniqueMap = new Map()
+      normalized.forEach((item) => {
+        const key = getCanonicalUnitStem(item.name)
+        if (!uniqueMap.has(key)) {
+          uniqueMap.set(key, item)
+        } else {
+          const existing = uniqueMap.get(key)
+          // Prefer Title Cased name (e.g. 'Pieces' over 'piece')
+          if (item.name && item.name[0] === item.name[0].toUpperCase() && existing.name[0] !== existing.name[0].toUpperCase()) {
+            uniqueMap.set(key, item)
+          }
+        }
+      })
+
+      setUnits(Array.from(uniqueMap.values()))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to load units data.')
       setUnits([])
@@ -134,11 +150,14 @@ export default function Units() {
     }
 
     // Check duplicates locally if format is valid
+    const nameStem = getCanonicalUnitStem(name)
+    const shortNameStem = getCanonicalUnitStem(shortName)
+
     if (!errors.name) {
       const isDuplicateName = units.some(
         (u) =>
           (!editingItem || String(u.id) !== String(editingItem.id)) &&
-          u.name.toLowerCase() === name.toLowerCase(),
+          (u.name.toLowerCase() === name.toLowerCase() || getCanonicalUnitStem(u.name) === nameStem),
       )
       if (isDuplicateName) {
         errors.name = 'Unit Name already exists.'
@@ -149,7 +168,7 @@ export default function Units() {
       const isDuplicateShortName = units.some(
         (u) =>
           (!editingItem || String(u.id) !== String(editingItem.id)) &&
-          u.shortName.toLowerCase() === shortName.toLowerCase(),
+          (u.shortName.toLowerCase() === shortName.toLowerCase() || getCanonicalUnitStem(u.shortName) === shortNameStem),
       )
       if (isDuplicateShortName) {
         errors.shortName = 'Unit Abbreviation already exists.'

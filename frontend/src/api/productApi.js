@@ -360,6 +360,19 @@ const TITLE_CASE_ACRONYMS = new Set([
   'IT', 'USB', 'LED', 'LCD', 'TV', 'RAM', 'SSD', 'POS', 'CCTV', 'GPS', 'SKU', 'SIM', 'VIP', 'AC', 'DC', 'RO', 'PVC', 'HD', 'FHD', 'UHD', '4K', '5G', '4G', '3G',
 ])
 
+export function getCanonicalUnitStem(str) {
+  if (!str) return ''
+  let s = String(str).trim().toLowerCase()
+  if (s.endsWith('ies') && s.length > 3) {
+    s = s.slice(0, -3) + 'y'
+  } else if (s.endsWith('es') && s.length > 3 && (s.endsWith('shes') || s.endsWith('ches') || s.endsWith('boxes') || s.endsWith('xes'))) {
+    s = s.slice(0, -2)
+  } else if (s.endsWith('s') && !s.endsWith('ss') && s.length > 2) {
+    s = s.slice(0, -1)
+  }
+  return s
+}
+
 export function formatUnitTitle(value) {
   if (!value) return ''
   const str = String(value).trim()

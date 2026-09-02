@@ -351,7 +351,7 @@ export default function CustomersTable({
     },
     {
       key: 'createdAt',
-      label: 'Created',
+      label: 'Created Date',
       className: 'customers-col-created',
       sortable: true,
       sortValue: (customer) => getDateSortValue(customer.createdAt),

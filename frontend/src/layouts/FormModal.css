@@ -496,6 +496,24 @@
   [class*='confirm-actions']
 ) .button:not(.button-danger) {
   order: 1;
+  border: 1px solid var(--ims-primary-border, #a7f3d0) !important;
+  background: var(--ims-primary-soft, #ecfdf5) !important;
+  background-color: var(--ims-primary-soft, #ecfdf5) !important;
+  color: var(--ims-primary-dark, #047857) !important;
+  font-weight: 700 !important;
+}
+
+.form-modal--delete-confirmation .form-modal__body :where(
+  .button-row,
+  .erp-confirmation-dialog__actions,
+  .resource-form__footer,
+  [class*='delete-actions'],
+  [class*='confirm-actions']
+) .button:not(.button-danger):hover:not(:disabled) {
+  border-color: #6ee7b7 !important;
+  background: #d1fae5 !important;
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
 }
 
 .form-modal--delete-confirmation .form-modal__body :where(

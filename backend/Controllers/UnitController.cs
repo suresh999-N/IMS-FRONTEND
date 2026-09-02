@@ -22,6 +22,8 @@ namespace IMSBackend.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] string? search, CancellationToken cancellationToken)
         {
+            await DeduplicateUnitsAsync(cancellationToken);
+
             var queryable = _context.Units
                 .AsNoTracking()
                 .Where(unit => !unit.IsDeleted);
@@ -73,8 +75,8 @@ namespace IMSBackend.Controllers
                     traceId: HttpContext.TraceIdentifier));
             }
 
-            unit.Name = NormalizeText(unit.Name);
-            unit.ShortName = NormalizeText(unit.ShortName);
+            unit.Name = FormatUnitName(unit.Name);
+            unit.ShortName = FormatUnitName(unit.ShortName);
 
             try
             {
@@ -119,8 +121,8 @@ namespace IMSBackend.Controllers
                     traceId: HttpContext.TraceIdentifier));
             }
 
-            unit.Name = NormalizeText(updated.Name);
-            unit.ShortName = NormalizeText(updated.ShortName);
+            unit.Name = FormatUnitName(updated.Name);
+            unit.ShortName = FormatUnitName(updated.ShortName);
 
             try
             {
@@ -187,20 +189,72 @@ namespace IMSBackend.Controllers
                 HttpContext.TraceIdentifier));
         }
 
+        private async Task DeduplicateUnitsAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var activeUnits = await _context.Units
+                    .Where(u => !u.IsDeleted)
+                    .ToListAsync(cancellationToken);
+
+                var groups = activeUnits
+                    .GroupBy(u => GetCanonicalUnitStem(u.Name))
+                    .Where(g => g.Count() > 1)
+                    .ToList();
+
+                bool hasChanges = false;
+                foreach (var group in groups)
+                {
+                    var mainUnit = group.OrderByDescending(u => _context.Products.Count(p => p.UnitId == u.UnitId && !p.IsDeleted))
+                                        .ThenByDescending(u => u.Name.Length > 0 && char.IsUpper(u.Name[0]))
+                                        .ThenBy(u => u.UnitId)
+                                        .First();
+
+                    var duplicates = group.Where(u => u.UnitId != mainUnit.UnitId).ToList();
+                    foreach (var dup in duplicates)
+                    {
+                        var linkedProducts = await _context.Products
+                            .Where(p => p.UnitId == dup.UnitId && !p.IsDeleted)
+                            .ToListAsync(cancellationToken);
+
+                        foreach (var product in linkedProducts)
+                        {
+                            product.UnitId = mainUnit.UnitId;
+                        }
+
+                        dup.IsDeleted = true;
+                        hasChanges = true;
+                    }
+
+                    mainUnit.Name = FormatUnitName(mainUnit.Name);
+                    mainUnit.ShortName = FormatUnitName(mainUnit.ShortName);
+                }
+
+                if (hasChanges)
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Unit deduplication background task encountered an issue.");
+            }
+        }
+
         private async Task<string?> ValidateUnit(
             Unit unit,
             int? unitId,
             CancellationToken cancellationToken)
         {
-            var name = NormalizeText(unit.Name);
-            var shortName = NormalizeText(unit.ShortName);
+            var name = FormatUnitName(unit.Name);
+            var shortName = FormatUnitName(unit.ShortName);
 
             if (string.IsNullOrWhiteSpace(name))
             {
                 return "Unit name is required.";
             }
 
-            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-z\s]+$"))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-z\s\-°%()]+$"))
             {
                 return "Name can contain only letters and spaces.";
             }
@@ -210,35 +264,65 @@ namespace IMSBackend.Controllers
                 return "Unit abbreviation is required.";
             }
 
-            var normalizedName = name.ToLowerInvariant();
-            var normalizedShortName = shortName.ToLowerInvariant();
+            var nameStem = GetCanonicalUnitStem(name);
+            var shortNameStem = GetCanonicalUnitStem(shortName);
 
-            var duplicateNameExists = await _context.Units
+            var activeUnits = await _context.Units
                 .AsNoTracking()
-                .AnyAsync(
-                    item =>
-                        !item.IsDeleted &&
-                        item.UnitId != (unitId ?? 0) &&
-                        item.Name.ToLower() == normalizedName,
-                    cancellationToken);
+                .Where(u => !u.IsDeleted && u.UnitId != (unitId ?? 0))
+                .ToListAsync(cancellationToken);
+
+            var duplicateNameExists = activeUnits.Any(item =>
+                GetCanonicalUnitStem(item.Name) == nameStem ||
+                item.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (duplicateNameExists)
             {
                 return "Unit name already exists.";
             }
 
-            var duplicateShortNameExists = await _context.Units
-                .AsNoTracking()
-                .AnyAsync(
-                    item =>
-                        !item.IsDeleted &&
-                        item.UnitId != (unitId ?? 0) &&
-                        item.ShortName.ToLower() == normalizedShortName,
-                    cancellationToken);
+            var duplicateShortNameExists = activeUnits.Any(item =>
+                GetCanonicalUnitStem(item.ShortName) == shortNameStem ||
+                item.ShortName.Equals(shortName, StringComparison.OrdinalIgnoreCase));
 
             return duplicateShortNameExists
                 ? "Unit abbreviation already exists."
                 : null;
+        }
+
+        private static string GetCanonicalUnitStem(string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return string.Empty;
+            var s = text.Trim().ToLowerInvariant();
+            if (s.EndsWith("ies") && s.Length > 3)
+            {
+                s = s.Substring(0, s.Length - 3) + "y";
+            }
+            else if (s.EndsWith("es") && s.Length > 3 && (s.EndsWith("shes") || s.EndsWith("ches") || s.EndsWith("boxes") || s.EndsWith("xes")))
+            {
+                s = s.Substring(0, s.Length - 2);
+            }
+            else if (s.EndsWith("s") && !s.EndsWith("ss") && s.Length > 2)
+            {
+                s = s.Substring(0, s.Length - 1);
+            }
+            return s;
+        }
+
+        private static string FormatUnitName(string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return string.Empty;
+            var str = text.Trim();
+            var words = str.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < words.Length; i++)
+            {
+                var w = words[i];
+                if (w.Length > 0)
+                {
+                    words[i] = char.ToUpperInvariant(w[0]) + w.Substring(1).ToLowerInvariant();
+                }
+            }
+            return string.Join(" ", words);
         }
 
         private static string NormalizeText(string? value)

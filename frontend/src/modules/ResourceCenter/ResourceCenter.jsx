@@ -2526,7 +2526,7 @@ function ResourcePage({ config, navigationContent = null }) {
         },
         {
           key: 'createdAt',
-          label: 'Created',
+          label: 'Created Date',
           sortable: true,
           className: 'resource-center__subcategories-col-date',
           tableWidth: 170,
@@ -2625,7 +2625,7 @@ function ResourcePage({ config, navigationContent = null }) {
         },
         {
           key: 'createdAt',
-          label: 'Created',
+          label: 'Created Date',
           sortable: true,
           className: 'resource-center__notifications-col-created',
           render: (row) => (
