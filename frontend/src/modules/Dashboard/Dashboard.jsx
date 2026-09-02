@@ -197,8 +197,9 @@ function getInvoiceStatus(sale) {
 function getInvoiceStatusTone(status) {
   const value = String(status).toLowerCase()
 
+  if (value.includes('partial') || value.includes('partially')) return 'warning'
   if (value.includes('paid') || value.includes('complete') || value.includes('approved')) return 'success'
-  if (value.includes('pending') || value.includes('draft') || value.includes('partial')) return 'warning'
+  if (value.includes('pending') || value.includes('draft')) return 'warning'
   if (value.includes('cancel') || value.includes('overdue') || value.includes('failed')) return 'danger'
   return 'info'
 }
