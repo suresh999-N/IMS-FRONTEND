@@ -1390,13 +1390,8 @@ export default function ProductForm({
             <Save size={16} />
             {actionLabel}
           </button>
-<<<<<<< HEAD:src/modules/Inventory/Products/components/ProductForm.jsx
           <button type="button" className="button button-secondary button-cancel" onClick={handleCancel} disabled={isSaving}>
-            <RotateCcw size={16} />
-=======
-          <button type="button" className="button button-secondary" onClick={handleCancel} disabled={isSaving}>
             {isEdit ? <X size={16} /> : <RotateCcw size={16} />}
->>>>>>> f7d117babd6d288f996171e9c59aa06f79b35216:frontend/src/modules/Inventory/Products/components/ProductForm.jsx
             {isEdit ? 'Cancel' : 'Clear'}
           </button>
         </div>

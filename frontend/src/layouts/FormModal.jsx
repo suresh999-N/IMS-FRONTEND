@@ -126,11 +126,7 @@ export default function FormModal({
             onClick={onClose}
             aria-label="Close modal"
           >
-<<<<<<< HEAD:src/layouts/FormModal.jsx
-            <X size={14} />
-=======
             <X size={16} />
->>>>>>> f7d117babd6d288f996171e9c59aa06f79b35216:frontend/src/layouts/FormModal.jsx
           </button>
         </div>
 
