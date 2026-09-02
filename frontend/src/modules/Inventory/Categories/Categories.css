@@ -395,7 +395,11 @@
 
 .catalog-page__entity span,
 .catalog-page__muted-value { color: #8491a3; font-size: 12px; }
-.catalog-page__row-actions { display: flex; justify-content: center; }
+.catalog-page__row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
 /* Action menu */
 
