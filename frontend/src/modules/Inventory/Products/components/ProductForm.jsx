@@ -53,6 +53,7 @@ const trackedProductFields = [
 const createRequiredFields = [
   'name',
   'categoryId',
+  'brandId',
 ]
 
 const defaultCategories = [
@@ -328,6 +329,22 @@ function getFieldError(name, value, mode, options = {}) {
     return ''
   }
 
+  if (name === 'brandId') {
+    if (!value || value === '' || value === '0') {
+      return 'Brand is required.'
+    }
+
+    const brandList = options.brands ?? []
+    if (brandList.length > 0) {
+      const isValid = brandList.some((brand) => String(brand.id) === String(value))
+      if (!isValid) {
+        return 'Please select a valid brand.'
+      }
+    }
+
+    return ''
+  }
+
   if (mode === 'create' && createRequiredFields.includes(name)) {
     const label = {
       categoryId: 'Category',
@@ -595,8 +612,8 @@ export default function ProductForm({
     const fieldsToValidate = Array.from(
       new Set(
         isEdit
-          ? [...changedFields, 'categoryId', 'subCategoryId']
-          : [...createRequiredFields, 'categoryId', 'subCategoryId'],
+          ? [...changedFields, 'categoryId', 'subCategoryId', 'brandId']
+          : [...createRequiredFields, 'categoryId', 'subCategoryId', 'brandId'],
       ),
     )
 
@@ -604,11 +621,12 @@ export default function ProductForm({
       const error = getFieldError(field, formData[field], mode, {
         categories,
         subCategories,
+        brands,
         categoryId: formData.categoryId,
       })
       return error ? { ...nextErrors, [field]: error } : nextErrors
     }, {})
-  }, [changedFields, categories, subCategories, formData, isEdit, mode])
+  }, [changedFields, categories, subCategories, brands, formData, isEdit, mode])
 
   const hasChanges = isEdit ? changedFields.length > 0 || variantsChanged : true
   const isFormValid = Object.keys(errors).length === 0
@@ -710,6 +728,12 @@ export default function ProductForm({
   async function handleAddBrand(draft) {
     const label = normalizeString(draft?.name)
     if (!label) {
+      showToast('Brand name is required.', 'error')
+      return null
+    }
+
+    if (!/^[A-Za-z\s]+$/.test(label)) {
+      showToast('Brand name can contain only letters and spaces.', 'error')
       return null
     }
 
