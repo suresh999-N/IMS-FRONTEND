@@ -8,6 +8,7 @@ import {
   Download,
   FileText,
   FolderTree,
+  Layers,
   LayoutGrid,
   Pencil,
   Plus,
@@ -942,11 +943,12 @@ export default function Categories() {
               }}
               title="View subcategories grid"
             >
-              {label}
+              <Layers size={13} className="catalog-page__subcat-icon" />
+              <span>{label}</span>
             </button>
           )
         }
-        return <span className="catalog-page__subcat-text">0</span>
+        return <span className="catalog-page__subcat-zero">0</span>
       },
     },
     {
