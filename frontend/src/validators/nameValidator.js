@@ -108,10 +108,10 @@ export function getNameError(value, options = {}) {
     return `${label} contains invalid repeated characters.`
   }
 
-  // Reject single words longer than 20 characters
+  // Reject single words longer than 15 characters
   const nameWords = cleanValue.split(/[\s'-]+/)
-  if (nameWords.some(word => word.length > 20)) {
-    return `${label} cannot contain words longer than 20 characters.`
+  if (nameWords.some((word) => word.length > 15)) {
+    return `${label} cannot contain words longer than 15 characters.`
   }
 
   // Gibberish / keyboard mashing validation
@@ -124,6 +124,11 @@ export function getNameError(value, options = {}) {
 
   // Reject repeated character blocks (e.g., "asdfasdf", "ababab")
   if (/(.{2,4})\1{2,}/i.test(cleanValue)) {
+    return 'Please enter a valid name.'
+  }
+
+  // Reject 5 or more consecutive consonants (e.g. "jhjjhhyh")
+  if (/[bcdfghjklmnpqrstvwxz]{5,}/i.test(cleanValue)) {
     return 'Please enter a valid name.'
   }
 
