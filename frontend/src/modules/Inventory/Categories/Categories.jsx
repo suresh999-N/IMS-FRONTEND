@@ -840,7 +840,7 @@ export default function Categories() {
       mobileLabel: 'Category',
       searchValue: (category) =>
         `${category.name} ${category.description} ${category.parentName ?? ''} ${category.categoryName ?? ''} ${buildPath(categories, category)}`,
-      sortValue: (category) => category.sortPath ?? buildPath(categories, category),
+      sortValue: (category) => (viewMode === 'tree' ? (category.sortPath ?? buildPath(categories, category)) : category.name),
       render: (category) => {
         const depth = category.depth || 0
         const isChild = depth > 0 || category.rowType === 'subcategory'
@@ -1203,26 +1203,24 @@ export default function Categories() {
           filterContent={categoryFilterContent}
           toolbarContent={
             <FilterBar className="categories-list-page__toolbar-actions" ariaLabel="Category table actions">
-              <div className="categories-view-mode-toggle" role="group" aria-label="View mode">
-                <button
-                  type="button"
-                  className={`categories-view-mode-btn ${viewMode === 'grid' ? 'is-active' : ''}`}
-                  onClick={() => setViewMode('grid')}
-                  title="Tabular Grid View (Uniform main categories table)"
-                >
-                  <LayoutGrid size={15} />
-                  Grid View
-                </button>
-                <button
-                  type="button"
-                  className={`categories-view-mode-btn ${viewMode === 'tree' ? 'is-active' : ''}`}
-                  onClick={() => setViewMode('tree')}
-                  title="Expandable Tree View (Nested hierarchy)"
-                >
-                  <FolderTree size={15} />
-                  Tree View
-                </button>
-              </div>
+              <button
+                type="button"
+                className={`button button-secondary categories-toolbar-btn ${viewMode === 'grid' ? 'is-active' : ''}`}
+                onClick={() => setViewMode('grid')}
+                title="Tabular Grid View (Uniform main categories table)"
+              >
+                <LayoutGrid size={15} />
+                Grid View
+              </button>
+              <button
+                type="button"
+                className={`button button-secondary categories-toolbar-btn ${viewMode === 'tree' ? 'is-active' : ''}`}
+                onClick={() => setViewMode('tree')}
+                title="Expandable Tree View (Nested hierarchy)"
+              >
+                <FolderTree size={15} />
+                Tree View
+              </button>
               <button
                 type="button"
                 className="button button-secondary"
