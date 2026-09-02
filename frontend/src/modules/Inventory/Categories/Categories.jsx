@@ -7,6 +7,8 @@ import {
   ClipboardList,
   Download,
   FileText,
+  FolderTree,
+  LayoutGrid,
   Pencil,
   Plus,
   Printer,
@@ -199,7 +201,7 @@ function buildPath(categories, category) {
   return names.join(' / ')
 }
 
-function buildVisibleRows(categories, expandedIds) {
+function buildVisibleRows(categories, expandedIds, viewMode = 'grid') {
   const categoryMap = new Map()
   categories.forEach((item) => {
     categoryMap.set(categoryIdOf(item), item)
@@ -236,7 +238,7 @@ function buildVisibleRows(categories, expandedIds) {
       sortPath,
     })
 
-    if (hasChildren && expandedIds.has(nodeCatId)) {
+    if (viewMode === 'tree' && hasChildren && expandedIds.has(nodeCatId)) {
       children.forEach((child) => {
         const childInMap = categoryMap.get(categoryIdOf(child))
         if (childInMap) {
@@ -576,6 +578,7 @@ export default function Categories() {
   const [subcategoriesViewTarget, setSubcategoriesViewTarget] = useState(null)
   const [selectedCategoryIds, setSelectedCategoryIds] = useState([])
   const [statusFilter, setStatusFilter] = useState('all')
+  const [viewMode, setViewMode] = useState('grid')
 
   const canCreate = hasPermission('categories', 'create')
   const canEdit = hasPermission('categories', 'edit')
@@ -638,7 +641,7 @@ export default function Categories() {
       return {
         ...cat,
         childSubCategories,
-        subcategoryCount: Math.max(cat.subcategoryCount || 0, childSubCategories.length),
+        subcategoryCount: childSubCategories.length,
       }
     })
 
@@ -671,8 +674,8 @@ export default function Categories() {
   }, [loadCategories])
 
   const visibleRows = useMemo(
-    () => buildVisibleRows(categories, expandedIds),
-    [categories, expandedIds],
+    () => buildVisibleRows(categories, expandedIds, viewMode),
+    [categories, expandedIds, viewMode],
   )
 
   const filteredRows = useMemo(() => {
@@ -1198,6 +1201,26 @@ export default function Categories() {
           filterContent={categoryFilterContent}
           toolbarContent={
             <FilterBar className="categories-list-page__toolbar-actions" ariaLabel="Category table actions">
+              <div className="categories-view-mode-toggle" role="group" aria-label="View mode">
+                <button
+                  type="button"
+                  className={`categories-view-mode-btn ${viewMode === 'grid' ? 'is-active' : ''}`}
+                  onClick={() => setViewMode('grid')}
+                  title="Tabular Grid View (Uniform main categories table)"
+                >
+                  <LayoutGrid size={15} />
+                  Grid View
+                </button>
+                <button
+                  type="button"
+                  className={`categories-view-mode-btn ${viewMode === 'tree' ? 'is-active' : ''}`}
+                  onClick={() => setViewMode('tree')}
+                  title="Expandable Tree View (Nested hierarchy)"
+                >
+                  <FolderTree size={15} />
+                  Tree View
+                </button>
+              </div>
               <button
                 type="button"
                 className="button button-secondary"
