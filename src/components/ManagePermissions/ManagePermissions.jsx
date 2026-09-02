@@ -711,8 +711,7 @@ function ManagePermissions({ settingsData, onClose }) {
             {saving ? p.saving : p.save}
           </button>
 
-          <button
-            className="permissions-cancel-btn"
+          <button className="button button-cancel permissions-cancel-btn"
             onClick={onClose}
             disabled={saving}
           >

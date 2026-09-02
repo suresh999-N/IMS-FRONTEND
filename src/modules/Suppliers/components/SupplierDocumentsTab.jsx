@@ -702,7 +702,7 @@ export default function SupplierDocumentsTab({
               <p>Uploading a new file will replace the current document and archive the previous version.</p>
             </div>
             <div className="supplier-document-confirm-dialog__actions">
-              <button type="button" className="button button-secondary" onClick={() => setReplaceConfirmation(null)}>
+              <button type="button" className="button button-secondary button-cancel" onClick={() => setReplaceConfirmation(null)}>
                 Cancel
               </button>
               <button
@@ -732,7 +732,7 @@ export default function SupplierDocumentsTab({
               <p>This permanently removes the document from the supplier record, database, and document storage.</p>
             </div>
             <div className="supplier-document-confirm-dialog__actions">
-              <button type="button" className="button button-secondary" onClick={() => setDeleteConfirmation(null)} disabled={Boolean(deletingId)}>
+              <button type="button" className="button button-secondary button-cancel" onClick={() => setDeleteConfirmation(null)} disabled={Boolean(deletingId)}>
                 Cancel
               </button>
               <button

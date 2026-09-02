@@ -454,7 +454,7 @@ function CategoryForm({
           <Save size={16} />
           {isSubmitting ? 'Saving...' : 'Save Category'}
         </button>
-        <button type="button" className="button button-secondary" onClick={onCancel} disabled={isSubmitting}>
+        <button type="button" className="button button-secondary button-cancel" onClick={onCancel} disabled={isSubmitting}>
           Cancel
         </button>
       </div>
@@ -1074,9 +1074,8 @@ export default function Categories() {
               </p>
             </div>
             <div className="button-row catalog-form__delete-actions">
-              <button
+              <button className="button button-cancel button-secondary"
                 type="button"
-                className="button button-secondary"
                 onClick={() => setDeleteTarget(null)}
               >
                 Cancel

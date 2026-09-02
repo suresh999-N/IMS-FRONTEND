@@ -278,12 +278,7 @@
 }
 
 /* Secondary buttons */
-.settings-cancel-btn,
-.edit-cancel-btn,
-.password-cancel-btn,
-.permissions-cancel-btn,
 .login-history-actions button,
-.logout-cancel-btn,
 .settings-outline-btn,
 .security-action-btn {
   background: var(--ims-card-bg) !important;
@@ -291,16 +286,38 @@
   color: var(--ims-text) !important;
 }
 
-.settings-cancel-btn:hover,
-.edit-cancel-btn:hover,
-.password-cancel-btn:hover,
-.permissions-cancel-btn:hover,
 .login-history-actions button:hover,
-.logout-cancel-btn:hover,
 .settings-outline-btn:hover,
 .security-action-btn:hover {
   background: var(--ims-primary-soft) !important;
   color: var(--ims-primary) !important;
+}
+
+/* Light Red Cancel buttons */
+.settings-cancel-btn,
+.edit-cancel-btn,
+.password-cancel-btn,
+.permissions-cancel-btn,
+.logout-cancel-btn,
+.indent-btn--cancel,
+.button-cancel {
+  background: #fef2f2 !important;
+  background-color: #fef2f2 !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  color: #dc2626 !important;
+}
+
+.settings-cancel-btn:hover,
+.edit-cancel-btn:hover,
+.password-cancel-btn:hover,
+.permissions-cancel-btn:hover,
+.logout-cancel-btn:hover,
+.indent-btn--cancel:hover,
+.button-cancel:hover {
+  background: #fee2e2 !important;
+  background-color: #fee2e2 !important;
+  border-color: rgba(239, 68, 68, 0.5) !important;
+  color: #b91c1c !important;
 }
 
 /* Success messages */

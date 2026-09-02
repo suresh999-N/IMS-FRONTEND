@@ -5,20 +5,35 @@ import { cachedApiRequest, createApiCacheKey, hasApiCache, invalidateApiCache } 
 const WAREHOUSE_CACHE_PREFIX = 'warehouses:'
 
 
+function formatCapitalizedTitle(value) {
+  if (!value) return ''
+  const str = String(value).trim()
+  if (!str) return ''
+
+  return str
+    .split(/\s+/)
+    .map((word) => (word ? word.charAt(0).toUpperCase() + word.slice(1) : ''))
+    .join(' ')
+}
+
 export function normalizeWarehouse(warehouse) {
   const id = String(warehouse?.id ?? warehouse?.warehouseId ?? warehouse?.WarehouseId ?? warehouse?._id ?? '')
   const rawStatus = warehouse?.status ?? warehouse?.Status ?? 'active'
   const status = String(rawStatus).toLowerCase() === 'inactive' ? 'Inactive' : 'Active'
 
+  const rawName = warehouse?.name ?? warehouse?.Name ?? ''
+  const rawLocation = warehouse?.location ?? warehouse?.Location ?? ''
+  const rawManagerName = warehouse?.managerName ?? warehouse?.ManagerName ?? warehouse?.manager ?? warehouse?.Manager ?? ''
+
   return {
     ...warehouse,
     id,
     warehouseId: id,
-    name: warehouse?.name ?? warehouse?.Name ?? '',
-    location: warehouse?.location ?? warehouse?.Location ?? '',
+    name: formatCapitalizedTitle(rawName),
+    location: formatCapitalizedTitle(rawLocation),
     status,
     warehouseCode: warehouse?.warehouseCode ?? warehouse?.WarehouseCode ?? warehouse?.code ?? warehouse?.Code ?? '',
-    managerName: warehouse?.managerName ?? warehouse?.ManagerName ?? warehouse?.manager ?? warehouse?.Manager ?? '',
+    managerName: formatCapitalizedTitle(rawManagerName),
     phone: warehouse?.phone ?? warehouse?.Phone ?? '',
     email: warehouse?.email ?? warehouse?.Email ?? '',
     createdAt: warehouse?.createdAt ?? warehouse?.CreatedAt ?? '',

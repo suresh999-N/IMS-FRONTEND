@@ -134,13 +134,12 @@ function LogoutConfirm({ settingsData, user, onCancel, onLogout }) {
                 {loading ? l.loggingOut : l.logout}
               </button>
 
-              <button
-                className="logout-cancel-btn"
+              <button className="button button-cancel logout-cancel-btn"
                 type="button"
                 onClick={onCancel}
                 disabled={loading}
               >
-                <X size={18} />
+                <X size={15} />
                 {l.cancel}
               </button>
             </div>

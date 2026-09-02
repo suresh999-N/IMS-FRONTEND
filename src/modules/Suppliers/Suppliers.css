@@ -693,8 +693,8 @@
 
 .supplier-form-modal-shell .form-modal__close {
   flex: 0 0 auto;
-  width: 32px;
-  height: 32px;
+  width: 24px !important;
+  height: 24px !important;
   border-color: transparent;
   border-radius: 999px;
   background: #f6f9fc;
@@ -5550,8 +5550,8 @@ border-color: #bbf7d0; /* Changed from #d1fae5 */
   }
 
   .supplier-form-modal-shell .form-modal__close {
-    width: 30px;
-    height: 30px;
+    width: 24px !important;
+    height: 24px !important;
   }
 
   .supplier-form--enterprise {

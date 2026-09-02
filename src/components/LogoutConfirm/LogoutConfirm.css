@@ -187,21 +187,18 @@
 }
 
 .logout-cancel-btn {
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  color: #475569;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: var(--color-danger-50, #fef2f2);
+  background-color: var(--color-danger-50, #fef2f2);
+  color: #dc2626;
 }
 
-.logout-cancel-btn:hover:not(:disabled) {
-  border-color: #94a3b8;
-  background: #f8fafc;
-  color: #1e293b;
-}
-
+.logout-cancel-btn:hover:not(:disabled),
 .logout-modal .logout-cancel-btn:hover:not(:disabled) {
-  border-color: #86efac !important;
-  background: #dcfce7 !important;
-  color: #15803d !important;
+  border-color: rgba(239, 68, 68, 0.5) !important;
+  background: var(--color-danger-100, #fee2e2) !important;
+  background-color: var(--color-danger-100, #fee2e2) !important;
+  color: #b91c1c !important;
 }
 
 @media (max-width: 1024px) {

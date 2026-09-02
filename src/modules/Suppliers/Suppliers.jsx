@@ -1097,7 +1097,7 @@ export default function Suppliers({
                 </p>
               </div>
               <div className="button-row suppliers-page__delete-actions">
-                <button type="button" className="button" onClick={() => setDeleteTarget(null)} disabled={isDeleting}>
+                <button type="button" className="button button-cancel" onClick={() => setDeleteTarget(null)} disabled={isDeleting}>
                   Cancel
                 </button>
                 <button type="button" className="button button-danger" onClick={handleConfirmDelete} disabled={isDeleting}>
@@ -1139,7 +1139,7 @@ export default function Suppliers({
                 ) : null}
               </ul>
               <div className="button-row suppliers-page__delete-actions">
-                <button type="button" className="button" onClick={() => setBulkArchiveTarget(null)} disabled={isDeleting}>
+                <button type="button" className="button button-cancel" onClick={() => setBulkArchiveTarget(null)} disabled={isDeleting}>
                   Cancel
                 </button>
                 <button type="button" className="button button-danger" onClick={handleConfirmBulkArchive} disabled={isDeleting}>

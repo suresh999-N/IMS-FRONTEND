@@ -20,8 +20,8 @@ export default function Drawer({
             {title ? <h2 id={titleId}>{title}</h2> : null}
             {subtitle ? <p>{subtitle}</p> : null}
           </div>
-          <button type="button" className="button button-secondary" onClick={onClose} aria-label="Close drawer">
-            <X size={17} />
+          <button type="button" className="button button-secondary erp-drawer__close" onClick={onClose} aria-label="Close drawer">
+            <X size={14} />
           </button>
         </header>
         <div className="erp-drawer__content">{children}</div>

@@ -3593,8 +3593,8 @@
 }
 
 .form-modal__dialog--subCategories .form-modal__close {
-  width: 30px;
-  height: 30px;
+  width: 24px !important;
+  height: 24px !important;
   border-color: rgba(203, 213, 225, 0.48);
   border-radius: 8px;
   background: rgba(248, 250, 252, 0.82);
@@ -4081,8 +4081,8 @@
 }
 
 .form-modal__dialog--subCategories .form-modal__close {
-  width: 34px;
-  height: 34px;
+  width: 24px !important;
+  height: 24px !important;
   border-radius: 12px;
 }
 
@@ -4305,8 +4305,8 @@
 }
 
 .form-modal__dialog--subCategories .form-modal__close {
-  width: 32px;
-  height: 32px;
+  width: 24px !important;
+  height: 24px !important;
   border-radius: 11px;
 }
 
@@ -4585,8 +4585,8 @@
 }
 
 .form-modal__dialog--subCategories .form-modal__close {
-  width: 32px;
-  height: 32px;
+  width: 24px !important;
+  height: 24px !important;
   border-color: rgba(203, 213, 225, 0.58);
   border-radius: 10px;
   background: rgba(248, 250, 252, 0.84);
@@ -5242,8 +5242,8 @@
 }
 
 .form-modal__dialog--subCategories .form-modal__close {
-  width: 30px;
-  height: 30px;
+  width: 24px !important;
+  height: 24px !important;
   border-radius: 10px;
 }
 

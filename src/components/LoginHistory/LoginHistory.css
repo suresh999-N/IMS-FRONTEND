@@ -73,8 +73,8 @@
 }
 
 .login-history-close-btn {
-  width: 38px;
-  height: 38px;
+  width: 24px !important;
+  height: 24px !important;
   border: none;
   background: transparent;
   color: var(--ims-text);

@@ -1699,7 +1699,7 @@ export default function Warehouses({
                   <MoveRight size={16} />
                   Transfer
                 </button>
-                <button type="button" className="button" onClick={() => setIsTransferOpen(false)}>
+                <button type="button" className="button button-cancel" onClick={() => setIsTransferOpen(false)}>
                   Close
                 </button>
               </div>
@@ -2007,7 +2007,7 @@ export default function Warehouses({
               />
             </label>
             <div className="button-row warehouses-page__storage-form-footer">
-              <button type="button" className="button" onClick={closeRackForm} disabled={isStorageSaving}>
+              <button type="button" className="button button-cancel" onClick={closeRackForm} disabled={isStorageSaving}>
                 Cancel
               </button>
               <button type="submit" className="button button-primary" disabled={isStorageSaving}>
@@ -2077,7 +2077,7 @@ export default function Warehouses({
               </select>
             </label>
             <div className="button-row warehouses-page__storage-form-footer">
-              <button type="button" className="button" onClick={closeBinForm} disabled={isStorageSaving}>
+              <button type="button" className="button button-cancel" onClick={closeBinForm} disabled={isStorageSaving}>
                 Cancel
               </button>
               <button type="submit" className="button button-primary" disabled={isStorageSaving}>
@@ -2200,7 +2200,7 @@ export default function Warehouses({
             </div>
 
             <div className="button-row warehouses-page__storage-form-footer">
-              <button type="button" className="button" onClick={closePutawayForm} disabled={isPutawaySaving}>
+              <button type="button" className="button button-cancel" onClick={closePutawayForm} disabled={isPutawaySaving}>
                 Cancel
               </button>
               <button type="submit" className="button button-primary" disabled={isPutawaySaving}>
@@ -2219,7 +2219,7 @@ export default function Warehouses({
         >
           <p className="warehouses-page__confirm-message">{confirmAction.message}</p>
           <div className="button-row warehouses-page__confirm-actions">
-            <button type="button" className="button" onClick={() => setConfirmAction(null)} disabled={isStorageSaving}>
+            <button type="button" className="button button-cancel" onClick={() => setConfirmAction(null)} disabled={isStorageSaving}>
               Cancel
             </button>
             <button type="button" className="button button-danger" onClick={runConfirmAction} disabled={isStorageSaving}>
@@ -2307,9 +2307,8 @@ export default function Warehouses({
                   <ArrowRightLeft size={16} />
                   {isBinTransferSaving ? 'Transferring...' : 'Transfer Bin Stock'}
                 </button>
-                <button
+                <button className="button button-cancel"
                   type="button"
-                  className="button"
                   onClick={() => setIsBinTransferOpen(false)}
                   disabled={isBinTransferSaving}
                 >

@@ -10,6 +10,7 @@ import {
 import {
   createUnit,
   deleteUnit,
+  formatUnitTitle,
   getUnits,
   normalizeUnit,
   updateUnit,
@@ -109,8 +110,8 @@ export default function Units() {
     e.preventDefault()
     setServerErrors({})
 
-    const name = formValues.name.trim()
-    const shortName = formValues.shortName.trim()
+    const name = formatUnitTitle(formValues.name)
+    const shortName = formatUnitTitle(formValues.shortName)
 
     // Frontend validation
     if (!name) {
@@ -417,9 +418,8 @@ export default function Units() {
                 <Save size={16} />
                 {isSaving ? 'Saving...' : 'Save Unit'}
               </button>
-              <button
+              <button className="button button-cancel button-secondary"
                 type="button"
-                className="button button-secondary"
                 onClick={handleCloseModal}
                 disabled={isSaving}
               >
@@ -449,9 +449,8 @@ export default function Units() {
               <p className="delete-confirmation__warning">This action cannot be undone.</p>
             </div>
             <div className="button-row">
-              <button
+              <button className="button button-cancel button-secondary"
                 type="button"
-                className="button button-secondary"
                 onClick={() => setDeleteTarget(null)}
                 disabled={isDeleting}
               >

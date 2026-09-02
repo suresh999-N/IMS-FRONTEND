@@ -549,8 +549,7 @@ function ChangePassword({ settingsData, onClose }) {
             {saving ? p.updating : p.update}
           </button>
 
-          <button
-            className="password-cancel-btn"
+          <button className="button button-cancel password-cancel-btn"
             onClick={onClose}
             disabled={saving}
           >

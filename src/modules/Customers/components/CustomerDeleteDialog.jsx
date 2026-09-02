@@ -20,9 +20,8 @@ export default function CustomerDeleteDialog({
           </p>
         </div>
         <div className="button-row customer-delete-dialog__actions">
-          <button
+          <button className="button button-cancel button-secondary"
             type="button"
-            className="button button-secondary"
             onClick={onCancel}
             disabled={isDeleting}
           >

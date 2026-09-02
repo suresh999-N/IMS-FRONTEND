@@ -1183,7 +1183,7 @@ function PaymentDetailsDrawer({ payment, invoice, allPayments = [], onClose, onP
             </div>
           </div>
           <button type="button" className="button button-secondary payment-drawer__close" onClick={onClose} aria-label="Close payment details">
-            <X size={17} />
+            <X size={15} />
           </button>
         </header>
 
@@ -1371,7 +1371,7 @@ function LegacyPaymentDetailsDrawer({ payment, invoice, onClose, onPrint, onExpo
             <p>{payment.partyName || 'Customer'} · {formatDate(payment.paymentDate)}</p>
           </div>
           <button type="button" className="button button-secondary payment-drawer__close" onClick={onClose} aria-label="Close payment details">
-            <X size={17} />
+            <X size={15} />
           </button>
         </header>
 
@@ -1558,7 +1558,7 @@ function PaymentEditModal({ payment, invoice, onSubmit, onClose, isSubmitting })
           <button type="submit" className="button button-primary" disabled={!isFormValid || isSubmitting}>
             {isSubmitting ? 'Saving...' : 'Save Changes'}
           </button>
-          <button type="button" className="button" onClick={onClose} disabled={isSubmitting}>
+          <button type="button" className="button button-cancel" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </button>
         </div>
@@ -1857,7 +1857,7 @@ function PaymentForm({
         <button type="submit" className="button button-primary" disabled={!isFormValid || isSubmitting}>
           {isSubmitting ? 'Posting...' : 'Post Payment'}
         </button>
-        <button type="button" className="button" onClick={onCancel} disabled={isSubmitting}>
+        <button type="button" className="button button-cancel" onClick={onCancel} disabled={isSubmitting}>
           Cancel
         </button>
       </div>
@@ -2945,7 +2945,7 @@ export default function CustomerPaymentModule({
               </p>
             </div>
             <div className="button-row payment-delete-dialog__actions">
-              <button type="button" className="button button-secondary" onClick={() => setDeleteTarget(null)}>
+              <button type="button" className="button button-secondary button-cancel" onClick={() => setDeleteTarget(null)}>
                 Cancel
               </button>
               <button type="button" className="button button-danger" onClick={confirmDelete}>

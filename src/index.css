@@ -397,6 +397,16 @@ input[name*="name" i]:not(:placeholder-shown),
 input[name*="title" i]:not(:placeholder-shown),
 input[name*="brand" i]:not(:placeholder-shown),
 input[name*="category" i]:not(:placeholder-shown),
+input[name*="subcategory" i]:not(:placeholder-shown),
+input[name*="unit" i]:not(:placeholder-shown),
+input[name*="shortName" i]:not(:placeholder-shown),
+input[name*="abbreviation" i]:not(:placeholder-shown),
+input[name*="attribute" i]:not(:placeholder-shown),
+input[name*="value" i]:not(:placeholder-shown),
+input[name*="warehouse" i]:not(:placeholder-shown),
+input[name*="location" i]:not(:placeholder-shown),
+input[name*="manager" i]:not(:placeholder-shown),
+input[name*="role" i]:not(:placeholder-shown),
 input[name*="department" i]:not(:placeholder-shown),
 input[name*="designation" i]:not(:placeholder-shown),
 input[name*="city" i]:not(:placeholder-shown),
@@ -833,6 +843,132 @@ select:focus {
   background: #ffffff;
   border-color: #cbd5e1;
   color: #0f172a;
+}
+
+/* Light Red Cancel Buttons - Maximum Specificity Rule Overriding All Container CSS */
+#root .button-cancel,
+#root .btn-cancel,
+#root .button--cancel,
+#root .erp-button--cancel,
+#root .settings-cancel-btn,
+#root .password-cancel-btn,
+#root .edit-cancel-btn,
+#root .logout-cancel-btn,
+#root .permissions-cancel-btn,
+#root .indent-btn--cancel,
+#root .login-history-close-btn,
+#root button[data-variant="cancel"],
+#root button.button-cancel,
+#root button.btn-cancel,
+#root .button-secondary.button-cancel,
+#root .button.button-cancel,
+body .button-cancel {
+  border-color: var(--cancel-border, rgba(239, 68, 68, 0.3)) !important;
+  background: var(--cancel-bg, #fef2f2) !important;
+  background-color: var(--cancel-bg, #fef2f2) !important;
+  color: var(--cancel-text, #dc2626) !important;
+  box-shadow: none !important;
+}
+
+#root .button-cancel:hover:not(:disabled),
+#root .btn-cancel:hover:not(:disabled),
+#root .button--cancel:hover:not(:disabled),
+#root .erp-button--cancel:hover:not(:disabled),
+#root .settings-cancel-btn:hover:not(:disabled),
+#root .password-cancel-btn:hover:not(:disabled),
+#root .edit-cancel-btn:hover:not(:disabled),
+#root .button-cancel:hover:not(:disabled),
+#root .btn-cancel:hover:not(:disabled),
+#root .button--cancel:hover:not(:disabled),
+#root .erp-button--cancel:hover:not(:disabled),
+#root .settings-cancel-btn:hover:not(:disabled),
+#root .password-cancel-btn:hover:not(:disabled),
+#root .edit-cancel-btn:hover:not(:disabled),
+#root .logout-cancel-btn:hover:not(:disabled),
+#root .permissions-cancel-btn:hover:not(:disabled),
+#root .indent-btn--cancel:hover:not(:disabled),
+#root .login-history-close-btn:hover:not(:disabled),
+#root button[data-variant="cancel"]:hover:not(:disabled),
+#root button.button-cancel:hover:not(:disabled),
+#root button.btn-cancel:hover:not(:disabled),
+#root .button-secondary.button-cancel:hover:not(:disabled),
+#root .button.button-cancel:hover:not(:disabled),
+body .button-cancel:hover:not(:disabled) {
+  border-color: var(--cancel-border-hover, rgba(239, 68, 68, 0.5)) !important;
+  background: var(--cancel-bg-hover, #fee2e2) !important;
+  background-color: var(--cancel-bg-hover, #fee2e2) !important;
+  color: var(--cancel-text-hover, #b91c1c) !important;
+}
+
+/* Universal Small Minimalist Modal Close Button Rule for All Modules & Popups */
+html body #root :is(
+  .form-modal__close,
+  .erp-drawer__close,
+  .profile-close-btn,
+  .settings-close-btn,
+  .password-close-btn,
+  .edit-profile-close-btn,
+  .login-history-close-btn,
+  .permissions-close-btn,
+  .customer-status-dialog__close,
+  .low-stock-alert__close,
+  .payment-drawer__close,
+  .app-sidebar__mobile-close
+) {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  max-width: 24px !important;
+  max-height: 24px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 5px !important;
+  background: transparent !important;
+  color: #64748b !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  box-shadow: none !important;
+}
+
+html body #root :is(
+  .form-modal__close,
+  .erp-drawer__close,
+  .profile-close-btn,
+  .settings-close-btn,
+  .password-close-btn,
+  .edit-profile-close-btn,
+  .login-history-close-btn,
+  .permissions-close-btn,
+  .customer-status-dialog__close,
+  .low-stock-alert__close,
+  .payment-drawer__close,
+  .app-sidebar__mobile-close
+):hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border: 0 !important;
+}
+
+html body #root :is(
+  .form-modal__close,
+  .erp-drawer__close,
+  .profile-close-btn,
+  .settings-close-btn,
+  .password-close-btn,
+  .edit-profile-close-btn,
+  .login-history-close-btn,
+  .permissions-close-btn,
+  .customer-status-dialog__close,
+  .low-stock-alert__close,
+  .payment-drawer__close,
+  .app-sidebar__mobile-close
+) svg {
+  width: 14px !important;
+  height: 14px !important;
+  stroke-width: 2px !important;
 }
 
 .button:disabled {

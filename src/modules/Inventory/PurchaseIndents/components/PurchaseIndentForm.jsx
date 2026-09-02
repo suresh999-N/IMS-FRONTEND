@@ -400,9 +400,8 @@ export default function PurchaseIndentForm({
 
       {/* Actions Section */}
       <div className="indent-create-actions" style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
-        <button
+        <button className="button button-cancel indent-btn indent-btn--cancel"
           type="button"
-          className="indent-btn indent-btn--cancel"
           onClick={onCancel}
           disabled={isSubmitting}
         >

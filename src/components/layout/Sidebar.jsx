@@ -170,7 +170,7 @@ export default function Sidebar({
           aria-label="Close navigation"
           onClick={onCloseDrawer}
         >
-          <X size={18} />
+          <X size={15} />
         </button>
       </div>
 

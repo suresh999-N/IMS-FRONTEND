@@ -748,9 +748,8 @@ export default function Sales({ customers = [] }) {
             </div>
           </div>
           <div className="button-row sales-page__confirm-actions">
-            <button
+            <button className="button button-cancel button-secondary"
               type="button"
-              className="button button-secondary"
               onClick={() => setDeleteTarget(null)}
               disabled={Boolean(actionId)}
             >

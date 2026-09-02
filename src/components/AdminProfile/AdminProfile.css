@@ -84,8 +84,8 @@
 }
 
 .profile-close-btn {
-  width: 36px;
-  height: 36px;
+  width: 24px !important;
+  height: 24px !important;
   border: none;
   background: transparent;
   color: var(--ims-text);

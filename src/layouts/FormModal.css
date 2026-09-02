@@ -90,26 +90,30 @@
 }
 
 .form-modal__close {
-  border: 1px solid rgba(203, 213, 225, 0.54);
-  background: rgba(248, 250, 252, 0.82);
-  color: #526174;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+  border: 0 !important;
+  background: transparent !important;
+  color: #64748b !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  padding: 0 !important;
+  border-radius: 5px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
   transition:
     background-color var(--transition),
-    border-color var(--transition),
     color var(--transition);
   flex: 0 0 auto;
 }
 
 .form-modal__close:hover {
-  background: var(--surface);
-  border-color: var(--border-strong);
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border: 0 !important;
 }
 
 .form-modal__body {
@@ -255,8 +259,8 @@
   }
 
   .form-modal__close {
-    width: 34px;
-    height: 34px;
+    width: 24px !important;
+    height: 24px !important;
   }
 
   .form-modal__body {
@@ -394,8 +398,8 @@
 }
 
 .form-modal--delete-confirmation .form-modal__close {
-  width: 34px;
-  height: 34px;
+  width: 24px !important;
+  height: 24px !important;
   border-color: transparent;
   background: transparent;
 }

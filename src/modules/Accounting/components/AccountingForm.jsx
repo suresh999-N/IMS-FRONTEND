@@ -145,7 +145,7 @@ export default function AccountingForm({
             <Save size={16} />
             Save Invoice
           </button>
-          <button type="button" className="button" onClick={onCancel}>
+          <button type="button" className="button button-cancel" onClick={onCancel}>
             <RotateCcw size={16} />
             Cancel
           </button>

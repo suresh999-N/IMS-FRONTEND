@@ -401,9 +401,8 @@ export default function Attributes() {
                 <Save size={16} />
                 {isSaving ? 'Saving...' : 'Save Attribute'}
               </button>
-              <button
+              <button className="button button-cancel button-secondary"
                 type="button"
-                className="button button-secondary"
                 onClick={handleCloseForm}
                 disabled={isSaving}
               >
@@ -427,9 +426,8 @@ export default function Attributes() {
             This action cannot be undone.
           </p>
           <div className="button-row resource-form__footer">
-            <button
+            <button className="button button-cancel button-secondary"
               type="button"
-              className="button button-secondary"
               onClick={() => setDeleteTarget(null)}
               disabled={isDeleting}
             >

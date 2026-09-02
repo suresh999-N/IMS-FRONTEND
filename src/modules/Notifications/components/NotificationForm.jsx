@@ -90,7 +90,7 @@ export default function NotificationForm({ onSubmit, onCancel }) {
             <Save size={16} />
             Save Alert
           </button>
-          <button type="button" className="button" onClick={onCancel}>
+          <button type="button" className="button button-cancel" onClick={onCancel}>
             <RotateCcw size={16} />
             Cancel
           </button>

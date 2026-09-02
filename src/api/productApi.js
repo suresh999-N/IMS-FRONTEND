@@ -352,9 +352,21 @@ function readBooleanFlag(value, fallback = false) {
   return fallback
 }
 
+export function formatUnitTitle(value) {
+  if (!value) return ''
+  const str = String(value).trim()
+  if (!str) return ''
+
+  return str
+    .split(/\s+/)
+    .map((word) => (word ? word.charAt(0).toUpperCase() + word.slice(1) : ''))
+    .join(' ')
+}
+
 export function normalizeBrand(brand) {
   const id = normalizeId(brand?.id ?? brand?.brandId ?? brand?.BrandId ?? brand?._id)
-  const name = String(brand?.name ?? brand?.Name ?? '').trim()
+  const rawName = String(brand?.name ?? brand?.Name ?? '').trim()
+  const name = formatUnitTitle(rawName)
 
   return {
     ...brand,
@@ -372,7 +384,8 @@ export function normalizeCategory(category) {
     category?.id ?? category?.categoryId ?? category?.CategoryId ?? category?._id,
   )
   const parentId = normalizeId(category?.parentId ?? category?.ParentId)
-  const name = String(category?.name ?? category?.Name ?? '').trim()
+  const rawName = String(category?.name ?? category?.Name ?? '').trim()
+  const name = formatUnitTitle(rawName)
   const rawChildSubCategories =
     category?.childSubCategories ??
     category?.ChildSubCategories ??
@@ -415,7 +428,8 @@ export function normalizeSubCategory(subCategory) {
   const categoryId = normalizeId(
     subCategory?.categoryId ?? subCategory?.CategoryId ?? subCategory?.parentId,
   )
-  const name = String(subCategory?.name ?? subCategory?.Name ?? '').trim()
+  const rawName = String(subCategory?.name ?? subCategory?.Name ?? '').trim()
+  const name = formatUnitTitle(rawName)
 
   return {
     ...subCategory,
@@ -435,7 +449,8 @@ export function normalizeSubCategory(subCategory) {
 
 export function normalizeAttribute(attribute) {
   const id = normalizeId(attribute?.id ?? attribute?.attributeId ?? attribute?.AttributeId)
-  const name = String(attribute?.name ?? attribute?.Name ?? '').trim()
+  const rawName = String(attribute?.name ?? attribute?.Name ?? '').trim()
+  const name = formatUnitTitle(rawName)
 
   return {
     ...attribute,
@@ -454,9 +469,10 @@ export function normalizeAttributeValue(attributeValue) {
   const attributeId = normalizeId(
     attributeValue?.attributeId ?? attributeValue?.AttributeId,
   )
-  const value = String(
+  const rawValue = String(
     attributeValue?.value ?? attributeValue?.Value ?? attributeValue?.name ?? '',
   ).trim()
+  const value = formatUnitTitle(rawValue)
 
   return {
     ...attributeValue,
@@ -471,10 +487,13 @@ export function normalizeAttributeValue(attributeValue) {
 
 export function normalizeUnit(unit) {
   const id = normalizeId(unit?.id ?? unit?.unitId ?? unit?.UnitId ?? unit?._id)
-  const name = String(unit?.name ?? unit?.Name ?? '').trim()
-  const shortName = String(
+  const rawName = String(unit?.name ?? unit?.Name ?? '').trim()
+  const rawShortName = String(
     unit?.shortName ?? unit?.ShortName ?? unit?.abbreviation ?? unit?.Abbreviation ?? '',
   ).trim()
+
+  const name = formatUnitTitle(rawName)
+  const shortName = formatUnitTitle(rawShortName)
 
   return {
     ...unit,

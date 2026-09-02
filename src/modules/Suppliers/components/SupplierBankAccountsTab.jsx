@@ -505,7 +505,7 @@ export default function SupplierBankAccountsTab({
             <strong id="supplier-bank-remove-title">Remove bank account?</strong>
             <p>Are you sure you want to remove this bank account?</p>
             <div className="supplier-bank-confirm-dialog__actions">
-              <button type="button" className="button" onClick={() => setRemoveIndex(null)}>
+              <button type="button" className="button button-cancel" onClick={() => setRemoveIndex(null)}>
                 Cancel
               </button>
               <button type="button" className="button button-danger" onClick={confirmRemove}>
