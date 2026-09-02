@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 [Table("suppliers")]
@@ -12,6 +12,9 @@ public class Supplier
     public string? SupplierCode { get; set; }
 
     public string? Name { get; set; }
+
+    [Column("company_name")]
+    public string? CompanyName { get; set; }
 
     public string? Category { get; set; }
 

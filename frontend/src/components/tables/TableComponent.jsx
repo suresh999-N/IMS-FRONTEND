@@ -619,17 +619,15 @@ export default function TableComponent({
     setVisibleColumnKeys(allKeys)
   }
 
-  const selectionSummary = selectedKeys.length > 0 && shouldShowSelection && !hideSelectionSummary ? (
+  const isSelectionActive = selectedKeys.length > 0 && shouldShowSelection
+  const selectionSummary = isSelectionActive && !hideSelectionSummary ? (
     <div className="table-component__selection-summary" aria-live="polite">
       <Check size={14} />
       <strong>{selectedKeys.length} selected</strong>
-      <button type="button" onClick={() => updateSelection([])}>
-        Clear
-      </button>
     </div>
   ) : null
 
-  const searchControl = showSearch ? (
+  const searchControl = showSearch && !isSelectionActive ? (
     <SearchBar
       value={searchTerm}
       onChange={setSearchTerm}

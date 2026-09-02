@@ -4051,12 +4051,16 @@
 .supplier-details__terms strong {
   display: block;
   margin-top: 3px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .supplier-detail-card p {
   margin: 3px 0 0;
   color: var(--text-soft);
   font-size: 0.8rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .supplier-details__terms {

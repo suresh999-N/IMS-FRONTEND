@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-Md2kjDfB.js";/* empty css              */import t from"./Roles-BjKh6xJs.js";var n=e();function r(){return(0,n.jsx)(t,{resourceKey:`users`})}export{r as default};

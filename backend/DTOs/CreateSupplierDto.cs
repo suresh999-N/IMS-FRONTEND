@@ -10,6 +10,8 @@ namespace IMSBackend.DTOs.Suppliers
         [RegularExpression(@"^[A-Za-z\s]+$", ErrorMessage = "Name can contain only letters and spaces.")]
         public string? Name { get; set; }
 
+        public string? CompanyName { get; set; }
+
         public string? Category { get; set; }
 
         public string? GstNumber { get; set; }
@@ -17,8 +19,11 @@ namespace IMSBackend.DTOs.Suppliers
 
         public string? Phone { get; set; }
 
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
         public string? Email { get; set; }
 
+        [MaxLength(150, ErrorMessage = "Website URL cannot exceed 150 characters.")]
         public string? Website { get; set; }
 
         public string? Status { get; set; }

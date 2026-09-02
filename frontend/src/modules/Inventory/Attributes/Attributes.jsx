@@ -1,13 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  Download,
   Pencil,
   Plus,
-  Printer,
   RefreshCw,
   Save,
   Trash2,
-  Check,
 } from 'lucide-react'
 import {
   listResource,
@@ -29,72 +26,6 @@ const ATTRIBUTE_COLUMNS_STORAGE_KEY = 'ims.attributes.table.visibleColumns.v1'
 const ATTRIBUTE_DEFAULT_COLUMNS = ['name', 'actions']
 
 const config = RESOURCE_CONFIGS.productAttributes
-
-function escapeCsvValue(val) {
-  const str = String(val ?? '')
-  if (/[",\n\r]/.test(str)) {
-    return `"${str.replace(/"/g, '""')}"`
-  }
-  return str
-}
-
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
-
-function exportAttributesCsv(items) {
-  const headers = ['Attribute Name', 'Values']
-  const rows = items.map((item) => [
-    item.name || '',
-    (item.values || []).join('; '),
-  ])
-  const csv = [headers, ...rows]
-    .map((row) => row.map(escapeCsvValue).join(','))
-    .join('\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = 'Attributes.csv'
-  link.click()
-  URL.revokeObjectURL(url)
-}
-
-function printAttributes(items) {
-  const rows = items
-    .map(
-      (item) => `
-    <tr>
-      <td><strong>${escapeHtml(item.name || 'Unnamed Attribute')}</strong></td>
-      <td>${escapeHtml((item.values || []).join(', ') || 'No values')}</td>
-    </tr>
-  `,
-    )
-    .join('')
-  const printWindow = window.open('', '_blank')
-  if (!printWindow) return
-  printWindow.document.write(`<!doctype html><html><head><title>Product Attributes</title><style>
-    body { margin: 28px; color: #111827; font: 13px Arial, sans-serif; }
-    h1 { margin: 0 0 16px; font-size: 20px; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 8px 10px; border: 1px solid #dbe4f0; text-align: left; vertical-align: top; }
-    th { background: #f8fafc; color: #475569; font-size: 12px; }
-  </style></head><body>
-    <h1>Product Attributes</h1>
-    <table>
-      <thead><tr><th>Attribute Name</th><th>Values</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-  </body></html>`)
-  printWindow.document.close()
-  printWindow.focus()
-  printWindow.print()
-}
 
 function validateAttributeName(name, existingAttributes = [], editingId = null) {
   const trimmed = (name || '').trim()
@@ -184,10 +115,7 @@ export default function Attributes() {
     })
   }, [attributes, filteredAttributes, selectedAttributeIds])
 
-  // Bulk action enablement - central source of truth
-  const totalFilteredCount = filteredAttributes.length
-  const hasMultipleRecords = totalFilteredCount > 1
-  const bulkActionsAllowed = hasMultipleRecords
+  // Selection metrics
   const selectedCount = selectedAttributeIds.length
   const selectedAttributeSet = useMemo(
     () => new Set(selectedAttributeIds.map(String)),
@@ -197,10 +125,6 @@ export default function Attributes() {
     () => filteredAttributes.filter((attr) => selectedAttributeSet.has(String(attr.attributeId ?? attr.id))),
     [filteredAttributes, selectedAttributeSet],
   )
-
-  const canBulkDelete = canDelete && bulkActionsAllowed && selectedCount >= 2
-  const canBulkExport = bulkActionsAllowed && (selectedCount >= 2 || (selectedCount === 0 && hasMultipleRecords))
-  const canBulkPrint = bulkActionsAllowed && (selectedCount >= 2 || (selectedCount === 0 && hasMultipleRecords))
 
   // ── Load Data ──────────────────────────────────────────────────────────────
   const loadData = useCallback(async (options = {}) => {
@@ -388,12 +312,12 @@ export default function Attributes() {
 
   // ── Bulk Handlers ─────────────────────────────────────────────────────────
   function handleBulkDelete() {
-    if (!canBulkDelete) return
+    if (selectedCount === 0 || !canDelete) return
     setBulkDeleteTarget(selectedAttributes)
   }
 
   async function confirmBulkDelete() {
-    if (!canBulkDelete || !bulkDeleteTarget || bulkDeleteTarget.length < 2) return
+    if (!bulkDeleteTarget || bulkDeleteTarget.length === 0) return
     setIsBulkDeleting(true)
 
     try {
@@ -408,7 +332,7 @@ export default function Attributes() {
       showToast({
         type: 'success',
         title: 'Attributes',
-        message: `${bulkDeleteTarget.length} attributes deleted successfully.`,
+        message: `${bulkDeleteTarget.length} attribute${bulkDeleteTarget.length > 1 ? 's' : ''} deleted successfully.`,
       })
 
       setSelectedAttributeIds([])
@@ -423,20 +347,6 @@ export default function Attributes() {
     } finally {
       setIsBulkDeleting(false)
     }
-  }
-
-  function handleExport() {
-    if (!canBulkExport) return
-    const exportData = selectedCount >= 2 ? selectedAttributes : filteredAttributes
-    if (exportData.length === 0) return
-    exportAttributesCsv(exportData)
-  }
-
-  function handlePrint() {
-    if (!canBulkPrint) return
-    const printData = selectedCount >= 2 ? selectedAttributes : filteredAttributes
-    if (printData.length === 0) return
-    printAttributes(printData)
   }
 
   // ── Column Definitions ─────────────────────────────────────────────────────
@@ -504,69 +414,25 @@ export default function Attributes() {
   )
 
   // ── Toolbar Rendering ──────────────────────────────────────────────────────
-  const primaryToolbarContent = null
-
-  const selectionSummary = selectedCount > 0 ? (
-    <div className="attributes__selection-summary" aria-live="polite">
-      <Check size={14} />
-      <strong>{selectedCount} selected</strong>
-    </div>
-  ) : null
+  const primaryToolbarContent = useMemo(
+    () =>
+      canDelete && selectedCount > 0 ? (
+        <button
+          type="button"
+          className="button button-secondary button-danger"
+          onClick={handleBulkDelete}
+          disabled={isBulkDeleting}
+        >
+          <Trash2 size={15} />
+          {isBulkDeleting ? 'Deleting...' : 'Delete'}
+        </button>
+      ) : null,
+    [canDelete, selectedCount, handleBulkDelete, isBulkDeleting],
+  )
 
   const toolbarContent = useMemo(
     () => (
       <FilterBar className="attributes__toolbar-actions" ariaLabel="Attribute table actions">
-        {selectionSummary}
-        <button
-          type="button"
-          className="button button-secondary"
-          onClick={handleExport}
-          disabled={!canBulkExport}
-          title={
-            !bulkActionsAllowed
-              ? 'Bulk export is disabled when only 1 attribute exists'
-              : selectedCount === 1
-                ? 'Select at least 2 attributes or clear selection to export'
-                : ''
-          }
-        >
-          <Download size={15} />
-          Export
-        </button>
-        <button
-          type="button"
-          className="button button-secondary"
-          onClick={handlePrint}
-          disabled={!canBulkPrint}
-          title={
-            !bulkActionsAllowed
-              ? 'Bulk print is disabled when only 1 attribute exists'
-              : selectedCount === 1
-                ? 'Select at least 2 attributes or clear selection to print'
-                : ''
-          }
-        >
-          <Printer size={15} />
-          Print
-        </button>
-        {canDelete ? (
-          <button
-            type="button"
-            className="button button-secondary button-danger"
-            onClick={handleBulkDelete}
-            disabled={!canBulkDelete || isBulkDeleting}
-            title={
-              !bulkActionsAllowed
-                ? 'Bulk delete is disabled when only 1 attribute exists'
-                : selectedCount < 2
-                  ? 'Select at least 2 attributes for bulk delete'
-                  : ''
-            }
-          >
-            <Trash2 size={15} />
-            {isBulkDeleting ? 'Deleting...' : 'Delete'}
-          </button>
-        ) : null}
         <button
           type="button"
           className="button button-secondary"
@@ -578,21 +444,7 @@ export default function Attributes() {
         </button>
       </FilterBar>
     ),
-    [
-      selectionSummary,
-      handleExport,
-      canBulkExport,
-      handlePrint,
-      canBulkPrint,
-      canDelete,
-      handleBulkDelete,
-      canBulkDelete,
-      isBulkDeleting,
-      loadData,
-      isLoading,
-      bulkActionsAllowed,
-      selectedCount,
-    ],
+    [loadData, isLoading],
   )
 
   // ── Modal Forms ────────────────────────────────────────────────────────────
