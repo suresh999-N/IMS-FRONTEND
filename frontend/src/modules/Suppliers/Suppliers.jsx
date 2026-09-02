@@ -433,12 +433,45 @@ export default function Suppliers({
   }, [supplierProfiles])
 
   const selectedSupplier = editingSupplier || detailsSupplier
-  const selectedPurchases = selectedSupplier
-    ? purchases.filter((item) => String(item.supplierId) === String(selectedSupplier.id))
-    : []
-  const selectedPayments = selectedSupplier
-    ? supplierPayments.filter((item) => String(item.supplierId) === String(selectedSupplier.id))
-    : []
+  const selectedPurchases = useMemo(() => {
+    if (!selectedSupplier) return []
+
+    const targetId = String(selectedSupplier.id || selectedSupplier.supplierId || '').trim().toLowerCase()
+    const targetCode = String(selectedSupplier.supplierCode || selectedSupplier.code || '').trim().toLowerCase()
+    const targetName = String(selectedSupplier.name || '').trim().toLowerCase()
+
+    return purchases.filter((item) => {
+      const itemSupId = String(item.supplierId || item.SupplierId || item.supplier_id || '').trim().toLowerCase()
+      const itemSupCode = String(item.supplierCode || item.SupplierCode || item.code || '').trim().toLowerCase()
+      const itemSupName = String(item.supplierName || item.SupplierName || item.supplier || '').trim().toLowerCase()
+
+      return (
+        (targetId && (itemSupId === targetId || itemSupCode === targetId)) ||
+        (targetCode && (itemSupId === targetCode || itemSupCode === targetCode)) ||
+        (targetName && itemSupName && itemSupName === targetName)
+      )
+    })
+  }, [selectedSupplier, purchases])
+
+  const selectedPayments = useMemo(() => {
+    if (!selectedSupplier) return []
+
+    const targetId = String(selectedSupplier.id || selectedSupplier.supplierId || '').trim().toLowerCase()
+    const targetCode = String(selectedSupplier.supplierCode || selectedSupplier.code || '').trim().toLowerCase()
+    const targetName = String(selectedSupplier.name || '').trim().toLowerCase()
+
+    return supplierPayments.filter((item) => {
+      const itemSupId = String(item.supplierId || item.SupplierId || item.supplier_id || '').trim().toLowerCase()
+      const itemSupCode = String(item.supplierCode || item.SupplierCode || item.code || '').trim().toLowerCase()
+      const itemSupName = String(item.supplierName || item.SupplierName || item.supplier || '').trim().toLowerCase()
+
+      return (
+        (targetId && (itemSupId === targetId || itemSupCode === targetId)) ||
+        (targetCode && (itemSupId === targetCode || itemSupCode === targetCode)) ||
+        (targetName && itemSupName && itemSupName === targetName)
+      )
+    })
+  }, [selectedSupplier, supplierPayments])
 
   const selectedSuppliers = useMemo(() => {
     const selectedIdSet = new Set(selectedSupplierIds.map(String))
@@ -486,10 +519,33 @@ export default function Suppliers({
 
   async function openSupplierDetails(supplier, tab = 'overview') {
     setDetailsInitialTab(tab)
+    const baseSupplier = supplier || {}
     const detailedSupplier = await loadSupplierDetail(supplier)
-    if (detailedSupplier) {
-      setDetailsSupplier(detailedSupplier)
-    }
+
+    const mergedSupplier = detailedSupplier
+      ? {
+          ...baseSupplier,
+          ...detailedSupplier,
+          totalPurchaseAmount:
+            detailedSupplier.totalPurchaseAmount ??
+            detailedSupplier.purchases ??
+            baseSupplier.totalPurchaseAmount ??
+            baseSupplier.purchases ??
+            null,
+          outstandingPayable:
+            detailedSupplier.outstandingPayable ??
+            detailedSupplier.outstanding ??
+            baseSupplier.outstandingPayable ??
+            baseSupplier.outstanding ??
+            null,
+          lastPurchaseDate:
+            detailedSupplier.lastPurchaseDate ||
+            baseSupplier.lastPurchaseDate ||
+            null,
+        }
+      : baseSupplier
+
+    setDetailsSupplier(mergedSupplier)
   }
 
   function handleSupplierDocumentsChange(nextDocuments) {
@@ -541,15 +597,17 @@ export default function Suppliers({
 
     setIsSaving(true)
 
+    const targetId = editingSupplier?.id || editingSupplier?.supplierId
+
     try {
-      const response = editingSupplier?.id
-        ? await updateSupplier(editingSupplier.id, values)
+      const response = targetId
+        ? await updateSupplier(targetId, values)
         : await createSupplier(values)
 
       const result = response.success
         ? {
             success: true,
-            message: editingSupplier
+            message: targetId
               ? 'Supplier updated successfully.'
               : 'Supplier added successfully.',
           }
@@ -1036,7 +1094,7 @@ export default function Suppliers({
             defaultPageSize={20}
             defaultSortKey=""
             showSearch={!hasSelectedSuppliers}
-            searchPlaceholder="Search suppliers by name, code, category, GST, email..."
+            searchPlaceholder="Search suppliers by name, code..."
             emptyMessage={isLoading ? 'Loading suppliers...' : 'No suppliers match the current filters.'}
             enableRowSelection
             selectedRowKeys={selectedSupplierIds}

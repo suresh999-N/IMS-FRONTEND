@@ -47,6 +47,14 @@
 }
 
 .search-wrapper input::placeholder {
-  color: var(--muted);
+  color: var(--muted, #94a3b8);
+  opacity: 0.75;
+  transition: opacity 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.search-wrapper input:focus::placeholder {
+  opacity: 0.35;
 }

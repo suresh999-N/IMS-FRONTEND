@@ -28,24 +28,29 @@ export default function LowStockWidget({ items = [], isLoading }) {
         </div>
       ) : safeItems.length > 0 ? (
         <div className="low-stock-widget__list">
-          {safeItems.slice(0, 50).map((item) => (
-            <Link
-              className="low-stock-row"
-              key={item.id || item.sku || item.name}
-              to={`/inventory/products/${item.productId || item.ProductId || item.id}`}
-            >
-              <span className="low-stock-row__icon" aria-hidden="true">
-                <AlertTriangle size={16} />
-              </span>
-              <div>
-                <strong>{item.name}</strong>
-                <span>Stock: {item.stock} - Reorder Level: {item.reorderLevel}</span>
-              </div>
-              <span className={`low-stock-row__badge ${Number(item.stock) <= 0 ? 'is-critical' : ''}`}>
-                {item.status || (Number(item.stock) <= 0 ? 'Critical' : 'Low Stock')}
-              </span>
-            </Link>
-          ))}
+          {safeItems.slice(0, 50).map((item) => {
+            const isZeroStock = Number(item.stock) <= 0 || item.status === 'Critical' || item.status === 'Out of Stock'
+            const badgeLabel = isZeroStock ? 'Out of Stock' : (item.status || 'Low Stock')
+
+            return (
+              <Link
+                className="low-stock-row"
+                key={item.id || item.sku || item.name}
+                to={`/inventory/products/${item.productId || item.ProductId || item.id}`}
+              >
+                <span className="low-stock-row__icon" aria-hidden="true">
+                  <AlertTriangle size={16} />
+                </span>
+                <div>
+                  <strong>{item.name}</strong>
+                  <span>Stock: {item.stock} - Reorder Level: {item.reorderLevel}</span>
+                </div>
+                <span className={`low-stock-row__badge ${isZeroStock ? 'is-critical' : ''}`}>
+                  {badgeLabel}
+                </span>
+              </Link>
+            )
+          })}
           <Link className="low-stock-widget__action" to="/inventory/purchases">
             Create Purchase Order
           </Link>

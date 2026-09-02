@@ -110,40 +110,54 @@ export default function Units() {
     e.preventDefault()
     setServerErrors({})
 
-    const name = formatUnitTitle(formValues.name)
-    const shortName = formatUnitTitle(formValues.shortName)
+    const name = formValues.name.trim()
+    const shortName = formValues.shortName.trim()
+    const errors = {}
 
-    // Frontend validation
+    // Frontend validation - Empty check
     if (!name) {
-      setServerErrors((prev) => ({ ...prev, name: 'Unit Name is required.' }))
-      return
+      errors.name = 'Unit Name is required.'
+    } else if (name.length < 2) {
+      errors.name = 'Unit Name must be at least 2 characters.'
+    } else if (name.length > 50) {
+      errors.name = 'Unit Name cannot exceed 50 characters.'
+    } else if (!/^[a-zA-Z0-9\s\-/°%()]+$/.test(name)) {
+      errors.name = 'Unit Name contains invalid characters.'
     }
 
     if (!shortName) {
-      setServerErrors((prev) => ({ ...prev, shortName: 'Abbreviation is required.' }))
-      return
+      errors.shortName = 'Abbreviation / Symbol is required.'
+    } else if (shortName.length > 20) {
+      errors.shortName = 'Abbreviation cannot exceed 20 characters.'
+    } else if (!/^[a-zA-Z0-9\s\-/°%().]+$/.test(shortName)) {
+      errors.shortName = 'Abbreviation contains invalid characters.'
     }
 
-    // Check duplicate locally
-    const isDuplicateName = units.some(
-      (u) =>
-        (!editingItem || String(u.id) !== String(editingItem.id)) &&
-        u.name.toLowerCase() === name.toLowerCase()
-    )
-
-    if (isDuplicateName) {
-      setServerErrors((prev) => ({ ...prev, name: 'Unit Name already exists.' }))
-      return
+    // Check duplicates locally if format is valid
+    if (!errors.name) {
+      const isDuplicateName = units.some(
+        (u) =>
+          (!editingItem || String(u.id) !== String(editingItem.id)) &&
+          u.name.toLowerCase() === name.toLowerCase(),
+      )
+      if (isDuplicateName) {
+        errors.name = 'Unit Name already exists.'
+      }
     }
 
-    const isDuplicateShortName = units.some(
-      (u) =>
-        (!editingItem || String(u.id) !== String(editingItem.id)) &&
-        u.shortName.toLowerCase() === shortName.toLowerCase()
-    )
+    if (!errors.shortName) {
+      const isDuplicateShortName = units.some(
+        (u) =>
+          (!editingItem || String(u.id) !== String(editingItem.id)) &&
+          u.shortName.toLowerCase() === shortName.toLowerCase(),
+      )
+      if (isDuplicateShortName) {
+        errors.shortName = 'Unit Abbreviation already exists.'
+      }
+    }
 
-    if (isDuplicateShortName) {
-      setServerErrors((prev) => ({ ...prev, shortName: 'Unit Abbreviation already exists.' }))
+    if (Object.keys(errors).length > 0) {
+      setServerErrors(errors)
       return
     }
 
@@ -341,7 +355,7 @@ export default function Units() {
           columns={columns}
           rows={filteredUnits}
           keyField="id"
-          searchPlaceholder="Search units by name or symbol"
+          searchPlaceholder="Search by name or symbol..."
           loading={isLoading}
           showSearch={true}
           splitToolbar
@@ -387,11 +401,12 @@ export default function Units() {
                       onChange={(e) => {
                         const val = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
                         setFormValues((prev) => ({ ...prev, name: val }))
+                        if (serverErrors.name) setServerErrors((prev) => ({ ...prev, name: '' }))
                       }}
-                      placeholder="e.g. kilogram"
-                      required
+                      placeholder="e.g. Kilogram"
+                      error={serverErrors.name}
+                      showError={Boolean(serverErrors.name)}
                     />
-                    {serverErrors.name && <span className="error-text">{serverErrors.name}</span>}
                   </div>
 
                   <div className="resource-form__field">
@@ -403,11 +418,12 @@ export default function Units() {
                       onChange={(e) => {
                         const val = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
                         setFormValues((prev) => ({ ...prev, shortName: val }))
+                        if (serverErrors.shortName) setServerErrors((prev) => ({ ...prev, shortName: '' }))
                       }}
                       placeholder="e.g. kg"
-                      required
+                      error={serverErrors.shortName}
+                      showError={Boolean(serverErrors.shortName)}
                     />
-                    {serverErrors.shortName && <span className="error-text">{serverErrors.shortName}</span>}
                   </div>
                 </div>
               </div>

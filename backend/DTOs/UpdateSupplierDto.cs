@@ -7,7 +7,7 @@ public class UpdateSupplierDto
     public string? SupplierCode { get; set; }
 
     [MaxLength(120, ErrorMessage = "Supplier name cannot exceed 120 characters.")]
-    [RegularExpression(@"^[A-Za-z\s]+$", ErrorMessage = "Name can contain only letters and spaces.")]
+    [RegularExpression(@"^[A-Za-z0-9\s.,&'/\-()]+$", ErrorMessage = "Name contains invalid characters.")]
     public string? Name { get; set; }
 
     [MaxLength(150, ErrorMessage = "Company name cannot exceed 150 characters.")]

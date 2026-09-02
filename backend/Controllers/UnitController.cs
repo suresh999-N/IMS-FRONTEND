@@ -20,13 +20,23 @@ namespace IMSBackend.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAll([FromQuery] string? search, CancellationToken cancellationToken)
         {
-            var units = await _context.Units
+            var queryable = _context.Units
                 .AsNoTracking()
-                .Where(unit => !unit.IsDeleted)
+                .Where(unit => !unit.IsDeleted);
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim().ToLower();
+                queryable = queryable.Where(unit =>
+                    unit.Name.ToLower().Contains(term) ||
+                    unit.ShortName.ToLower().Contains(term));
+            }
+
+            var units = await queryable
                 .OrderBy(unit => unit.Name)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             return Ok(ApiResponse<List<Unit>>.Ok(
                 units,

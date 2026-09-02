@@ -504,7 +504,13 @@ var totalRecords = await query.CountAsync();
                         .Where(payment =>
                             payment.SupplierId == x.SupplierId &&
                             !payment.IsCancelled)
-                        .Sum(payment => (decimal?)payment.Amount) ?? 0m
+                        .Sum(payment => (decimal?)payment.Amount) ?? 0m,
+
+                    LastPurchaseDate = _context.PurchaseOrders
+                        .Where(po => po.SupplierId == x.SupplierId && !po.IsCancelled)
+                        .OrderByDescending(po => po.OrderDate)
+                        .Select(po => (DateTime?)po.OrderDate)
+                        .FirstOrDefault()
                 })
                 .ToListAsync();
 
@@ -526,7 +532,10 @@ var totalRecords = await query.CountAsync();
                     x.DeletedAt,
 
                     Purchases = x.Purchases,
-                    Outstanding = x.Purchases - x.PaidAmount
+                    TotalPurchaseAmount = x.Purchases,
+                    Outstanding = x.Purchases - x.PaidAmount,
+                    OutstandingPayable = x.Purchases - x.PaidAmount,
+                    LastPurchaseDate = x.LastPurchaseDate
                 })
                 .ToList();
 
@@ -565,6 +574,20 @@ var totalRecords = await query.CountAsync();
                     x.Status,
                     x.CreatedAt,
                     x.UpdatedAt,
+
+                    Purchases = _context.PurchaseOrders
+                        .Where(po => po.SupplierId == x.SupplierId && !po.IsCancelled)
+                        .Sum(po => (decimal?)po.TotalAmount) ?? 0m,
+
+                    PaidAmount = _context.SupplierPayments
+                        .Where(payment => payment.SupplierId == x.SupplierId && !payment.IsCancelled)
+                        .Sum(payment => (decimal?)payment.Amount) ?? 0m,
+
+                    LastPurchaseDate = _context.PurchaseOrders
+                        .Where(po => po.SupplierId == x.SupplierId && !po.IsCancelled)
+                        .OrderByDescending(po => po.OrderDate)
+                        .Select(po => (DateTime?)po.OrderDate)
+                        .FirstOrDefault(),
 
                     Contacts = _context.SupplierContacts
                         .Where(c => c.SupplierId == x.SupplierId)
@@ -631,7 +654,33 @@ var totalRecords = await query.CountAsync();
                 });
             }
 
-            return Ok(supplier);
+            var result = new
+            {
+                supplier.SupplierId,
+                supplier.SupplierCode,
+                supplier.Name,
+                supplier.Category,
+                supplier.GstNumber,
+                supplier.PanNumber,
+                supplier.Phone,
+                supplier.Email,
+                supplier.Website,
+                supplier.Status,
+                supplier.CreatedAt,
+                supplier.UpdatedAt,
+                supplier.Contacts,
+                supplier.Addresses,
+                supplier.PaymentTerm,
+                supplier.BankAccounts,
+
+                Purchases = supplier.Purchases,
+                TotalPurchaseAmount = supplier.Purchases,
+                Outstanding = supplier.Purchases - supplier.PaidAmount,
+                OutstandingPayable = supplier.Purchases - supplier.PaidAmount,
+                LastPurchaseDate = supplier.LastPurchaseDate
+            };
+
+            return Ok(result);
         }
 
         // =========================
@@ -946,6 +995,13 @@ var totalRecords = await query.CountAsync();
                     });
                 }
 
+                if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z0-9\s.,&'/\-()]+$"))
+                {
+                    return BadRequest(new
+                    {
+                        message = "Name contains invalid characters."
+                    });
+                }
                 if (string.IsNullOrWhiteSpace(dto.Phone))
                 {
                     return BadRequest(new

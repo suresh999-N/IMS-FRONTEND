@@ -1,6 +1,6 @@
 // Products.jsx
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Archive, Package, Pencil, Plus, RotateCcw, Trash2 } from 'lucide-react'
 import { useAuth } from '../../../hooks/useAuth'
 import FormModal from '../../../layouts/FormModal'
@@ -286,6 +286,19 @@ function getProductDisplayStatus(product) {
   return 'In Stock'
 }
 
+function isProductLowStock(product) {
+  if (!product || isProductArchived(product)) return false
+  const stock = getProductStock(product)
+  const reorder = toSafeNumber(product?.reorderLevel)
+  const rawStatus = String(product?.status ?? '').trim()
+  return stock <= reorder || /low/i.test(rawStatus) || stock <= 0
+}
+
+function isProductOutOfStock(product) {
+  if (!product || isProductArchived(product)) return false
+  return getProductStock(product) <= 0
+}
+
 function isProductArchived(product) {
   return Boolean(product?.isArchived ?? product?.IsArchived ?? product?.is_archived)
 }
@@ -439,6 +452,7 @@ export default function Products({
 }) {
   const { hasPermission } = useAuth()
   const navigate = useNavigate()
+  const { productId } = useParams()
   const [searchParams] = useSearchParams()
 
   const [products, setProducts] = useState([])
@@ -469,7 +483,49 @@ export default function Products({
   const canCreate = hasPermission('products', 'create')
   const canEdit = hasPermission('products', 'edit')
   const canDelete = hasPermission('products', 'delete')
-  const isLowStockView = searchParams.get('filter') === 'low-stock'
+  const filterParam = searchParams.get('filter') || searchParams.get('status')
+  const isLowStockView = Boolean(filterParam && /low[-_]?stock/i.test(filterParam))
+
+  useEffect(() => {
+    if (!filterParam) return
+
+    const normalized = filterParam.toLowerCase().replace(/[-_]/g, '')
+    if (normalized === 'lowstock') {
+      setFilters((current) => ({ ...current, status: 'Low Stock' }))
+    } else if (normalized === 'outofstock') {
+      setFilters((current) => ({ ...current, status: 'Out Of Stock' }))
+    } else if (normalized === 'active') {
+      setFilters((current) => ({ ...current, status: 'Active' }))
+    } else if (normalized === 'archived') {
+      setFilters((current) => ({ ...current, status: 'Archived' }))
+    }
+  }, [filterParam])
+
+  useEffect(() => {
+    const targetId = productId || searchParams.get('productId')
+    if (!targetId || products.length === 0) return
+
+    const targetKey = String(targetId).toLowerCase()
+    const foundProduct = products.find(
+      (p) =>
+        String(getEntityId(p)).toLowerCase() === targetKey ||
+        String(p.id ?? '').toLowerCase() === targetKey ||
+        String(p.sku ?? '').toLowerCase() === targetKey,
+    )
+
+    if (foundProduct) {
+      setViewTarget(foundProduct)
+    }
+  }, [productId, searchParams, products])
+
+  function handleCloseViewTarget() {
+    setViewTarget(null)
+    if (productId || searchParams.get('productId')) {
+      const currentFilter = searchParams.get('filter') || searchParams.get('status')
+      const targetPath = currentFilter ? `/inventory/products?filter=${encodeURIComponent(currentFilter)}` : '/inventory/products'
+      navigate(targetPath, { replace: true })
+    }
+  }
 
   useEffect(() => {
     productsLengthRef.current = products.length
@@ -939,8 +995,19 @@ export default function Products({
       const displayStatus = getProductDisplayStatus(p)
       if (filters.category !== 'all' && normalizeFilterValue(p.category) !== filters.category) return false
       if (filters.brand !== 'all' && normalizeFilterValue(p.brand) !== filters.brand) return false
-      if (filters.status !== 'all' && displayStatus !== filters.status) return false
-      if (isLowStockView && displayStatus !== 'Low Stock') return false
+      
+      if (filters.status !== 'all') {
+        if (filters.status === 'Low Stock') {
+          if (!isProductLowStock(p)) return false
+        } else if (filters.status === 'Out Of Stock') {
+          if (!isProductOutOfStock(p)) return false
+        } else if (displayStatus !== filters.status) {
+          return false
+        }
+      } else if (isLowStockView) {
+        if (!isProductLowStock(p)) return false
+      }
+
       return true
     })
   }, [products, filters, isLowStockView])
@@ -987,8 +1054,8 @@ export default function Products({
 
     return {
       total: products.length,
-      lowStock: activeInventoryProducts.filter((product) => getProductDisplayStatus(product) === 'Low Stock').length,
-      outOfStock: activeInventoryProducts.filter((product) => getProductDisplayStatus(product) === 'Out Of Stock').length,
+      lowStock: activeInventoryProducts.filter(isProductLowStock).length,
+      outOfStock: activeInventoryProducts.filter(isProductOutOfStock).length,
       inventoryValue: value,
       inventoryValueLabel: formatCompactInventoryValue(value),
     }
@@ -1076,7 +1143,7 @@ export default function Products({
         <FormModal
           title="Product Details"
           subtitle={viewTarget.sku ? `SKU: ${viewTarget.sku}` : (viewTarget.barcode ? `Barcode: ${viewTarget.barcode}` : 'Product Master Specification')}
-          onClose={() => setViewTarget(null)}
+          onClose={handleCloseViewTarget}
           dialogClassName="product-modal product-modal--details"
           bodyClassName="product-modal__body product-modal__body--details"
         >
@@ -1214,7 +1281,7 @@ export default function Products({
               <button
                 type="button"
                 className="button button-secondary"
-                onClick={() => setViewTarget(null)}
+                onClick={handleCloseViewTarget}
               >
                 Close
               </button>

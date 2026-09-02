@@ -428,7 +428,7 @@ function getPatternError(value, pattern, message) {
 }
 
 function getSupplierNameError(value) {
-  return getBusinessNameError(value, 'Supplier name', { max: INPUT_LIMITS.supplierName })
+  return getBusinessNameError(value, 'Supplier name', { max: INPUT_LIMITS.supplierName, allowAmpersand: true })
 }
 
 function getCompanyNameError(value) {

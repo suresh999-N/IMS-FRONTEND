@@ -5,7 +5,6 @@ import {
   AlertTriangle,
   Boxes,
   DollarSign,
-  Eye,
   Package,
   ShoppingCart,
   Truck,
@@ -198,8 +197,9 @@ function getInvoiceStatus(sale) {
 function getInvoiceStatusTone(status) {
   const value = String(status).toLowerCase()
 
+  if (value.includes('partially') || value.includes('partial')) return 'warning'
   if (value.includes('paid') || value.includes('complete') || value.includes('approved')) return 'success'
-  if (value.includes('pending') || value.includes('draft') || value.includes('partial')) return 'warning'
+  if (value.includes('pending') || value.includes('draft')) return 'warning'
   if (value.includes('cancel') || value.includes('overdue') || value.includes('failed')) return 'danger'
   return 'info'
 }
@@ -553,9 +553,6 @@ export default function Dashboard() {
                     </div>
                     <span className="recent-sale-row__value">
                       <em>{formatCurrency(sale.totalAmount || 0)}</em>
-                      <span className="recent-sale-row__quick" aria-label={`Quick view ${sale.invoiceNumber || 'invoice'}`}>
-                        <Eye size={11} />
-                      </span>
                     </span>
                   </Link>
                 )
