@@ -1,0 +1,1 @@
+function e(e){return String(e??``).replace(/,/g,``).trim()}function t(t,{allowDecimal:n=!0,allowNegative:r=!1}={}){let i=e(t),a=``,o=!1,s=!1;for(let e of i){if(/\d/.test(e)){a+=e;continue}if(n&&e===`.`&&!o){a+=e,o=!0;continue}r&&e===`-`&&!s&&a.length===0&&(a+=e,s=!0)}return a}export{t};

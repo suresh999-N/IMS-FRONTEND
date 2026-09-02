@@ -1,0 +1,301 @@
+2026-08-09 13:07:37.138 +05:30 [INF] Refresh Token Cleanup Service Started.
+2026-08-09 13:07:37.271 +05:30 [ERR] Hosting failed to start
+System.IO.IOException: Failed to bind to address http://127.0.0.1:5237: address already in use.
+ ---> Microsoft.AspNetCore.Connections.AddressInUseException: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+ ---> System.Net.Sockets.SocketException (10048): Only one usage of each socket address (protocol/network address/port) is normally permitted.
+   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
+   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.LocalhostListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+2026-08-09 13:07:37.381 +05:30 [ERR] An error occurred using the connection to database 'IMS' on server '127.0.0.1'.
+2026-08-09 13:07:37.388 +05:30 [INF] Refresh Token Cleanup Service Stopped.
+2026-08-09 13:18:07.828 +05:30 [INF] Refresh Token Cleanup Service Started.
+2026-08-09 13:18:08.615 +05:30 [INF] IMS Backend started successfully. Swagger: http://localhost:5237/swagger
+2026-08-09 13:18:10.520 +05:30 [INF] GET /swagger/index.html => 200 (390 ms)
+2026-08-09 13:18:12.114 +05:30 [INF] GET /swagger/v1/swagger.json => 200 (759 ms)
+2026-08-09 13:18:14.530 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:14.589 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:15.046 +05:30 [INF] GET /api/Notifications/unread-count => 200 (1782 ms)
+2026-08-09 13:18:15.046 +05:30 [INF] GET /api/Profile/me => 200 (1698 ms)
+2026-08-09 13:18:16.864 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:16.968 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:16.971 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:17.000 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:17.020 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:17.029 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:17.042 +05:30 [INF] GET /api/Notifications/unread-count => 200 (86 ms)
+2026-08-09 13:18:17.433 +05:30 [INF] GET /api/Suppliers => 200 (574 ms)
+2026-08-09 13:18:17.434 +05:30 [INF] GET /api/Customers => 200 (499 ms)
+2026-08-09 13:18:17.586 +05:30 [INF] GET /api/stock => 200 (757 ms)
+2026-08-09 13:18:17.743 +05:30 [INF] GET /api/categories => 200 (913 ms)
+2026-08-09 13:18:17.789 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:17.950 +05:30 [INF] GET /api/SubCategories => 200 (208 ms)
+2026-08-09 13:18:18.132 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:18.220 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:18.273 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:18.300 +05:30 [INF] GET /api/Customers => 200 (100 ms)
+2026-08-09 13:18:18.414 +05:30 [INF] GET /api/Suppliers => 200 (160 ms)
+2026-08-09 13:18:18.473 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:18.514 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:18.708 +05:30 [INF] GET /api/products => 200 (598 ms)
+2026-08-09 13:18:18.708 +05:30 [INF] GET /api/products => 200 (1944 ms)
+2026-08-09 13:18:18.735 +05:30 [INF] GET /api/units => 200 (248 ms)
+2026-08-09 13:18:18.764 +05:30 [INF] GET /api/Warehouses => 200 (354 ms)
+2026-08-09 13:18:19.068 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:19.117 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:19.221 +05:30 [INF] GET /api/brands => 200 (180 ms)
+2026-08-09 13:18:19.367 +05:30 [INF] GET /api/stock-movements => 200 (296 ms)
+2026-08-09 13:18:19.499 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:19.556 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:19.625 +05:30 [INF] GET /api/Profile/me => 200 (123 ms)
+2026-08-09 13:18:19.682 +05:30 [INF] GET /api/Permissions/roles => 200 (240 ms)
+2026-08-09 13:18:21.848 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:21.935 +05:30 [INF] GET /api/categories => 200 (162 ms)
+2026-08-09 13:18:22.967 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:23.332 +05:30 [INF] GET /api/brands => 200 (526 ms)
+2026-08-09 13:18:23.800 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:23.949 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:24.047 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:24.047 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:24.035 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:24.595 +05:30 [INF] GET /api/Permissions/role/18 => 200 (787 ms)
+2026-08-09 13:18:24.616 +05:30 [INF] GET /api/Permissions/role/3 => 200 (1004 ms)
+2026-08-09 13:18:24.621 +05:30 [INF] GET /api/Permissions/role/7 => 200 (820 ms)
+2026-08-09 13:18:24.622 +05:30 [INF] GET /api/Permissions/role/5 => 200 (816 ms)
+2026-08-09 13:18:24.636 +05:30 [INF] GET /api/Permissions/role/2 => 200 (1036 ms)
+2026-08-09 13:18:42.405 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:42.416 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:42.531 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:42.525 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:42.601 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:42.655 +05:30 [INF] GET /api/units => 200 (221 ms)
+2026-08-09 13:18:42.661 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:42.762 +05:30 [INF] GET /api/categories => 200 (423 ms)
+2026-08-09 13:18:42.781 +05:30 [INF] GET /api/brands => 200 (269 ms)
+2026-08-09 13:18:42.851 +05:30 [INF] GET /api/Warehouses => 200 (417 ms)
+2026-08-09 13:18:42.859 +05:30 [INF] GET /api/products => 200 (520 ms)
+2026-08-09 13:18:42.860 +05:30 [INF] GET /api/Suppliers => 200 (372 ms)
+2026-08-09 13:18:43.368 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:43.548 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:43.568 +05:30 [INF] GET /api/Customers => 200 (237 ms)
+2026-08-09 13:18:43.585 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:43.611 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:43.611 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:43.649 +05:30 [INF] GET /api/Permissions/roles => 200 (187 ms)
+2026-08-09 13:18:43.716 +05:30 [INF] GET /api/stock-movements => 200 (255 ms)
+2026-08-09 13:18:43.611 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:43.638 +05:30 [INF] GET /api/stock => 200 (201 ms)
+2026-08-09 13:18:43.835 +05:30 [INF] GET /api/products => 200 (357 ms)
+2026-08-09 13:18:43.881 +05:30 [INF] GET /api/brands => 200 (346 ms)
+2026-08-09 13:18:44.380 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:44.405 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:44.465 +05:30 [INF] GET /api/categories => 200 (131 ms)
+2026-08-09 13:18:44.600 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:44.554 +05:30 [INF] GET /api/Customers => 200 (220 ms)
+2026-08-09 13:18:44.554 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:44.667 +05:30 [INF] GET /api/SubCategories => 200 (145 ms)
+2026-08-09 13:18:44.712 +05:30 [INF] GET /api/Suppliers => 200 (199 ms)
+2026-08-09 13:18:44.843 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:44.843 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:44.869 +05:30 [INF] GET /api/Profile/me => 200 (69 ms)
+2026-08-09 13:18:44.869 +05:30 [INF] GET /api/Notifications/unread-count => 200 (110 ms)
+2026-08-09 13:18:45.307 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:45.307 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:45.358 +05:30 [INF] GET /api/Permissions/role/3 => 200 (85 ms)
+2026-08-09 13:18:45.381 +05:30 [INF] GET /api/Permissions/role/2 => 200 (104 ms)
+2026-08-09 13:18:45.533 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:45.538 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:45.598 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:18:45.624 +05:30 [INF] GET /api/Permissions/role/7 => 200 (158 ms)
+2026-08-09 13:18:45.652 +05:30 [INF] GET /api/Permissions/role/5 => 200 (181 ms)
+2026-08-09 13:18:45.734 +05:30 [INF] GET /api/Permissions/role/18 => 200 (176 ms)
+2026-08-09 13:19:08.307 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:08.388 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:08.402 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:08.407 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:08.415 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:08.443 +05:30 [INF] GET /api/units => 200 (96 ms)
+2026-08-09 13:19:08.480 +05:30 [INF] GET /api/Suppliers => 200 (144 ms)
+2026-08-09 13:19:08.432 +05:30 [INF] GET /api/Warehouses => 200 (143 ms)
+2026-08-09 13:19:08.569 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:08.491 +05:30 [INF] GET /api/categories => 200 (146 ms)
+2026-08-09 13:19:08.609 +05:30 [INF] GET /api/products => 200 (263 ms)
+2026-08-09 13:19:08.660 +05:30 [INF] GET /api/brands => 200 (311 ms)
+2026-08-09 13:19:09.062 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:09.090 +05:30 [INF] GET /api/Customers => 200 (45 ms)
+2026-08-09 13:19:09.168 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:09.185 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:09.193 +05:30 [INF] GET /api/stock => 200 (44 ms)
+2026-08-09 13:19:09.195 +05:30 [INF] GET /api/stock-movements => 200 (46 ms)
+2026-08-09 13:19:09.377 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:09.405 +05:30 [INF] GET /api/Permissions/roles => 200 (54 ms)
+2026-08-09 13:19:09.487 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:09.543 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:09.578 +05:30 [INF] GET /api/products => 200 (117 ms)
+2026-08-09 13:19:09.579 +05:30 [INF] GET /api/Customers => 200 (77 ms)
+2026-08-09 13:19:09.767 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:09.792 +05:30 [INF] GET /api/Suppliers => 200 (41 ms)
+2026-08-09 13:19:09.825 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:09.864 +05:30 [INF] GET /api/SubCategories => 200 (56 ms)
+2026-08-09 13:19:09.897 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:09.914 +05:30 [INF] GET /api/Notifications/unread-count => 200 (44 ms)
+2026-08-09 13:19:10.008 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:10.026 +05:30 [INF] GET /api/Profile/me => 200 (44 ms)
+2026-08-09 13:19:11.340 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:11.364 +05:30 [INF] GET /api/brands => 200 (46 ms)
+2026-08-09 13:19:11.484 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:11.544 +05:30 [INF] GET /api/categories => 200 (81 ms)
+2026-08-09 13:19:12.014 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:12.045 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:12.045 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:12.096 +05:30 [INF] GET /api/Permissions/role/2 => 200 (196 ms)
+2026-08-09 13:19:12.114 +05:30 [INF] GET /api/Permissions/role/5 => 200 (98 ms)
+2026-08-09 13:19:12.146 +05:30 [INF] GET /api/Permissions/role/3 => 200 (130 ms)
+2026-08-09 13:19:12.473 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:12.507 +05:30 [INF] GET /api/Permissions/role/7 => 200 (53 ms)
+2026-08-09 13:19:12.783 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:19:12.876 +05:30 [INF] GET /api/Permissions/role/18 => 200 (126 ms)
+2026-08-09 13:20:47.988 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:48.044 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:48.085 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:48.087 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:48.155 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:48.028 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:48.189 +05:30 [INF] GET /api/units => 200 (138 ms)
+2026-08-09 13:20:48.221 +05:30 [INF] GET /api/brands => 200 (266 ms)
+2026-08-09 13:20:48.223 +05:30 [INF] GET /api/Warehouses => 200 (173 ms)
+2026-08-09 13:20:48.239 +05:30 [INF] GET /api/categories => 200 (251 ms)
+2026-08-09 13:20:48.238 +05:30 [INF] GET /api/Suppliers => 200 (187 ms)
+2026-08-09 13:20:48.295 +05:30 [INF] GET /api/products => 200 (308 ms)
+2026-08-09 13:20:48.850 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:48.866 +05:30 [INF] GET /api/stock => 200 (30 ms)
+2026-08-09 13:20:48.968 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:48.985 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:49.016 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:49.026 +05:30 [INF] GET /api/Customers => 200 (70 ms)
+2026-08-09 13:20:49.039 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:49.054 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:49.026 +05:30 [INF] GET /api/Customers => 200 (137 ms)
+2026-08-09 13:20:49.078 +05:30 [INF] GET /api/Permissions/roles => 200 (110 ms)
+2026-08-09 13:20:49.084 +05:30 [INF] GET /api/stock-movements => 200 (130 ms)
+2026-08-09 13:20:49.105 +05:30 [INF] GET /api/products => 200 (138 ms)
+2026-08-09 13:20:49.409 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:49.431 +05:30 [INF] GET /api/brands => 200 (36 ms)
+2026-08-09 13:20:50.847 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:50.866 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:50.909 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:50.917 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:50.929 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:50.948 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:50.993 +05:30 [INF] GET /api/Profile/me => 200 (160 ms)
+2026-08-09 13:20:51.001 +05:30 [INF] GET /api/categories => 200 (179 ms)
+2026-08-09 13:20:51.028 +05:30 [INF] GET /api/Permissions/role/18 => 200 (195 ms)
+2026-08-09 13:20:51.005 +05:30 [INF] GET /api/Suppliers => 200 (1425 ms)
+2026-08-09 13:20:51.005 +05:30 [INF] GET /api/Notifications/unread-count => 200 (172 ms)
+2026-08-09 13:20:51.029 +05:30 [INF] GET /api/SubCategories => 200 (194 ms)
+2026-08-09 13:20:51.659 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:51.869 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:51.898 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:51.874 +05:30 [INF] GET /api/Permissions/role/3 => 200 (236 ms)
+2026-08-09 13:20:51.972 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:52.019 +05:30 [INF] GET /api/Permissions/role/5 => 200 (274 ms)
+2026-08-09 13:20:52.021 +05:30 [INF] GET /api/Permissions/role/7 => 200 (259 ms)
+2026-08-09 13:20:52.136 +05:30 [INF] GET /api/Permissions/role/2 => 200 (403 ms)
+2026-08-09 13:20:52.299 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:53.118 +05:30 [INF] GET /api/PurchaseReturns/8 => 200 (837 ms)
+2026-08-09 13:20:53.392 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:53.424 +05:30 [INF] GET /api/Suppliers => 200 (51 ms)
+2026-08-09 13:20:53.702 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:53.730 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:53.731 +05:30 [INF] GET /api/units => 200 (45 ms)
+2026-08-09 13:20:53.753 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:53.769 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:53.751 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:20:53.806 +05:30 [INF] GET /api/Warehouses => 200 (96 ms)
+2026-08-09 13:20:53.883 +05:30 [INF] GET /api/products => 200 (161 ms)
+2026-08-09 13:20:54.033 +05:30 [INF] GET /api/PurchaseOrders => 200 (308 ms)
+2026-08-09 13:20:54.047 +05:30 [INF] GET /api/GoodsReceipts => 200 (297 ms)
+2026-08-09 13:21:03.197 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:21:03.220 +05:30 [INF] GET /api/Notifications/unread-count => 200 (44 ms)
+2026-08-09 13:21:03.227 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:21:03.254 +05:30 [INF] GET /api/Profile/me => 200 (49 ms)
+2026-08-09 13:21:17.917 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:21:17.939 +05:30 [INF] GET /api/Notifications/unread-count => 200 (37 ms)
+2026-08-09 13:21:18.242 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:21:18.260 +05:30 [INF] GET /api/Profile/me => 200 (40 ms)
+2026-08-09 13:21:33.237 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:21:33.253 +05:30 [INF] GET /api/Notifications/unread-count => 200 (36 ms)
+2026-08-09 13:21:33.269 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:21:33.280 +05:30 [INF] GET /api/Profile/me => 200 (24 ms)
+2026-08-09 13:21:36.521 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:21:36.537 +05:30 [INF] GET /api/Notifications/unread-count => 200 (30 ms)
+2026-08-09 13:21:36.886 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:21:36.911 +05:30 [INF] GET /api/Profile/me => 200 (46 ms)
+2026-08-09 13:21:40.981 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:21:41.019 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:21:41.019 +05:30 [INF] GET /api/Notifications/unread-count => 200 (53 ms)
+2026-08-09 13:21:41.035 +05:30 [INF] GET /api/Profile/me => 200 (44 ms)
+2026-08-09 13:21:48.043 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:21:48.060 +05:30 [INF] GET /api/Notifications/unread-count => 200 (27 ms)
+2026-08-09 13:21:48.195 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:21:48.239 +05:30 [INF] GET /api/Profile/me => 200 (73 ms)
+2026-08-09 13:21:49.913 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:21:49.941 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:21:49.946 +05:30 [INF] GET /api/Notifications/unread-count => 200 (83 ms)
+2026-08-09 13:21:49.964 +05:30 [INF] GET /api/Profile/me => 200 (59 ms)
+2026-08-09 13:21:52.551 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:21:52.568 +05:30 [INF] GET /api/Notifications/unread-count => 200 (37 ms)
+2026-08-09 13:21:52.857 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:21:52.872 +05:30 [INF] GET /api/Profile/me => 200 (26 ms)
+2026-08-09 13:22:03.641 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:22:03.942 +05:30 [INF] GET /api/Notifications/unread-count => 200 (391 ms)
+2026-08-09 13:22:18.109 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:22:18.128 +05:30 [INF] GET /api/Notifications/unread-count => 200 (36 ms)
+2026-08-09 13:22:33.416 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:22:33.432 +05:30 [INF] GET /api/Notifications/unread-count => 200 (35 ms)
+2026-08-09 13:22:48.248 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:22:48.267 +05:30 [INF] GET /api/Notifications/unread-count => 200 (38 ms)
+2026-08-09 13:23:11.455 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:23:11.469 +05:30 [INF] GET /api/Notifications/unread-count => 200 (30 ms)
+2026-08-09 13:24:11.134 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:24:11.149 +05:30 [INF] GET /api/Notifications/unread-count => 200 (27 ms)
+2026-08-09 13:24:42.071 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:24:42.172 +05:30 [INF] GET /api/Profile/me => 200 (133 ms)
+2026-08-09 13:24:42.175 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:24:42.194 +05:30 [INF] GET /api/Notifications/unread-count => 200 (118 ms)
+2026-08-09 13:24:42.475 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:24:42.489 +05:30 [INF] GET /api/Notifications/unread-count => 200 (30 ms)
+2026-08-09 13:24:48.212 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:24:48.229 +05:30 [INF] GET /api/Notifications/unread-count => 200 (35 ms)
+2026-08-09 13:24:48.247 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:24:48.265 +05:30 [INF] GET /api/Profile/me => 200 (39 ms)
+2026-08-09 13:25:47.046 +05:30 [INF] Refresh Token Cleanup Service Started.
+2026-08-09 13:25:47.202 +05:30 [INF] IMS Backend started successfully. Swagger: http://localhost:5237/swagger
+2026-08-09 13:25:48.749 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:25:49.069 +05:30 [INF] GET /api/Notifications/unread-count => 200 (816 ms)
+2026-08-09 13:26:03.494 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:26:03.504 +05:30 [INF] GET /api/Notifications/unread-count => 200 (60 ms)
+2026-08-09 13:26:18.178 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:26:18.185 +05:30 [INF] GET /api/Notifications/unread-count => 200 (21 ms)
+2026-08-09 13:26:33.577 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:26:33.582 +05:30 [INF] GET /api/Notifications/unread-count => 200 (14 ms)
+2026-08-09 13:27:11.475 +05:30 [INF] JWT Valid. User: SK
+2026-08-09 13:27:11.480 +05:30 [INF] GET /api/Notifications/unread-count => 200 (13 ms)

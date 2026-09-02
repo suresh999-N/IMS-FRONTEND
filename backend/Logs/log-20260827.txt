@@ -1,0 +1,2238 @@
+2026-08-27 09:18:47.180 +05:30 [INF] Role permission synchronization completed successfully.
+2026-08-27 09:18:48.264 +05:30 [INF] Refresh Token Cleanup Service Started.
+2026-08-27 09:18:49.173 +05:30 [INF] 1 expired refresh tokens deleted.
+2026-08-27 09:18:53.954 +05:30 [INF] GET /swagger/index.html => 200 (682 ms)
+2026-08-27 09:18:55.340 +05:30 [INF] GET /swagger/v1/swagger.json => 200 (893 ms)
+2026-08-27 09:19:08.990 +05:30 [WRN] The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
+2026-08-27 09:19:09.707 +05:30 [INF] POST /api/auth/login => 200 (2148 ms)
+2026-08-27 09:19:43.635 +05:30 [INF] GET /swagger/index.html => 200 (7 ms)
+2026-08-27 09:19:44.437 +05:30 [INF] GET /swagger/v1/swagger.json => 200 (248 ms)
+2026-08-27 09:19:57.248 +05:30 [INF] POST /api/auth/login => 200 (604 ms)
+2026-08-27 09:20:23.992 +05:30 [INF] JWT Valid. User: SK
+2026-08-27 09:20:24.088 +05:30 [INF] GET /api/Users => 200 (212 ms)
+2026-08-27 10:07:33.117 +05:30 [ERR] JWT Authentication Failed. Path: /api/Customers
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/26/2026 12:34:40 PM', Current time (UTC): '8/27/2026 4:37:33 AM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 10:07:33.118 +05:30 [ERR] JWT Authentication Failed. Path: /api/categories
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/26/2026 12:34:40 PM', Current time (UTC): '8/27/2026 4:37:33 AM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 10:07:33.118 +05:30 [ERR] JWT Authentication Failed. Path: /api/units
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/26/2026 12:34:40 PM', Current time (UTC): '8/27/2026 4:37:33 AM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 10:07:33.118 +05:30 [ERR] JWT Authentication Failed. Path: /api/stock
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/26/2026 12:34:40 PM', Current time (UTC): '8/27/2026 4:37:33 AM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 10:07:33.118 +05:30 [ERR] JWT Authentication Failed. Path: /api/brands
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/26/2026 12:34:40 PM', Current time (UTC): '8/27/2026 4:37:33 AM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 10:07:33.117 +05:30 [ERR] JWT Authentication Failed. Path: /api/products
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/26/2026 12:34:40 PM', Current time (UTC): '8/27/2026 4:37:33 AM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 10:07:33.181 +05:30 [WRN] JWT Challenge. Path: /api/Customers. Error: invalid_token
+2026-08-27 10:07:33.181 +05:30 [WRN] JWT Challenge. Path: /api/units. Error: invalid_token
+2026-08-27 10:07:33.181 +05:30 [WRN] JWT Challenge. Path: /api/stock. Error: invalid_token
+2026-08-27 10:07:33.181 +05:30 [WRN] JWT Challenge. Path: /api/categories. Error: invalid_token
+2026-08-27 10:07:33.181 +05:30 [WRN] JWT Challenge. Path: /api/brands. Error: invalid_token
+2026-08-27 10:07:33.184 +05:30 [WRN] JWT Challenge. Path: /api/products. Error: invalid_token
+2026-08-27 10:07:33.185 +05:30 [INF] GET /api/Customers => 401 (112 ms)
+2026-08-27 10:07:33.185 +05:30 [INF] GET /api/units => 401 (159 ms)
+2026-08-27 10:07:33.187 +05:30 [INF] GET /api/categories => 401 (125 ms)
+2026-08-27 10:07:33.186 +05:30 [INF] GET /api/stock => 401 (113 ms)
+2026-08-27 10:07:33.188 +05:30 [INF] GET /api/brands => 401 (120 ms)
+2026-08-27 10:07:33.189 +05:30 [INF] GET /api/products => 401 (111 ms)
+2026-08-27 10:07:37.797 +05:30 [INF] POST /api/auth/login => 200 (249 ms)
+2026-08-27 10:07:38.214 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:38.226 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:38.242 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:38.250 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:38.259 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:38.346 +05:30 [INF] GET /api/units => 200 (119 ms)
+2026-08-27 10:07:38.347 +05:30 [INF] GET /api/brands => 200 (112 ms)
+2026-08-27 10:07:38.412 +05:30 [INF] GET /api/categories => 200 (215 ms)
+2026-08-27 10:07:38.444 +05:30 [INF] GET /api/Suppliers => 200 (234 ms)
+2026-08-27 10:07:38.480 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:38.552 +05:30 [INF] GET /api/products => 200 (338 ms)
+2026-08-27 10:07:38.568 +05:30 [INF] GET /api/Warehouses => 200 (100 ms)
+2026-08-27 10:07:38.913 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:38.951 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:38.951 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:38.979 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:39.006 +05:30 [INF] GET /api/Permissions/roles => 200 (40 ms)
+2026-08-27 10:07:39.012 +05:30 [INF] GET /api/Customers => 200 (107 ms)
+2026-08-27 10:07:39.036 +05:30 [INF] GET /api/stock => 200 (96 ms)
+2026-08-27 10:07:39.042 +05:30 [INF] GET /api/stock-movements => 200 (103 ms)
+2026-08-27 10:07:39.213 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:39.232 +05:30 [INF] GET /api/Profile/me => 200 (27 ms)
+2026-08-27 10:07:39.372 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:39.409 +05:30 [INF] GET /api/products => 200 (49 ms)
+2026-08-27 10:07:40.034 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:40.053 +05:30 [INF] GET /api/Customers => 200 (26 ms)
+2026-08-27 10:07:40.064 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:40.072 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:40.092 +05:30 [INF] GET /api/Notifications/unread-count => 200 (34 ms)
+2026-08-27 10:07:40.096 +05:30 [INF] GET /api/Suppliers => 200 (33 ms)
+2026-08-27 10:07:40.106 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:40.143 +05:30 [INF] GET /api/SubCategories => 200 (46 ms)
+2026-08-27 10:07:41.371 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:41.371 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:41.382 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:41.382 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:41.394 +05:30 [INF] GET /api/categories => 200 (45 ms)
+2026-08-27 10:07:41.401 +05:30 [INF] GET /api/brands => 200 (52 ms)
+2026-08-27 10:07:41.452 +05:30 [INF] GET /api/Permissions/role/3 => 200 (101 ms)
+2026-08-27 10:07:41.452 +05:30 [INF] GET /api/Permissions/role/2 => 200 (99 ms)
+2026-08-27 10:07:41.640 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:41.659 +05:30 [INF] GET /api/Permissions/role/7 => 200 (30 ms)
+2026-08-27 10:07:41.666 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:41.679 +05:30 [INF] GET /api/Permissions/role/5 => 200 (19 ms)
+2026-08-27 10:07:42.128 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:42.138 +05:30 [INF] GET /api/Permissions/role/18 => 200 (23 ms)
+2026-08-27 10:07:42.612 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:42.646 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:42.651 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:42.651 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:42.651 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:42.703 +05:30 [INF] GET /api/Dashboard/recent-sales => 200 (80 ms)
+2026-08-27 10:07:42.703 +05:30 [INF] GET /api/Dashboard/top-products => 200 (82 ms)
+2026-08-27 10:07:42.736 +05:30 [INF] GET /api/Dashboard/monthly-sales => 200 (111 ms)
+2026-08-27 10:07:42.749 +05:30 [INF] GET /api/Dashboard/summary => 200 (158 ms)
+2026-08-27 10:07:42.749 +05:30 [INF] GET /api/Dashboard/low-stock => 200 (123 ms)
+2026-08-27 10:07:42.985 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:43.006 +05:30 [INF] GET /api/Dashboard/monthly-purchases => 200 (34 ms)
+2026-08-27 10:07:43.314 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:43.344 +05:30 [INF] GET /api/Dashboard/recent-activities => 200 (37 ms)
+2026-08-27 10:07:47.554 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:47.593 +05:30 [INF] GET /api/Dashboard/summary => 200 (66 ms)
+2026-08-27 10:07:47.904 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:47.912 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:47.914 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:47.925 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:47.931 +05:30 [INF] GET /api/Dashboard/recent-sales => 200 (45 ms)
+2026-08-27 10:07:47.939 +05:30 [INF] GET /api/Dashboard/monthly-sales => 200 (52 ms)
+2026-08-27 10:07:47.940 +05:30 [INF] GET /api/Dashboard/top-products => 200 (53 ms)
+2026-08-27 10:07:47.943 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:47.949 +05:30 [INF] GET /api/Dashboard/monthly-purchases => 200 (61 ms)
+2026-08-27 10:07:47.960 +05:30 [INF] GET /api/Dashboard/low-stock => 200 (71 ms)
+2026-08-27 10:07:48.147 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:48.159 +05:30 [INF] GET /api/Dashboard/recent-activities => 200 (21 ms)
+2026-08-27 10:07:55.096 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:55.106 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:07:55.119 +05:30 [INF] GET /api/SubCategories => 200 (30 ms)
+2026-08-27 10:07:55.136 +05:30 [INF] GET /api/categories/main => 200 (60 ms)
+2026-08-27 10:08:38.769 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:08:38.777 +05:30 [INF] GET /api/Notifications/unread-count => 200 (25 ms)
+2026-08-27 10:09:36.531 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:09:36.540 +05:30 [INF] GET /api/Profile/me => 200 (33 ms)
+2026-08-27 10:09:38.131 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:09:38.138 +05:30 [INF] GET /api/Profile/me => 200 (23 ms)
+2026-08-27 10:09:38.505 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:09:38.517 +05:30 [INF] GET /api/Notifications/unread-count => 200 (35 ms)
+2026-08-27 10:10:09.631 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:10:09.639 +05:30 [INF] GET /api/Profile/me => 200 (23 ms)
+2026-08-27 10:10:38.675 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:10:38.687 +05:30 [INF] GET /api/Notifications/unread-count => 200 (38 ms)
+2026-08-27 10:25:57.156 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 10:25:57.162 +05:30 [INF] GET /api/Notifications/unread-count => 200 (36 ms)
+2026-08-27 11:15:03.109 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:03.123 +05:30 [INF] GET /api/Profile/me => 200 (99 ms)
+2026-08-27 11:15:03.708 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:03.745 +05:30 [INF] GET /api/categories => 200 (50 ms)
+2026-08-27 11:15:03.770 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:03.778 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:03.791 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:03.830 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:03.831 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:03.834 +05:30 [INF] GET /api/brands => 200 (94 ms)
+2026-08-27 11:15:03.870 +05:30 [INF] GET /api/units => 200 (113 ms)
+2026-08-27 11:15:03.882 +05:30 [INF] GET /api/Suppliers => 200 (111 ms)
+2026-08-27 11:15:03.890 +05:30 [INF] GET /api/Warehouses => 200 (123 ms)
+2026-08-27 11:15:03.912 +05:30 [INF] GET /api/products => 200 (168 ms)
+2026-08-27 11:15:04.824 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:04.828 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:04.828 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:04.853 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:04.853 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:04.871 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:04.885 +05:30 [INF] GET /api/stock-movements => 200 (98 ms)
+2026-08-27 11:15:04.910 +05:30 [INF] GET /api/Permissions/roles => 200 (106 ms)
+2026-08-27 11:15:04.914 +05:30 [INF] GET /api/stock => 200 (121 ms)
+2026-08-27 11:15:04.940 +05:30 [INF] GET /api/Customers => 200 (135 ms)
+2026-08-27 11:15:04.949 +05:30 [INF] GET /api/Customers => 200 (153 ms)
+2026-08-27 11:15:04.973 +05:30 [INF] GET /api/products => 200 (184 ms)
+2026-08-27 11:15:05.483 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:05.503 +05:30 [INF] GET /api/Suppliers => 200 (31 ms)
+2026-08-27 11:15:05.533 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:05.554 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:05.556 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:05.561 +05:30 [INF] GET /api/Notifications/unread-count => 200 (37 ms)
+2026-08-27 11:15:05.571 +05:30 [INF] GET /api/Profile/me => 200 (37 ms)
+2026-08-27 11:15:05.584 +05:30 [INF] GET /api/SubCategories => 200 (51 ms)
+2026-08-27 11:15:05.766 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:05.783 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:05.806 +05:30 [INF] GET /api/brands => 200 (39 ms)
+2026-08-27 11:15:05.806 +05:30 [INF] GET /api/categories => 200 (71 ms)
+2026-08-27 11:15:06.096 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:06.117 +05:30 [INF] GET /api/Permissions/role/3 => 200 (30 ms)
+2026-08-27 11:15:06.129 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:06.154 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:06.154 +05:30 [INF] GET /api/Permissions/role/2 => 200 (40 ms)
+2026-08-27 11:15:06.185 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:06.185 +05:30 [INF] GET /api/Permissions/role/5 => 200 (41 ms)
+2026-08-27 11:15:06.205 +05:30 [INF] GET /api/Permissions/role/7 => 200 (43 ms)
+2026-08-27 11:15:06.911 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:06.943 +05:30 [INF] GET /api/Permissions/role/18 => 200 (52 ms)
+2026-08-27 11:15:07.858 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:07.952 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:07.965 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:08.008 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:08.032 +05:30 [INF] GET /api/Permissions/role/5 => 200 (141 ms)
+2026-08-27 11:15:08.048 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:08.015 +05:30 [INF] GET /api/Permissions/role/2 => 200 (168 ms)
+2026-08-27 11:15:08.100 +05:30 [INF] GET /api/Permissions/role/3 => 200 (146 ms)
+2026-08-27 11:15:08.114 +05:30 [INF] GET /api/Permissions/role/18 => 200 (97 ms)
+2026-08-27 11:15:08.114 +05:30 [INF] GET /api/Permissions/role/7 => 200 (153 ms)
+2026-08-27 11:15:09.177 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:09.191 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:09.196 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:09.215 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:09.238 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:09.244 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:09.262 +05:30 [INF] GET /api/Dashboard/low-stock => 200 (140 ms)
+2026-08-27 11:15:09.402 +05:30 [INF] GET /api/Dashboard/top-products => 200 (222 ms)
+2026-08-27 11:15:09.334 +05:30 [INF] GET /api/Dashboard/monthly-sales => 200 (211 ms)
+2026-08-27 11:15:09.354 +05:30 [INF] GET /api/Dashboard/recent-sales => 200 (231 ms)
+2026-08-27 11:15:09.287 +05:30 [INF] GET /api/Dashboard/monthly-purchases => 200 (92 ms)
+2026-08-27 11:15:09.495 +05:30 [INF] GET /api/Dashboard/summary => 200 (371 ms)
+2026-08-27 11:15:10.043 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:10.063 +05:30 [INF] GET /api/Dashboard/recent-activities => 200 (30 ms)
+2026-08-27 11:15:26.100 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:26.139 +05:30 [INF] GET /api/SubCategories => 200 (57 ms)
+2026-08-27 11:15:26.195 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:26.226 +05:30 [INF] GET /api/categories/main => 200 (59 ms)
+2026-08-27 11:15:33.441 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:33.456 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:33.498 +05:30 [INF] GET /api/products => 200 (66 ms)
+2026-08-27 11:15:33.529 +05:30 [INF] GET /api/products => 200 (107 ms)
+2026-08-27 11:15:34.078 +05:30 [INF] GET /uploads/products/5e700e26-9236-4850-b5e3-c3dba8575eaa.png => 304 (40 ms)
+2026-08-27 11:15:34.216 +05:30 [INF] GET /uploads/products/7e5ed40b-496f-4437-a37b-84e0e1abe30f.png => 304 (2 ms)
+2026-08-27 11:15:34.237 +05:30 [INF] GET /uploads/products/fef5f99d-6425-4109-ad32-411e0ee96179.png => 304 (2 ms)
+2026-08-27 11:15:34.336 +05:30 [INF] GET /uploads/products/691150b5-5d69-4a37-9e40-f1d3a0a52178.png => 304 (3 ms)
+2026-08-27 11:15:34.362 +05:30 [INF] GET /uploads/products/2c25b415-b08e-4aa5-b3e1-c018b56e68cd.png => 304 (2 ms)
+2026-08-27 11:15:57.122 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:57.145 +05:30 [INF] GET /api/Suppliers => 200 (45 ms)
+2026-08-27 11:15:57.153 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:57.170 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:57.171 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:15:57.193 +05:30 [INF] GET /api/Users => 403 (34 ms)
+2026-08-27 11:15:57.196 +05:30 [INF] GET /api/PurchaseIndents => 403 (54 ms)
+2026-08-27 11:15:57.204 +05:30 [INF] GET /api/PurchaseIndents/dashboard => 403 (44 ms)
+2026-08-27 11:16:02.884 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:16:02.930 +05:30 [INF] GET /api/Dashboard/summary => 200 (72 ms)
+2026-08-27 11:16:03.178 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:16:03.188 +05:30 [INF] GET /api/Dashboard/low-stock => 200 (16 ms)
+2026-08-27 11:16:03.243 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:16:03.254 +05:30 [INF] GET /api/Dashboard/recent-sales => 200 (17 ms)
+2026-08-27 11:16:03.271 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:16:03.273 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:16:03.281 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:16:03.298 +05:30 [INF] GET /api/Dashboard/monthly-purchases => 200 (48 ms)
+2026-08-27 11:16:03.299 +05:30 [INF] GET /api/Dashboard/top-products => 200 (50 ms)
+2026-08-27 11:16:03.303 +05:30 [INF] GET /api/Dashboard/monthly-sales => 200 (49 ms)
+2026-08-27 11:16:03.540 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:16:03.574 +05:30 [INF] GET /api/Dashboard/recent-activities => 200 (59 ms)
+2026-08-27 11:16:07.837 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:16:07.844 +05:30 [INF] GET /api/Profile/me => 200 (12 ms)
+2026-08-27 11:16:07.883 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:16:07.890 +05:30 [INF] GET /api/Notifications/unread-count => 200 (14 ms)
+2026-08-27 11:17:07.838 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:17:07.848 +05:30 [INF] GET /api/Notifications/unread-count => 200 (28 ms)
+2026-08-27 11:18:08.340 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:18:08.354 +05:30 [INF] GET /api/Notifications/unread-count => 200 (34 ms)
+2026-08-27 11:18:48.454 +05:30 [INF] 1 expired refresh tokens deleted.
+2026-08-27 11:19:07.854 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:19:07.868 +05:30 [INF] GET /api/Notifications/unread-count => 200 (36 ms)
+2026-08-27 11:31:39.961 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:39.969 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:39.978 +05:30 [INF] GET /api/Profile/me => 200 (77 ms)
+2026-08-27 11:31:39.982 +05:30 [INF] GET /api/Notifications/unread-count => 200 (49 ms)
+2026-08-27 11:31:41.174 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:41.208 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:41.256 +05:30 [INF] GET /api/brands => 200 (127 ms)
+2026-08-27 11:31:41.264 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:41.264 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:41.268 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:41.268 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:41.294 +05:30 [INF] GET /api/Warehouses => 200 (164 ms)
+2026-08-27 11:31:41.300 +05:30 [INF] GET /api/categories => 200 (166 ms)
+2026-08-27 11:31:41.309 +05:30 [INF] GET /api/Suppliers => 200 (174 ms)
+2026-08-27 11:31:41.308 +05:30 [INF] GET /api/units => 200 (126 ms)
+2026-08-27 11:31:41.357 +05:30 [INF] GET /api/products => 200 (218 ms)
+2026-08-27 11:31:42.111 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:42.122 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:42.129 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:42.133 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:42.137 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:42.172 +05:30 [INF] GET /api/stock => 200 (71 ms)
+2026-08-27 11:31:42.177 +05:30 [INF] GET /api/Permissions/roles => 200 (76 ms)
+2026-08-27 11:31:42.187 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:42.224 +05:30 [INF] GET /api/stock-movements => 200 (122 ms)
+2026-08-27 11:31:42.238 +05:30 [INF] GET /api/Customers => 200 (142 ms)
+2026-08-27 11:31:42.247 +05:30 [INF] GET /api/Customers => 200 (144 ms)
+2026-08-27 11:31:42.269 +05:30 [INF] GET /api/products => 200 (164 ms)
+2026-08-27 11:31:42.792 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:42.813 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:42.836 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:42.848 +05:30 [INF] GET /api/Suppliers => 200 (83 ms)
+2026-08-27 11:31:42.856 +05:30 [INF] GET /api/Notifications/unread-count => 200 (45 ms)
+2026-08-27 11:31:42.857 +05:30 [INF] GET /api/SubCategories => 200 (62 ms)
+2026-08-27 11:31:42.879 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:42.889 +05:30 [INF] GET /api/Profile/me => 200 (21 ms)
+2026-08-27 11:31:43.059 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:43.073 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:43.103 +05:30 [INF] GET /api/brands => 200 (54 ms)
+2026-08-27 11:31:43.104 +05:30 [INF] GET /api/categories => 200 (70 ms)
+2026-08-27 11:31:43.640 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:43.644 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:43.670 +05:30 [INF] GET /api/Permissions/role/2 => 200 (44 ms)
+2026-08-27 11:31:43.679 +05:30 [INF] GET /api/Permissions/role/7 => 200 (52 ms)
+2026-08-27 11:31:43.696 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:43.696 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:43.708 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:43.744 +05:30 [INF] GET /api/Permissions/role/3 => 200 (70 ms)
+2026-08-27 11:31:43.744 +05:30 [INF] GET /api/Permissions/role/5 => 200 (72 ms)
+2026-08-27 11:31:43.749 +05:30 [INF] GET /api/Permissions/role/18 => 200 (64 ms)
+2026-08-27 11:31:44.278 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:44.310 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:44.332 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:44.336 +05:30 [INF] GET /api/Dashboard/summary => 200 (68 ms)
+2026-08-27 11:31:44.346 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:44.335 +05:30 [INF] GET /api/Dashboard/low-stock => 200 (37 ms)
+2026-08-27 11:31:44.366 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:44.369 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:44.356 +05:30 [INF] GET /api/Dashboard/recent-sales => 200 (49 ms)
+2026-08-27 11:31:44.382 +05:30 [INF] GET /api/Dashboard/top-products => 200 (64 ms)
+2026-08-27 11:31:44.398 +05:30 [INF] GET /api/Dashboard/monthly-sales => 200 (50 ms)
+2026-08-27 11:31:44.398 +05:30 [INF] GET /api/Dashboard/monthly-purchases => 200 (52 ms)
+2026-08-27 11:31:44.950 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:31:44.969 +05:30 [INF] GET /api/Dashboard/recent-activities => 200 (34 ms)
+2026-08-27 11:32:40.977 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:32:41.001 +05:30 [INF] GET /api/Notifications/unread-count => 200 (40 ms)
+2026-08-27 11:32:41.215 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:32:41.236 +05:30 [INF] GET /api/Profile/me => 200 (38 ms)
+2026-08-27 11:33:23.540 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:33:23.552 +05:30 [INF] GET /api/Profile/me => 200 (23 ms)
+2026-08-27 11:33:41.109 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:33:41.119 +05:30 [INF] GET /api/Notifications/unread-count => 200 (19 ms)
+2026-08-27 11:33:41.246 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:33:41.265 +05:30 [INF] GET /api/Profile/me => 200 (38 ms)
+2026-08-27 11:34:41.309 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:34:41.321 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:34:41.333 +05:30 [INF] GET /api/Notifications/unread-count => 200 (48 ms)
+2026-08-27 11:34:41.340 +05:30 [INF] GET /api/Profile/me => 200 (47 ms)
+2026-08-27 11:35:41.141 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:35:41.154 +05:30 [INF] GET /api/Notifications/unread-count => 200 (29 ms)
+2026-08-27 11:35:41.287 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:35:41.314 +05:30 [INF] GET /api/Profile/me => 200 (51 ms)
+2026-08-27 11:35:48.165 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:35:48.230 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:35:48.275 +05:30 [INF] GET /api/Dashboard/monthly-purchases => 200 (86 ms)
+2026-08-27 11:35:48.284 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:35:48.295 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:35:48.295 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:35:48.295 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:35:48.313 +05:30 [INF] GET /api/Dashboard/summary => 200 (170 ms)
+2026-08-27 11:35:48.312 +05:30 [INF] GET /api/Dashboard/monthly-sales => 200 (124 ms)
+2026-08-27 11:35:48.330 +05:30 [INF] GET /api/Dashboard/top-products => 200 (149 ms)
+2026-08-27 11:35:48.326 +05:30 [INF] GET /api/Dashboard/recent-sales => 200 (127 ms)
+2026-08-27 11:35:48.336 +05:30 [INF] GET /api/Dashboard/low-stock => 200 (126 ms)
+2026-08-27 11:35:49.091 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:35:49.121 +05:30 [INF] GET /api/Dashboard/recent-activities => 200 (52 ms)
+2026-08-27 11:35:54.575 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:35:54.609 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:35:54.624 +05:30 [INF] GET /api/Dashboard/recent-sales => 200 (32 ms)
+2026-08-27 11:35:54.634 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:35:54.643 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:35:54.647 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:35:54.647 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:35:54.671 +05:30 [INF] GET /api/Dashboard/top-products => 200 (69 ms)
+2026-08-27 11:35:54.682 +05:30 [INF] GET /api/Dashboard/monthly-purchases => 200 (69 ms)
+2026-08-27 11:35:54.690 +05:30 [INF] GET /api/Dashboard/monthly-sales => 200 (81 ms)
+2026-08-27 11:35:54.690 +05:30 [INF] GET /api/Dashboard/low-stock => 200 (75 ms)
+2026-08-27 11:35:54.690 +05:30 [INF] GET /api/Dashboard/summary => 200 (141 ms)
+2026-08-27 11:35:55.271 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:35:55.317 +05:30 [INF] GET /api/Dashboard/recent-activities => 200 (75 ms)
+2026-08-27 11:36:18.859 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:36:18.939 +05:30 [INF] GET /api/products => 200 (96 ms)
+2026-08-27 11:36:19.151 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:36:19.209 +05:30 [INF] GET /api/products => 200 (87 ms)
+2026-08-27 11:36:41.297 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:36:41.330 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:36:41.338 +05:30 [INF] GET /api/Profile/me => 200 (66 ms)
+2026-08-27 11:36:41.354 +05:30 [INF] GET /api/Notifications/unread-count => 200 (37 ms)
+2026-08-27 11:37:00.786 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:00.794 +05:30 [INF] GET /api/categories/main => 200 (17 ms)
+2026-08-27 11:37:01.012 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:01.021 +05:30 [INF] GET /api/units => 200 (17 ms)
+2026-08-27 11:37:01.047 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:01.062 +05:30 [INF] GET /api/SubCategories => 200 (20 ms)
+2026-08-27 11:37:01.067 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:01.077 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:01.077 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:01.089 +05:30 [INF] GET /api/brands => 200 (32 ms)
+2026-08-27 11:37:01.110 +05:30 [INF] GET /api/attribute-values => 200 (53 ms)
+2026-08-27 11:37:01.118 +05:30 [INF] GET /api/attributes => 200 (54 ms)
+2026-08-27 11:37:09.213 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:09.233 +05:30 [INF] GET /api/Dashboard/recent-sales => 200 (41 ms)
+2026-08-27 11:37:09.236 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:09.248 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:09.254 +05:30 [INF] GET /api/Dashboard/top-products => 200 (36 ms)
+2026-08-27 11:37:09.262 +05:30 [INF] GET /api/Dashboard/monthly-purchases => 200 (23 ms)
+2026-08-27 11:37:09.276 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:09.285 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:09.291 +05:30 [INF] GET /api/Dashboard/low-stock => 200 (22 ms)
+2026-08-27 11:37:09.298 +05:30 [INF] GET /api/Dashboard/monthly-sales => 200 (21 ms)
+2026-08-27 11:37:09.337 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:09.376 +05:30 [INF] GET /api/Dashboard/summary => 200 (48 ms)
+2026-08-27 11:37:09.852 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:09.893 +05:30 [INF] GET /api/Dashboard/recent-activities => 200 (73 ms)
+2026-08-27 11:37:09.951 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:10.089 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:10.098 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:10.103 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:10.127 +05:30 [INF] GET /api/products => 200 (206 ms)
+2026-08-27 11:37:10.137 +05:30 [INF] GET /api/categories => 200 (94 ms)
+2026-08-27 11:37:10.146 +05:30 [INF] GET /api/Suppliers => 200 (97 ms)
+2026-08-27 11:37:10.160 +05:30 [INF] GET /api/Customers => 200 (107 ms)
+2026-08-27 11:37:41.467 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:41.469 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:37:41.482 +05:30 [INF] GET /api/Notifications/unread-count => 200 (29 ms)
+2026-08-27 11:37:41.486 +05:30 [INF] GET /api/Profile/me => 200 (33 ms)
+2026-08-27 11:38:40.953 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:38:40.975 +05:30 [INF] GET /api/Notifications/unread-count => 200 (48 ms)
+2026-08-27 11:38:41.185 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:38:41.197 +05:30 [INF] GET /api/Profile/me => 200 (29 ms)
+2026-08-27 11:39:42.499 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:39:42.531 +05:30 [INF] GET /api/Notifications/unread-count => 200 (80 ms)
+2026-08-27 11:40:52.272 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:40:52.291 +05:30 [INF] GET /api/Notifications/unread-count => 200 (38 ms)
+2026-08-27 11:41:52.088 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:41:52.107 +05:30 [INF] GET /api/Notifications/unread-count => 200 (49 ms)
+2026-08-27 11:42:52.208 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:42:52.222 +05:30 [INF] GET /api/Notifications/unread-count => 200 (65 ms)
+2026-08-27 11:43:52.008 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 11:43:52.025 +05:30 [INF] GET /api/Notifications/unread-count => 200 (34 ms)
+2026-08-27 12:18:35.427 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:35.437 +05:30 [INF] GET /api/Notifications/unread-count => 200 (37 ms)
+2026-08-27 12:18:35.445 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:35.453 +05:30 [INF] GET /api/Profile/me => 200 (16 ms)
+2026-08-27 12:18:36.586 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:36.598 +05:30 [INF] GET /api/Suppliers => 200 (21 ms)
+2026-08-27 12:18:36.662 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:36.686 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:36.688 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:36.689 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:36.710 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:36.713 +05:30 [INF] GET /api/brands => 200 (75 ms)
+2026-08-27 12:18:36.713 +05:30 [INF] GET /api/categories => 200 (75 ms)
+2026-08-27 12:18:36.710 +05:30 [INF] GET /api/units => 200 (45 ms)
+2026-08-27 12:18:36.744 +05:30 [INF] GET /api/Warehouses => 200 (107 ms)
+2026-08-27 12:18:36.769 +05:30 [INF] GET /api/products => 200 (128 ms)
+2026-08-27 12:18:37.209 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:37.235 +05:30 [INF] GET /api/Customers => 200 (41 ms)
+2026-08-27 12:18:37.251 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:37.254 +05:30 [INF] GET /api/stock => 200 (10 ms)
+2026-08-27 12:18:37.273 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:37.277 +05:30 [INF] GET /api/stock-movements => 200 (12 ms)
+2026-08-27 12:18:37.297 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:37.306 +05:30 [INF] GET /api/Permissions/roles => 200 (16 ms)
+2026-08-27 12:18:37.361 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:37.407 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:37.413 +05:30 [INF] GET /api/products => 200 (71 ms)
+2026-08-27 12:18:37.430 +05:30 [INF] GET /api/Customers => 200 (35 ms)
+2026-08-27 12:18:37.777 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:37.792 +05:30 [INF] GET /api/Suppliers => 200 (26 ms)
+2026-08-27 12:18:37.812 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:37.820 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:37.832 +05:30 [INF] GET /api/SubCategories => 200 (27 ms)
+2026-08-27 12:18:37.835 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:37.832 +05:30 [INF] GET /api/Notifications/unread-count => 200 (21 ms)
+2026-08-27 12:18:37.843 +05:30 [INF] GET /api/Profile/me => 200 (18 ms)
+2026-08-27 12:18:38.275 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:38.287 +05:30 [INF] GET /api/categories => 200 (23 ms)
+2026-08-27 12:18:38.397 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:38.403 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:38.408 +05:30 [INF] GET /api/brands => 200 (21 ms)
+2026-08-27 12:18:38.417 +05:30 [INF] GET /api/Permissions/role/5 => 200 (26 ms)
+2026-08-27 12:18:38.456 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:38.467 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:38.470 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:38.486 +05:30 [INF] GET /api/Permissions/role/2 => 200 (41 ms)
+2026-08-27 12:18:38.491 +05:30 [INF] GET /api/Permissions/role/3 => 200 (40 ms)
+2026-08-27 12:18:38.494 +05:30 [INF] GET /api/Permissions/role/7 => 200 (38 ms)
+2026-08-27 12:18:39.285 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:39.296 +05:30 [INF] GET /api/Permissions/role/18 => 200 (21 ms)
+2026-08-27 12:18:39.803 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:39.807 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:39.822 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:39.822 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:39.823 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:39.837 +05:30 [INF] GET /api/Dashboard/top-products => 200 (52 ms)
+2026-08-27 12:18:39.838 +05:30 [INF] GET /api/Dashboard/low-stock => 200 (52 ms)
+2026-08-27 12:18:39.848 +05:30 [INF] GET /api/Dashboard/monthly-sales => 200 (47 ms)
+2026-08-27 12:18:39.847 +05:30 [INF] GET /api/Dashboard/recent-sales => 200 (55 ms)
+2026-08-27 12:18:39.866 +05:30 [INF] GET /api/Dashboard/summary => 200 (62 ms)
+2026-08-27 12:18:40.061 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:40.087 +05:30 [INF] GET /api/Dashboard/monthly-purchases => 200 (57 ms)
+2026-08-27 12:18:40.391 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:18:40.403 +05:30 [INF] GET /api/Dashboard/recent-activities => 200 (19 ms)
+2026-08-27 12:19:36.959 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:19:36.966 +05:30 [INF] GET /api/Notifications/unread-count => 200 (42 ms)
+2026-08-27 12:19:36.980 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:19:36.986 +05:30 [INF] GET /api/Profile/me => 200 (11 ms)
+2026-08-27 12:20:36.715 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:20:36.722 +05:30 [INF] GET /api/Notifications/unread-count => 200 (23 ms)
+2026-08-27 12:20:36.872 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:20:36.881 +05:30 [INF] GET /api/Profile/me => 200 (17 ms)
+2026-08-27 12:21:36.948 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:21:36.962 +05:30 [INF] GET /api/Notifications/unread-count => 200 (33 ms)
+2026-08-27 12:21:36.966 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:21:36.977 +05:30 [INF] GET /api/Profile/me => 200 (19 ms)
+2026-08-27 12:22:36.757 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:22:36.765 +05:30 [INF] GET /api/Notifications/unread-count => 200 (22 ms)
+2026-08-27 12:22:36.870 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:22:36.877 +05:30 [INF] GET /api/Profile/me => 200 (16 ms)
+2026-08-27 12:23:36.921 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:23:36.927 +05:30 [INF] GET /api/Notifications/unread-count => 200 (17 ms)
+2026-08-27 12:23:36.960 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:23:36.967 +05:30 [INF] GET /api/Profile/me => 200 (13 ms)
+2026-08-27 12:24:36.803 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:24:36.814 +05:30 [INF] GET /api/Notifications/unread-count => 200 (36 ms)
+2026-08-27 12:24:36.848 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:24:36.854 +05:30 [INF] GET /api/Profile/me => 200 (14 ms)
+2026-08-27 12:25:37.253 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:25:37.261 +05:30 [INF] GET /api/Notifications/unread-count => 200 (17 ms)
+2026-08-27 12:26:38.061 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:26:38.069 +05:30 [INF] GET /api/Notifications/unread-count => 200 (16 ms)
+2026-08-27 12:27:39.165 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:27:39.173 +05:30 [INF] GET /api/Notifications/unread-count => 200 (24 ms)
+2026-08-27 12:34:01.876 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:01.882 +05:30 [INF] GET /api/Profile/me => 200 (39 ms)
+2026-08-27 12:34:01.892 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:01.897 +05:30 [INF] GET /api/Notifications/unread-count => 200 (11 ms)
+2026-08-27 12:34:04.603 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:04.614 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:04.615 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:04.623 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:04.621 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:04.628 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:04.627 +05:30 [INF] GET /api/units => 200 (65 ms)
+2026-08-27 12:34:04.644 +05:30 [INF] GET /api/brands => 200 (77 ms)
+2026-08-27 12:34:04.668 +05:30 [INF] GET /api/Suppliers => 200 (101 ms)
+2026-08-27 12:34:04.673 +05:30 [INF] GET /api/categories => 200 (57 ms)
+2026-08-27 12:34:04.691 +05:30 [INF] GET /api/Warehouses => 200 (107 ms)
+2026-08-27 12:34:04.694 +05:30 [INF] GET /api/products => 200 (131 ms)
+2026-08-27 12:34:05.367 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:05.386 +05:30 [INF] GET /api/Customers => 200 (28 ms)
+2026-08-27 12:34:05.408 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:05.410 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:05.410 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:05.420 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:05.422 +05:30 [INF] GET /api/Permissions/roles => 200 (28 ms)
+2026-08-27 12:34:05.427 +05:30 [INF] GET /api/stock-movements => 200 (33 ms)
+2026-08-27 12:34:05.429 +05:30 [INF] GET /api/stock => 200 (36 ms)
+2026-08-27 12:34:05.427 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:05.474 +05:30 [INF] GET /api/Customers => 200 (62 ms)
+2026-08-27 12:34:05.477 +05:30 [INF] GET /api/products => 200 (70 ms)
+2026-08-27 12:34:06.084 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:06.114 +05:30 [INF] GET /api/Suppliers => 200 (48 ms)
+2026-08-27 12:34:06.125 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:06.131 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:06.142 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:06.143 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:06.143 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:06.151 +05:30 [INF] GET /api/brands => 200 (41 ms)
+2026-08-27 12:34:06.169 +05:30 [INF] GET /api/Notifications/unread-count => 200 (46 ms)
+2026-08-27 12:34:06.173 +05:30 [INF] GET /api/categories => 200 (56 ms)
+2026-08-27 12:34:06.174 +05:30 [INF] GET /api/SubCategories => 200 (50 ms)
+2026-08-27 12:34:06.174 +05:30 [INF] GET /api/Permissions/role/3 => 200 (59 ms)
+2026-08-27 12:34:07.089 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:07.097 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:07.097 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:07.103 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:07.125 +05:30 [INF] GET /api/Permissions/role/2 => 200 (62 ms)
+2026-08-27 12:34:07.132 +05:30 [INF] GET /api/Permissions/role/5 => 200 (60 ms)
+2026-08-27 12:34:07.135 +05:30 [INF] GET /api/Permissions/role/7 => 200 (69 ms)
+2026-08-27 12:34:07.136 +05:30 [INF] GET /api/Permissions/role/18 => 200 (68 ms)
+2026-08-27 12:34:07.439 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:07.450 +05:30 [INF] GET /api/Dashboard/low-stock => 200 (20 ms)
+2026-08-27 12:34:07.482 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:07.509 +05:30 [INF] GET /api/Dashboard/summary => 200 (35 ms)
+2026-08-27 12:34:07.777 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:07.792 +05:30 [INF] GET /api/Dashboard/recent-sales => 200 (30 ms)
+2026-08-27 12:34:07.813 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:07.822 +05:30 [INF] GET /api/Dashboard/monthly-purchases => 200 (16 ms)
+2026-08-27 12:34:07.841 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:07.843 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:07.854 +05:30 [INF] GET /api/Dashboard/top-products => 200 (23 ms)
+2026-08-27 12:34:07.856 +05:30 [INF] GET /api/Dashboard/monthly-sales => 200 (26 ms)
+2026-08-27 12:34:08.040 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:34:08.055 +05:30 [INF] GET /api/Dashboard/recent-activities => 200 (22 ms)
+2026-08-27 12:35:04.945 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:35:04.953 +05:30 [INF] GET /api/Notifications/unread-count => 200 (30 ms)
+2026-08-27 12:36:05.137 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:36:05.144 +05:30 [INF] GET /api/Notifications/unread-count => 200 (19 ms)
+2026-08-27 12:37:05.031 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 12:37:05.040 +05:30 [INF] GET /api/Notifications/unread-count => 200 (31 ms)
+2026-08-27 14:10:02.181 +05:30 [INF] POST /api/auth/login => 200 (379 ms)
+2026-08-27 14:10:03.204 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:03.225 +05:30 [INF] GET /api/Suppliers => 200 (28 ms)
+2026-08-27 14:10:03.236 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:03.240 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:03.250 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:03.287 +05:30 [INF] GET /api/categories => 200 (48 ms)
+2026-08-27 14:10:03.299 +05:30 [INF] GET /api/Customers => 200 (87 ms)
+2026-08-27 14:10:03.302 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:03.300 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:03.322 +05:30 [INF] GET /api/units => 200 (61 ms)
+2026-08-27 14:10:03.325 +05:30 [INF] GET /api/brands => 200 (66 ms)
+2026-08-27 14:10:03.331 +05:30 [INF] GET /api/products => 200 (120 ms)
+2026-08-27 14:10:03.932 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:03.935 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:03.941 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:03.944 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:03.948 +05:30 [INF] GET /api/Permissions/roles => 200 (29 ms)
+2026-08-27 14:10:03.955 +05:30 [INF] GET /api/stock => 200 (35 ms)
+2026-08-27 14:10:03.958 +05:30 [INF] GET /api/stock-movements => 200 (36 ms)
+2026-08-27 14:10:03.969 +05:30 [INF] GET /api/Warehouses => 200 (51 ms)
+2026-08-27 14:10:03.989 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:03.996 +05:30 [INF] GET /api/Profile/me => 200 (16 ms)
+2026-08-27 14:10:04.135 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:04.179 +05:30 [INF] GET /api/products => 200 (55 ms)
+2026-08-27 14:10:04.838 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:04.839 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:04.841 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:04.846 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:04.869 +05:30 [INF] GET /api/Notifications/unread-count => 200 (45 ms)
+2026-08-27 14:10:04.879 +05:30 [INF] GET /api/Suppliers => 200 (57 ms)
+2026-08-27 14:10:04.882 +05:30 [INF] GET /api/SubCategories => 200 (59 ms)
+2026-08-27 14:10:04.886 +05:30 [INF] GET /api/Customers => 200 (65 ms)
+2026-08-27 14:10:06.060 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:06.070 +05:30 [INF] GET /api/categories => 200 (18 ms)
+2026-08-27 14:10:06.267 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:06.277 +05:30 [INF] GET /api/brands => 200 (24 ms)
+2026-08-27 14:10:07.072 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:07.077 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:07.084 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:07.084 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:07.089 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:07.118 +05:30 [INF] GET /api/Permissions/role/18 => 200 (58 ms)
+2026-08-27 14:10:07.119 +05:30 [INF] GET /api/Permissions/role/7 => 200 (69 ms)
+2026-08-27 14:10:07.118 +05:30 [INF] GET /api/Permissions/role/5 => 200 (70 ms)
+2026-08-27 14:10:07.124 +05:30 [INF] GET /api/Permissions/role/2 => 200 (77 ms)
+2026-08-27 14:10:07.124 +05:30 [INF] GET /api/Permissions/role/3 => 200 (54 ms)
+2026-08-27 14:10:07.973 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:08.003 +05:30 [INF] GET /api/Dashboard/summary => 200 (38 ms)
+2026-08-27 14:10:08.017 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:08.017 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:08.029 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:08.031 +05:30 [INF] GET /api/Dashboard/low-stock => 200 (25 ms)
+2026-08-27 14:10:08.037 +05:30 [INF] GET /api/Dashboard/top-products => 200 (31 ms)
+2026-08-27 14:10:08.048 +05:30 [INF] GET /api/Dashboard/monthly-purchases => 200 (29 ms)
+2026-08-27 14:10:08.049 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:08.052 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:08.061 +05:30 [INF] GET /api/Dashboard/recent-sales => 200 (27 ms)
+2026-08-27 14:10:08.068 +05:30 [INF] GET /api/Dashboard/monthly-sales => 200 (32 ms)
+2026-08-27 14:10:08.634 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:10:08.649 +05:30 [INF] GET /api/Dashboard/recent-activities => 200 (29 ms)
+2026-08-27 14:11:03.731 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:11:03.736 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:11:03.743 +05:30 [INF] GET /api/Profile/me => 200 (29 ms)
+2026-08-27 14:11:03.748 +05:30 [INF] GET /api/Notifications/unread-count => 200 (34 ms)
+2026-08-27 14:12:02.898 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:12:02.906 +05:30 [INF] GET /api/Profile/me => 200 (55 ms)
+2026-08-27 14:12:03.192 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:12:03.208 +05:30 [INF] GET /api/Notifications/unread-count => 200 (41 ms)
+2026-08-27 14:13:03.443 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:13:03.444 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:13:03.461 +05:30 [INF] GET /api/Notifications/unread-count => 200 (52 ms)
+2026-08-27 14:13:03.465 +05:30 [INF] GET /api/Profile/me => 200 (54 ms)
+2026-08-27 14:14:03.289 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:14:03.289 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:14:03.301 +05:30 [INF] GET /api/Notifications/unread-count => 200 (40 ms)
+2026-08-27 14:14:03.304 +05:30 [INF] GET /api/Profile/me => 200 (41 ms)
+2026-08-27 14:15:03.588 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:15:03.588 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:15:03.596 +05:30 [INF] GET /api/Notifications/unread-count => 200 (42 ms)
+2026-08-27 14:15:03.600 +05:30 [INF] GET /api/Profile/me => 200 (47 ms)
+2026-08-27 14:16:02.901 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:16:02.909 +05:30 [INF] GET /api/Profile/me => 200 (16 ms)
+2026-08-27 14:16:03.213 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:16:03.220 +05:30 [INF] GET /api/Notifications/unread-count => 200 (15 ms)
+2026-08-27 14:17:03.428 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:17:03.434 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:17:03.441 +05:30 [INF] GET /api/Profile/me => 200 (34 ms)
+2026-08-27 14:17:03.448 +05:30 [INF] GET /api/Notifications/unread-count => 200 (36 ms)
+2026-08-27 14:18:02.894 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:18:02.901 +05:30 [INF] GET /api/Profile/me => 200 (22 ms)
+2026-08-27 14:18:03.152 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:18:03.162 +05:30 [INF] GET /api/Notifications/unread-count => 200 (17 ms)
+2026-08-27 14:19:01.292 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:19:01.307 +05:30 [INF] GET /api/Profile/me => 200 (34 ms)
+2026-08-27 14:19:03.112 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:19:03.124 +05:30 [INF] GET /api/Profile/me => 200 (31 ms)
+2026-08-27 14:19:03.156 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:19:03.162 +05:30 [INF] GET /api/Notifications/unread-count => 200 (13 ms)
+2026-08-27 14:20:03.114 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:20:03.125 +05:30 [INF] GET /api/Profile/me => 200 (19 ms)
+2026-08-27 14:20:03.174 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:20:03.181 +05:30 [INF] GET /api/Notifications/unread-count => 200 (15 ms)
+2026-08-27 14:21:02.902 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:21:02.912 +05:30 [INF] GET /api/Profile/me => 200 (23 ms)
+2026-08-27 14:21:03.142 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:21:03.149 +05:30 [INF] GET /api/Notifications/unread-count => 200 (15 ms)
+2026-08-27 14:22:03.312 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:22:03.323 +05:30 [INF] GET /api/Notifications/unread-count => 200 (28 ms)
+2026-08-27 14:22:03.331 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:22:03.338 +05:30 [INF] GET /api/Profile/me => 200 (43 ms)
+2026-08-27 14:23:03.069 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:23:03.075 +05:30 [INF] GET /api/Profile/me => 200 (22 ms)
+2026-08-27 14:23:03.177 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:23:03.184 +05:30 [INF] GET /api/Notifications/unread-count => 200 (13 ms)
+2026-08-27 14:24:03.356 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:24:03.356 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:24:03.368 +05:30 [INF] GET /api/Notifications/unread-count => 200 (31 ms)
+2026-08-27 14:24:03.371 +05:30 [INF] GET /api/Profile/me => 200 (32 ms)
+2026-08-27 14:25:03.073 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:25:03.081 +05:30 [INF] GET /api/Profile/me => 200 (23 ms)
+2026-08-27 14:25:03.171 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:25:03.180 +05:30 [INF] GET /api/Notifications/unread-count => 200 (18 ms)
+2026-08-27 14:26:03.232 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:26:03.244 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:26:03.250 +05:30 [INF] GET /api/Profile/me => 200 (50 ms)
+2026-08-27 14:26:03.257 +05:30 [INF] GET /api/Notifications/unread-count => 200 (46 ms)
+2026-08-27 14:27:03.380 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:27:03.384 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:27:03.389 +05:30 [INF] GET /api/Notifications/unread-count => 200 (23 ms)
+2026-08-27 14:27:03.396 +05:30 [INF] GET /api/Profile/me => 200 (30 ms)
+2026-08-27 14:28:03.322 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:28:03.325 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:28:03.331 +05:30 [INF] GET /api/Notifications/unread-count => 200 (31 ms)
+2026-08-27 14:28:03.338 +05:30 [INF] GET /api/Profile/me => 200 (38 ms)
+2026-08-27 14:29:03.337 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:29:03.345 +05:30 [INF] GET /api/Profile/me => 200 (31 ms)
+2026-08-27 14:29:03.365 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:29:03.371 +05:30 [INF] GET /api/Notifications/unread-count => 200 (11 ms)
+2026-08-27 14:30:03.166 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:30:03.175 +05:30 [INF] GET /api/Profile/me => 200 (23 ms)
+2026-08-27 14:30:03.222 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:30:03.232 +05:30 [INF] GET /api/Notifications/unread-count => 200 (31 ms)
+2026-08-27 14:31:02.798 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:31:02.805 +05:30 [INF] GET /api/Profile/me => 200 (60 ms)
+2026-08-27 14:31:03.306 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:31:03.313 +05:30 [INF] GET /api/Notifications/unread-count => 200 (16 ms)
+2026-08-27 14:32:03.152 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:32:03.169 +05:30 [INF] GET /api/Profile/me => 200 (27 ms)
+2026-08-27 14:32:03.196 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:32:03.203 +05:30 [INF] GET /api/Notifications/unread-count => 200 (14 ms)
+2026-08-27 14:33:03.063 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:33:03.070 +05:30 [INF] GET /api/Profile/me => 200 (26 ms)
+2026-08-27 14:33:03.108 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:33:03.117 +05:30 [INF] GET /api/Notifications/unread-count => 200 (14 ms)
+2026-08-27 14:34:03.164 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:34:03.172 +05:30 [INF] GET /api/Profile/me => 200 (24 ms)
+2026-08-27 14:34:03.196 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:34:03.201 +05:30 [INF] GET /api/Notifications/unread-count => 200 (13 ms)
+2026-08-27 14:35:02.728 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:35:02.741 +05:30 [INF] GET /api/Profile/me => 200 (19 ms)
+2026-08-27 14:35:03.326 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:35:03.340 +05:30 [INF] GET /api/Notifications/unread-count => 200 (34 ms)
+2026-08-27 14:36:03.149 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:36:03.157 +05:30 [INF] GET /api/Profile/me => 200 (19 ms)
+2026-08-27 14:36:03.204 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:36:03.210 +05:30 [INF] GET /api/Notifications/unread-count => 200 (17 ms)
+2026-08-27 14:37:02.785 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:37:02.799 +05:30 [INF] GET /api/Profile/me => 200 (33 ms)
+2026-08-27 14:37:03.302 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:37:03.309 +05:30 [INF] GET /api/Notifications/unread-count => 200 (15 ms)
+2026-08-27 14:38:03.212 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:38:03.222 +05:30 [INF] GET /api/Notifications/unread-count => 200 (46 ms)
+2026-08-27 14:38:03.243 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:38:03.250 +05:30 [INF] GET /api/Profile/me => 200 (67 ms)
+2026-08-27 14:39:03.064 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:39:03.074 +05:30 [INF] GET /api/Profile/me => 200 (44 ms)
+2026-08-27 14:39:03.200 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:39:03.207 +05:30 [INF] GET /api/Notifications/unread-count => 200 (15 ms)
+2026-08-27 14:40:03.173 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:40:03.189 +05:30 [INF] GET /api/Profile/me => 200 (37 ms)
+2026-08-27 14:40:03.194 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:40:03.205 +05:30 [INF] GET /api/Notifications/unread-count => 200 (17 ms)
+2026-08-27 14:41:03.231 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:41:03.231 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:41:03.245 +05:30 [INF] GET /api/Profile/me => 200 (41 ms)
+2026-08-27 14:41:03.250 +05:30 [INF] GET /api/Notifications/unread-count => 200 (47 ms)
+2026-08-27 14:42:03.204 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:42:03.221 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:42:03.229 +05:30 [INF] GET /api/Profile/me => 200 (32 ms)
+2026-08-27 14:42:03.235 +05:30 [INF] GET /api/Notifications/unread-count => 200 (34 ms)
+2026-08-27 14:43:02.827 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:43:02.837 +05:30 [INF] GET /api/Profile/me => 200 (27 ms)
+2026-08-27 14:43:03.190 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:43:03.196 +05:30 [INF] GET /api/Notifications/unread-count => 200 (16 ms)
+2026-08-27 14:44:00.621 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:44:00.630 +05:30 [INF] GET /api/Profile/me => 200 (42 ms)
+2026-08-27 14:44:02.822 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:44:02.832 +05:30 [INF] GET /api/Profile/me => 200 (21 ms)
+2026-08-27 14:44:03.129 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:44:03.136 +05:30 [INF] GET /api/Notifications/unread-count => 200 (15 ms)
+2026-08-27 14:45:03.438 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:45:03.438 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:45:03.446 +05:30 [INF] GET /api/Notifications/unread-count => 200 (38 ms)
+2026-08-27 14:45:03.450 +05:30 [INF] GET /api/Profile/me => 200 (42 ms)
+2026-08-27 14:46:02.793 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:46:02.801 +05:30 [INF] GET /api/Profile/me => 200 (18 ms)
+2026-08-27 14:46:03.129 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:46:03.139 +05:30 [INF] GET /api/Notifications/unread-count => 200 (30 ms)
+2026-08-27 14:47:03.337 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:47:03.344 +05:30 [INF] GET /api/Profile/me => 200 (30 ms)
+2026-08-27 14:47:03.351 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:47:03.357 +05:30 [INF] GET /api/Notifications/unread-count => 200 (10 ms)
+2026-08-27 14:48:02.848 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:48:02.859 +05:30 [INF] GET /api/Profile/me => 200 (30 ms)
+2026-08-27 14:48:03.149 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:48:03.155 +05:30 [INF] GET /api/Notifications/unread-count => 200 (13 ms)
+2026-08-27 14:49:03.325 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:49:03.340 +05:30 [INF] GET /api/Profile/me => 200 (24 ms)
+2026-08-27 14:49:03.362 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:49:03.370 +05:30 [INF] GET /api/Notifications/unread-count => 200 (14 ms)
+2026-08-27 14:50:02.840 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:50:02.848 +05:30 [INF] GET /api/Profile/me => 200 (24 ms)
+2026-08-27 14:50:03.134 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:50:03.140 +05:30 [INF] GET /api/Notifications/unread-count => 200 (14 ms)
+2026-08-27 14:51:03.115 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:51:03.126 +05:30 [INF] GET /api/Profile/me => 200 (33 ms)
+2026-08-27 14:51:03.140 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:51:03.146 +05:30 [INF] GET /api/Notifications/unread-count => 200 (11 ms)
+2026-08-27 14:52:02.854 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:52:02.860 +05:30 [INF] GET /api/Profile/me => 200 (17 ms)
+2026-08-27 14:52:03.145 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:52:03.152 +05:30 [INF] GET /api/Notifications/unread-count => 200 (15 ms)
+2026-08-27 14:53:03.434 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:53:03.442 +05:30 [INF] GET /api/Profile/me => 200 (28 ms)
+2026-08-27 14:53:03.451 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:53:03.457 +05:30 [INF] GET /api/Notifications/unread-count => 200 (44 ms)
+2026-08-27 14:54:02.853 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:54:02.860 +05:30 [INF] GET /api/Profile/me => 200 (16 ms)
+2026-08-27 14:54:03.099 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:54:03.106 +05:30 [INF] GET /api/Notifications/unread-count => 200 (13 ms)
+2026-08-27 14:55:03.431 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:55:03.436 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:55:03.441 +05:30 [INF] GET /api/Profile/me => 200 (34 ms)
+2026-08-27 14:55:03.447 +05:30 [INF] GET /api/Notifications/unread-count => 200 (41 ms)
+2026-08-27 14:56:02.905 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:56:02.912 +05:30 [INF] GET /api/Profile/me => 200 (21 ms)
+2026-08-27 14:56:03.157 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:56:03.172 +05:30 [INF] GET /api/Notifications/unread-count => 200 (30 ms)
+2026-08-27 14:57:03.453 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:03.459 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:03.470 +05:30 [INF] GET /api/Notifications/unread-count => 200 (44 ms)
+2026-08-27 14:57:03.472 +05:30 [INF] GET /api/Profile/me => 200 (49 ms)
+2026-08-27 14:57:53.025 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:53.031 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:53.046 +05:30 [INF] GET /api/brands => 200 (50 ms)
+2026-08-27 14:57:53.059 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:53.059 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:53.070 +05:30 [INF] GET /api/categories => 200 (76 ms)
+2026-08-27 14:57:53.072 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:53.073 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:53.114 +05:30 [INF] GET /api/Suppliers => 200 (80 ms)
+2026-08-27 14:57:53.115 +05:30 [INF] GET /api/units => 200 (79 ms)
+2026-08-27 14:57:53.121 +05:30 [INF] GET /api/Warehouses => 200 (105 ms)
+2026-08-27 14:57:53.143 +05:30 [INF] GET /api/products => 200 (146 ms)
+2026-08-27 14:57:53.984 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:53.991 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:53.992 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:54.002 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:54.005 +05:30 [INF] GET /api/brands => 200 (34 ms)
+2026-08-27 14:57:54.010 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:54.005 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:54.021 +05:30 [INF] GET /api/Permissions/roles => 200 (49 ms)
+2026-08-27 14:57:54.027 +05:30 [INF] GET /api/stock => 200 (51 ms)
+2026-08-27 14:57:54.036 +05:30 [INF] GET /api/stock-movements => 200 (62 ms)
+2026-08-27 14:57:54.046 +05:30 [INF] GET /api/Customers => 200 (68 ms)
+2026-08-27 14:57:54.065 +05:30 [INF] GET /api/products => 200 (94 ms)
+2026-08-27 14:57:54.606 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:54.614 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:54.618 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:54.619 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:54.619 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:54.642 +05:30 [INF] GET /api/Notifications/unread-count => 200 (38 ms)
+2026-08-27 14:57:54.650 +05:30 [INF] GET /api/SubCategories => 200 (49 ms)
+2026-08-27 14:57:54.651 +05:30 [INF] GET /api/Suppliers => 200 (45 ms)
+2026-08-27 14:57:54.663 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:54.650 +05:30 [INF] GET /api/categories => 200 (53 ms)
+2026-08-27 14:57:54.666 +05:30 [INF] GET /api/Customers => 200 (60 ms)
+2026-08-27 14:57:54.673 +05:30 [INF] GET /api/Profile/me => 200 (17 ms)
+2026-08-27 14:57:55.456 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:55.472 +05:30 [INF] GET /api/Permissions/role/2 => 200 (26 ms)
+2026-08-27 14:57:55.519 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:55.531 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:55.536 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:55.536 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:55.554 +05:30 [INF] GET /api/Permissions/role/3 => 200 (52 ms)
+2026-08-27 14:57:55.560 +05:30 [INF] GET /api/Permissions/role/7 => 200 (41 ms)
+2026-08-27 14:57:55.564 +05:30 [INF] GET /api/Permissions/role/5 => 200 (43 ms)
+2026-08-27 14:57:55.564 +05:30 [INF] GET /api/Permissions/role/18 => 200 (48 ms)
+2026-08-27 14:57:56.104 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:56.136 +05:30 [INF] GET /api/Dashboard/summary => 200 (44 ms)
+2026-08-27 14:57:56.152 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:56.158 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:56.165 +05:30 [INF] GET /api/Dashboard/low-stock => 200 (23 ms)
+2026-08-27 14:57:56.174 +05:30 [INF] GET /api/Dashboard/recent-sales => 200 (27 ms)
+2026-08-27 14:57:56.176 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:56.184 +05:30 [INF] GET /api/Dashboard/top-products => 200 (20 ms)
+2026-08-27 14:57:56.225 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:56.227 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:56.237 +05:30 [INF] GET /api/Dashboard/monthly-purchases => 200 (25 ms)
+2026-08-27 14:57:56.241 +05:30 [INF] GET /api/Dashboard/monthly-sales => 200 (29 ms)
+2026-08-27 14:57:57.119 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:57:57.135 +05:30 [INF] GET /api/Dashboard/recent-activities => 200 (25 ms)
+2026-08-27 14:58:00.054 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:58:00.055 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:58:00.072 +05:30 [INF] GET /api/Users => 200 (30 ms)
+2026-08-27 14:58:00.105 +05:30 [INF] GET /api/Roles => 200 (63 ms)
+2026-08-27 14:58:53.471 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:58:53.485 +05:30 [INF] GET /api/Notifications/unread-count => 200 (36 ms)
+2026-08-27 14:59:52.937 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 14:59:52.944 +05:30 [INF] GET /api/Notifications/unread-count => 200 (16 ms)
+2026-08-27 15:00:53.424 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:00:53.431 +05:30 [INF] GET /api/Notifications/unread-count => 200 (22 ms)
+2026-08-27 15:01:52.947 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:01:52.955 +05:30 [INF] GET /api/Notifications/unread-count => 200 (16 ms)
+2026-08-27 15:02:53.358 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:02:53.376 +05:30 [INF] GET /api/Notifications/unread-count => 200 (30 ms)
+2026-08-27 15:05:15.004 +05:30 [ERR] JWT Authentication Failed. Path: /api/products
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/26/2026 6:47:49 PM', Current time (UTC): '8/27/2026 9:35:14 AM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 15:05:15.004 +05:30 [ERR] JWT Authentication Failed. Path: /api/categories
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/26/2026 6:47:49 PM', Current time (UTC): '8/27/2026 9:35:14 AM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 15:05:15.008 +05:30 [ERR] JWT Authentication Failed. Path: /api/units
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/26/2026 6:47:49 PM', Current time (UTC): '8/27/2026 9:35:14 AM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 15:05:15.026 +05:30 [WRN] JWT Challenge. Path: /api/products. Error: invalid_token
+2026-08-27 15:05:15.034 +05:30 [WRN] JWT Challenge. Path: /api/categories. Error: invalid_token
+2026-08-27 15:05:15.049 +05:30 [INF] GET /api/products => 401 (82 ms)
+2026-08-27 15:05:15.059 +05:30 [INF] GET /api/categories => 401 (92 ms)
+2026-08-27 15:05:15.043 +05:30 [WRN] JWT Challenge. Path: /api/units. Error: invalid_token
+2026-08-27 15:05:15.080 +05:30 [ERR] JWT Authentication Failed. Path: /api/Suppliers
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/26/2026 6:47:49 PM', Current time (UTC): '8/27/2026 9:35:15 AM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 15:05:15.083 +05:30 [ERR] JWT Authentication Failed. Path: /api/Warehouses
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/26/2026 6:47:49 PM', Current time (UTC): '8/27/2026 9:35:15 AM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 15:05:15.093 +05:30 [ERR] JWT Authentication Failed. Path: /api/brands
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/26/2026 6:47:49 PM', Current time (UTC): '8/27/2026 9:35:15 AM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 15:05:15.098 +05:30 [INF] GET /api/units => 401 (99 ms)
+2026-08-27 15:05:15.103 +05:30 [WRN] JWT Challenge. Path: /api/Suppliers. Error: invalid_token
+2026-08-27 15:05:15.106 +05:30 [WRN] JWT Challenge. Path: /api/Warehouses. Error: invalid_token
+2026-08-27 15:05:15.110 +05:30 [WRN] JWT Challenge. Path: /api/brands. Error: invalid_token
+2026-08-27 15:05:15.116 +05:30 [INF] GET /api/Suppliers => 401 (44 ms)
+2026-08-27 15:05:15.118 +05:30 [INF] GET /api/Warehouses => 401 (45 ms)
+2026-08-27 15:05:15.120 +05:30 [INF] GET /api/brands => 401 (32 ms)
+2026-08-27 15:05:27.505 +05:30 [INF] POST /api/auth/login => 200 (315 ms)
+2026-08-27 15:05:28.964 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:29.005 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:29.029 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:29.030 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:29.037 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:29.039 +05:30 [INF] GET /api/categories => 200 (90 ms)
+2026-08-27 15:05:29.041 +05:30 [INF] GET /api/Suppliers => 200 (87 ms)
+2026-08-27 15:05:29.037 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:29.052 +05:30 [INF] GET /api/brands => 200 (66 ms)
+2026-08-27 15:05:29.066 +05:30 [INF] GET /api/Warehouses => 200 (103 ms)
+2026-08-27 15:05:29.066 +05:30 [INF] GET /api/units => 200 (92 ms)
+2026-08-27 15:05:29.089 +05:30 [INF] GET /api/products => 200 (132 ms)
+2026-08-27 15:05:29.793 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:29.821 +05:30 [INF] GET /api/Customers => 200 (44 ms)
+2026-08-27 15:05:29.878 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:29.878 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:29.888 +05:30 [INF] GET /api/Profile/me => 200 (26 ms)
+2026-08-27 15:05:29.889 +05:30 [INF] GET /api/Permissions/roles => 200 (28 ms)
+2026-08-27 15:05:29.921 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:29.957 +05:30 [INF] GET /api/products => 200 (44 ms)
+2026-08-27 15:05:29.976 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:29.977 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:29.981 +05:30 [INF] GET /api/stock-movements => 200 (14 ms)
+2026-08-27 15:05:29.982 +05:30 [INF] GET /api/stock => 200 (15 ms)
+2026-08-27 15:05:30.738 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:30.756 +05:30 [INF] GET /api/Customers => 200 (25 ms)
+2026-08-27 15:05:30.834 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:30.834 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:30.837 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:30.850 +05:30 [INF] GET /api/Notifications/unread-count => 200 (31 ms)
+2026-08-27 15:05:30.856 +05:30 [INF] GET /api/SubCategories => 200 (38 ms)
+2026-08-27 15:05:30.865 +05:30 [INF] GET /api/Suppliers => 200 (45 ms)
+2026-08-27 15:05:32.005 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:32.012 +05:30 [INF] GET /api/brands => 200 (18 ms)
+2026-08-27 15:05:32.076 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:32.087 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:32.088 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:32.102 +05:30 [INF] GET /api/categories => 200 (33 ms)
+2026-08-27 15:05:32.109 +05:30 [INF] GET /api/Permissions/role/3 => 200 (35 ms)
+2026-08-27 15:05:32.112 +05:30 [INF] GET /api/Permissions/role/2 => 200 (40 ms)
+2026-08-27 15:05:32.303 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:32.314 +05:30 [INF] GET /api/Permissions/role/5 => 200 (21 ms)
+2026-08-27 15:05:32.509 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:32.553 +05:30 [INF] GET /api/Permissions/role/7 => 200 (73 ms)
+2026-08-27 15:05:32.881 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:32.892 +05:30 [INF] GET /api/Permissions/role/18 => 200 (17 ms)
+2026-08-27 15:05:33.631 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:33.642 +05:30 [INF] GET /api/Dashboard/top-products => 200 (21 ms)
+2026-08-27 15:05:33.692 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:33.699 +05:30 [INF] GET /api/Dashboard/recent-sales => 200 (18 ms)
+2026-08-27 15:05:33.776 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:33.777 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:33.778 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:33.776 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:33.787 +05:30 [INF] GET /api/Dashboard/monthly-purchases => 200 (28 ms)
+2026-08-27 15:05:33.792 +05:30 [INF] GET /api/Dashboard/monthly-sales => 200 (33 ms)
+2026-08-27 15:05:33.798 +05:30 [INF] GET /api/Dashboard/low-stock => 200 (39 ms)
+2026-08-27 15:05:33.819 +05:30 [INF] GET /api/Dashboard/summary => 200 (59 ms)
+2026-08-27 15:05:34.766 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:34.780 +05:30 [INF] GET /api/Dashboard/recent-activities => 200 (21 ms)
+2026-08-27 15:05:47.695 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:47.707 +05:30 [INF] GET /api/SubCategories => 200 (21 ms)
+2026-08-27 15:05:47.829 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:05:47.846 +05:30 [INF] GET /api/categories/main => 200 (42 ms)
+2026-08-27 15:06:04.842 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:06:05.044 +05:30 [INF] PUT /api/SubCategories/3 => 200 (216 ms)
+2026-08-27 15:06:05.442 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:06:05.453 +05:30 [INF] GET /api/SubCategories => 200 (19 ms)
+2026-08-27 15:06:05.560 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:06:05.569 +05:30 [INF] GET /api/categories/main => 200 (46 ms)
+2026-08-27 15:06:25.493 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:06:25.523 +05:30 [INF] PUT /api/SubCategories/2 => 200 (44 ms)
+2026-08-27 15:06:26.518 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:06:26.518 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:06:26.538 +05:30 [INF] GET /api/SubCategories => 200 (60 ms)
+2026-08-27 15:06:26.538 +05:30 [INF] GET /api/categories/main => 200 (58 ms)
+2026-08-27 15:06:29.036 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:06:29.042 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:06:29.048 +05:30 [INF] GET /api/Profile/me => 200 (19 ms)
+2026-08-27 15:06:29.050 +05:30 [INF] GET /api/Notifications/unread-count => 200 (17 ms)
+2026-08-27 15:07:05.341 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:07:05.353 +05:30 [INF] GET /api/Profile/me => 200 (30 ms)
+2026-08-27 15:07:14.037 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:07:14.073 +05:30 [INF] PUT /api/SubCategories/2 => 200 (47 ms)
+2026-08-27 15:07:14.337 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:07:14.347 +05:30 [INF] GET /api/SubCategories => 200 (16 ms)
+2026-08-27 15:07:14.700 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:07:14.718 +05:30 [INF] GET /api/categories/main => 200 (41 ms)
+2026-08-27 15:07:28.671 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:07:28.682 +05:30 [INF] GET /api/Notifications/unread-count => 200 (33 ms)
+2026-08-27 15:07:28.701 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:07:28.709 +05:30 [INF] GET /api/Profile/me => 200 (14 ms)
+2026-08-27 15:07:28.766 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:07:28.798 +05:30 [INF] PUT /api/SubCategories/2 => 200 (38 ms)
+2026-08-27 15:07:29.016 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:07:29.027 +05:30 [INF] GET /api/SubCategories => 200 (17 ms)
+2026-08-27 15:07:29.374 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:07:29.391 +05:30 [INF] GET /api/categories/main => 200 (35 ms)
+2026-08-27 15:08:29.551 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:08:29.561 +05:30 [INF] GET /api/Notifications/unread-count => 200 (23 ms)
+2026-08-27 15:09:29.823 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:09:29.832 +05:30 [INF] GET /api/Notifications/unread-count => 200 (15 ms)
+2026-08-27 15:10:29.726 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:10:29.734 +05:30 [INF] GET /api/Notifications/unread-count => 200 (20 ms)
+2026-08-27 15:15:37.512 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:37.514 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:37.530 +05:30 [INF] GET /api/Profile/me => 200 (56 ms)
+2026-08-27 15:15:37.531 +05:30 [INF] GET /api/Notifications/unread-count => 200 (59 ms)
+2026-08-27 15:15:38.506 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:38.529 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:38.536 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:38.553 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:38.557 +05:30 [INF] GET /api/brands => 200 (66 ms)
+2026-08-27 15:15:38.563 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:38.565 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:38.571 +05:30 [INF] GET /api/units => 200 (61 ms)
+2026-08-27 15:15:38.587 +05:30 [INF] GET /api/categories => 200 (95 ms)
+2026-08-27 15:15:38.599 +05:30 [INF] GET /api/Suppliers => 200 (83 ms)
+2026-08-27 15:15:38.613 +05:30 [INF] GET /api/Warehouses => 200 (120 ms)
+2026-08-27 15:15:38.623 +05:30 [INF] GET /api/products => 200 (133 ms)
+2026-08-27 15:15:39.122 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:39.127 +05:30 [INF] GET /api/stock => 200 (20 ms)
+2026-08-27 15:15:39.159 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:39.160 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:39.165 +05:30 [INF] GET /api/stock-movements => 200 (18 ms)
+2026-08-27 15:15:39.182 +05:30 [INF] GET /api/Customers => 200 (35 ms)
+2026-08-27 15:15:39.191 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:39.197 +05:30 [INF] GET /api/Permissions/roles => 200 (13 ms)
+2026-08-27 15:15:39.217 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:39.217 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:39.245 +05:30 [INF] GET /api/Customers => 200 (38 ms)
+2026-08-27 15:15:39.268 +05:30 [INF] GET /api/products => 200 (60 ms)
+2026-08-27 15:15:39.649 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:39.670 +05:30 [INF] GET /api/Suppliers => 200 (45 ms)
+2026-08-27 15:15:39.685 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:39.685 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:39.696 +05:30 [INF] GET /api/Notifications/unread-count => 200 (22 ms)
+2026-08-27 15:15:39.696 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:39.708 +05:30 [INF] GET /api/SubCategories => 200 (33 ms)
+2026-08-27 15:15:39.712 +05:30 [INF] GET /api/Profile/me => 200 (26 ms)
+2026-08-27 15:15:39.890 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:39.922 +05:30 [INF] GET /api/categories => 200 (60 ms)
+2026-08-27 15:15:39.931 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:39.938 +05:30 [INF] GET /api/brands => 200 (19 ms)
+2026-08-27 15:15:40.230 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:40.236 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:40.253 +05:30 [INF] GET /api/Permissions/role/2 => 200 (31 ms)
+2026-08-27 15:15:40.260 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:40.261 +05:30 [INF] GET /api/Permissions/role/3 => 200 (35 ms)
+2026-08-27 15:15:40.262 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:40.274 +05:30 [INF] GET /api/Permissions/role/18 => 200 (29 ms)
+2026-08-27 15:15:40.282 +05:30 [INF] GET /api/Permissions/role/5 => 200 (36 ms)
+2026-08-27 15:15:40.425 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:40.452 +05:30 [INF] GET /api/Permissions/role/7 => 200 (56 ms)
+2026-08-27 15:15:41.393 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:41.393 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:41.404 +05:30 [INF] GET /api/Roles => 200 (26 ms)
+2026-08-27 15:15:41.411 +05:30 [INF] GET /api/Users => 200 (32 ms)
+2026-08-27 15:15:44.508 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:44.525 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:15:44.534 +05:30 [INF] GET /api/Roles => 200 (49 ms)
+2026-08-27 15:15:44.557 +05:30 [INF] GET /api/SystemSettings => 404 (64 ms)
+2026-08-27 15:16:38.220 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:16:38.227 +05:30 [INF] GET /api/Notifications/unread-count => 200 (19 ms)
+2026-08-27 15:16:38.368 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:16:38.381 +05:30 [INF] GET /api/Profile/me => 200 (28 ms)
+2026-08-27 15:17:38.422 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:17:38.432 +05:30 [INF] GET /api/Notifications/unread-count => 200 (29 ms)
+2026-08-27 15:17:38.468 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:17:38.474 +05:30 [INF] GET /api/Profile/me => 200 (12 ms)
+2026-08-27 15:18:38.202 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:18:38.211 +05:30 [INF] GET /api/Notifications/unread-count => 200 (18 ms)
+2026-08-27 15:18:38.984 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:18:38.996 +05:30 [INF] GET /api/Profile/me => 200 (20 ms)
+2026-08-27 15:19:38.765 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:19:38.782 +05:30 [INF] GET /api/Profile/me => 200 (25 ms)
+2026-08-27 15:19:38.792 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:19:38.798 +05:30 [INF] GET /api/Notifications/unread-count => 200 (41 ms)
+2026-08-27 15:20:38.125 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:20:38.131 +05:30 [INF] GET /api/Notifications/unread-count => 200 (21 ms)
+2026-08-27 15:20:38.409 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:20:38.417 +05:30 [INF] GET /api/Profile/me => 200 (14 ms)
+2026-08-27 15:21:29.239 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:29.249 +05:30 [INF] GET /api/Profile/me => 200 (20 ms)
+2026-08-27 15:21:29.309 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:29.316 +05:30 [INF] GET /api/Notifications/unread-count => 200 (14 ms)
+2026-08-27 15:21:30.045 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:30.097 +05:30 [INF] GET /api/products => 200 (72 ms)
+2026-08-27 15:21:30.103 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:30.131 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:30.131 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:30.144 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:30.148 +05:30 [INF] GET /api/brands => 200 (48 ms)
+2026-08-27 15:21:30.161 +05:30 [INF] GET /api/Suppliers => 200 (64 ms)
+2026-08-27 15:21:30.161 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:30.164 +05:30 [INF] GET /api/categories => 200 (73 ms)
+2026-08-27 15:21:30.164 +05:30 [INF] GET /api/units => 200 (68 ms)
+2026-08-27 15:21:30.186 +05:30 [INF] GET /api/Warehouses => 200 (83 ms)
+2026-08-27 15:21:30.681 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:30.687 +05:30 [INF] GET /api/stock => 200 (23 ms)
+2026-08-27 15:21:30.729 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:30.738 +05:30 [INF] GET /api/stock-movements => 200 (15 ms)
+2026-08-27 15:21:30.774 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:30.780 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:30.784 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:30.784 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:30.794 +05:30 [INF] GET /api/Permissions/roles => 200 (30 ms)
+2026-08-27 15:21:30.829 +05:30 [INF] GET /api/Customers => 200 (66 ms)
+2026-08-27 15:21:30.839 +05:30 [INF] GET /api/Customers => 200 (77 ms)
+2026-08-27 15:21:30.852 +05:30 [INF] GET /api/products => 200 (90 ms)
+2026-08-27 15:21:31.379 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:31.392 +05:30 [INF] GET /api/Suppliers => 200 (23 ms)
+2026-08-27 15:21:31.461 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:31.461 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:31.461 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:31.477 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:31.480 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:31.493 +05:30 [INF] GET /api/Notifications/unread-count => 200 (47 ms)
+2026-08-27 15:21:31.500 +05:30 [INF] GET /api/SubCategories => 200 (55 ms)
+2026-08-27 15:21:31.504 +05:30 [INF] GET /api/brands => 200 (38 ms)
+2026-08-27 15:21:31.500 +05:30 [INF] GET /api/Profile/me => 200 (55 ms)
+2026-08-27 15:21:31.508 +05:30 [INF] GET /api/categories => 200 (44 ms)
+2026-08-27 15:21:31.937 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:31.954 +05:30 [INF] GET /api/Permissions/role/2 => 200 (34 ms)
+2026-08-27 15:21:31.992 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:32.005 +05:30 [INF] GET /api/Permissions/role/3 => 200 (22 ms)
+2026-08-27 15:21:32.015 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:32.015 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:32.031 +05:30 [INF] GET /api/Permissions/role/5 => 200 (26 ms)
+2026-08-27 15:21:32.037 +05:30 [INF] GET /api/Permissions/role/18 => 200 (34 ms)
+2026-08-27 15:21:32.042 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:32.055 +05:30 [INF] GET /api/Permissions/role/7 => 200 (24 ms)
+2026-08-27 15:21:32.914 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:32.925 +05:30 [INF] GET /api/SubCategories => 200 (23 ms)
+2026-08-27 15:21:32.957 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:32.964 +05:30 [INF] GET /api/categories/main => 200 (16 ms)
+2026-08-27 15:21:38.772 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:21:38.775 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:21:38.784 +05:30 [INF] GET /api/Profile/me => 200 (21 ms)
+2026-08-27 15:21:38.787 +05:30 [INF] GET /api/Notifications/unread-count => 200 (25 ms)
+2026-08-27 15:21:52.246 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:52.247 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:52.280 +05:30 [INF] GET /api/products => 200 (62 ms)
+2026-08-27 15:21:52.300 +05:30 [INF] GET /api/products => 200 (80 ms)
+2026-08-27 15:21:52.893 +05:30 [INF] GET /uploads/products/5e700e26-9236-4850-b5e3-c3dba8575eaa.png => 200 (69 ms)
+2026-08-27 15:21:52.893 +05:30 [INF] GET /uploads/products/7e5ed40b-496f-4437-a37b-84e0e1abe30f.png => 200 (68 ms)
+2026-08-27 15:21:53.202 +05:30 [INF] GET /uploads/products/691150b5-5d69-4a37-9e40-f1d3a0a52178.png => 200 (9 ms)
+2026-08-27 15:21:53.205 +05:30 [INF] GET /uploads/products/fef5f99d-6425-4109-ad32-411e0ee96179.png => 200 (9 ms)
+2026-08-27 15:21:53.208 +05:30 [INF] GET /uploads/products/2c25b415-b08e-4aa5-b3e1-c018b56e68cd.png => 200 (12 ms)
+2026-08-27 15:21:56.108 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:56.115 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:21:56.122 +05:30 [INF] GET /api/attributes => 200 (29 ms)
+2026-08-27 15:21:56.128 +05:30 [INF] GET /api/attribute-values => 200 (39 ms)
+2026-08-27 15:22:15.493 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:22:15.554 +05:30 [INF] GET /api/productvariants => 200 (72 ms)
+2026-08-27 15:22:15.807 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:22:15.813 +05:30 [INF] GET /api/attributes => 200 (34 ms)
+2026-08-27 15:22:15.849 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:22:15.867 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:22:15.868 +05:30 [INF] GET /api/variant-attributes => 200 (26 ms)
+2026-08-27 15:22:15.907 +05:30 [INF] GET /api/products => 200 (47 ms)
+2026-08-27 15:22:18.140 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:22:18.150 +05:30 [INF] GET /api/categories/main => 200 (21 ms)
+2026-08-27 15:22:30.066 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:22:30.079 +05:30 [INF] GET /api/Notifications/unread-count => 200 (36 ms)
+2026-08-27 15:22:30.355 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:22:30.366 +05:30 [INF] GET /api/Profile/me => 200 (21 ms)
+2026-08-27 15:22:38.349 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:22:38.356 +05:30 [INF] GET /api/Notifications/unread-count => 200 (15 ms)
+2026-08-27 15:22:38.405 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:22:38.414 +05:30 [INF] GET /api/Profile/me => 200 (19 ms)
+2026-08-27 15:23:09.252 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:23:09.265 +05:30 [INF] GET /api/categories => 200 (34 ms)
+2026-08-27 15:23:09.292 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:23:09.297 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:23:09.298 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:23:09.302 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:23:09.311 +05:30 [INF] GET /api/units => 200 (22 ms)
+2026-08-27 15:23:09.315 +05:30 [INF] GET /api/brands => 200 (26 ms)
+2026-08-27 15:23:09.337 +05:30 [INF] GET /api/products => 200 (48 ms)
+2026-08-27 15:23:09.356 +05:30 [INF] GET /api/products => 200 (68 ms)
+2026-08-27 15:23:10.013 +05:30 [INF] GET /uploads/products/7e5ed40b-496f-4437-a37b-84e0e1abe30f.png => 200 (8 ms)
+2026-08-27 15:23:10.077 +05:30 [INF] GET /uploads/products/2c25b415-b08e-4aa5-b3e1-c018b56e68cd.png => 200 (11 ms)
+2026-08-27 15:23:10.084 +05:30 [INF] GET /uploads/products/5e700e26-9236-4850-b5e3-c3dba8575eaa.png => 200 (19 ms)
+2026-08-27 15:23:10.083 +05:30 [INF] GET /uploads/products/fef5f99d-6425-4109-ad32-411e0ee96179.png => 200 (11 ms)
+2026-08-27 15:23:10.084 +05:30 [INF] GET /uploads/products/691150b5-5d69-4a37-9e40-f1d3a0a52178.png => 200 (14 ms)
+2026-08-27 15:23:30.451 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:23:30.458 +05:30 [INF] GET /api/Notifications/unread-count => 200 (19 ms)
+2026-08-27 15:23:30.502 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:23:30.509 +05:30 [INF] GET /api/Profile/me => 200 (15 ms)
+2026-08-27 15:23:38.442 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:23:38.447 +05:30 [INF] GET /api/Notifications/unread-count => 200 (12 ms)
+2026-08-27 15:23:38.490 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:23:38.497 +05:30 [INF] GET /api/Profile/me => 200 (13 ms)
+2026-08-27 15:24:30.318 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:24:30.329 +05:30 [INF] GET /api/Notifications/unread-count => 200 (32 ms)
+2026-08-27 15:24:38.286 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:24:38.293 +05:30 [INF] GET /api/Notifications/unread-count => 200 (15 ms)
+2026-08-27 15:24:38.364 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:24:38.371 +05:30 [INF] GET /api/Profile/me => 200 (15 ms)
+2026-08-27 15:25:17.599 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:25:17.608 +05:30 [INF] GET /api/Profile/me => 200 (21 ms)
+2026-08-27 15:25:30.060 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:25:30.068 +05:30 [INF] GET /api/Notifications/unread-count => 200 (18 ms)
+2026-08-27 15:25:38.410 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:25:38.421 +05:30 [INF] GET /api/Profile/me => 200 (28 ms)
+2026-08-27 15:25:38.440 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:25:38.445 +05:30 [INF] GET /api/Notifications/unread-count => 200 (10 ms)
+2026-08-27 15:26:03.136 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:26:03.136 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:26:03.153 +05:30 [INF] GET /api/categories/main => 200 (29 ms)
+2026-08-27 15:26:03.154 +05:30 [INF] GET /api/SubCategories => 200 (30 ms)
+2026-08-27 15:26:28.709 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:26:28.753 +05:30 [INF] POST /api/SubCategories => 200 (61 ms)
+2026-08-27 15:26:29.290 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:26:29.301 +05:30 [INF] GET /api/categories/main => 200 (21 ms)
+2026-08-27 15:26:29.364 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:26:29.374 +05:30 [INF] GET /api/SubCategories => 200 (20 ms)
+2026-08-27 15:26:30.208 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:26:30.220 +05:30 [INF] GET /api/Notifications/unread-count => 200 (23 ms)
+2026-08-27 15:26:30.282 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:26:30.289 +05:30 [INF] GET /api/Profile/me => 200 (15 ms)
+2026-08-27 15:26:38.212 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:26:38.217 +05:30 [INF] GET /api/Notifications/unread-count => 200 (13 ms)
+2026-08-27 15:26:38.434 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:26:38.441 +05:30 [INF] GET /api/Profile/me => 200 (16 ms)
+2026-08-27 15:26:55.927 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:26:55.965 +05:30 [INF] PUT /api/SubCategories/4 => 200 (63 ms)
+2026-08-27 15:26:56.198 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:26:56.213 +05:30 [INF] GET /api/SubCategories => 200 (25 ms)
+2026-08-27 15:26:56.547 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:26:56.561 +05:30 [INF] GET /api/categories/main => 200 (29 ms)
+2026-08-27 15:27:05.084 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:27:05.114 +05:30 [INF] PUT /api/SubCategories/4 => 200 (37 ms)
+2026-08-27 15:27:05.396 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:27:05.429 +05:30 [INF] GET /api/SubCategories => 200 (56 ms)
+2026-08-27 15:27:05.651 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:27:05.662 +05:30 [INF] GET /api/categories/main => 200 (32 ms)
+2026-08-27 15:27:30.709 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:27:30.722 +05:30 [INF] GET /api/Profile/me => 200 (32 ms)
+2026-08-27 15:27:30.760 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:27:30.767 +05:30 [INF] GET /api/Notifications/unread-count => 200 (14 ms)
+2026-08-27 15:27:39.201 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:27:39.214 +05:30 [INF] GET /api/Notifications/unread-count => 200 (32 ms)
+2026-08-27 15:28:30.226 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:28:30.236 +05:30 [INF] GET /api/Notifications/unread-count => 200 (22 ms)
+2026-08-27 15:28:40.567 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:28:40.577 +05:30 [INF] GET /api/Notifications/unread-count => 200 (29 ms)
+2026-08-27 15:29:31.517 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:29:31.528 +05:30 [INF] GET /api/Notifications/unread-count => 200 (42 ms)
+2026-08-27 15:29:39.967 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:29:39.973 +05:30 [INF] GET /api/Notifications/unread-count => 200 (14 ms)
+2026-08-27 15:30:26.378 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:30:26.388 +05:30 [INF] GET /api/Profile/me => 200 (18 ms)
+2026-08-27 15:30:30.520 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:30:30.526 +05:30 [INF] GET /api/Notifications/unread-count => 200 (15 ms)
+2026-08-27 15:31:18.968 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:31:18.977 +05:30 [INF] GET /api/Profile/me => 200 (17 ms)
+2026-08-27 15:31:30.793 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:31:30.803 +05:30 [INF] GET /api/Notifications/unread-count => 200 (20 ms)
+2026-08-27 15:32:51.739 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:32:51.751 +05:30 [INF] GET /api/Notifications/unread-count => 200 (38 ms)
+2026-08-27 15:33:51.241 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:33:51.249 +05:30 [INF] GET /api/Notifications/unread-count => 200 (30 ms)
+2026-08-27 15:34:51.994 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:34:52.008 +05:30 [INF] GET /api/Notifications/unread-count => 200 (24 ms)
+2026-08-27 15:35:51.209 +05:30 [INF] JWT Valid. User: Lasya
+2026-08-27 15:35:51.217 +05:30 [INF] GET /api/Notifications/unread-count => 200 (37 ms)
+2026-08-27 15:46:59.586 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:46:59.595 +05:30 [INF] GET /api/Notifications/unread-count => 200 (52 ms)
+2026-08-27 15:46:59.604 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:46:59.611 +05:30 [INF] GET /api/Profile/me => 200 (26 ms)
+2026-08-27 15:47:00.629 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:00.629 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:00.645 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:00.645 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:00.653 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:00.660 +05:30 [INF] GET /api/categories => 200 (65 ms)
+2026-08-27 15:47:00.661 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:00.681 +05:30 [INF] GET /api/units => 200 (78 ms)
+2026-08-27 15:47:00.685 +05:30 [INF] GET /api/brands => 200 (84 ms)
+2026-08-27 15:47:00.693 +05:30 [INF] GET /api/Suppliers => 200 (97 ms)
+2026-08-27 15:47:00.705 +05:30 [INF] GET /api/Warehouses => 200 (109 ms)
+2026-08-27 15:47:00.720 +05:30 [INF] GET /api/products => 200 (124 ms)
+2026-08-27 15:47:01.533 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:01.534 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:01.552 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:01.554 +05:30 [INF] GET /api/stock => 200 (33 ms)
+2026-08-27 15:47:01.553 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:01.553 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:01.569 +05:30 [INF] GET /api/Permissions/roles => 200 (39 ms)
+2026-08-27 15:47:01.571 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:01.578 +05:30 [INF] GET /api/stock-movements => 200 (53 ms)
+2026-08-27 15:47:01.584 +05:30 [INF] GET /api/Customers => 200 (63 ms)
+2026-08-27 15:47:01.615 +05:30 [INF] GET /api/Customers => 200 (60 ms)
+2026-08-27 15:47:01.629 +05:30 [INF] GET /api/products => 200 (106 ms)
+2026-08-27 15:47:02.479 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:02.487 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:02.492 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:02.496 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:02.514 +05:30 [INF] GET /api/SubCategories => 200 (40 ms)
+2026-08-27 15:47:02.519 +05:30 [INF] GET /api/Profile/me => 200 (43 ms)
+2026-08-27 15:47:02.515 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:02.515 +05:30 [INF] GET /api/Notifications/unread-count => 200 (40 ms)
+2026-08-27 15:47:02.522 +05:30 [INF] GET /api/Suppliers => 200 (49 ms)
+2026-08-27 15:47:02.530 +05:30 [INF] GET /api/brands => 200 (36 ms)
+2026-08-27 15:47:02.537 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:02.550 +05:30 [INF] GET /api/categories => 200 (19 ms)
+2026-08-27 15:47:03.655 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:03.658 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:03.668 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:03.669 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:03.672 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:03.716 +05:30 [INF] GET /api/Permissions/role/3 => 200 (86 ms)
+2026-08-27 15:47:03.716 +05:30 [INF] GET /api/Permissions/role/7 => 200 (82 ms)
+2026-08-27 15:47:03.716 +05:30 [INF] GET /api/Permissions/role/2 => 200 (89 ms)
+2026-08-27 15:47:03.716 +05:30 [INF] GET /api/Permissions/role/18 => 200 (77 ms)
+2026-08-27 15:47:03.716 +05:30 [INF] GET /api/Permissions/role/5 => 200 (84 ms)
+2026-08-27 15:47:03.785 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:03.824 +05:30 [INF] GET /api/products => 200 (63 ms)
+2026-08-27 15:47:04.397 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:47:04.423 +05:30 [INF] GET /api/products => 200 (50 ms)
+2026-08-27 15:48:00.747 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:48:00.752 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:48:00.761 +05:30 [INF] GET /api/Notifications/unread-count => 200 (44 ms)
+2026-08-27 15:48:00.767 +05:30 [INF] GET /api/Profile/me => 200 (52 ms)
+2026-08-27 15:48:22.188 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:48:22.233 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:48:22.238 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:48:22.244 +05:30 [INF] GET /api/products => 200 (70 ms)
+2026-08-27 15:48:22.258 +05:30 [INF] GET /api/categories => 200 (42 ms)
+2026-08-27 15:48:22.262 +05:30 [INF] GET /api/products => 200 (46 ms)
+2026-08-27 15:48:22.292 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:48:22.293 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:48:22.300 +05:30 [INF] GET /api/brands => 200 (19 ms)
+2026-08-27 15:48:22.305 +05:30 [INF] GET /api/units => 200 (24 ms)
+2026-08-27 15:48:23.105 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:48:23.106 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:48:23.108 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:48:23.117 +05:30 [INF] GET /api/brands => 200 (22 ms)
+2026-08-27 15:48:23.121 +05:30 [INF] GET /api/units => 200 (27 ms)
+2026-08-27 15:48:23.127 +05:30 [INF] GET /api/categories => 200 (33 ms)
+2026-08-27 15:49:00.928 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:49:00.933 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:49:00.941 +05:30 [INF] GET /api/Profile/me => 200 (42 ms)
+2026-08-27 15:49:00.949 +05:30 [INF] GET /api/Notifications/unread-count => 200 (54 ms)
+2026-08-27 15:50:00.390 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:50:00.397 +05:30 [INF] GET /api/Notifications/unread-count => 200 (13 ms)
+2026-08-27 15:50:00.619 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:50:00.625 +05:30 [INF] GET /api/Profile/me => 200 (13 ms)
+2026-08-27 15:51:00.853 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:51:00.868 +05:30 [INF] GET /api/Notifications/unread-count => 200 (44 ms)
+2026-08-27 15:51:00.874 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:51:00.882 +05:30 [INF] GET /api/Profile/me => 200 (19 ms)
+2026-08-27 15:52:01.455 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:52:01.464 +05:30 [INF] GET /api/Notifications/unread-count => 200 (17 ms)
+2026-08-27 15:53:00.872 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:53:00.878 +05:30 [INF] GET /api/Notifications/unread-count => 200 (22 ms)
+2026-08-27 15:53:44.679 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:53:44.689 +05:30 [INF] GET /api/Profile/me => 200 (24 ms)
+2026-08-27 15:54:00.350 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:54:00.357 +05:30 [INF] GET /api/Notifications/unread-count => 200 (16 ms)
+2026-08-27 15:54:00.577 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:54:00.585 +05:30 [INF] GET /api/Profile/me => 200 (15 ms)
+2026-08-27 15:55:00.924 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:55:00.938 +05:30 [INF] GET /api/Profile/me => 200 (48 ms)
+2026-08-27 15:55:00.941 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:55:00.951 +05:30 [INF] GET /api/Notifications/unread-count => 200 (59 ms)
+2026-08-27 15:56:00.363 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:56:00.379 +05:30 [INF] GET /api/Notifications/unread-count => 200 (30 ms)
+2026-08-27 15:56:00.571 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:56:00.584 +05:30 [INF] GET /api/Profile/me => 200 (37 ms)
+2026-08-27 15:57:00.940 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:57:00.944 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:57:00.955 +05:30 [INF] GET /api/Profile/me => 200 (30 ms)
+2026-08-27 15:57:00.959 +05:30 [INF] GET /api/Notifications/unread-count => 200 (36 ms)
+2026-08-27 15:58:00.377 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:58:00.388 +05:30 [INF] GET /api/Notifications/unread-count => 200 (42 ms)
+2026-08-27 15:58:00.569 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:58:00.585 +05:30 [INF] GET /api/Profile/me => 200 (31 ms)
+2026-08-27 15:59:01.055 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:59:01.055 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 15:59:01.069 +05:30 [INF] GET /api/Notifications/unread-count => 200 (41 ms)
+2026-08-27 15:59:01.071 +05:30 [INF] GET /api/Profile/me => 200 (43 ms)
+2026-08-27 16:00:01.400 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:00:01.408 +05:30 [INF] GET /api/Notifications/unread-count => 200 (14 ms)
+2026-08-27 16:01:40.262 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:01:40.274 +05:30 [INF] GET /api/Notifications/unread-count => 200 (23 ms)
+2026-08-27 16:02:40.107 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:02:40.114 +05:30 [INF] GET /api/Notifications/unread-count => 200 (19 ms)
+2026-08-27 16:03:40.285 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:03:40.293 +05:30 [INF] GET /api/Notifications/unread-count => 200 (26 ms)
+2026-08-27 16:04:40.195 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:04:40.203 +05:30 [INF] GET /api/Notifications/unread-count => 200 (27 ms)
+2026-08-27 16:05:40.263 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:05:40.270 +05:30 [INF] GET /api/Notifications/unread-count => 200 (18 ms)
+2026-08-27 16:06:40.026 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:06:40.034 +05:30 [INF] GET /api/Notifications/unread-count => 200 (34 ms)
+2026-08-27 16:07:40.262 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:07:40.268 +05:30 [INF] GET /api/Notifications/unread-count => 200 (21 ms)
+2026-08-27 16:34:02.438 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:02.448 +05:30 [INF] GET /api/Profile/me => 200 (33 ms)
+2026-08-27 16:34:02.971 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:02.984 +05:30 [INF] GET /api/categories => 200 (20 ms)
+2026-08-27 16:34:03.007 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:03.026 +05:30 [INF] GET /api/units => 200 (35 ms)
+2026-08-27 16:34:03.030 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:03.037 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:03.046 +05:30 [INF] GET /api/brands => 200 (54 ms)
+2026-08-27 16:34:03.048 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:03.050 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:03.077 +05:30 [INF] GET /api/Suppliers => 200 (65 ms)
+2026-08-27 16:34:03.095 +05:30 [INF] GET /api/products => 200 (104 ms)
+2026-08-27 16:34:03.096 +05:30 [INF] GET /api/Warehouses => 200 (80 ms)
+2026-08-27 16:34:03.509 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:03.530 +05:30 [INF] GET /api/Customers => 200 (33 ms)
+2026-08-27 16:34:03.567 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:03.573 +05:30 [INF] GET /api/stock => 200 (13 ms)
+2026-08-27 16:34:03.610 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:03.614 +05:30 [INF] GET /api/stock-movements => 200 (12 ms)
+2026-08-27 16:34:03.664 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:03.673 +05:30 [INF] GET /api/Permissions/roles => 200 (22 ms)
+2026-08-27 16:34:03.679 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:03.695 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:03.727 +05:30 [INF] GET /api/Customers => 200 (41 ms)
+2026-08-27 16:34:03.732 +05:30 [INF] GET /api/products => 200 (60 ms)
+2026-08-27 16:34:04.284 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:04.297 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:04.299 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:04.301 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:04.313 +05:30 [INF] GET /api/Profile/me => 200 (31 ms)
+2026-08-27 16:34:04.323 +05:30 [INF] GET /api/Notifications/unread-count => 200 (39 ms)
+2026-08-27 16:34:04.325 +05:30 [INF] GET /api/Suppliers => 200 (53 ms)
+2026-08-27 16:34:04.325 +05:30 [INF] GET /api/SubCategories => 200 (41 ms)
+2026-08-27 16:34:04.351 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:04.352 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:04.366 +05:30 [INF] GET /api/brands => 200 (25 ms)
+2026-08-27 16:34:04.367 +05:30 [INF] GET /api/categories => 200 (26 ms)
+2026-08-27 16:34:04.798 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:04.812 +05:30 [INF] GET /api/Permissions/role/2 => 200 (28 ms)
+2026-08-27 16:34:04.845 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:04.847 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:04.853 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:04.871 +05:30 [INF] GET /api/Permissions/role/5 => 200 (36 ms)
+2026-08-27 16:34:04.873 +05:30 [INF] GET /api/Permissions/role/7 => 200 (37 ms)
+2026-08-27 16:34:04.876 +05:30 [INF] GET /api/Permissions/role/3 => 200 (40 ms)
+2026-08-27 16:34:04.884 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:04.897 +05:30 [INF] GET /api/Permissions/role/18 => 200 (22 ms)
+2026-08-27 16:34:05.530 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:05.566 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:34:05.594 +05:30 [INF] GET /api/products => 200 (90 ms)
+2026-08-27 16:34:05.594 +05:30 [INF] GET /api/products => 200 (42 ms)
+2026-08-27 16:35:02.879 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:35:02.893 +05:30 [INF] GET /api/Notifications/unread-count => 200 (34 ms)
+2026-08-27 16:35:02.904 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:35:02.911 +05:30 [INF] GET /api/Profile/me => 200 (21 ms)
+2026-08-27 16:36:03.304 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:36:03.321 +05:30 [INF] GET /api/Notifications/unread-count => 200 (31 ms)
+2026-08-27 16:36:03.331 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:36:03.336 +05:30 [INF] GET /api/Profile/me => 200 (16 ms)
+2026-08-27 16:37:02.846 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:37:02.855 +05:30 [INF] GET /api/Notifications/unread-count => 200 (25 ms)
+2026-08-27 16:37:03.117 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:37:03.123 +05:30 [INF] GET /api/Profile/me => 200 (15 ms)
+2026-08-27 16:38:03.303 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:38:03.315 +05:30 [INF] GET /api/Profile/me => 200 (24 ms)
+2026-08-27 16:38:03.924 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:38:03.941 +05:30 [INF] GET /api/Notifications/unread-count => 200 (39 ms)
+2026-08-27 16:39:02.889 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:39:02.900 +05:30 [INF] GET /api/Notifications/unread-count => 200 (25 ms)
+2026-08-27 16:39:03.106 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:39:03.112 +05:30 [INF] GET /api/Profile/me => 200 (16 ms)
+2026-08-27 16:40:03.274 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:40:03.281 +05:30 [INF] GET /api/Notifications/unread-count => 200 (20 ms)
+2026-08-27 16:40:03.310 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:40:03.317 +05:30 [INF] GET /api/Profile/me => 200 (12 ms)
+2026-08-27 16:41:03.205 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:41:03.214 +05:30 [INF] GET /api/Profile/me => 200 (27 ms)
+2026-08-27 16:41:03.236 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:41:03.245 +05:30 [INF] GET /api/Notifications/unread-count => 200 (55 ms)
+2026-08-27 16:42:03.121 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:42:03.127 +05:30 [INF] GET /api/Notifications/unread-count => 200 (19 ms)
+2026-08-27 16:42:03.153 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:42:03.158 +05:30 [INF] GET /api/Profile/me => 200 (11 ms)
+2026-08-27 16:43:02.848 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:43:02.861 +05:30 [INF] GET /api/Notifications/unread-count => 200 (25 ms)
+2026-08-27 16:43:03.102 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:43:03.113 +05:30 [INF] GET /api/Profile/me => 200 (29 ms)
+2026-08-27 16:43:51.851 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:43:51.865 +05:30 [INF] GET /api/Profile/me => 200 (30 ms)
+2026-08-27 16:44:02.994 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:44:03.001 +05:30 [INF] GET /api/Notifications/unread-count => 200 (21 ms)
+2026-08-27 16:44:03.119 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:44:03.126 +05:30 [INF] GET /api/Profile/me => 200 (13 ms)
+2026-08-27 16:45:03.141 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:45:03.154 +05:30 [INF] GET /api/Notifications/unread-count => 200 (21 ms)
+2026-08-27 16:45:03.172 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:45:03.178 +05:30 [INF] GET /api/Profile/me => 200 (12 ms)
+2026-08-27 16:46:03.124 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:46:03.138 +05:30 [INF] GET /api/Notifications/unread-count => 200 (31 ms)
+2026-08-27 16:46:03.183 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:46:03.190 +05:30 [INF] GET /api/Profile/me => 200 (13 ms)
+2026-08-27 16:47:03.147 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:47:03.154 +05:30 [INF] GET /api/Notifications/unread-count => 200 (21 ms)
+2026-08-27 16:47:03.180 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:47:03.188 +05:30 [INF] GET /api/Profile/me => 200 (14 ms)
+2026-08-27 16:48:02.892 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:48:02.898 +05:30 [INF] GET /api/Notifications/unread-count => 200 (22 ms)
+2026-08-27 16:48:03.111 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:48:03.128 +05:30 [INF] GET /api/Profile/me => 200 (36 ms)
+2026-08-27 16:49:03.639 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:49:03.651 +05:30 [INF] GET /api/Notifications/unread-count => 200 (19 ms)
+2026-08-27 16:49:03.664 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:49:03.670 +05:30 [INF] GET /api/Profile/me => 200 (38 ms)
+2026-08-27 16:50:02.968 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:50:02.974 +05:30 [INF] GET /api/Notifications/unread-count => 200 (18 ms)
+2026-08-27 16:51:40.225 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:51:40.238 +05:30 [INF] GET /api/Notifications/unread-count => 200 (23 ms)
+2026-08-27 16:52:40.165 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:52:40.173 +05:30 [INF] GET /api/Notifications/unread-count => 200 (16 ms)
+2026-08-27 16:53:40.200 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:53:40.206 +05:30 [INF] GET /api/Notifications/unread-count => 200 (22 ms)
+2026-08-27 16:54:39.839 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:54:39.848 +05:30 [INF] GET /api/Notifications/unread-count => 200 (20 ms)
+2026-08-27 16:55:40.358 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:55:40.369 +05:30 [INF] GET /api/Notifications/unread-count => 200 (30 ms)
+2026-08-27 16:56:40.442 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:56:40.449 +05:30 [INF] GET /api/Notifications/unread-count => 200 (51 ms)
+2026-08-27 16:57:40.283 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:57:40.294 +05:30 [INF] GET /api/Notifications/unread-count => 200 (22 ms)
+2026-08-27 16:58:40.115 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:58:40.123 +05:30 [INF] GET /api/Notifications/unread-count => 200 (18 ms)
+2026-08-27 16:59:40.111 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 16:59:40.120 +05:30 [INF] GET /api/Notifications/unread-count => 200 (17 ms)
+2026-08-27 17:00:40.140 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:00:40.158 +05:30 [INF] GET /api/Notifications/unread-count => 200 (49 ms)
+2026-08-27 17:01:40.278 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:01:40.287 +05:30 [INF] GET /api/Notifications/unread-count => 200 (21 ms)
+2026-08-27 17:02:40.183 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:02:40.193 +05:30 [INF] GET /api/Notifications/unread-count => 200 (45 ms)
+2026-08-27 17:03:40.327 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:03:40.333 +05:30 [INF] GET /api/Notifications/unread-count => 200 (21 ms)
+2026-08-27 17:11:29.104 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:29.104 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:29.112 +05:30 [INF] GET /api/Notifications/unread-count => 200 (40 ms)
+2026-08-27 17:11:29.115 +05:30 [INF] GET /api/Profile/me => 200 (50 ms)
+2026-08-27 17:11:29.752 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:29.768 +05:30 [INF] GET /api/brands => 200 (38 ms)
+2026-08-27 17:11:29.787 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:29.790 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:29.801 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:29.804 +05:30 [INF] GET /api/units => 200 (31 ms)
+2026-08-27 17:11:29.804 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:29.837 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:29.844 +05:30 [INF] GET /api/Warehouses => 200 (54 ms)
+2026-08-27 17:11:29.857 +05:30 [INF] GET /api/categories => 200 (84 ms)
+2026-08-27 17:11:29.867 +05:30 [INF] GET /api/Suppliers => 200 (52 ms)
+2026-08-27 17:11:29.871 +05:30 [INF] GET /api/products => 200 (99 ms)
+2026-08-27 17:11:30.271 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:30.296 +05:30 [INF] GET /api/Customers => 200 (42 ms)
+2026-08-27 17:11:30.357 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:30.357 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:30.367 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:30.369 +05:30 [INF] GET /api/stock => 200 (22 ms)
+2026-08-27 17:11:30.370 +05:30 [INF] GET /api/Permissions/roles => 200 (25 ms)
+2026-08-27 17:11:30.373 +05:30 [INF] GET /api/stock-movements => 200 (15 ms)
+2026-08-27 17:11:30.393 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:30.417 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:30.445 +05:30 [INF] GET /api/products => 200 (58 ms)
+2026-08-27 17:11:30.450 +05:30 [INF] GET /api/Customers => 200 (44 ms)
+2026-08-27 17:11:30.837 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:30.893 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:30.903 +05:30 [INF] GET /api/Suppliers => 200 (78 ms)
+2026-08-27 17:11:30.903 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:30.932 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:30.938 +05:30 [INF] GET /api/Profile/me => 200 (47 ms)
+2026-08-27 17:11:30.939 +05:30 [INF] GET /api/SubCategories => 200 (53 ms)
+2026-08-27 17:11:30.974 +05:30 [INF] GET /api/Notifications/unread-count => 200 (72 ms)
+2026-08-27 17:11:31.021 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:31.031 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:31.043 +05:30 [INF] GET /api/brands => 200 (21 ms)
+2026-08-27 17:11:31.043 +05:30 [INF] GET /api/categories => 200 (30 ms)
+2026-08-27 17:11:31.578 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:31.595 +05:30 [INF] GET /api/Permissions/role/2 => 200 (36 ms)
+2026-08-27 17:11:31.628 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:31.633 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:31.647 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:31.651 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:31.673 +05:30 [INF] GET /api/Permissions/role/3 => 200 (54 ms)
+2026-08-27 17:11:31.673 +05:30 [INF] GET /api/Permissions/role/5 => 200 (53 ms)
+2026-08-27 17:11:31.674 +05:30 [INF] GET /api/Permissions/role/7 => 200 (56 ms)
+2026-08-27 17:11:31.680 +05:30 [INF] GET /api/Permissions/role/18 => 200 (60 ms)
+2026-08-27 17:11:31.940 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:32.002 +05:30 [INF] GET /api/products => 200 (94 ms)
+2026-08-27 17:11:32.078 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:11:32.102 +05:30 [INF] GET /api/products => 200 (35 ms)
+2026-08-27 17:12:29.842 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:12:29.850 +05:30 [INF] GET /api/Notifications/unread-count => 200 (22 ms)
+2026-08-27 17:12:30.024 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:12:30.030 +05:30 [INF] GET /api/Profile/me => 200 (12 ms)
+2026-08-27 17:13:30.155 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:13:30.161 +05:30 [INF] GET /api/Notifications/unread-count => 200 (15 ms)
+2026-08-27 17:13:30.174 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:13:30.181 +05:30 [INF] GET /api/Profile/me => 200 (12 ms)
+2026-08-27 17:14:29.857 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:14:29.864 +05:30 [INF] GET /api/Notifications/unread-count => 200 (22 ms)
+2026-08-27 17:15:30.164 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:15:30.174 +05:30 [INF] GET /api/Notifications/unread-count => 200 (19 ms)
+2026-08-27 17:16:29.946 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:16:29.955 +05:30 [INF] GET /api/Notifications/unread-count => 200 (18 ms)
+2026-08-27 17:17:30.138 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:17:30.144 +05:30 [INF] GET /api/Notifications/unread-count => 200 (20 ms)
+2026-08-27 17:18:40.222 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:18:40.231 +05:30 [INF] GET /api/Notifications/unread-count => 200 (41 ms)
+2026-08-27 17:18:48.424 +05:30 [INF] 1 expired refresh tokens deleted.
+2026-08-27 17:19:40.257 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:19:40.265 +05:30 [INF] GET /api/Notifications/unread-count => 200 (17 ms)
+2026-08-27 17:20:40.271 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:20:40.279 +05:30 [INF] GET /api/Notifications/unread-count => 200 (17 ms)
+2026-08-27 17:21:20.245 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:21:20.256 +05:30 [INF] GET /api/Profile/me => 200 (36 ms)
+2026-08-27 17:21:30.201 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:21:30.210 +05:30 [INF] GET /api/Notifications/unread-count => 200 (20 ms)
+2026-08-27 17:21:30.215 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:21:30.222 +05:30 [INF] GET /api/Profile/me => 200 (12 ms)
+2026-08-27 17:22:29.795 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:22:29.808 +05:30 [INF] GET /api/Notifications/unread-count => 200 (24 ms)
+2026-08-27 17:22:30.061 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:22:30.067 +05:30 [INF] GET /api/Profile/me => 200 (12 ms)
+2026-08-27 17:23:12.754 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:12.759 +05:30 [INF] GET /api/stock => 200 (12 ms)
+2026-08-27 17:23:24.729 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:24.747 +05:30 [INF] GET /api/brands => 200 (46 ms)
+2026-08-27 17:23:24.761 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:24.761 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:24.762 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:24.762 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:24.778 +05:30 [INF] GET /api/units => 200 (78 ms)
+2026-08-27 17:23:24.786 +05:30 [INF] GET /api/categories => 200 (83 ms)
+2026-08-27 17:23:24.803 +05:30 [INF] GET /api/products => 200 (101 ms)
+2026-08-27 17:23:24.814 +05:30 [INF] GET /api/products => 200 (114 ms)
+2026-08-27 17:23:30.173 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:30.173 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:30.184 +05:30 [INF] GET /api/Notifications/unread-count => 200 (26 ms)
+2026-08-27 17:23:30.188 +05:30 [INF] GET /api/Profile/me => 200 (32 ms)
+2026-08-27 17:23:55.718 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:55.988 +05:30 [INF] PATCH /api/products/3 => 200 (310 ms)
+2026-08-27 17:23:56.930 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:56.945 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:56.945 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:56.951 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:56.957 +05:30 [INF] GET /api/brands => 200 (39 ms)
+2026-08-27 17:23:56.965 +05:30 [INF] GET /api/units => 200 (41 ms)
+2026-08-27 17:23:56.973 +05:30 [INF] GET /api/categories => 200 (45 ms)
+2026-08-27 17:23:56.985 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:57.013 +05:30 [INF] GET /api/products => 200 (82 ms)
+2026-08-27 17:23:57.032 +05:30 [INF] GET /api/products => 200 (56 ms)
+2026-08-27 17:23:57.230 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:57.236 +05:30 [INF] GET /api/brands => 200 (12 ms)
+2026-08-27 17:23:57.942 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:57.942 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:57.950 +05:30 [INF] GET /api/units => 200 (22 ms)
+2026-08-27 17:23:57.956 +05:30 [INF] GET /api/categories => 200 (27 ms)
+2026-08-27 17:23:58.806 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:58.817 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:58.817 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:58.821 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:58.830 +05:30 [INF] GET /api/stock => 200 (23 ms)
+2026-08-27 17:23:58.836 +05:30 [INF] GET /api/stock-movements => 200 (27 ms)
+2026-08-27 17:23:58.848 +05:30 [INF] GET /api/Customers => 200 (53 ms)
+2026-08-27 17:23:58.853 +05:30 [INF] GET /api/Warehouses => 200 (46 ms)
+2026-08-27 17:23:58.953 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:58.964 +05:30 [INF] GET /api/Suppliers => 200 (19 ms)
+2026-08-27 17:23:58.983 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:59.020 +05:30 [INF] GET /api/products => 200 (43 ms)
+2026-08-27 17:23:59.518 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:23:59.529 +05:30 [INF] GET /api/Permissions/roles => 200 (24 ms)
+2026-08-27 17:24:00.311 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:24:00.312 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:24:00.314 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:24:00.334 +05:30 [INF] GET /api/Permissions/role/3 => 200 (41 ms)
+2026-08-27 17:24:00.334 +05:30 [INF] GET /api/Permissions/role/5 => 200 (43 ms)
+2026-08-27 17:24:00.339 +05:30 [INF] GET /api/Permissions/role/2 => 200 (47 ms)
+2026-08-27 17:24:00.348 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:24:00.349 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:24:00.366 +05:30 [INF] GET /api/Permissions/role/18 => 200 (27 ms)
+2026-08-27 17:24:00.368 +05:30 [INF] GET /api/Permissions/role/7 => 200 (28 ms)
+2026-08-27 17:24:30.249 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:24:30.256 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:24:30.266 +05:30 [INF] GET /api/Profile/me => 200 (57 ms)
+2026-08-27 17:24:30.268 +05:30 [INF] GET /api/Notifications/unread-count => 200 (58 ms)
+2026-08-27 17:25:30.495 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:25:30.495 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:25:30.505 +05:30 [INF] GET /api/Profile/me => 200 (22 ms)
+2026-08-27 17:25:30.506 +05:30 [INF] GET /api/Notifications/unread-count => 200 (24 ms)
+2026-08-27 17:26:29.849 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:26:29.857 +05:30 [INF] GET /api/Notifications/unread-count => 200 (17 ms)
+2026-08-27 17:26:30.098 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:26:30.109 +05:30 [INF] GET /api/Profile/me => 200 (16 ms)
+2026-08-27 17:27:30.109 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:27:30.116 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:27:30.122 +05:30 [INF] GET /api/Notifications/unread-count => 200 (48 ms)
+2026-08-27 17:27:30.127 +05:30 [INF] GET /api/Profile/me => 200 (29 ms)
+2026-08-27 17:27:38.722 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:27:38.733 +05:30 [INF] GET /api/categories/main => 200 (22 ms)
+2026-08-27 17:27:38.751 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:27:38.751 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:27:38.764 +05:30 [INF] GET /api/attribute-values => 200 (27 ms)
+2026-08-27 17:27:38.770 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:27:38.773 +05:30 [INF] GET /api/productvariants => 200 (36 ms)
+2026-08-27 17:27:38.786 +05:30 [INF] GET /api/SubCategories => 200 (27 ms)
+2026-08-27 17:27:38.793 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:27:38.796 +05:30 [INF] GET /api/attributes => 200 (9 ms)
+2026-08-27 17:27:53.478 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:27:53.547 +05:30 [INF] PATCH /api/products/5 => 200 (82 ms)
+2026-08-27 17:27:54.025 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:27:54.061 +05:30 [INF] GET /api/products => 200 (43 ms)
+2026-08-27 17:27:54.290 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:27:54.296 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:27:54.296 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:27:54.311 +05:30 [INF] GET /api/brands => 200 (34 ms)
+2026-08-27 17:27:54.323 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:27:54.325 +05:30 [INF] GET /api/categories => 200 (48 ms)
+2026-08-27 17:27:54.333 +05:30 [INF] GET /api/units => 200 (31 ms)
+2026-08-27 17:27:54.358 +05:30 [INF] GET /api/products => 200 (80 ms)
+2026-08-27 17:27:54.993 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:27:55.010 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:27:55.010 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:27:55.018 +05:30 [INF] GET /api/categories => 200 (37 ms)
+2026-08-27 17:27:55.019 +05:30 [INF] GET /api/units => 200 (25 ms)
+2026-08-27 17:27:55.022 +05:30 [INF] GET /api/brands => 200 (28 ms)
+2026-08-27 17:27:55.784 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:27:55.827 +05:30 [INF] GET /api/products => 200 (61 ms)
+2026-08-27 17:28:20.054 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:28:20.061 +05:30 [INF] GET /api/categories/main => 200 (19 ms)
+2026-08-27 17:28:20.342 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:28:20.350 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:28:20.367 +05:30 [INF] GET /api/SubCategories => 200 (32 ms)
+2026-08-27 17:28:20.367 +05:30 [INF] GET /api/productvariants => 200 (32 ms)
+2026-08-27 17:28:20.375 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:28:20.388 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:28:20.388 +05:30 [INF] GET /api/attribute-values => 200 (32 ms)
+2026-08-27 17:28:20.390 +05:30 [INF] GET /api/attributes => 200 (32 ms)
+2026-08-27 17:28:30.154 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:28:30.161 +05:30 [INF] GET /api/Profile/me => 200 (16 ms)
+2026-08-27 17:28:30.174 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:28:30.182 +05:30 [INF] GET /api/Notifications/unread-count => 200 (14 ms)
+2026-08-27 17:29:30.065 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:29:30.065 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:29:30.076 +05:30 [INF] GET /api/Profile/me => 200 (24 ms)
+2026-08-27 17:29:30.077 +05:30 [INF] GET /api/Notifications/unread-count => 200 (28 ms)
+2026-08-27 17:30:08.726 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:30:08.736 +05:30 [INF] GET /api/productvariants => 200 (19 ms)
+2026-08-27 17:30:26.894 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:26.904 +05:30 [INF] GET /api/Notifications/unread-count => 200 (20 ms)
+2026-08-27 17:30:28.243 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:28.251 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:28.260 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:28.267 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:28.275 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:28.292 +05:30 [INF] GET /api/brands => 200 (49 ms)
+2026-08-27 17:30:28.300 +05:30 [INF] GET /api/Suppliers => 200 (67 ms)
+2026-08-27 17:30:28.308 +05:30 [INF] GET /api/units => 200 (71 ms)
+2026-08-27 17:30:28.308 +05:30 [INF] GET /api/Warehouses => 200 (78 ms)
+2026-08-27 17:30:28.316 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:28.338 +05:30 [INF] GET /api/categories => 200 (104 ms)
+2026-08-27 17:30:28.338 +05:30 [INF] GET /api/products => 200 (107 ms)
+2026-08-27 17:30:29.172 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:29.173 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:29.182 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:29.191 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:29.195 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:29.195 +05:30 [INF] GET /api/stock => 200 (34 ms)
+2026-08-27 17:30:29.200 +05:30 [INF] GET /api/stock-movements => 200 (40 ms)
+2026-08-27 17:30:29.197 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:29.221 +05:30 [INF] GET /api/Customers => 200 (61 ms)
+2026-08-27 17:30:29.224 +05:30 [INF] GET /api/Permissions/roles => 200 (60 ms)
+2026-08-27 17:30:29.236 +05:30 [INF] GET /api/Customers => 200 (73 ms)
+2026-08-27 17:30:29.249 +05:30 [INF] GET /api/products => 200 (82 ms)
+2026-08-27 17:30:29.754 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:30:29.762 +05:30 [INF] GET /api/Notifications/unread-count => 200 (17 ms)
+2026-08-27 17:30:29.896 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:29.896 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:29.899 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:29.912 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:29.914 +05:30 [INF] GET /api/brands => 200 (26 ms)
+2026-08-27 17:30:29.935 +05:30 [INF] GET /api/Notifications/unread-count => 200 (47 ms)
+2026-08-27 17:30:29.942 +05:30 [INF] GET /api/Suppliers => 200 (55 ms)
+2026-08-27 17:30:29.948 +05:30 [INF] GET /api/SubCategories => 200 (59 ms)
+2026-08-27 17:30:29.944 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:29.960 +05:30 [INF] GET /api/categories => 200 (33 ms)
+2026-08-27 17:30:29.975 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:29.985 +05:30 [INF] GET /api/Permissions/role/5 => 200 (17 ms)
+2026-08-27 17:30:30.031 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:30:30.039 +05:30 [INF] GET /api/Profile/me => 200 (15 ms)
+2026-08-27 17:30:30.731 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:30.745 +05:30 [INF] GET /api/Permissions/role/2 => 200 (37 ms)
+2026-08-27 17:30:30.818 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:30.819 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:30.826 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:30.839 +05:30 [INF] GET /api/Permissions/role/7 => 200 (33 ms)
+2026-08-27 17:30:30.846 +05:30 [INF] GET /api/Permissions/role/18 => 200 (40 ms)
+2026-08-27 17:30:30.846 +05:30 [INF] GET /api/Permissions/role/3 => 200 (34 ms)
+2026-08-27 17:30:32.101 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:32.101 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:32.106 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:32.117 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:32.118 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:32.126 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:32.133 +05:30 [INF] GET /api/Dashboard/top-products => 200 (52 ms)
+2026-08-27 17:30:32.141 +05:30 [INF] GET /api/Dashboard/monthly-sales => 200 (51 ms)
+2026-08-27 17:30:32.141 +05:30 [INF] GET /api/Dashboard/monthly-purchases => 200 (62 ms)
+2026-08-27 17:30:32.141 +05:30 [INF] GET /api/Dashboard/recent-sales => 200 (47 ms)
+2026-08-27 17:30:32.142 +05:30 [INF] GET /api/Dashboard/low-stock => 200 (49 ms)
+2026-08-27 17:30:32.157 +05:30 [INF] GET /api/Dashboard/summary => 200 (78 ms)
+2026-08-27 17:30:33.290 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:30:33.310 +05:30 [INF] GET /api/Dashboard/recent-activities => 200 (44 ms)
+2026-08-27 17:31:28.350 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:31:28.359 +05:30 [INF] GET /api/Notifications/unread-count => 200 (20 ms)
+2026-08-27 17:31:30.237 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:31:30.247 +05:30 [INF] GET /api/Notifications/unread-count => 200 (24 ms)
+2026-08-27 17:31:30.284 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:31:30.290 +05:30 [INF] GET /api/Profile/me => 200 (13 ms)
+2026-08-27 17:32:28.621 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:32:28.630 +05:30 [INF] GET /api/Notifications/unread-count => 200 (52 ms)
+2026-08-27 17:32:29.902 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:32:29.917 +05:30 [INF] GET /api/Notifications/unread-count => 200 (38 ms)
+2026-08-27 17:33:28.253 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:33:28.267 +05:30 [INF] GET /api/Notifications/unread-count => 200 (55 ms)
+2026-08-27 17:33:40.216 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:33:40.232 +05:30 [INF] GET /api/Notifications/unread-count => 200 (36 ms)
+2026-08-27 17:34:28.908 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:34:28.916 +05:30 [INF] GET /api/Notifications/unread-count => 200 (21 ms)
+2026-08-27 17:34:39.865 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:34:39.875 +05:30 [INF] GET /api/Notifications/unread-count => 200 (23 ms)
+2026-08-27 17:35:28.168 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:35:28.177 +05:30 [INF] GET /api/Notifications/unread-count => 200 (17 ms)
+2026-08-27 17:35:41.182 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:35:41.189 +05:30 [INF] GET /api/Notifications/unread-count => 200 (16 ms)
+2026-08-27 17:36:11.704 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:36:11.719 +05:30 [INF] GET /api/Profile/me => 200 (35 ms)
+2026-08-27 17:36:28.975 +05:30 [INF] JWT Valid. User: Puli Hemasri Sai Varma
+2026-08-27 17:36:28.986 +05:30 [INF] GET /api/Notifications/unread-count => 200 (22 ms)
+2026-08-27 17:36:30.319 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:36:30.331 +05:30 [INF] GET /api/Profile/me => 200 (28 ms)
+2026-08-27 17:36:30.572 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:36:30.579 +05:30 [INF] GET /api/Notifications/unread-count => 200 (22 ms)
+2026-08-27 17:37:30.129 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:37:30.138 +05:30 [INF] GET /api/Profile/me => 200 (31 ms)
+2026-08-27 17:37:30.145 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:37:30.152 +05:30 [INF] GET /api/Notifications/unread-count => 200 (46 ms)
+2026-08-27 17:38:30.219 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:38:30.228 +05:30 [INF] GET /api/Notifications/unread-count => 200 (18 ms)
+2026-08-27 17:38:30.251 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:38:30.258 +05:30 [INF] GET /api/Profile/me => 200 (12 ms)
+2026-08-27 17:38:53.284 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:38:53.302 +05:30 [INF] GET /api/stock => 200 (40 ms)
+2026-08-27 17:39:08.610 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:39:08.619 +05:30 [INF] GET /api/categories => 200 (16 ms)
+2026-08-27 17:39:08.652 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:39:08.663 +05:30 [INF] GET /api/brands => 200 (18 ms)
+2026-08-27 17:39:08.673 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:39:08.680 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:39:08.693 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:39:08.712 +05:30 [INF] GET /api/units => 200 (51 ms)
+2026-08-27 17:39:08.749 +05:30 [INF] GET /api/products => 200 (93 ms)
+2026-08-27 17:39:08.749 +05:30 [INF] GET /api/products => 200 (91 ms)
+2026-08-27 17:39:29.768 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:39:29.778 +05:30 [INF] GET /api/Notifications/unread-count => 200 (36 ms)
+2026-08-27 17:39:30.034 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:39:30.042 +05:30 [INF] GET /api/Profile/me => 200 (16 ms)
+2026-08-27 17:40:30.210 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:40:30.219 +05:30 [INF] GET /api/Notifications/unread-count => 200 (18 ms)
+2026-08-27 17:40:30.262 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:40:30.270 +05:30 [INF] GET /api/Profile/me => 200 (16 ms)
+2026-08-27 17:41:30.178 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:41:30.184 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:41:30.191 +05:30 [INF] GET /api/Notifications/unread-count => 200 (53 ms)
+2026-08-27 17:41:30.196 +05:30 [INF] GET /api/Profile/me => 200 (59 ms)
+2026-08-27 17:42:30.291 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:42:30.295 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:42:30.302 +05:30 [INF] GET /api/Profile/me => 200 (33 ms)
+2026-08-27 17:42:30.309 +05:30 [INF] GET /api/Notifications/unread-count => 200 (41 ms)
+2026-08-27 17:43:29.777 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:43:29.786 +05:30 [INF] GET /api/Notifications/unread-count => 200 (21 ms)
+2026-08-27 17:43:30.045 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:43:30.053 +05:30 [INF] GET /api/Profile/me => 200 (13 ms)
+2026-08-27 17:44:30.222 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:44:30.229 +05:30 [INF] GET /api/Profile/me => 200 (20 ms)
+2026-08-27 17:44:30.248 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:44:30.255 +05:30 [INF] GET /api/Notifications/unread-count => 200 (12 ms)
+2026-08-27 17:45:30.102 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:45:30.112 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:45:30.121 +05:30 [INF] GET /api/Notifications/unread-count => 200 (40 ms)
+2026-08-27 17:45:30.125 +05:30 [INF] GET /api/Profile/me => 200 (28 ms)
+2026-08-27 17:46:30.261 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:46:30.269 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:46:30.290 +05:30 [INF] GET /api/Notifications/unread-count => 200 (76 ms)
+2026-08-27 17:46:30.291 +05:30 [INF] GET /api/Profile/me => 200 (35 ms)
+2026-08-27 17:47:29.763 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:47:29.770 +05:30 [INF] GET /api/Notifications/unread-count => 200 (23 ms)
+2026-08-27 17:47:30.033 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:47:30.039 +05:30 [INF] GET /api/Profile/me => 200 (15 ms)
+2026-08-27 17:48:30.254 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:48:30.256 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:48:30.273 +05:30 [INF] GET /api/Profile/me => 200 (43 ms)
+2026-08-27 17:48:30.280 +05:30 [INF] GET /api/Notifications/unread-count => 200 (50 ms)
+2026-08-27 17:49:29.761 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:49:29.776 +05:30 [INF] GET /api/Notifications/unread-count => 200 (33 ms)
+2026-08-27 17:49:30.039 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:49:30.051 +05:30 [INF] GET /api/Profile/me => 200 (24 ms)
+2026-08-27 17:50:30.235 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:50:30.253 +05:30 [INF] GET /api/Notifications/unread-count => 200 (30 ms)
+2026-08-27 17:50:30.253 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:50:30.265 +05:30 [INF] GET /api/Profile/me => 200 (25 ms)
+2026-08-27 17:51:29.815 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:51:29.822 +05:30 [INF] GET /api/Notifications/unread-count => 200 (15 ms)
+2026-08-27 17:51:30.027 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:51:30.035 +05:30 [INF] GET /api/Profile/me => 200 (18 ms)
+2026-08-27 17:52:30.216 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:52:30.226 +05:30 [INF] GET /api/Profile/me => 200 (19 ms)
+2026-08-27 17:52:30.244 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:52:30.249 +05:30 [INF] GET /api/Notifications/unread-count => 200 (12 ms)
+2026-08-27 17:53:29.795 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:53:29.805 +05:30 [INF] GET /api/Notifications/unread-count => 200 (50 ms)
+2026-08-27 17:53:30.058 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:53:30.075 +05:30 [INF] GET /api/Profile/me => 200 (40 ms)
+2026-08-27 17:54:30.252 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:54:30.275 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:54:30.283 +05:30 [INF] GET /api/Profile/me => 200 (35 ms)
+2026-08-27 17:54:30.305 +05:30 [INF] GET /api/Notifications/unread-count => 200 (89 ms)
+2026-08-27 17:55:29.786 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:55:29.795 +05:30 [INF] GET /api/Notifications/unread-count => 200 (21 ms)
+2026-08-27 17:55:30.036 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:55:30.043 +05:30 [INF] GET /api/Profile/me => 200 (18 ms)
+2026-08-27 17:56:30.064 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:56:30.073 +05:30 [INF] GET /api/Profile/me => 200 (19 ms)
+2026-08-27 17:56:30.084 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:56:30.093 +05:30 [INF] GET /api/Notifications/unread-count => 200 (15 ms)
+2026-08-27 17:57:31.069 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:57:31.074 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:57:31.084 +05:30 [INF] GET /api/Profile/me => 200 (26 ms)
+2026-08-27 17:57:31.090 +05:30 [INF] GET /api/Notifications/unread-count => 200 (33 ms)
+2026-08-27 17:58:31.115 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:58:31.122 +05:30 [INF] GET /api/Notifications/unread-count => 200 (17 ms)
+2026-08-27 17:58:31.283 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:58:31.295 +05:30 [INF] GET /api/Profile/me => 200 (35 ms)
+2026-08-27 17:59:29.757 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:59:29.766 +05:30 [INF] GET /api/Notifications/unread-count => 200 (18 ms)
+2026-08-27 17:59:30.030 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 17:59:30.038 +05:30 [INF] GET /api/Profile/me => 200 (16 ms)
+2026-08-27 18:00:30.216 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:00:30.226 +05:30 [INF] GET /api/Profile/me => 200 (23 ms)
+2026-08-27 18:00:30.239 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:00:30.246 +05:30 [INF] GET /api/Notifications/unread-count => 200 (13 ms)
+2026-08-27 18:01:29.766 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:01:29.782 +05:30 [INF] GET /api/Notifications/unread-count => 200 (30 ms)
+2026-08-27 18:01:30.031 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:01:30.038 +05:30 [INF] GET /api/Profile/me => 200 (19 ms)
+2026-08-27 18:02:30.221 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:02:30.227 +05:30 [INF] GET /api/Notifications/unread-count => 200 (23 ms)
+2026-08-27 18:02:30.240 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:02:30.245 +05:30 [INF] GET /api/Profile/me => 200 (12 ms)
+2026-08-27 18:03:30.125 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:03:30.138 +05:30 [INF] GET /api/Notifications/unread-count => 200 (24 ms)
+2026-08-27 18:04:31.264 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:04:31.277 +05:30 [INF] GET /api/Notifications/unread-count => 200 (25 ms)
+2026-08-27 18:05:32.442 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:05:32.448 +05:30 [INF] GET /api/Notifications/unread-count => 200 (21 ms)
+2026-08-27 18:06:12.695 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:06:12.706 +05:30 [INF] GET /api/Profile/me => 200 (19 ms)
+2026-08-27 18:06:30.194 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:06:30.202 +05:30 [INF] GET /api/Notifications/unread-count => 200 (14 ms)
+2026-08-27 18:06:30.238 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:06:30.244 +05:30 [INF] GET /api/Profile/me => 200 (12 ms)
+2026-08-27 18:07:29.736 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:07:29.742 +05:30 [INF] GET /api/Notifications/unread-count => 200 (25 ms)
+2026-08-27 18:07:30.045 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:07:30.054 +05:30 [INF] GET /api/Profile/me => 200 (19 ms)
+2026-08-27 18:08:30.204 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:08:30.214 +05:30 [INF] GET /api/Notifications/unread-count => 200 (17 ms)
+2026-08-27 18:08:30.234 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:08:30.240 +05:30 [INF] GET /api/Profile/me => 200 (10 ms)
+2026-08-27 18:09:30.078 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:09:30.084 +05:30 [INF] GET /api/Notifications/unread-count => 200 (19 ms)
+2026-08-27 18:09:30.098 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:09:30.103 +05:30 [INF] GET /api/Profile/me => 200 (14 ms)
+2026-08-27 18:10:30.233 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:10:30.241 +05:30 [INF] GET /api/Notifications/unread-count => 200 (26 ms)
+2026-08-27 18:10:30.247 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:10:30.253 +05:30 [INF] GET /api/Profile/me => 200 (38 ms)
+2026-08-27 18:11:20.877 +05:30 [ERR] JWT Authentication Failed. Path: /api/Profile/me
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/27/2026 12:37:37 PM', Current time (UTC): '8/27/2026 12:41:20 PM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 18:11:20.877 +05:30 [ERR] JWT Authentication Failed. Path: /api/Notifications/unread-count
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/27/2026 12:37:37 PM', Current time (UTC): '8/27/2026 12:41:20 PM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 18:11:20.883 +05:30 [WRN] JWT Challenge. Path: /api/Profile/me. Error: invalid_token
+2026-08-27 18:11:20.886 +05:30 [WRN] JWT Challenge. Path: /api/Notifications/unread-count. Error: invalid_token
+2026-08-27 18:11:20.887 +05:30 [INF] GET /api/Profile/me => 401 (13 ms)
+2026-08-27 18:11:20.888 +05:30 [INF] GET /api/Notifications/unread-count => 401 (14 ms)
+2026-08-27 18:11:21.179 +05:30 [ERR] JWT Authentication Failed. Path: /api/products
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/27/2026 12:37:37 PM', Current time (UTC): '8/27/2026 12:41:21 PM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 18:11:21.184 +05:30 [WRN] JWT Challenge. Path: /api/products. Error: invalid_token
+2026-08-27 18:11:21.188 +05:30 [INF] GET /api/products => 401 (9 ms)
+2026-08-27 18:11:21.231 +05:30 [ERR] JWT Authentication Failed. Path: /api/categories
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/27/2026 12:37:37 PM', Current time (UTC): '8/27/2026 12:41:21 PM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 18:11:21.236 +05:30 [WRN] JWT Challenge. Path: /api/categories. Error: invalid_token
+2026-08-27 18:11:21.239 +05:30 [INF] GET /api/categories => 401 (9 ms)
+2026-08-27 18:11:21.253 +05:30 [ERR] JWT Authentication Failed. Path: /api/brands
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/27/2026 12:37:37 PM', Current time (UTC): '8/27/2026 12:41:21 PM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 18:11:21.256 +05:30 [ERR] JWT Authentication Failed. Path: /api/units
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/27/2026 12:37:37 PM', Current time (UTC): '8/27/2026 12:41:21 PM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 18:11:21.260 +05:30 [WRN] JWT Challenge. Path: /api/brands. Error: invalid_token
+2026-08-27 18:11:21.265 +05:30 [INF] GET /api/brands => 401 (15 ms)
+2026-08-27 18:11:21.263 +05:30 [WRN] JWT Challenge. Path: /api/units. Error: invalid_token
+2026-08-27 18:11:21.270 +05:30 [INF] GET /api/units => 401 (19 ms)
+2026-08-27 18:11:21.298 +05:30 [ERR] JWT Authentication Failed. Path: /api/Suppliers
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/27/2026 12:37:37 PM', Current time (UTC): '8/27/2026 12:41:21 PM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 18:11:21.298 +05:30 [ERR] JWT Authentication Failed. Path: /api/Warehouses
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '8/27/2026 12:37:37 PM', Current time (UTC): '8/27/2026 12:41:21 PM'.
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-08-27 18:11:21.304 +05:30 [WRN] JWT Challenge. Path: /api/Suppliers. Error: invalid_token
+2026-08-27 18:11:21.306 +05:30 [WRN] JWT Challenge. Path: /api/Warehouses. Error: invalid_token
+2026-08-27 18:11:21.308 +05:30 [INF] GET /api/Suppliers => 401 (12 ms)
+2026-08-27 18:11:21.309 +05:30 [INF] GET /api/Warehouses => 401 (13 ms)
+2026-08-27 18:11:29.729 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:11:29.736 +05:30 [INF] GET /api/Notifications/unread-count => 200 (14 ms)
+2026-08-27 18:11:30.015 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:11:30.026 +05:30 [INF] GET /api/Profile/me => 200 (29 ms)
+2026-08-27 18:12:30.229 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:12:30.236 +05:30 [INF] GET /api/Notifications/unread-count => 200 (20 ms)
+2026-08-27 18:12:30.255 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:12:30.261 +05:30 [INF] GET /api/Profile/me => 200 (11 ms)
+2026-08-27 18:13:30.062 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:13:30.065 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:13:30.072 +05:30 [INF] GET /api/Profile/me => 200 (21 ms)
+2026-08-27 18:13:30.079 +05:30 [INF] GET /api/Notifications/unread-count => 200 (28 ms)
+2026-08-27 18:14:30.281 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:14:30.290 +05:30 [INF] GET /api/Notifications/unread-count => 200 (49 ms)
+2026-08-27 18:14:30.297 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:14:30.304 +05:30 [INF] GET /api/Profile/me => 200 (16 ms)
+2026-08-27 18:15:30.067 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:15:30.071 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:15:30.079 +05:30 [INF] GET /api/Notifications/unread-count => 200 (25 ms)
+2026-08-27 18:15:30.085 +05:30 [INF] GET /api/Profile/me => 200 (32 ms)
+2026-08-27 18:16:29.765 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:16:29.772 +05:30 [INF] GET /api/Notifications/unread-count => 200 (19 ms)
+2026-08-27 18:16:30.106 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:16:30.114 +05:30 [INF] GET /api/Profile/me => 200 (15 ms)
+2026-08-27 18:17:30.487 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:17:30.489 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:17:30.502 +05:30 [INF] GET /api/Profile/me => 200 (35 ms)
+2026-08-27 18:17:30.506 +05:30 [INF] GET /api/Notifications/unread-count => 200 (39 ms)
+2026-08-27 18:18:29.912 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:18:29.920 +05:30 [INF] GET /api/Notifications/unread-count => 200 (19 ms)
+2026-08-27 18:18:30.028 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:18:30.037 +05:30 [INF] GET /api/Profile/me => 200 (26 ms)
+2026-08-27 18:19:30.040 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:19:30.048 +05:30 [INF] GET /api/Profile/me => 200 (18 ms)
+2026-08-27 18:19:30.062 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:19:30.068 +05:30 [INF] GET /api/Notifications/unread-count => 200 (11 ms)
+2026-08-27 18:20:29.791 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:20:29.799 +05:30 [INF] GET /api/Notifications/unread-count => 200 (17 ms)
+2026-08-27 18:20:30.002 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:20:30.009 +05:30 [INF] GET /api/Profile/me => 200 (12 ms)
+2026-08-27 18:21:30.037 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:21:30.047 +05:30 [INF] GET /api/Notifications/unread-count => 200 (20 ms)
+2026-08-27 18:21:30.062 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:21:30.068 +05:30 [INF] GET /api/Profile/me => 200 (13 ms)
+2026-08-27 18:22:30.205 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:22:30.211 +05:30 [INF] GET /api/Notifications/unread-count => 200 (23 ms)
+2026-08-27 18:22:30.239 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:22:30.247 +05:30 [INF] GET /api/Profile/me => 200 (16 ms)
+2026-08-27 18:23:30.450 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:23:30.458 +05:30 [INF] GET /api/Profile/me => 200 (23 ms)
+2026-08-27 18:23:30.466 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:23:30.472 +05:30 [INF] GET /api/Notifications/unread-count => 200 (37 ms)
+2026-08-27 18:24:29.793 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:24:29.808 +05:30 [INF] GET /api/Notifications/unread-count => 200 (40 ms)
+2026-08-27 18:24:30.111 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:24:30.118 +05:30 [INF] GET /api/Profile/me => 200 (13 ms)
+2026-08-27 18:25:30.076 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:25:30.088 +05:30 [INF] GET /api/Notifications/unread-count => 200 (23 ms)
+2026-08-27 18:25:30.097 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:25:30.103 +05:30 [INF] GET /api/Profile/me => 200 (15 ms)
+2026-08-27 18:26:29.952 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:26:29.963 +05:30 [INF] GET /api/Notifications/unread-count => 200 (55 ms)
+2026-08-27 18:26:30.012 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:26:30.018 +05:30 [INF] GET /api/Profile/me => 200 (12 ms)
+2026-08-27 18:27:30.423 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:27:30.437 +05:30 [INF] GET /api/Notifications/unread-count => 200 (26 ms)
+2026-08-27 18:27:30.441 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:27:30.447 +05:30 [INF] GET /api/Profile/me => 200 (37 ms)
+2026-08-27 18:28:29.954 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:28:29.961 +05:30 [INF] GET /api/Notifications/unread-count => 200 (20 ms)
+2026-08-27 18:28:30.019 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:28:30.025 +05:30 [INF] GET /api/Profile/me => 200 (14 ms)
+2026-08-27 18:29:30.068 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:29:30.078 +05:30 [INF] GET /api/Profile/me => 200 (22 ms)
+2026-08-27 18:29:30.306 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:29:30.319 +05:30 [INF] GET /api/Notifications/unread-count => 200 (30 ms)
+2026-08-27 18:30:29.719 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:30:29.730 +05:30 [INF] GET /api/Notifications/unread-count => 200 (20 ms)
+2026-08-27 18:30:30.438 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:30:30.454 +05:30 [INF] GET /api/Profile/me => 200 (39 ms)
+2026-08-27 18:31:30.084 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:31:30.096 +05:30 [INF] GET /api/Profile/me => 200 (25 ms)
+2026-08-27 18:31:30.135 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:31:30.142 +05:30 [INF] GET /api/Notifications/unread-count => 200 (14 ms)
+2026-08-27 18:32:29.942 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:32:29.953 +05:30 [INF] GET /api/Notifications/unread-count => 200 (53 ms)
+2026-08-27 18:32:30.022 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:32:30.027 +05:30 [INF] GET /api/Profile/me => 200 (14 ms)
+2026-08-27 18:34:29.846 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:34:29.854 +05:30 [INF] GET /api/Profile/me => 200 (21 ms)
+2026-08-27 18:34:30.025 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:34:30.037 +05:30 [INF] GET /api/Notifications/unread-count => 200 (32 ms)
+2026-08-27 18:35:30.031 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:35:30.038 +05:30 [INF] GET /api/Notifications/unread-count => 200 (16 ms)
+2026-08-27 18:35:30.075 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:35:30.084 +05:30 [INF] GET /api/Profile/me => 200 (16 ms)
+2026-08-27 18:36:29.783 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:36:29.793 +05:30 [INF] GET /api/Notifications/unread-count => 200 (53 ms)
+2026-08-27 18:36:30.042 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:36:30.048 +05:30 [INF] GET /api/Profile/me => 200 (13 ms)
+2026-08-27 18:37:30.073 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:37:30.081 +05:30 [INF] GET /api/Profile/me => 200 (25 ms)
+2026-08-27 18:37:30.115 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:37:30.122 +05:30 [INF] GET /api/Notifications/unread-count => 200 (15 ms)
+2026-08-27 18:38:29.719 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:38:29.727 +05:30 [INF] GET /api/Notifications/unread-count => 200 (17 ms)
+2026-08-27 18:38:30.001 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:38:30.009 +05:30 [INF] GET /api/Profile/me => 200 (26 ms)
+2026-08-27 18:39:30.385 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:39:30.398 +05:30 [INF] GET /api/Notifications/unread-count => 200 (19 ms)
+2026-08-27 18:39:30.413 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:39:30.419 +05:30 [INF] GET /api/Profile/me => 200 (41 ms)
+2026-08-27 18:40:29.807 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:40:29.815 +05:30 [INF] GET /api/Notifications/unread-count => 200 (49 ms)
+2026-08-27 18:40:30.158 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:40:30.167 +05:30 [INF] GET /api/Profile/me => 200 (14 ms)
+2026-08-27 18:41:30.018 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:41:30.026 +05:30 [INF] GET /api/Notifications/unread-count => 200 (16 ms)
+2026-08-27 18:41:30.058 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:41:30.068 +05:30 [INF] GET /api/Profile/me => 200 (17 ms)
+2026-08-27 18:42:29.717 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:42:29.726 +05:30 [INF] GET /api/Notifications/unread-count => 200 (18 ms)
+2026-08-27 18:42:30.160 +05:30 [INF] JWT Valid. User: sukanya
+2026-08-27 18:42:30.167 +05:30 [INF] GET /api/Profile/me => 200 (13 ms)
