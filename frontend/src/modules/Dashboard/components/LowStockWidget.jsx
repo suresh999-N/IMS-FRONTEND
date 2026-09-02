@@ -12,12 +12,14 @@ export default function LowStockWidget({ items = [], isLoading }) {
         <div>
           <h2>Low Stock</h2>
         </div>
-        {safeItems.length > 4 && (
-          <Link className="dashboard-panel__link" to="/inventory/products?filter=low-stock">View all</Link>
-        )}
-        <strong className={`low-stock-widget__count ${safeItems.length > 0 ? 'is-warning' : 'is-healthy'}`}>
-          {safeItems.length}
-        </strong>
+        <div className="dashboard-panel__actions">
+          {safeItems.length > 0 && (
+            <Link className="dashboard-panel__link" to="/inventory/products?filter=low-stock">View all</Link>
+          )}
+          <strong className={`low-stock-widget__count ${safeItems.length > 0 ? 'is-warning' : 'is-healthy'}`}>
+            {safeItems.length}
+          </strong>
+        </div>
       </div>
 
       {isLoading ? (
