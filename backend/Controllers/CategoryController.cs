@@ -110,7 +110,7 @@ namespace IMSBackend.Controllers
 
             var category = new Category
             {
-                Name = Clean(dto.Name),
+                Name = FormatCategoryName(dto.Name),
                 ParentId = dto.ParentId,
                 Description = Clean(dto.Description)
             };
@@ -158,7 +158,7 @@ namespace IMSBackend.Controllers
                     traceId: HttpContext.TraceIdentifier));
             }
 
-            category.Name = Clean(dto.Name);
+            category.Name = FormatCategoryName(dto.Name);
             category.ParentId = dto.ParentId;
             category.Description = Clean(dto.Description);
 
@@ -348,6 +348,42 @@ namespace IMSBackend.Controllers
                 CreatedAt = subCategory.CreatedAt,
                 CategoryName = subCategory.Category?.Name
             };
+        }
+
+        private static readonly HashSet<string> MinorWords = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "and", "or", "nor", "but", "a", "an", "the", "as", "at", "by", "for", "in", "of", "on", "per", "to", "with", "&"
+        };
+
+        private static readonly HashSet<string> Acronyms = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "IT", "USB", "LED", "LCD", "TV", "RAM", "SSD", "POS", "CCTV", "GPS", "SKU", "SIM", "VIP", "AC", "DC", "RO", "PVC", "HD", "FHD", "UHD", "4K", "5G", "4G", "3G"
+        };
+
+        private static string FormatCategoryName(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+            var words = System.Text.RegularExpressions.Regex.Split(value.Trim(), @"\s+");
+            var result = new List<string>();
+            for (int i = 0; i < words.Length; i++)
+            {
+                var word = words[i];
+                if (string.IsNullOrEmpty(word)) continue;
+                if (Acronyms.Contains(word))
+                {
+                    result.Add(word.ToUpperInvariant());
+                }
+                else if (i > 0 && MinorWords.Contains(word))
+                {
+                    result.Add(word.ToLowerInvariant());
+                }
+                else
+                {
+                    var lower = word.ToLowerInvariant();
+                    result.Add(char.ToUpperInvariant(lower[0]) + lower[1..]);
+                }
+            }
+            return string.Join(" ", result);
         }
 
         private static string Clean(string? value)

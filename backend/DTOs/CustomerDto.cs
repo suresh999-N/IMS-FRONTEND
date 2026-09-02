@@ -9,7 +9,7 @@ namespace IMSBackend.DTOs
             @"^[a-z0-9](?:[a-z0-9._%+-]{0,62}[a-z0-9])?@(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24}$",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
         private static readonly Regex GstRegex = new(
-            @"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][A-Z0-9]Z[A-Z0-9]$",
+            @"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][A-Z0-9]{3}$",
             RegexOptions.Compiled);
         private static readonly Regex CustomerNameRegex = new(
             @"^[A-Za-z\s]+$",

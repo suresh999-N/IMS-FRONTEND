@@ -1,4 +1,4 @@
-import { LoaderCircle, RotateCcw, Save } from 'lucide-react'
+import { LoaderCircle, Save } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { getSupplierIfscDetails } from '../../../api/suppliersApi'
 import { getRequiredError } from '../../../utils/helpers'
@@ -116,7 +116,7 @@ const INPUT_LIMITS = {
   notes: 1000,
 }
 
-const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}Z[A-Z0-9]{1}$/
+const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{3}$/
 const PAN_PATTERN = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/
 
 function stripUnsafeText(value) {
@@ -1408,7 +1408,6 @@ export default function SupplierForm({
         {!readOnly && isDirty ? <span className="supplier-form__dirty-note">Unsaved changes</span> : <span aria-hidden="true" />}
         <div className="supplier-form__action-buttons">
           <button type="button" className="button button-cancel" onClick={onCancel} disabled={isSubmitting}>
-            <RotateCcw size={16} />
             {readOnly ? 'Close' : 'Cancel'}
           </button>
           {!readOnly ? (

@@ -139,7 +139,7 @@ const emptyForm = {
   bankDetails: [],
 }
 
-const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][A-Z0-9]Z[A-Z0-9]$/
+const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{3}$/
 const PAN_PATTERN = /^[A-Z]{5}[0-9]{4}[A-Z]$/
 const PINCODE_PATTERN = /^[0-9]{6}$/
 
