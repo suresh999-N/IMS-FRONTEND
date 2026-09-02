@@ -309,21 +309,30 @@
 
 .catalog-page__tree-cell { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .catalog-page__tree-cell--child { padding-left: 20px; }
-.catalog-page__tree-toggle,
-.catalog-page__tree-toggle-placeholder {
-  display: inline-grid;
-  place-items: center;
-  flex: 0 0 28px;
-  width: 28px;
-  height: 28px;
+.catalog-page__tree-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
   padding: 0;
-  border: 1px solid #dbe4ee;
-  border-radius: 999px;
-  background: #f8fafc;
-  color: #475569;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
-.catalog-page__tree-toggle:hover { border-color: #a7f3d0; background: #dffaf0; color: #059669; }
-.catalog-page__tree-toggle-placeholder { visibility: hidden; }
+.catalog-page__tree-toggle:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+.catalog-page__tree-toggle-placeholder {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+}
 
 .catalog-page__tree-indent-connector {
   display: inline-flex;

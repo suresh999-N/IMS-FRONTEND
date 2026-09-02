@@ -851,7 +851,7 @@ export default function Categories() {
             className={`catalog-page__tree-cell ${isChild ? 'catalog-page__tree-cell--child' : ''}`}
             style={{ paddingLeft: depth > 0 ? `${depth * 24}px` : undefined }}
           >
-            {category.hasChildren ? (
+            {viewMode === 'tree' && category.hasChildren ? (
               <button
                 type="button"
                 className="catalog-page__tree-toggle"
@@ -862,11 +862,9 @@ export default function Categories() {
                 aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${category.name}`}
                 title="Toggle subcategories"
               >
-                {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                {isExpanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
               </button>
-            ) : (
-              <span className="catalog-page__tree-toggle-placeholder" aria-hidden="true" />
-            )}
+            ) : null}
             {isChild ? (
               <span className="catalog-page__tree-branch" aria-hidden="true" />
             ) : null}
@@ -930,8 +928,10 @@ export default function Categories() {
         if (category.rowType === 'subcategory') {
           return <span className="catalog-page__muted-value">—</span>
         }
-        const childCount = category.childCount || 0
+        const activeChildren = getAllChildren(category, categories)
+        const childCount = activeChildren.length
         if (childCount > 0) {
+          const label = childCount === 1 ? '1 Subcategory' : `${childCount} Subcategories`
           return (
             <button
               type="button"
@@ -940,9 +940,9 @@ export default function Categories() {
                 e.stopPropagation()
                 setSubcategoriesViewTarget(category)
               }}
-              title="View subcategories in separate grid"
+              title="View subcategories grid"
             >
-              {childCount} Subcategories
+              {label}
             </button>
           )
         }
