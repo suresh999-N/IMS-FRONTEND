@@ -197,7 +197,7 @@ function buildPath(categories, category) {
   return names.join(' / ')
 }
 
-function buildVisibleRows(categories, expandedIds) {
+function buildVisibleRows(categories) {
   const categoryMap = new Map()
   categories.forEach((item) => {
     categoryMap.set(categoryIdOf(item), item)
@@ -208,61 +208,20 @@ function buildVisibleRows(categories, expandedIds) {
     return !pId || !categoryMap.has(pId)
   })
 
-  const rows = []
-  const visitedNodeIds = new Set()
-
-  function processNode(node, depth = 0, parentPath = '') {
+  return sortByName(rootCategories).map((node) => {
     const nodeCatId = categoryIdOf(node)
-    if (!nodeCatId || visitedNodeIds.has(nodeCatId)) return
-    visitedNodeIds.add(nodeCatId)
-
     const children = getAllChildren(node, categories)
     const childCount = children.length
-    const hasChildren = childCount > 0
-    const sortPath = parentPath ? `${parentPath} / ${node.name}` : node.name
-    const parentObj = parentIdOf(node) ? categoryMap.get(parentIdOf(node)) : null
 
-    rows.push({
+    return {
       ...node,
       id: nodeCatId,
-      rowType: depth === 0 ? 'category' : 'subcategory',
-      parentCategoryId: parentIdOf(node),
-      parentName: parentObj ? parentObj.name : (node.parentName || node.categoryName || 'Main category'),
-      depth,
+      rowType: 'category',
       childCount,
-      hasChildren,
-      sortPath,
-    })
-
-    if (hasChildren && expandedIds.has(nodeCatId)) {
-      children.forEach((child) => {
-        const childInMap = categoryMap.get(categoryIdOf(child))
-        if (childInMap) {
-          processNode(childInMap, depth + 1, sortPath)
-        } else {
-          const childId = `${nodeCatId}-sub-${child.id}`
-          const childSubChildren = getAllChildren(child, categories)
-          rows.push({
-            ...child,
-            id: childId,
-            rowType: 'subcategory',
-            parentCategoryId: nodeCatId,
-            parentName: node.name,
-            depth: depth + 1,
-            childCount: 0,
-            hasChildren: childSubChildren.length > 0,
-            sortPath: `${sortPath} / ${child.name}`,
-          })
-        }
-      })
+      children,
+      hasChildren: childCount > 0,
     }
-  }
-
-  sortByName(rootCategories).forEach((root) => {
-    processNode(root, 0, '')
   })
-
-  return rows
 }
 
 function upsertCategories(currentCategories, nextCategories) {
@@ -571,6 +530,7 @@ export default function Categories() {
   const [error, setError] = useState('')
   const [formState, setFormState] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [activeSubcategoryCategory, setActiveSubcategoryCategory] = useState(null)
   const [selectedCategoryIds, setSelectedCategoryIds] = useState([])
   const [statusFilter, setStatusFilter] = useState('all')
 
@@ -795,48 +755,31 @@ export default function Categories() {
       searchValue: (category) =>
         `${category.name} ${category.description || ''} ${categoryParentLabel(categories, category)} ${buildPath(categories, category)}`,
       sortValue: (category) => category.sortPath ?? buildPath(categories, category),
-      render: (category) => {
-        const depth = category.depth || 0
-        const isChild = depth > 0 || category.rowType === 'subcategory'
-        const catId = categoryIdOf(category)
-        const isExpanded = expandedIds.has(catId)
-
-        return (
-          <div
-            className={`catalog-page__tree-cell ${isChild ? 'catalog-page__tree-cell--child' : ''}`}
-            style={{ paddingLeft: depth > 0 ? `${depth * 24}px` : undefined }}
-          >
-            {category.hasChildren ? (
-              <button
-                type="button"
-                className="catalog-page__tree-toggle"
-                onClick={(event) => {
-                  event.stopPropagation()
-                  toggleCategory(category)
-                }}
-                aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${category.name}`}
-                title="Toggle subcategories"
-              >
-                {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-              </button>
-            ) : (
-              <span className="catalog-page__tree-toggle-placeholder" aria-hidden="true" />
-            )}
-            {isChild ? (
-              <span className="catalog-page__tree-branch" aria-hidden="true" />
-            ) : null}
-            {isChild ? (
-              <FileText size={16} className="catalog-page__tree-icon catalog-page__child-icon" />
-            ) : (
-              <Boxes size={16} className="catalog-page__tree-icon" />
-            )}
-            <div className="catalog-page__entity">
-              <strong>{category.name}</strong>
-              {category.description ? <span>{category.description}</span> : null}
-            </div>
+      render: (category) => (
+        <div className="catalog-page__tree-cell">
+          {category.hasChildren ? (
+            <button
+              type="button"
+              className="catalog-page__tree-toggle"
+              onClick={(event) => {
+                event.stopPropagation()
+                setActiveSubcategoryCategory(category)
+              }}
+              aria-label={`View subcategories in ${category.name}`}
+              title="View subcategories"
+            >
+              <ChevronRight size={16} />
+            </button>
+          ) : (
+            <span className="catalog-page__tree-toggle-placeholder" aria-hidden="true" />
+          )}
+          <Boxes size={16} className="catalog-page__tree-icon" />
+          <div className="catalog-page__entity">
+            <strong>{category.name}</strong>
+            {category.description ? <span>{category.description}</span> : null}
           </div>
-        )
-      },
+        </div>
+      ),
     },
     {
       key: 'description',
@@ -883,12 +826,22 @@ export default function Categories() {
       headerStyle: { width: CATEGORY_COLUMN_WIDTHS.childCount, minWidth: CATEGORY_COLUMN_WIDTHS.childCount, maxWidth: CATEGORY_COLUMN_WIDTHS.childCount },
       mobileLabel: 'Subcats',
       sortable: true,
-      sortValue: (category) => (category.rowType === 'subcategory' ? 0 : Number(category.childCount ?? 0)),
+      sortValue: (category) => Number(category.childCount ?? 0),
       render: (category) => (
-        category.rowType === 'subcategory' ? (
-          <span className="catalog-page__muted-value">—</span>
+        category.childCount > 0 ? (
+          <button
+            type="button"
+            className="button button-secondary button-sm catalog-page__subcat-badge-btn"
+            onClick={(e) => {
+              e.stopPropagation()
+              setActiveSubcategoryCategory(category)
+            }}
+            title={`View ${category.childCount} subcategories for ${category.name}`}
+          >
+            {category.childCount} subcategories
+          </button>
         ) : (
-          <span className="catalog-page__subcat-text">{category.childCount}</span>
+          <span className="catalog-page__muted-value">0</span>
         )
       ),
     },
@@ -1206,6 +1159,106 @@ export default function Categories() {
                 Delete
               </button>
             </div>
+          </div>
+        </FormModal>
+      ) : null}
+
+      {activeSubcategoryCategory ? (
+        <FormModal
+          title={`Subcategories for "${activeSubcategoryCategory.name}"`}
+          onClose={() => setActiveSubcategoryCategory(null)}
+          dialogClassName="catalog-category-subcategories-modal"
+          bodyClassName="catalog-category-subcategories-modal__body"
+        >
+          <div className="catalog-subcategories-drawer">
+            <div className="catalog-subcategories-drawer__header">
+              <p className="helper-text">
+                Managing subcategories registered under <strong>{activeSubcategoryCategory.name}</strong>
+              </p>
+              {canCreate ? (
+                <button
+                  type="button"
+                  className="button button-primary button-sm"
+                  onClick={() => {
+                    const target = activeSubcategoryCategory
+                    setActiveSubcategoryCategory(null)
+                    handleOpenCreate(target)
+                  }}
+                >
+                  <Plus size={14} />
+                  Add Subcategory
+                </button>
+              ) : null}
+            </div>
+
+            {getAllChildren(activeSubcategoryCategory, categories).length > 0 ? (
+              <div className="catalog-subcategories-drawer__table-wrapper">
+                <table className="table-component__table catalog-subcategories-mini-table">
+                  <thead>
+                    <tr>
+                      <th>Subcategory Name</th>
+                      <th>Description</th>
+                      <th>Status</th>
+                      {canEdit || canDelete ? <th style={{ textAlign: 'right' }}>Actions</th> : null}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getAllChildren(activeSubcategoryCategory, categories).map((sub) => (
+                      <tr key={sub.id}>
+                        <td>
+                          <div className="catalog-page__entity">
+                            <FileText size={15} className="catalog-page__tree-icon catalog-page__child-icon" />
+                            <strong>{sub.name}</strong>
+                          </div>
+                        </td>
+                        <td>{sub.description || 'No description provided'}</td>
+                        <td>
+                          <StatusBadge status={sub.status || 'Active'}>
+                            {sub.status || 'Active'}
+                          </StatusBadge>
+                        </td>
+                        {canEdit || canDelete ? (
+                          <td style={{ textAlign: 'right' }}>
+                            <div className="button-row" style={{ justifyContent: 'flex-end' }}>
+                              {canEdit ? (
+                                <button
+                                  type="button"
+                                  className="button button-ghost button-sm"
+                                  title="Edit Subcategory"
+                                  onClick={() => {
+                                    setActiveSubcategoryCategory(null)
+                                    handleOpenEdit(sub)
+                                  }}
+                                >
+                                  <Pencil size={14} />
+                                </button>
+                              ) : null}
+                              {canDelete ? (
+                                <button
+                                  type="button"
+                                  className="button button-ghost button-sm text-danger"
+                                  title="Delete Subcategory"
+                                  onClick={() => {
+                                    setActiveSubcategoryCategory(null)
+                                    setDeleteTarget(sub)
+                                  }}
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              ) : null}
+                            </div>
+                          </td>
+                        ) : null}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="catalog-subcategories-drawer__empty">
+                <p>No subcategories registered under <strong>{activeSubcategoryCategory.name}</strong> yet.</p>
+              </div>
+            )}
           </div>
         </FormModal>
       ) : null}
