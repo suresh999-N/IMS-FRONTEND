@@ -111,32 +111,17 @@ function getAllChildren(category, allCategories = []) {
 
   const childMap = new Map()
 
-  allCategories.forEach((item) => {
-    const itemParentId = parentIdOf(item)
-    const itemId = categoryIdOf(item)
-    if (itemParentId && itemParentId === catId && itemId !== catId) {
-      childMap.set(`cat-${itemId}`, {
-        ...item,
-        id: itemId,
-        name: item.name,
-        description: item.description || '',
-        parentId: catId,
-        parentName: category.name,
-        status: item.status || 'Active',
-        sourceType: 'category',
-      })
-    }
-  })
+  const directChildren = Array.isArray(category?.childSubCategories)
+    ? category.childSubCategories
+    : []
 
-  const legacyChildren = childSubCategoriesOf(category, allCategories)
-  legacyChildren.forEach((sub) => {
-    const subId = String(sub.id || sub.subCategoryId || '')
-    const key = subId ? `sub-${subId}` : `sub-name-${comparable(sub.name)}`
-    if (!childMap.has(key)) {
-      childMap.set(key, {
+  directChildren.forEach((sub) => {
+    const nameKey = comparable(sub.name)
+    if (nameKey) {
+      childMap.set(nameKey, {
         ...sub,
-        id: subId || `sub-${comparable(sub.name)}`,
-        subCategoryId: subId,
+        id: String(sub.id || sub.subCategoryId || `sub-${nameKey}`),
+        subCategoryId: String(sub.id || sub.subCategoryId || ''),
         name: sub.name,
         description: sub.description || '',
         parentId: catId,
@@ -144,6 +129,26 @@ function getAllChildren(category, allCategories = []) {
         status: sub.status || 'Active',
         sourceType: 'subcategory',
       })
+    }
+  })
+
+  allCategories.forEach((item) => {
+    const itemParentId = parentIdOf(item)
+    const itemId = categoryIdOf(item)
+    if (itemParentId && itemParentId === catId && itemId !== catId) {
+      const nameKey = comparable(item.name)
+      if (nameKey && !childMap.has(nameKey)) {
+        childMap.set(nameKey, {
+          ...item,
+          id: itemId,
+          name: item.name,
+          description: item.description || '',
+          parentId: catId,
+          parentName: category.name,
+          status: item.status || 'Active',
+          sourceType: 'category',
+        })
+      }
     }
   })
 
