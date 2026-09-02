@@ -7,7 +7,7 @@ namespace IMSBackend.DTOs.Suppliers
         // BASIC INFO
         public string? SupplierCode { get; set; }
 
-        [RegularExpression(@"^[A-Za-z\s]+$", ErrorMessage = "Name can contain only letters and spaces.")]
+        [RegularExpression(@"^[A-Za-z0-9\s.,&'/\-()]+$", ErrorMessage = "Name contains invalid characters.")]
         public string? Name { get; set; }
 
         public string? CompanyName { get; set; }

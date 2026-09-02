@@ -38,7 +38,7 @@ import './SubCategories.css'
 const config = RESOURCE_CONFIGS.subCategories
 const CATALOG_STRUCTURE_UPDATED_EVENT = 'ims:catalog-structure-updated'
 const SUBCATEGORY_DRAFT_KEY = 'ims:subCategory:createDraft'
-const SUBCATEGORY_DEFAULT_COLUMNS = ['name', 'categoryName', 'status', 'createdAt', 'actions']
+const SUBCATEGORY_DEFAULT_COLUMNS = ['id', 'name', 'categoryName', 'status', 'createdAt', 'actions']
 const SUBCATEGORY_COLUMNS_STORAGE_KEY = 'ims.subCategories.visibleColumns.warehouseParity.v1'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -951,6 +951,21 @@ export default function SubCategories() {
   const columns = useMemo(
     () => [
       {
+        key: 'id',
+        label: 'ID',
+        sortable: true,
+        className: 'subcategories-col-id',
+        tableWidth: 80,
+        style: { width: 80, minWidth: 80 },
+        headerStyle: { width: 80, minWidth: 80 },
+        sortValue: (row) => Number(readResourceValue(row, 'id', readResourceValue(row, 'subCategoryId', 0))) || 0,
+        render: (row) => (
+          <span className="subcategories__cell-id">
+            ID {readResourceValue(row, 'id', readResourceValue(row, 'subCategoryId', '—'))}
+          </span>
+        ),
+      },
+      {
         key: 'name',
         label: 'SubCategory Name',
         sortable: true,
@@ -972,12 +987,9 @@ export default function SubCategories() {
             >
               {readResourceValue(row, 'name', 'Unnamed subcategory')}
             </strong>
-            <span title={`ID ${readResourceValue(row, 'id', '')}`}>
-              ID {readResourceValue(row, 'id', 'Not set')}
-            </span>
           </div>
         ),
-        sortValue: (row) => readResourceValue(row, 'name', ''),
+        sortValue: (row) => readResourceValue(row, 'name', '').toLowerCase(),
       },
       {
         key: 'categoryName',
@@ -987,6 +999,7 @@ export default function SubCategories() {
         tableWidth: 170,
         style: { width: 170, minWidth: 170 },
         headerStyle: { width: 170, minWidth: 170 },
+        sortValue: (row) => readResourceValue(row, 'categoryName', readResourceValue(row, 'category', '')).toLowerCase(),
         render: (row) => (
           <span
             className="subcategories__cell-text"
@@ -1013,7 +1026,7 @@ export default function SubCategories() {
             </StatusBadge>
           )
         },
-        sortValue: (row) => readResourceValue(row, 'status', ''),
+        sortValue: (row) => readResourceValue(row, 'status', '').toLowerCase(),
       },
       {
         key: 'createdAt',

@@ -93,6 +93,8 @@ export default function DatePicker(props) {
     ...restProps
   } = props
   const wrapperRef = useRef(null)
+  const popoverRef = useRef(null)
+  const instanceIdRef = useRef(`datepicker-${Math.random().toString(36).substring(2, 9)}`)
   const [displayValue, setDisplayValue] = useState(() => formatDisplayDate(value))
   const [isOpen, setIsOpen] = useState(false)
   const [viewDate, setViewDate] = useState(() => parseIsoDate(value) || new Date())
@@ -196,6 +198,7 @@ export default function DatePicker(props) {
 
   function openCalendar() {
     setViewDate(parseIsoDate(value) || new Date())
+    window.dispatchEvent(new CustomEvent('ims:dropdown-opened', { detail: { id: instanceIdRef.current } }))
     setIsOpen(true)
   }
 

@@ -40,7 +40,7 @@ namespace IMSBackend.Controllers
                 TotalCategories = categories.Count,
                 TotalSubCategories = totalSubCategories,
                 CategoriesWithChildrenCount = categories.Count(category => category.SubCategories.Any()),
-                Categories = categories.Select(ToCategoryResponse).ToList()
+                Categories = categories.Select(c => ToCategoryResponse(c, categories)).ToList()
             };
 
             return Ok(ApiResponse<CategoryListResponseDto>.Ok(
@@ -59,7 +59,7 @@ namespace IMSBackend.Controllers
                 .ToListAsync(cancellationToken);
 
             return Ok(ApiResponse<object>.Ok(
-                new { categories = categories.Select(ToCategoryResponse).ToList() },
+                new { categories = categories.Select(c => ToCategoryResponse(c, categories)).ToList() },
                 traceId: HttpContext.TraceIdentifier));
         }
 
@@ -291,9 +291,9 @@ namespace IMSBackend.Controllers
                 : null;
         }
 
-        private static CategoryResponseDto ToCategoryResponse(Category category)
+        private static CategoryResponseDto ToCategoryResponse(Category category, List<Category>? allCategories = null)
         {
-            var children = category.SubCategories
+            var subCatChildren = category.SubCategories
                 .Where(subCategory => !subCategory.IsDeleted)
                 .OrderBy(subCategory => subCategory.Name)
                 .Select(subCategory =>
@@ -304,6 +304,26 @@ namespace IMSBackend.Controllers
                 })
                 .ToList();
 
+            var categoryChildren = allCategories != null
+                ? allCategories
+                    .Where(c => c.ParentId == category.CategoryId && !c.IsDeleted)
+                    .Select(c => new ChildSubCategoryDto
+                    {
+                        SubCategoryId = c.CategoryId,
+                        CategoryId = category.CategoryId,
+                        Name = c.Name,
+                        Description = c.Description,
+                        Status = "Active",
+                        CreatedAt = DateTime.UtcNow,
+                        CategoryName = category.Name
+                    })
+                    .ToList()
+                : new List<ChildSubCategoryDto>();
+
+            var combinedChildren = subCatChildren
+                .Concat(categoryChildren.Where(cc => !subCatChildren.Any(sc => sc.Name.Equals(cc.Name, StringComparison.OrdinalIgnoreCase))))
+                .ToList();
+
             return new CategoryResponseDto
             {
                 CategoryId = category.CategoryId,
@@ -311,8 +331,8 @@ namespace IMSBackend.Controllers
                 ParentId = category.ParentId,
                 Description = category.Description,
                 Status = "Active",
-                SubcategoryCount = children.Count,
-                ChildSubCategories = children
+                SubcategoryCount = combinedChildren.Count,
+                ChildSubCategories = combinedChildren
             };
         }
 

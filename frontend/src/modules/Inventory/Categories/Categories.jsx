@@ -64,10 +64,40 @@ function sortByName(items) {
   )
 }
 
-function childSubCategoriesOf(category) {
-  return Array.isArray(category?.childSubCategories)
-    ? sortByName(category.childSubCategories)
+function getLegacyChildren(categories, parentId) {
+  return sortByName(
+    categories.filter((category) => parentIdOf(category) === String(parentId ?? '')),
+  )
+}
+
+function childSubCategoriesOf(category, allCategories = []) {
+  const directChildren = Array.isArray(category?.childSubCategories)
+    ? category.childSubCategories
     : []
+  const legacyChildren = Array.isArray(allCategories)
+    ? getLegacyChildren(allCategories, categoryIdOf(category))
+    : []
+
+  const mergedMap = new Map()
+  directChildren.forEach((child) =>
+    mergedMap.set(String(child.id || child.subCategoryId || child.categoryId), child),
+  )
+  legacyChildren.forEach((child) => {
+    const id = categoryIdOf(child)
+    if (!mergedMap.has(id)) {
+      mergedMap.set(id, {
+        id,
+        name: child.name,
+        description: child.description,
+        status: child.status,
+        createdAt: child.createdAt,
+        updatedAt: child.updatedAt,
+        parentName: category.name,
+      })
+    }
+  })
+
+  return sortByName([...mergedMap.values()])
 }
 
 function getAllChildren(category, allCategories = []) {
@@ -122,6 +152,7 @@ function getCategoryChildCount(category, allCategories = []) {
 
 function hasChildSubCategories(category, allCategories = []) {
   return getCategoryChildCount(category, allCategories) > 0
+}
 }
 
 function getDescendantIds(categories, categoryId) {
@@ -347,8 +378,8 @@ function printCategories(categories, allCategories) {
 
 function CategoriesHeader({ canCreate, summary, onAdd }) {
   const metrics = [
-    { key: 'total', label: 'Categories', value: summary.total, tone: 'success' },
-    { key: 'active', label: 'Active', value: summary.active, tone: 'info' },
+    { key: 'total', label: 'Categories', value: summary.total, tone: 'info' },
+    { key: 'active', label: 'Active', value: summary.active, tone: 'success' },
     { key: 'inactive', label: 'Inactive', value: summary.inactive, tone: 'warning' },
   ]
 
@@ -814,11 +845,13 @@ export default function Categories() {
       tableWidth: 260,
       className: 'catalog-page__description-column',
       mobileDescription: true,
-      render: (category) =>
-        category.description ||
-        (category.rowType === 'subcategory'
-          ? `Nested under ${category.parentName || category.categoryName || 'parent category'}`
-          : 'No description provided'),
+      sortable: true,
+      sortValue: (category) => (category.description || '').toLowerCase(),
+      render: (category) => (
+        <span className={`catalog-page__cell-description ${category.description ? '' : 'is-empty'}`}>
+          {category.description || 'No description provided'}
+        </span>
+      ),
     },
     {
       key: 'parentId',
@@ -828,8 +861,16 @@ export default function Categories() {
       style: { width: CATEGORY_COLUMN_WIDTHS.parentId, minWidth: CATEGORY_COLUMN_WIDTHS.parentId, maxWidth: CATEGORY_COLUMN_WIDTHS.parentId },
       headerStyle: { width: CATEGORY_COLUMN_WIDTHS.parentId, minWidth: CATEGORY_COLUMN_WIDTHS.parentId, maxWidth: CATEGORY_COLUMN_WIDTHS.parentId },
       mobileLabel: 'Parent',
-      sortValue: (category) => buildPath(categories, category),
-      render: (category) => categoryParentLabel(categories, category),
+      sortable: true,
+      sortValue: (category) => categoryParentLabel(categories, category).toLowerCase(),
+      render: (category) => {
+        const label = categoryParentLabel(categories, category)
+        return (
+          <span className={label === 'Main category' ? 'catalog-page__parent-main' : 'catalog-page__parent-name'}>
+            {label}
+          </span>
+        )
+      },
     },
     {
       key: 'childCount',
@@ -839,12 +880,15 @@ export default function Categories() {
       style: { width: CATEGORY_COLUMN_WIDTHS.childCount, minWidth: CATEGORY_COLUMN_WIDTHS.childCount, maxWidth: CATEGORY_COLUMN_WIDTHS.childCount },
       headerStyle: { width: CATEGORY_COLUMN_WIDTHS.childCount, minWidth: CATEGORY_COLUMN_WIDTHS.childCount, maxWidth: CATEGORY_COLUMN_WIDTHS.childCount },
       mobileLabel: 'Subcats',
-      render: (category) =>
+      sortable: true,
+      sortValue: (category) => (category.rowType === 'subcategory' ? 0 : Number(category.childCount ?? 0)),
+      render: (category) => (
         category.rowType === 'subcategory' ? (
-          <span className="catalog-page__muted-value">Child item</span>
+          <span className="catalog-page__muted-value">—</span>
         ) : (
-          category.childCount
-        ),
+          <span className="catalog-page__subcat-text">{category.childCount}</span>
+        )
+      ),
     },
     {
       key: 'status',
@@ -854,9 +898,10 @@ export default function Categories() {
       style: { width: CATEGORY_COLUMN_WIDTHS.status, minWidth: CATEGORY_COLUMN_WIDTHS.status, maxWidth: CATEGORY_COLUMN_WIDTHS.status },
       headerStyle: { width: CATEGORY_COLUMN_WIDTHS.status, minWidth: CATEGORY_COLUMN_WIDTHS.status, maxWidth: CATEGORY_COLUMN_WIDTHS.status },
       mobileStatus: true,
-      sortValue: (category) => category.status ?? 'Active',
+      sortable: true,
+      sortValue: (category) => (category.status || 'Active').toLowerCase(),
       render: (category) => (
-        <StatusBadge type={String(category.status).toLowerCase() === 'inactive' ? 'critical' : 'active'}>
+        <StatusBadge status={category.status || 'Active'}>
           {category.status || 'Active'}
         </StatusBadge>
       ),

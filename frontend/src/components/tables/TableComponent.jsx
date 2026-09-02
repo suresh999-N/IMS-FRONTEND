@@ -219,7 +219,7 @@ export default function TableComponent({
   columns,
   keyField = 'id',
   searchKeys = [],
-  searchPlaceholder = 'Search by name, ID, or category',
+  searchPlaceholder = 'Search by name or keyword...',
   showSearch = true,
   emptyMessage = 'No records available.',
   loading = false,

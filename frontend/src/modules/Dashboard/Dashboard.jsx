@@ -5,7 +5,6 @@ import {
   AlertTriangle,
   Boxes,
   DollarSign,
-  Eye,
   Package,
   ShoppingCart,
   Truck,
@@ -553,9 +552,6 @@ export default function Dashboard() {
                     </div>
                     <span className="recent-sale-row__value">
                       <em>{formatCurrency(sale.totalAmount || 0)}</em>
-                      <span className="recent-sale-row__quick" aria-label={`Quick view ${sale.invoiceNumber || 'invoice'}`}>
-                        <Eye size={11} />
-                      </span>
                     </span>
                   </Link>
                 )

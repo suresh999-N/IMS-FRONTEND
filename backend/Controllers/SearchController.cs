@@ -35,6 +35,7 @@ namespace IMSBackend.Controllers
             results.AddRange(await SearchProducts(likePattern, cancellationToken));
             results.AddRange(await SearchCustomers(likePattern, cancellationToken));
             results.AddRange(await SearchSuppliers(likePattern, cancellationToken));
+            results.AddRange(await SearchUnits(likePattern, cancellationToken));
             results.AddRange(await SearchBrands(likePattern, cancellationToken));
             results.AddRange(await SearchCategories(likePattern, cancellationToken));
             results.AddRange(await SearchSubCategories(likePattern, cancellationToken));
@@ -172,6 +173,10 @@ namespace IMSBackend.Controllers
                     !supplier.IsDeleted &&
                     (
                         (supplier.Name != null && EF.Functions.Like(supplier.Name, likePattern, "\\")) ||
+                        (supplier.SupplierCode != null && EF.Functions.Like(supplier.SupplierCode, likePattern, "\\")) ||
+                        (supplier.Category != null && EF.Functions.Like(supplier.Category, likePattern, "\\")) ||
+                        (supplier.GstNumber != null && EF.Functions.Like(supplier.GstNumber, likePattern, "\\")) ||
+                        (supplier.PanNumber != null && EF.Functions.Like(supplier.PanNumber, likePattern, "\\")) ||
                         (supplier.Email != null && EF.Functions.Like(supplier.Email, likePattern, "\\")) ||
                         (supplier.Phone != null && EF.Functions.Like(supplier.Phone, likePattern, "\\"))
                     ))
@@ -182,9 +187,33 @@ namespace IMSBackend.Controllers
                     Type = "Supplier",
                     Id = supplier.SupplierId,
                     Title = supplier.Name ?? "Supplier",
-                    Subtitle = supplier.Phone ?? supplier.Email ?? supplier.Status,
+                    Subtitle = supplier.SupplierCode ?? supplier.Phone ?? supplier.Email ?? supplier.Status,
                     Route = $"/people/suppliers/{supplier.SupplierId}",
                     Icon = "building"
+                })
+                .ToListAsync();
+        }
+
+        private Task<List<SearchResultDto>> SearchUnits(string likePattern, CancellationToken cancellationToken)
+        {
+            return _context.Units
+                .AsNoTracking()
+                .Where(unit =>
+                    !unit.IsDeleted &&
+                    (
+                        EF.Functions.Like(unit.Name, likePattern, "\\") ||
+                        EF.Functions.Like(unit.ShortName, likePattern, "\\")
+                    ))
+                .OrderBy(unit => unit.Name)
+                .Take(ModuleResultLimit)
+                .Select(unit => new SearchResultDto
+                {
+                    Type = "Unit",
+                    Id = unit.UnitId,
+                    Title = unit.Name,
+                    Subtitle = unit.ShortName,
+                    Route = "/inventory/units",
+                    Icon = "ruler"
                 })
                 .ToListAsync();
         }

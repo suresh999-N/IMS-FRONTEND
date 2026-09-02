@@ -33,11 +33,25 @@ export default function SearchableSelect(props) {
   const rootRef = useRef(null)
   const menuRef = useRef(null)
   const searchRef = useRef(null)
+  const instanceIdRef = useRef(`select-${Math.random().toString(36).substring(2, 9)}`)
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
   const [menuStyle, setMenuStyle] = useState(null)
   const [portalElement, setPortalElement] = useState(null)
+
+  useEffect(() => {
+    function handleGlobalDropdownOpened(event) {
+      if (event.detail?.id !== instanceIdRef.current) {
+        setIsOpen(false)
+        setSearchTerm('')
+      }
+    }
+
+    window.addEventListener('ims:dropdown-opened', handleGlobalDropdownOpened)
+    return () => window.removeEventListener('ims:dropdown-opened', handleGlobalDropdownOpened)
+  }, [])
+
   const normalizedOptions = useMemo(
     () => normalizeSelectOptions(options),
     [options],
@@ -128,7 +142,11 @@ export default function SearchableSelect(props) {
     }
 
     document.addEventListener('mousedown', handlePointerDown)
-    return () => document.removeEventListener('mousedown', handlePointerDown)
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown)
+      document.removeEventListener('pointerdown', handlePointerDown)
+    }
   }, [isOpen, name, onBlur, value])
 
   useEffect(() => {
@@ -173,7 +191,6 @@ export default function SearchableSelect(props) {
     }
 
     event.preventDefault()
-    event.stopPropagation()
     updateMenuPosition()
 
     if (isOpen) {
@@ -181,6 +198,7 @@ export default function SearchableSelect(props) {
       return
     }
 
+    window.dispatchEvent(new CustomEvent('ims:dropdown-opened', { detail: { id: instanceIdRef.current } }))
     setIsOpen(true)
   }
 

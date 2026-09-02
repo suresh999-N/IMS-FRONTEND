@@ -37,10 +37,46 @@ function DetailCard({ icon: Icon, label, value, helper }) {
   )
 }
 
-function SupplierDetailsOverview({ supplier, purchases }) {
+function SupplierDetailsOverview({ supplier, purchases = [] }) {
   const primaryContact = supplier.contacts?.find((contact) => contact.isPrimary) || supplier.contacts?.[0]
   const primaryBank = supplier.bankAccounts?.[0]
   const paymentTerms = supplier.paymentTerm || supplier.paymentTermsProfile || {}
+
+  const computedTotalPurchases = useMemo(() => {
+    const rawTotal = supplier.totalPurchaseAmount ?? supplier.purchases ?? supplier.totalPurchases ?? supplier.totalAmount ?? supplier.purchaseAmount
+    if (rawTotal != null && Number(rawTotal) > 0) {
+      return Number(rawTotal)
+    }
+    if (purchases && purchases.length > 0) {
+      return purchases.reduce((sum, p) => sum + (Number(p.totalAmount ?? p.TotalAmount ?? p.amount ?? p.grandTotal ?? 0)), 0)
+    }
+    return rawTotal ?? 0
+  }, [purchases, supplier])
+
+  const computedLastPurchaseDate = useMemo(() => {
+    if (supplier.lastPurchaseDate) {
+      return supplier.lastPurchaseDate
+    }
+    if (purchases && purchases.length > 0) {
+      const dates = purchases
+        .map((p) => p.orderDate || p.createdAt || p.createdDate || p.date)
+        .filter(Boolean)
+        .sort((a, b) => new Date(b) - new Date(a))
+      if (dates.length > 0) return dates[0]
+    }
+    return null
+  }, [purchases, supplier])
+
+  const computedOutstandingPayable = useMemo(() => {
+    const rawOutstanding = supplier.outstandingPayable ?? supplier.outstandingAmount ?? supplier.outstandingBalance ?? supplier.balanceAmount ?? supplier.outstanding ?? supplier.balance
+    if (rawOutstanding != null && Number(rawOutstanding) > 0) {
+      return Number(rawOutstanding)
+    }
+    if (computedTotalPurchases > 0) {
+      return computedTotalPurchases
+    }
+    return Number(rawOutstanding || 0)
+  }, [supplier, computedTotalPurchases])
 
   return (
     <div className="supplier-details__overview">
@@ -56,9 +92,9 @@ function SupplierDetailsOverview({ supplier, purchases }) {
       </div>
 
       <div className="supplier-detail-grid">
-        <DetailCard icon={CreditCard} label="Outstanding Payable" value={formatNullableCurrency(formatCurrency, supplier.outstandingPayable)} helper="API-reported open payable" />
-        <DetailCard icon={Truck} label="Total Purchases" value={formatNullableCurrency(formatCurrency, supplier.totalPurchaseAmount)} helper={`${purchases.length} purchase order records`} />
-        <DetailCard icon={Building2} label="Last Purchase" value={formatLastPurchase(supplier.lastPurchaseDate, formatDate)} helper={formatCategory(supplier.category)} />
+        <DetailCard icon={CreditCard} label="Outstanding Payable" value={formatNullableCurrency(formatCurrency, computedOutstandingPayable)} helper="API-reported open payable" />
+        <DetailCard icon={Truck} label="Total Purchases" value={formatNullableCurrency(formatCurrency, computedTotalPurchases)} helper={`${purchases ? purchases.length : 0} purchase order records`} />
+        <DetailCard icon={Building2} label="Last Purchase" value={formatLastPurchase(computedLastPurchaseDate, formatDate)} helper={formatCategory(supplier.category)} />
         <DetailCard label="Primary Contact" value={formatEmpty(primaryContact?.name || supplier.contact)} helper={formatEmpty(primaryContact?.phone || supplier.phone)} />
         <DetailCard icon={Mail} label="Email" value={formatEmpty(supplier.email || primaryContact?.email)} helper="Supplier communication" />
         <DetailCard icon={Landmark} label="Bank Summary" value={formatEmpty(primaryBank?.bankName)} helper={formatEmpty(primaryBank?.accountName || formatPaymentMethod(paymentTerms.preferredPaymentMethod))} />

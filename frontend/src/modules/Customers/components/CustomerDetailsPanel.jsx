@@ -375,7 +375,7 @@ export default function CustomerDetailsPanel({
                   defaultPageSize={5}
                   defaultSortKey="date"
                   defaultSortDirection="desc"
-                  searchPlaceholder="Search history by product, description, type, or status..."
+                  searchPlaceholder="Search history..."
                   emptyMessage="No customer transactions available."
                   showSubtitle
                 />

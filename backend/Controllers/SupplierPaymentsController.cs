@@ -1,4 +1,4 @@
-﻿using IMSBackend.Data;
+using IMSBackend.Data;
 using IMSBackend.DTOs;
 using IMSBackend.Models;
 using IMSBackend.Services;
@@ -36,12 +36,14 @@ namespace IMSBackend.Controllers
                 var data = await (
                     from p in _context.SupplierPayments
                     join s in _context.Suppliers
-                        on p.SupplierId equals s.SupplierId
+                        on p.SupplierId equals s.SupplierId into supplierGroup
+                    from supplier in supplierGroup.DefaultIfEmpty()
                     where !p.IsCancelled
                     select new
                     {
                         p.PaymentId,
-                        supplier = s.Name,
+                        p.SupplierId,
+                        supplier = supplier != null ? supplier.Name : "Unknown Supplier",
                         p.PoId,
                         p.Amount,
                         p.PaymentDate,
