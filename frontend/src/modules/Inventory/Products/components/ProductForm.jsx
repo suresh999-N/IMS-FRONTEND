@@ -244,12 +244,12 @@ function toOption(item) {
     item?.id ??
     item?._id ??
     item?.value ??
-    item?.categoryId ??
-    item?.category_id ??
-    item?.CategoryId ??
     item?.subCategoryId ??
     item?.sub_category_id ??
     item?.SubCategoryId ??
+    item?.categoryId ??
+    item?.category_id ??
+    item?.CategoryId ??
     item?.brandId ??
     item?.brand_id ??
     item?.BrandId ??
@@ -303,6 +303,25 @@ function getFieldError(name, value, mode, options = {}) {
       const isValid = categoryList.some((category) => String(category.id) === String(value))
       if (!isValid) {
         return 'Please select a valid category.'
+      }
+    }
+
+    return ''
+  }
+
+  if (name === 'subCategoryId') {
+    if (value && value !== '' && value !== '0') {
+      const subCategoryList = options.subCategories ?? []
+      if (subCategoryList.length > 0) {
+        const selectedCategory = options.categoryId
+        const isValid = subCategoryList.some(
+          (subCat) =>
+            String(subCat.id) === String(value) &&
+            (!selectedCategory || String(subCat.categoryId ?? subCat.parentId ?? '') === String(selectedCategory)),
+        )
+        if (!isValid) {
+          return 'Please select a valid subcategory for the selected category.'
+        }
       }
     }
 
@@ -575,15 +594,21 @@ export default function ProductForm({
   const errors = useMemo(() => {
     const fieldsToValidate = Array.from(
       new Set(
-        isEdit ? [...changedFields, 'categoryId'] : [...createRequiredFields, 'categoryId'],
+        isEdit
+          ? [...changedFields, 'categoryId', 'subCategoryId']
+          : [...createRequiredFields, 'categoryId', 'subCategoryId'],
       ),
     )
 
     return fieldsToValidate.reduce((nextErrors, field) => {
-      const error = getFieldError(field, formData[field], mode, { categories })
+      const error = getFieldError(field, formData[field], mode, {
+        categories,
+        subCategories,
+        categoryId: formData.categoryId,
+      })
       return error ? { ...nextErrors, [field]: error } : nextErrors
     }, {})
-  }, [changedFields, categories, formData, isEdit, mode])
+  }, [changedFields, categories, subCategories, formData, isEdit, mode])
 
   const hasChanges = isEdit ? changedFields.length > 0 || variantsChanged : true
   const isFormValid = Object.keys(errors).length === 0
@@ -770,10 +795,12 @@ export default function ProductForm({
     setFormData((currentValue) => ({
       ...currentValue,
       [name]: value,
+      ...(name === 'categoryId' ? { subCategoryId: '' } : {}),
     }))
     setTouched((currentValue) => ({
       ...currentValue,
       [name]: true,
+      ...(name === 'categoryId' ? { subCategoryId: true } : {}),
     }))
   }
 

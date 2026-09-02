@@ -102,11 +102,7 @@ export function getEmailError(value, options = {}) {
   }
 
   if (domainPart.startsWith('.') || domainPart.endsWith('.') || domainPart.startsWith('-') || domainPart.endsWith('-')) {
-    return 'Enter a valid email address.'
-  }
-
-  if (COMMON_DOMAIN_TYPOS[domainPart.toLowerCase()]) {
-    return `Invalid domain "${domainPart}". Did you mean "${COMMON_DOMAIN_TYPOS[domainPart.toLowerCase()]}"?`
+    return 'Please enter a valid email address.'
   }
 
   const domainParts = domainPart.split('.')

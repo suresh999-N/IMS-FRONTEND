@@ -114,7 +114,7 @@ namespace IMSBackend.DTOs
             if (!string.IsNullOrWhiteSpace(email) && !IsValidEmail(email))
             {
                 yield return new ValidationResult(
-                    "Enter a valid email address such as user@gmail.com.",
+                    "Please enter a valid email address.",
                     [nameof(Email)]);
             }
 
@@ -182,33 +182,63 @@ namespace IMSBackend.DTOs
             }
         }
 
-        private static bool IsValidEmail(string value)
+        public static bool IsValidEmail(string value)
         {
-            if (value.Length > 254 || value.Contains("..", StringComparison.Ordinal))
+            if (string.IsNullOrWhiteSpace(value)) return true;
+            var trimmed = value.Trim();
+
+            if (trimmed.Length > 254 || trimmed.Contains(" ") || trimmed.Contains(".."))
             {
                 return false;
             }
 
-            var parts = value.Split('@');
+            var parts = trimmed.Split('@');
 
             if (parts.Length != 2 || string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
             {
                 return false;
             }
 
-            var domainLabels = parts[1].Split('.');
+            var localPart = parts[0];
+            var domainPart = parts[1];
 
-            return EmailRegex.IsMatch(value) &&
-                domainLabels.Length >= 2 &&
-                domainLabels.All(label =>
-                    label.Length > 0 &&
-                    label.Length <= 63 &&
-                    !label.StartsWith("-", StringComparison.Ordinal) &&
-                    !label.EndsWith("-", StringComparison.Ordinal));
+            if (localPart.StartsWith(".") || localPart.EndsWith("."))
+            {
+                return false;
+            }
+
+            if (domainPart.StartsWith(".") || domainPart.EndsWith(".") || domainPart.StartsWith("-") || domainPart.EndsWith("-"))
+            {
+                return false;
+            }
+
+            var domainLabels = domainPart.Split('.');
+
+            if (domainLabels.Length < 2)
+            {
+                return false;
+            }
+
+            foreach (var label in domainLabels)
+            {
+                if (string.IsNullOrWhiteSpace(label) || label.StartsWith("-") || label.EndsWith("-") ||
+                    !Regex.IsMatch(label, @"^[a-z0-9-]+$", RegexOptions.IgnoreCase) || label.Length > 63)
+                {
+                    return false;
+                }
+            }
+
+            var tld = domainLabels[^1];
+            if (string.IsNullOrWhiteSpace(tld) || !Regex.IsMatch(tld, @"^[a-z]+$", RegexOptions.IgnoreCase) || tld.Length < 2 || tld.Length > 24)
+            {
+                return false;
+            }
+
+            return EmailRegex.IsMatch(trimmed);
         }
 
         private static string NormalizeEmail(string? value)
-            => Regex.Replace((value ?? string.Empty).Trim().ToLowerInvariant(), @"\s+", string.Empty);
+            => (value ?? string.Empty).Trim().ToLowerInvariant();
 
         public static string CollapseSpaces(string? value)
             => Regex.Replace((value ?? string.Empty).Trim(), @"\s+", " ");

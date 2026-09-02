@@ -812,6 +812,7 @@ export default function TableComponent({
                     <th
                       key={column.key || column.label}
                       scope="col"
+                      data-column={column.key || getColumnLabel(column)}
                       className={column.headerClassName || column.className || ''}
                       style={column.headerStyle || column.style}
                     >

@@ -724,9 +724,8 @@ export default function Suppliers({
     {
       key: 'name',
       label: 'Supplier',
-      tableWidth: '260px',
-      style: { width: '260px', minWidth: '260px' },
-      headerStyle: { width: '260px', minWidth: '260px' },
+      style: { minWidth: '180px' },
+      headerStyle: { minWidth: '180px' },
       sortable: true,
       mobilePrimary: true,
       render: (supplier) => (
@@ -744,9 +743,10 @@ export default function Suppliers({
     {
       key: 'category',
       label: 'Category',
+      tableWidth: '130px',
       sortable: true,
-      style: { width: '150px', minWidth: '150px' },
-      headerStyle: { width: '150px', minWidth: '150px' },
+      style: { width: '130px', minWidth: '130px' },
+      headerStyle: { width: '130px', minWidth: '130px' },
       render: (supplier) => (
         <span className={`supplier-category-badge ${supplier.category ? '' : 'is-empty'}`}>
           {formatCategory(supplier.category)}
@@ -756,9 +756,10 @@ export default function Suppliers({
     {
       key: 'tax',
       label: 'GST / PAN',
+      tableWidth: '140px',
       sortable: false,
-      style: { width: '160px', minWidth: '160px' },
-      headerStyle: { width: '160px', minWidth: '160px' },
+      style: { width: '140px', minWidth: '140px' },
+      headerStyle: { width: '140px', minWidth: '140px' },
       render: (supplier) => (
         <div className="suppliers-page__table-stack supplier-tax-stack">
           <span className={supplier.gstNumber ? '' : 'is-empty'}>{formatTaxValue(supplier.gstNumber, 'GST')}</span>
@@ -769,27 +770,32 @@ export default function Suppliers({
     {
       key: 'totalPurchaseAmount',
       label: 'Purchases',
+      tableWidth: '110px',
       sortable: true,
       className: 'is-numeric',
-      style: { width: '120px', minWidth: '120px' },
-      headerStyle: { width: '120px', minWidth: '120px' },
+      headerClassName: 'is-numeric',
+      style: { width: '110px', minWidth: '110px', textAlign: 'right' },
+      headerStyle: { width: '110px', minWidth: '110px', textAlign: 'right' },
       render: (supplier) => formatNullableCurrency(formatCurrency, supplier.totalPurchaseAmount),
     },
     {
       key: 'outstandingPayable',
       label: 'Outstanding',
+      tableWidth: '110px',
       sortable: true,
       className: 'is-numeric',
-      style: { width: '120px', minWidth: '120px' },
-      headerStyle: { width: '120px', minWidth: '120px' },
+      headerClassName: 'is-numeric',
+      style: { width: '110px', minWidth: '110px', textAlign: 'right' },
+      headerStyle: { width: '110px', minWidth: '110px', textAlign: 'right' },
       render: (supplier) => formatNullableCurrency(formatCurrency, supplier.outstandingPayable),
     },
     {
       key: 'status',
       label: 'Status',
+      tableWidth: '100px',
       sortable: true,
-      style: { width: '110px', minWidth: '110px' },
-      headerStyle: { width: '110px', minWidth: '110px' },
+      style: { width: '100px', minWidth: '100px' },
+      headerStyle: { width: '100px', minWidth: '100px' },
       render: (supplier) => {
         const displayStatus = supplier.isDeleted ? 'archived' : supplier.status
         return <StatusBadge type={getStatusBadgeType(displayStatus)}>{formatStatus(displayStatus)}</StatusBadge>
@@ -798,9 +804,11 @@ export default function Suppliers({
     {
       key: 'actions',
       label: 'Actions',
-      className: 'supplier-actions-column',
-      style: { width: '80px', minWidth: '80px' },
-      headerStyle: { width: '80px', minWidth: '80px' },
+      tableWidth: '70px',
+      className: 'supplier-actions-column text-center',
+      headerClassName: 'text-center',
+      style: { width: '70px', minWidth: '70px', textAlign: 'center' },
+      headerStyle: { width: '70px', minWidth: '70px', textAlign: 'center' },
       render: (supplier) => {
         if (supplier.isDeleted) {
           return (

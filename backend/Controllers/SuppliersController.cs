@@ -656,6 +656,22 @@ var totalRecords = await query.CountAsync();
                     });
                 }
 
+                if (dto.Name.Trim().Length > 120)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Supplier name cannot exceed 120 characters."
+                    });
+                }
+
+                if (dto.SupplierCode != null && dto.SupplierCode.Trim().Length > 40)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Supplier code cannot exceed 40 characters."
+                    });
+                }
+
                 if (string.IsNullOrWhiteSpace(dto.Phone))
                 {
                     return BadRequest(new
@@ -911,6 +927,22 @@ var totalRecords = await query.CountAsync();
                     return BadRequest(new
                     {
                         message = "Supplier name is required."
+                    });
+                }
+
+                if (dto.Name.Trim().Length > 120)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Supplier name cannot exceed 120 characters."
+                    });
+                }
+
+                if (dto.SupplierCode != null && dto.SupplierCode.Trim().Length > 40)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Supplier code cannot exceed 40 characters."
                     });
                 }
 
