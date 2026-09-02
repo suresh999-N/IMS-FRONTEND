@@ -18,6 +18,7 @@ import {
   createCategory,
   deleteCategory,
   getCategories,
+  getSubCategoryRecords,
   normalizeCategory,
   updateCategory,
 } from '../../../api/productApi'
@@ -123,7 +124,7 @@ function getAllChildren(category, allCategories = []) {
     }
   })
 
-  const legacyChildren = childSubCategoriesOf(category)
+  const legacyChildren = childSubCategoriesOf(category, allCategories)
   legacyChildren.forEach((sub) => {
     const subId = String(sub.id || sub.subCategoryId || '')
     const key = subId ? `sub-${subId}` : `sub-name-${comparable(sub.name)}`
@@ -588,7 +589,10 @@ export default function Categories() {
 
     setError('')
 
-    const response = await getCategories({ force })
+    const [response, subResponse] = await Promise.all([
+      getCategories({ force }),
+      getSubCategoryRecords({ force }).catch(() => ({ success: false })),
+    ])
 
     if (!response.success) {
       setError(response.error || 'Unable to load categories.')
@@ -600,7 +604,43 @@ export default function Categories() {
       return
     }
 
-    const nextCategories = upsertCategories([], response.data ?? [])
+    const rawCategories = response.data ?? []
+    const rawSubCategories = subResponse?.success ? (subResponse.data ?? []) : []
+
+    const subCategoriesByParent = new Map()
+    rawSubCategories.forEach((sub) => {
+      const pId = String(sub.categoryId || sub.parentId || sub.parentCategoryId || '')
+      if (pId) {
+        if (!subCategoriesByParent.has(pId)) {
+          subCategoriesByParent.set(pId, [])
+        }
+        subCategoriesByParent.get(pId).push(sub)
+      }
+    })
+
+    const categoriesWithMergedChildren = rawCategories.map((cat) => {
+      const catId = categoryIdOf(cat)
+      const existingChildren = cat.childSubCategories || []
+      const fetchedChildren = subCategoriesByParent.get(catId) || []
+
+      const mergedMap = new Map()
+      existingChildren.forEach((child) => mergedMap.set(String(child.id || child.subCategoryId || child.categoryId), child))
+      fetchedChildren.forEach((child) => {
+        const childId = String(child.id || child.subCategoryId || child.categoryId)
+        if (!mergedMap.has(childId)) {
+          mergedMap.set(childId, child)
+        }
+      })
+
+      const childSubCategories = Array.from(mergedMap.values())
+      return {
+        ...cat,
+        childSubCategories,
+        subcategoryCount: Math.max(cat.subcategoryCount || 0, childSubCategories.length),
+      }
+    })
+
+    const nextCategories = upsertCategories([], categoriesWithMergedChildren)
     const meta = response.meta ?? {}
 
     setCategories(nextCategories)
