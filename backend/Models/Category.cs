@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IMSBackend.Models
@@ -18,6 +18,9 @@ namespace IMSBackend.Models
 
         [Column("description")]
         public string Description { get; set; } = string.Empty;
+
+        [Column("status")]
+        public string Status { get; set; } = "Active";
 
         [Column("is_deleted")]
         public bool IsDeleted { get; set; } = false;

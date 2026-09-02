@@ -448,6 +448,12 @@ using (var scope = app.Services.CreateScope())
             "cancellation_reason",
             "TEXT NULL");
 
+        await EnsureColumnExistsAsync(
+            connection,
+            "categories",
+            "status",
+            "VARCHAR(32) NOT NULL DEFAULT 'Active'");
+
 
         // =====================================================
         // PUTAWAY AUDITS TABLE

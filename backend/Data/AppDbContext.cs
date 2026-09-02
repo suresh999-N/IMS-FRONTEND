@@ -298,6 +298,11 @@ namespace IMSBackend.Data
                 .HasMaxLength(160);
 
             modelBuilder.Entity<Category>()
+                .Property(category => category.Status)
+                .HasMaxLength(32)
+                .HasDefaultValue("Active");
+
+            modelBuilder.Entity<Category>()
                 .HasMany(category => category.SubCategories)
                 .WithOne(subCategory => subCategory.Category)
                 .HasForeignKey(subCategory => subCategory.CategoryId);

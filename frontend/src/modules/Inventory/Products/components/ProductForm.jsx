@@ -54,6 +54,7 @@ const createRequiredFields = [
   'name',
   'categoryId',
   'brandId',
+  'sku',
 ]
 
 const defaultCategories = [
@@ -100,7 +101,7 @@ const emptyVariant = {
 const emptyForm = {
   productId: '',
   name: '',
-  sku: '',
+  sku: 'SKU-',
   barcode: '',
   description: '',
   categoryId: '',
@@ -213,12 +214,14 @@ function getInitialForm(initialValues) {
     return normalizeFormValues({
       ...emptyForm,
       productId: createId('PRD'),
+      sku: 'SKU-',
       barcode: generateBarcode(),
     })
   }
 
   return normalizeFormValues({
     ...emptyForm,
+    sku: initialValues.sku || initialValues.SKU || 'SKU-',
     ...initialValues,
     productId: initialValues.productId ?? initialValues.id ?? createId('PRD'),
     categoryId: initialValues.categoryId ?? '',
@@ -282,12 +285,22 @@ function getProductEntityId(product) {
 }
 
 function getSkuError(value) {
-  if (!normalizeString(value)) {
-    return ''
+  const normalized = String(value ?? '').trim().toUpperCase()
+
+  if (!normalized) {
+    return 'SKU is required.'
   }
 
-  if (!/^[A-Za-z0-9_-]+$/.test(value)) {
-    return 'SKU can only include letters, numbers, dashes, or underscores.'
+  if (normalized.length < 6) {
+    return 'SKU must contain at least 6 characters.'
+  }
+
+  if (normalized.length > 50) {
+    return 'SKU must not exceed 50 characters.'
+  }
+
+  if (!/^[A-Z0-9_-]+$/.test(normalized)) {
+    return 'SKU can contain only letters, numbers, hyphens, and underscores.'
   }
 
   return ''
@@ -491,7 +504,13 @@ export default function ProductForm({
 
         setCategories(
           Array.isArray(categoryList) && categoryList.length > 0
-            ? categoryList.map(toOption)
+            ? categoryList
+                .filter((cat) => {
+                  const isInactive = String(cat?.status || cat?.Status || '').toLowerCase() === 'inactive'
+                  const isAssigned = isEdit && String(cat?.id || cat?.categoryId) === String(formData.categoryId)
+                  return !isInactive || isAssigned
+                })
+                .map(toOption)
             : defaultCategories,
         )
         setSubCategories(
@@ -630,8 +649,8 @@ export default function ProductForm({
     const fieldsToValidate = Array.from(
       new Set(
         isEdit
-          ? [...changedFields, 'categoryId', 'subCategoryId', 'brandId']
-          : [...createRequiredFields, 'categoryId', 'subCategoryId', 'brandId'],
+          ? [...changedFields, 'categoryId', 'subCategoryId', 'brandId', 'sku']
+          : [...createRequiredFields, 'categoryId', 'subCategoryId', 'brandId', 'sku'],
       ),
     )
 
@@ -663,25 +682,15 @@ export default function ProductForm({
         throw new Error(response.error || 'Failed to create category')
       }
 
-      const createdCategory = getResponseData(response)
+      const createdCategory = normalizeCategory(response.data)
+      const createdId = String(createdCategory.id)
 
-      // Re-fetch all categories from backend (authoritative)
-      const categoriesData = await getMainCategories({ force: true })
-      if (categoriesData.success) {
-        const categoryList = getResponseList(categoriesData, 'categories')
-        setCategories(
-          Array.isArray(categoryList) && categoryList.length > 0
-            ? categoryList.map(toOption)
-            : defaultCategories,
-        )
-      }
-
-      // Notify other components/pages
-      window.dispatchEvent(
-        new CustomEvent('ims:catalog-structure-updated', {
-          detail: { resource: 'categories', action: 'created' },
-        })
-      )
+      await refreshFormOptions()
+      setFormData((currentValue) => ({
+        ...currentValue,
+        categoryId: createdId,
+        subCategoryId: '',
+      }))
 
       showToast('Category created successfully.', 'success')
       return toOption(createdCategory)
@@ -694,48 +703,31 @@ export default function ProductForm({
 
   async function handleAddSubCategory(draft) {
     const label = normalizeString(draft?.name)
-    if (!label) {
-      return null
-    }
-
-    const categoryId = formData.categoryId
-    if (!categoryId) {
-      showToast('Please select a Category first.', 'error')
+    if (!label || !formData.categoryId) {
       return null
     }
 
     try {
       const response = await createSubCategory({
         name: label,
-        categoryId: categoryId
+        categoryId: Number(formData.categoryId),
       })
 
       if (!response.success) {
         throw new Error(response.error || 'Failed to create subcategory')
       }
 
-      const createdSubCategory = getResponseData(response)
+      const createdSubCat = normalizeSubCategory(response.data)
+      const createdId = String(createdSubCat.id)
 
-      // Re-fetch all subcategories from backend (authoritative)
-      const subCategoriesData = await getSubCategoryRecords({ force: true })
-      if (subCategoriesData.success) {
-        const subCategoryList = getResponseList(subCategoriesData, 'subCategories')
-        setSubCategories(
-          Array.isArray(subCategoryList) && subCategoryList.length > 0
-            ? subCategoryList.map(toOption)
-            : defaultSubCategories,
-        )
-      }
+      await refreshFormOptions()
+      setFormData((currentValue) => ({
+        ...currentValue,
+        subCategoryId: createdId,
+      }))
 
-      // Notify other components/pages
-      window.dispatchEvent(
-        new CustomEvent('ims:catalog-structure-updated', {
-          detail: { resource: 'subCategories', action: 'created' },
-        })
-      )
-
-      showToast('SubCategory created successfully.', 'success')
-      return toOption(createdSubCategory)
+      showToast('Subcategory created successfully.', 'success')
+      return toOption(createdSubCat)
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Failed to create subcategory'
       showToast(msg, 'error')
@@ -746,7 +738,6 @@ export default function ProductForm({
   async function handleAddBrand(draft) {
     const label = normalizeString(draft?.name)
     if (!label) {
-      showToast('Brand name is required.', 'error')
       return null
     }
 
@@ -757,25 +748,19 @@ export default function ProductForm({
 
     try {
       const response = await createBrand({ name: label })
+
       if (!response.success) {
         throw new Error(response.error || 'Failed to create brand')
       }
 
-      const createdBrand = getResponseData(response)
+      const createdBrand = normalizeBrand(response.data)
+      const createdId = String(createdBrand.id)
 
-      // Re-fetch all brands from backend (authoritative)
-      const brandsData = await getBrands({ force: true })
-      if (brandsData.success) {
-        const brandList = getResponseList(brandsData, 'brands')
-        setBrands(Array.isArray(brandList) ? brandList.map(toOption) : [])
-      }
-
-      // Notify other components/pages
-      window.dispatchEvent(
-        new CustomEvent('ims:catalog-structure-updated', {
-          detail: { resource: 'brands', action: 'created' },
-        })
-      )
+      await refreshFormOptions()
+      setFormData((currentValue) => ({
+        ...currentValue,
+        brandId: createdId,
+      }))
 
       showToast('Brand created successfully.', 'success')
       return toOption(createdBrand)
@@ -793,26 +778,20 @@ export default function ProductForm({
     }
 
     try {
-      const response = await createUnit({ name: label, shortName: label.slice(0, 12) })
+      const response = await createUnit({ name: label })
+
       if (!response.success) {
         throw new Error(response.error || 'Failed to create unit')
       }
 
-      const createdUnit = getResponseData(response)
+      const createdUnit = normalizeUnit(response.data)
+      const createdId = String(createdUnit.id)
 
-      // Re-fetch all units from backend (authoritative)
-      const unitsData = await getUnits({ force: true })
-      if (unitsData.success) {
-        const unitList = getResponseList(unitsData, 'units')
-        setUnits(Array.isArray(unitList) ? unitList.map(toOption) : [])
-      }
-
-      // Notify other components/pages
-      window.dispatchEvent(
-        new CustomEvent('ims:catalog-structure-updated', {
-          detail: { resource: 'units', action: 'created' },
-        })
-      )
+      await refreshFormOptions()
+      setFormData((currentValue) => ({
+        ...currentValue,
+        unitId: createdId,
+      }))
 
       showToast('Unit created successfully.', 'success')
       return toOption(createdUnit)
@@ -828,15 +807,25 @@ export default function ProductForm({
       return false
     }
 
-    return isEdit ? changedFieldSet.has(name) : touched[name] || hasSubmitted
+    return isEdit ? (changedFieldSet.has(name) || touched[name] || hasSubmitted) : (touched[name] || hasSubmitted)
   }
 
   function handleChange(event) {
     const { name, value } = event.target
 
+    let nextValue = value
+    if (name === 'sku') {
+      const trimmed = value.trim()
+      if (/^\d+$/.test(trimmed)) {
+        nextValue = `SKU-${trimmed}`
+      } else {
+        nextValue = value.toUpperCase()
+      }
+    }
+
     setFormData((currentValue) => ({
       ...currentValue,
-      [name]: value,
+      [name]: nextValue,
       ...(name === 'categoryId' ? { subCategoryId: '' } : {}),
     }))
     setTouched((currentValue) => ({
@@ -1200,7 +1189,7 @@ export default function ProductForm({
             value={formData.sku || ''}
             onChange={handleChange}
             onBlur={handleBlur}
-            placeholder="Enter SKU"
+            placeholder="e.g. SKU-100001"
             error={shouldShowError('sku') ? errors.sku : ''}
           />
           <div className="product-form__barcode-field">
