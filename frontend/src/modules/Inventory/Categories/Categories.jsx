@@ -40,10 +40,10 @@ const CATEGORY_COLUMNS_STORAGE_KEY = 'ims.categories.table.visibleColumns.wareho
 const CATEGORY_DEFAULT_COLUMNS = ['name', 'parentId', 'childCount', 'status', 'actions']
 const CATEGORY_COLUMN_WIDTHS = {
   name: 250,
-  parentId: 170,
-  childCount: 124,
+  parentId: 160,
+  childCount: 150,
   status: 96,
-  updatedAt: 170,
+  updatedAt: 160,
   actions: 90,
 }
 

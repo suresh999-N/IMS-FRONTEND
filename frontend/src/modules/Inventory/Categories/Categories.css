@@ -307,8 +307,8 @@
 
 /* Tree cell and category hierarchy */
 
-.catalog-page__tree-cell { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.catalog-page__tree-cell--child { padding-left: 20px; }
+.catalog-page__tree-cell { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.catalog-page__tree-cell--child { padding-left: 18px; }
 .catalog-page__tree-toggle {
   display: inline-flex;
   align-items: center;
@@ -332,6 +332,18 @@
   display: inline-block;
   width: 20px;
   height: 20px;
+}
+
+.catalog-page__tree-branch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-left: 2px solid #059669;
+  border-bottom: 2px solid #059669;
+  border-bottom-left-radius: 4px;
+  margin-right: 4px;
+  margin-top: -4px;
+  flex: 0 0 14px;
 }
 
 .catalog-page__tree-indent-connector {
@@ -713,27 +725,31 @@
 .catalog-page__subcat-badge-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   background: #f1f5f9;
-  color: #334155 !important;
-  border: 1px solid #cbd5e1;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0;
   font-weight: 600;
-  border-radius: 6px;
-  padding: 3px 9px;
-  font-size: 0.75rem;
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 0.725rem;
+  line-height: 1.2;
+  white-space: nowrap;
   transition: all 0.15s ease;
   cursor: pointer;
 }
 
 .catalog-page__subcat-badge-btn:hover {
   background: #e2e8f0;
-  border-color: #94a3b8;
+  border-color: #cbd5e1;
   color: #0f172a !important;
 }
 
 .catalog-page__subcat-icon {
   color: #64748b;
-  transition: color 0.15s ease;
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
 }
 
 .catalog-page__subcat-badge-btn:hover .catalog-page__subcat-icon {
