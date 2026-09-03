@@ -1154,6 +1154,7 @@ export default function Products({
             modeOverride={formMode}
             suppliers={suppliers}
             warehouses={warehouses}
+            products={products}
             canSubmit={formMode === 'edit' ? canEdit : canCreate}
             isSaving={isSaving}
             onQuickAddSupplier={onQuickAddSupplier}

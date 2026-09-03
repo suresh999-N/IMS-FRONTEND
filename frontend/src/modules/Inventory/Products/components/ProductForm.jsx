@@ -288,7 +288,7 @@ function getProductEntityId(product) {
   return product?.id ?? product?.productId ?? product?._id ?? ''
 }
 
-function getSkuError(value) {
+function getSkuError(value, options = {}) {
   const normalized = String(value ?? '').trim().toUpperCase()
 
   if (!normalized) {
@@ -305,6 +305,20 @@ function getSkuError(value) {
 
   if (!/^[A-Z0-9_-]+$/.test(normalized)) {
     return 'SKU can contain only letters, numbers, hyphens, and underscores.'
+  }
+
+  const currentProductId = String(options.currentProductId ?? '')
+  const productList = options.products ?? []
+  if (Array.isArray(productList) && productList.length > 0) {
+    const isDuplicate = productList.some((product) => {
+      const pId = String(product.id ?? product.productId ?? product._id ?? '')
+      const pSku = String(product.sku ?? product.SKU ?? '').trim().toUpperCase()
+      return pSku === normalized && Boolean(normalized) && pId !== currentProductId
+    })
+
+    if (isDuplicate) {
+      return 'SKU already exists. Please enter a unique SKU.'
+    }
   }
 
   return ''
@@ -444,7 +458,10 @@ function getFieldError(name, value, mode, options = {}) {
   }
 
   if (name === 'sku') {
-    return getSkuError(value)
+    return getSkuError(value, {
+      products: options.products,
+      currentProductId: options.currentProductId,
+    })
   }
 
   if (name === 'price') {
@@ -484,6 +501,7 @@ export default function ProductForm({
   modeOverride,
   canSubmit,
   isSaving = false,
+  products = [],
   onSubmit,
   onCancel,
 }) {
@@ -708,10 +726,12 @@ export default function ProductForm({
         subCategories,
         brands,
         categoryId: formData.categoryId,
+        products,
+        currentProductId: getProductEntityId(initialValues),
       })
       return error ? { ...nextErrors, [field]: error } : nextErrors
     }, {})
-  }, [changedFields, categories, subCategories, brands, formData, isEdit, mode])
+  }, [changedFields, categories, subCategories, brands, formData, isEdit, mode, products, initialValues])
 
   const hasChanges = isEdit
     ? changedFields.length > 0 || variantsChanged || selectedImageFile !== null || imageRemoved
@@ -1238,10 +1258,11 @@ export default function ProductForm({
           <InputField
             id="sku"
             name="sku"
-            label="SKU"
+            label="SKU *"
             value={formData.sku || ''}
             onChange={handleChange}
             onBlur={handleBlur}
+            required
             placeholder="e.g. SKU-100001"
             error={shouldShowError('sku') ? errors.sku : ''}
           />
