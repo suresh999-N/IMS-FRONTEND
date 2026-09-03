@@ -1385,14 +1385,6 @@ export default function ProductForm({
                 onChange={handleVariantDraftChange}
                 placeholder="Variant SKU"
               />
-              <CurrencyInput
-                id="variant-price-delta"
-                name="priceDelta"
-                label="Price Delta"
-                value={variantDraft.priceDelta || ''}
-                onChange={handleVariantDraftChange}
-                placeholder="0"
-              />
               <SearchableSelect
                 id="variant-attribute-id"
                 name="attributeId"
@@ -1416,8 +1408,16 @@ export default function ProductForm({
                 }
                 disabled={!variantDraft.attributeId}
               />
+              <CurrencyInput
+                id="variant-price-delta"
+                name="priceDelta"
+                label="Price Delta"
+                value={variantDraft.priceDelta || ''}
+                onChange={handleVariantDraftChange}
+                placeholder="0"
+              />
               <div className="button-row field--full">
-                <button type="button" className="button" onClick={handleAddVariantDraft}>
+                <button type="button" className="button button-primary" onClick={handleAddVariantDraft}>
                   {variantDraft.id ? 'Update Variant' : 'Add Variant'}
                 </button>
               </div>
