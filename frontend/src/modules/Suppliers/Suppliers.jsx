@@ -566,10 +566,8 @@ export default function Suppliers({
 
   async function handleEdit(supplier) {
     const detailedSupplier = await loadSupplierDetail(supplier)
-    if (detailedSupplier) {
-      setEditingSupplier(detailedSupplier)
-      setIsFormOpen(true)
-    }
+    setEditingSupplier(detailedSupplier || supplier)
+    setIsFormOpen(true)
   }
 
   async function handleCloseForm() {
