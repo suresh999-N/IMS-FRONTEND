@@ -1216,8 +1216,11 @@ export const RESOURCE_CONFIGS = {
         type: 'select',
         required: true,
         optionsFrom: 'roles',
-        optionValue: 'roleName',
-        optionLabel: 'roleName',
+        optionValue: (item) => readResourceValue(item, 'roleName', readResourceValue(item, 'name', readResourceValue(item, 'role', ''))),
+        optionLabel: (item) => {
+          const raw = readResourceValue(item, 'roleName', readResourceValue(item, 'name', readResourceValue(item, 'role', '')))
+          return String(raw || '').replace(/\b\w/g, (l) => l.toUpperCase())
+        },
       },
       {
         name: 'isActive',
