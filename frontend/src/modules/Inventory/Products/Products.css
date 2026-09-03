@@ -347,8 +347,23 @@
   font-size: 11.5px;
 }
 
+.products-table__stack--archived strong {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.products-table__stack--archived span {
+  color: #94a3b8;
+  font-style: italic;
+}
+
 .products-table__row--low {
   background: #fff7ed;
+}
+
+.products-table__row--archived {
+  background: #f8fafc;
+  opacity: 0.88;
 }
 
 /* ─── Action menu ───────────────────────────────────────────────── */
@@ -487,6 +502,25 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.product-details-archived-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.product-details-stock-archived {
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 15px;
 }
 
 /* Hero Section */

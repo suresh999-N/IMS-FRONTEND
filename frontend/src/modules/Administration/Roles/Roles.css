@@ -7600,7 +7600,7 @@
 
 .form-modal--delete-confirmation .form-modal__header {
   align-items: center;
-  padding: 22px 24px 14px;
+  padding: 14px 24px 6px;
   border-bottom: 0;
   background: #fff;
 }
@@ -7698,7 +7698,7 @@
   }
 
   .form-modal--delete-confirmation .form-modal__header {
-    padding: 20px 20px 14px;
+    padding: 14px 20px 6px;
   }
 
   .form-modal__body--delete-confirmation {

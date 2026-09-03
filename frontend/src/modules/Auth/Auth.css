@@ -856,6 +856,13 @@
   transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
 }
 
+.auth-wrapper--login form > button[type='submit']:disabled {
+  opacity: 0.65 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
 .auth-wrapper--login form > button[type='submit']:hover:not(:disabled) {
   background: linear-gradient(90deg, #15803d 0%, #166534 100%);
   box-shadow: 0 6px 20px rgba(22, 163, 74, 0.42);
@@ -1246,6 +1253,11 @@
 
 .auth-wrapper--register .auth-register-error:not(.is-visible) {
   visibility: hidden;
+}
+
+.auth-wrapper--register .auth-register-error.is-visible {
+  visibility: visible !important;
+  display: block !important;
 }
 
 @media (max-width: 1024px) {

@@ -32,7 +32,7 @@ function getProductId(product) {
 function getProductStatusType(product) {
   const status = getProductStatusLabel(product)
 
-  if (status === 'Archived') return 'pending'
+  if (status === 'Archived') return 'draft'
   if (status === 'Inactive' || status === 'Out Of Stock') return 'failed'
   if (status === 'Low Stock') return 'warning'
   return 'success'
@@ -41,18 +41,23 @@ function getProductStatusType(product) {
 function getProductStatusLabel(product) {
   if (isProductArchived(product)) return 'Archived'
 
-  const rawStatus = String(product.status || '').trim()
+  const rawStatus = String(product?.rawStatus ?? product?.sourceStatus ?? product?.status ?? '').trim().toLowerCase()
   const stock = Number(product.stock ?? product.currentStock ?? product.availableQty ?? 0)
   const reorderLevel = Number(product.reorderLevel ?? 0)
 
-  if (/inactive|archived/i.test(rawStatus)) return 'Inactive'
+  if (rawStatus === 'inactive') return 'Inactive'
   if (stock <= 0) return 'Out Of Stock'
   if (/low/i.test(rawStatus) || stock <= reorderLevel) return 'Low Stock'
   return 'In Stock'
 }
 
 function isProductArchived(product) {
-  return Boolean(product?.isArchived ?? product?.IsArchived ?? product?.is_archived)
+  if (!product) return false
+  if (product.isArchived === true || product.IsArchived === true || product.is_archived === true) return true
+  if (product.isArchived === 1 || product.IsArchived === 1 || product.is_archived === 1) return true
+  if (String(product.isArchived).toLowerCase() === 'true' || String(product.IsArchived).toLowerCase() === 'true') return true
+  const rawStatus = String(product?.rawStatus ?? product?.sourceStatus ?? product?.status ?? '').trim().toLowerCase()
+  return rawStatus === 'archived' || rawStatus === 'discontinued'
 }
 
 function getVariantLabel(product) {
@@ -97,7 +102,7 @@ function exportProductsExcel(products) {
       <td>${escapeHtml(product.brand)}</td>
       <td>${escapeHtml(product.unit)}</td>
       <td>${escapeHtml(product.price)}</td>
-      <td>${escapeHtml(product.stock)}</td>
+      <td>${escapeHtml(isProductArchived(product) ? '—' : product.stock)}</td>
       <td>${escapeHtml(getProductStatusLabel(product))}</td>
     </tr>
   `).join('')
@@ -155,7 +160,7 @@ function printProductsPdf(products) {
       <td>${escapeHtml(product.brand)}</td>
       <td>${escapeHtml(product.unit)}</td>
       <td>${escapeHtml(product.price)}</td>
-      <td>${escapeHtml(product.stock)}</td>
+      <td>${escapeHtml(isProductArchived(product) ? '—' : product.stock)}</td>
       <td>${escapeHtml(getProductStatusLabel(product))}</td>
     </tr>
   `).join('')
@@ -347,12 +352,24 @@ export default function ProductTable({
       tableWidth: 130,
       className: 'products-col-stock',
       sortable: true,
-      render: (product) => (
-        <div className="products-table__stack">
-          <strong>{product.stock}</strong>
-          <span>Reorder at {product.reorderLevel}</span>
-        </div>
-      ),
+      sortValue: (product) => (isProductArchived(product) ? -1 : Number(product.stock ?? 0)),
+      render: (product) => {
+        if (isProductArchived(product)) {
+          return (
+            <div className="products-table__stack products-table__stack--archived" title="Archived products do not participate in active inventory operations">
+              <strong className="products-table__stock-archived-value">—</strong>
+              <span className="products-table__stock-archived-label">Archived</span>
+            </div>
+          )
+        }
+
+        return (
+          <div className="products-table__stack">
+            <strong>{product.stock}</strong>
+            <span>Reorder at {product.reorderLevel}</span>
+          </div>
+        )
+      },
     },
     {
       key: 'price',
@@ -499,11 +516,11 @@ export default function ProductTable({
           </div>
           <div className="products-mobile-card__metric products-mobile-card__metric--stock">
             <dt>Stock</dt>
-            <dd>{product.stock ?? 0}</dd>
+            <dd>{isProductArchived(product) ? '—' : (product.stock ?? 0)}</dd>
           </div>
           <div>
             <dt>Reorder</dt>
-            <dd>{product.reorderLevel ?? 0}</dd>
+            <dd>{isProductArchived(product) ? 'Archived' : (product.reorderLevel ?? 0)}</dd>
           </div>
         </dl>
 
@@ -628,7 +645,7 @@ export default function ProductTable({
           </FilterBar>
         }
         rowClassName={(product) =>
-          `${getProductStatusLabel(product) === 'Low Stock' ? 'products-table__row--low' : ''} ${
+          `${isProductArchived(product) ? 'products-table__row--archived' : getProductStatusLabel(product) === 'Low Stock' ? 'products-table__row--low' : ''} ${
             selectedProductIds.includes(String(getProductId(product))) ? 'is-selected' : ''
           }`.trim()
         }

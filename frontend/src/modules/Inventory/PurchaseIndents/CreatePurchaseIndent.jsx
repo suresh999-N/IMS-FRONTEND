@@ -1441,7 +1441,12 @@ export default function CreatePurchaseIndentScreen({
   const productOptions = useMemo(
     () =>
       products
-        .filter((product) => product && getProductId(product))
+        .filter((product) => {
+          if (!product || !getProductId(product)) return false
+          if (product.isArchived === true || product.IsArchived === true || product.is_archived === true) return false
+          const status = String(product.rawStatus ?? product.sourceStatus ?? product.status ?? '').trim().toLowerCase()
+          return status !== 'archived' && status !== 'discontinued'
+        })
         .map((product) => ({
           ...product,
           productId: Number(getProductId(product)),

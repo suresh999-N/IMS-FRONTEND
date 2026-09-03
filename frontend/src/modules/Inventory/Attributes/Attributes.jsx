@@ -311,10 +311,10 @@ export default function Attributes() {
   }
 
   // ── Bulk Handlers ─────────────────────────────────────────────────────────
-  function handleBulkDelete() {
+  const handleBulkDelete = useCallback(function handleBulkDelete() {
     if (selectedCount === 0 || !canDelete) return
     setBulkDeleteTarget(selectedAttributes)
-  }
+  }, [selectedCount, canDelete, selectedAttributes])
 
   async function confirmBulkDelete() {
     if (!bulkDeleteTarget || bulkDeleteTarget.length === 0) return
@@ -560,7 +560,7 @@ export default function Attributes() {
               <button
                 type="submit"
                 className="button button-primary"
-                disabled={isSaving || (editingItem && !hasFormChanges)}
+                disabled={isSaving || !isFormValid || (editingItem && !hasFormChanges)}
               >
                 <Save size={16} />
                 {isSaving ? 'Saving...' : 'Save Attribute'}
@@ -582,30 +582,34 @@ export default function Attributes() {
         <FormModal
           title="Delete Attribute"
           onClose={() => setDeleteTarget(null)}
-          className="form-modal--delete-confirmation"
         >
-          <p>
-            Are you sure you want to delete{' '}
-            <strong>{deleteTarget.name || deleteTarget.attributeName || 'this attribute'}</strong>?
-            This action cannot be undone.
-          </p>
-          <div className="button-row resource-form__footer">
-            <button className="button button-cancel button-secondary"
-              type="button"
-              onClick={() => setDeleteTarget(null)}
-              disabled={isDeleting}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="button button-danger"
-              onClick={confirmDelete}
-              disabled={isDeleting}
-            >
-              <Trash2 size={16} />
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </button>
+          <div className="resource-center__delete-dialog">
+            <div className="delete-confirmation__copy">
+              <p>
+                Are you sure you want to delete{' '}
+                <strong>{deleteTarget.name || deleteTarget.attributeName || 'this attribute'}</strong>?
+              </p>
+              <p className="delete-confirmation__warning">This action cannot be undone.</p>
+            </div>
+            <div className="button-row">
+              <button
+                className="button button-cancel button-secondary"
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="button button-danger"
+                onClick={confirmDelete}
+                disabled={isDeleting}
+              >
+                <Trash2 size={16} />
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
           </div>
         </FormModal>
       ) : null}
@@ -615,30 +619,33 @@ export default function Attributes() {
         <FormModal
           title="Delete Selected Attributes"
           onClose={() => setBulkDeleteTarget(null)}
-          className="form-modal--delete-confirmation"
         >
-          <p>
-            Are you sure you want to delete <strong>{bulkDeleteTarget.length} selected attributes</strong>?
-            This action cannot be undone.
-          </p>
-          <div className="button-row resource-form__footer">
-            <button
-              type="button"
-              className="button button-secondary"
-              onClick={() => setBulkDeleteTarget(null)}
-              disabled={isBulkDeleting}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="button button-danger"
-              onClick={confirmBulkDelete}
-              disabled={isBulkDeleting}
-            >
-              <Trash2 size={16} />
-              {isBulkDeleting ? 'Deleting...' : 'Delete Selected Attributes'}
-            </button>
+          <div className="resource-center__delete-dialog">
+            <div className="delete-confirmation__copy">
+              <p>
+                Are you sure you want to delete <strong>{bulkDeleteTarget.length} selected attributes</strong>?
+              </p>
+              <p className="delete-confirmation__warning">This action cannot be undone.</p>
+            </div>
+            <div className="button-row">
+              <button
+                className="button button-cancel button-secondary"
+                type="button"
+                onClick={() => setBulkDeleteTarget(null)}
+                disabled={isBulkDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="button button-danger"
+                onClick={confirmBulkDelete}
+                disabled={isBulkDeleting}
+              >
+                <Trash2 size={16} />
+                {isBulkDeleting ? 'Deleting...' : 'Delete Selected Attributes'}
+              </button>
+            </div>
           </div>
         </FormModal>
       ) : null}
