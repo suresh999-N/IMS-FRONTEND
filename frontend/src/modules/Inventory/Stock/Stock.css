@@ -7524,7 +7524,7 @@
 
 /* Custom layout rules for Attributes form container to make it compact and well-aligned */
 .form-modal__body--attributes {
-  padding: 12px 16px 0;
+  padding: 8px 16px 0 !important;
 }
 
 .form-modal__body--attributes .resource-form__section {
