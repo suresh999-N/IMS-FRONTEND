@@ -4852,10 +4852,15 @@ border-color: #bbf7d0; /* Changed from #d1fae5 */
 
 .supplier-address-card .field,
 .supplier-address-card .searchable-select {
+  display: flex;
+  flex-direction: column;
   gap: 3px;
   width: 100%;
   min-width: 0;
+  align-items: stretch;
   overflow: visible;
+  margin: 0;
+  padding: 0;
 }
 
 .supplier-address-card .field label,
@@ -4864,15 +4869,21 @@ border-color: #bbf7d0; /* Changed from #d1fae5 */
   font-size: 0.73rem;
   font-weight: 700;
   line-height: 1.15;
+  margin: 0;
+  padding: 0;
+  text-align: left;
 }
 
 .supplier-address-card .input-with-icon,
 .supplier-address-card .searchable-select__trigger {
   min-height: 32px;
+  height: 32px;
   border-color: #dfe6f0;
   border-radius: 8px;
   background: #fcfdff;
   padding-inline: 8px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .supplier-address-card .input-with-icon:hover,
@@ -4981,7 +4992,12 @@ border-color: #bbf7d0; /* Changed from #d1fae5 */
 .supplier-address-card .field-help {
   font-size: 0.67rem;
   line-height: 1.18;
-  margin-top: -2px;
+  margin: 2px 0 0 0;
+  padding: 0;
+  margin-left: 0;
+  text-align: left;
+  display: block;
+  width: 100%;
 }
 
 .supplier-address-card .field-error {

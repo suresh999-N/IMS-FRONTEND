@@ -152,6 +152,8 @@ export function normalizeSupplier(supplier) {
     website: readValue(supplier, 'website', 'Website') || '',
     status: normalizeStatus(readValue(supplier, 'status', 'Status')),
     totalPurchaseAmount: readValue(supplier, 'totalPurchaseAmount', 'TotalPurchaseAmount', 'totalPurchases', 'TotalPurchases', 'totalPurchase', 'TotalPurchase', 'totalAmount', 'TotalAmount', 'purchases', 'Purchases', 'purchaseAmount', 'PurchaseAmount') ?? null,
+    paidAmount: readValue(supplier, 'paidAmount', 'PaidAmount', 'totalPaid', 'TotalPaid', 'paid', 'Paid') ?? 0,
+    totalPaid: readValue(supplier, 'totalPaid', 'TotalPaid', 'paidAmount', 'PaidAmount', 'paid', 'Paid') ?? 0,
     outstandingPayable: readValue(supplier, 'outstandingPayable', 'OutstandingPayable', 'outstandingAmount', 'OutstandingAmount', 'outstandingBalance', 'OutstandingBalance', 'balanceAmount', 'BalanceAmount', 'outstanding', 'Outstanding', 'balance', 'Balance') ?? null,
     isDeleted: Boolean(readValue(supplier, 'isDeleted', 'IsDeleted')),
     deletedAt: readValue(supplier, 'deletedAt', 'DeletedAt') || '',
@@ -188,6 +190,7 @@ export function toSupplierPayload(data = {}) {
     category: cleanString(data.category),
     contacts: Array.isArray(data.contacts)
       ? data.contacts.map((contact) => ({
+          contactId: contact.contactId || contact.id ? Number(contact.contactId || contact.id) : null,
           name: cleanString(contact.name),
           designation: cleanString(contact.designation),
           department: cleanString(contact.department),

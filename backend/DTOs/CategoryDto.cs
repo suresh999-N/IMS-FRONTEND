@@ -4,7 +4,7 @@ namespace IMSBackend.DTOs
 {
     public class CategoryDto
     {
-        [RegularExpression(@"^[A-Za-z\s]+$", ErrorMessage = "Name can contain only letters and spaces.")]
+        [RegularExpression(@"^[A-Za-z0-9\s.,&'/\-()]+$", ErrorMessage = "Name contains invalid characters.")]
         public string Name { get; set; } = string.Empty;
 
         public int? ParentId { get; set; }

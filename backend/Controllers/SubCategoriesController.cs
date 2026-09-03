@@ -148,9 +148,9 @@ namespace IMSBackend.Controllers
         public async Task<IActionResult> CreateSubCategory(
             SubCategory model)
         {
-            if (string.IsNullOrWhiteSpace(model.Name) || !System.Text.RegularExpressions.Regex.IsMatch(model.Name.Trim(), @"^[A-Za-z\s]+$"))
+            if (string.IsNullOrWhiteSpace(model.Name) || !System.Text.RegularExpressions.Regex.IsMatch(model.Name.Trim(), @"^[A-Za-z0-9\s.,&'/\-()]+$"))
             {
-                return BadRequest(new { message = "Name can contain only letters and spaces." });
+                return BadRequest(new { message = "Name contains invalid characters." });
             }
             var categoryExists = await _context.Categories
                 .AsNoTracking()
@@ -213,9 +213,9 @@ namespace IMSBackend.Controllers
                 });
             }
 
-            if (string.IsNullOrWhiteSpace(model.Name) || !System.Text.RegularExpressions.Regex.IsMatch(model.Name.Trim(), @"^[A-Za-z\s]+$"))
+            if (string.IsNullOrWhiteSpace(model.Name) || !System.Text.RegularExpressions.Regex.IsMatch(model.Name.Trim(), @"^[A-Za-z0-9\s.,&'/\-()]+$"))
             {
-                return BadRequest(new { message = "Name can contain only letters and spaces." });
+                return BadRequest(new { message = "Name contains invalid characters." });
             }
 
             var categoryExists = await _context.Categories

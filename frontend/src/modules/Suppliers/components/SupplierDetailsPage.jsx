@@ -73,14 +73,11 @@ function SupplierDetailsOverview({ supplier = {}, purchases = [], payments = [] 
 
   const computedOutstandingPayable = useMemo(() => {
     const rawOutstanding = currentSupplier.outstandingPayable ?? currentSupplier.outstandingAmount ?? currentSupplier.outstandingBalance ?? currentSupplier.balanceAmount ?? currentSupplier.outstanding ?? currentSupplier.balance
-    if (rawOutstanding != null && !isNaN(Number(rawOutstanding)) && Number(rawOutstanding) > 0) {
+    if (rawOutstanding != null && !isNaN(Number(rawOutstanding))) {
       return Number(rawOutstanding)
     }
-    if (computedTotalPurchases > 0) {
-      return computedTotalPurchases
-    }
-    return Number(rawOutstanding || 0)
-  }, [currentSupplier, computedTotalPurchases])
+    return 0
+  }, [currentSupplier])
 
   return (
     <div className="supplier-details__overview">

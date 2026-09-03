@@ -1338,10 +1338,16 @@ namespace IMSBackend.Controllers
 
 
         [HttpPost("resend-verification")]
+        [AllowAnonymous]
         public async Task<IActionResult> ResendVerificationEmail(
-    ResendVerificationDto dto,
-    CancellationToken cancellationToken)
+            ResendVerificationDto dto,
+            CancellationToken cancellationToken)
         {
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Email))
+            {
+                return BadRequest(ApiResponse<object>.Fail("Email is required.", traceId: HttpContext.TraceIdentifier));
+            }
+
             var email = dto.Email.Trim().ToLowerInvariant();
 
             var pendingUser = await _context.PendingUsers
@@ -1349,18 +1355,23 @@ namespace IMSBackend.Controllers
                     x => x.Email == email,
                     cancellationToken);
 
-            if (pendingUser == null)
+            var existingUser = pendingUser == null
+                ? await _context.Users.FirstOrDefaultAsync(x => x.Email == email, cancellationToken)
+                : null;
+
+            if (pendingUser == null && existingUser == null)
             {
                 return NotFound(ApiResponse<object>.Fail(
-                    "No pending account matches that email.",
+                    "No account matches that email.",
                     traceId: HttpContext.TraceIdentifier));
             }
+
+            var recipientName = pendingUser?.Name ?? existingUser?.Name ?? "User";
 
             // Delete old unused email verification OTPs
             var oldOtps = await _context.Otps
                 .Where(x =>
                     x.Email == email &&
-                    x.Purpose == "EmailVerification" &&
                     !x.IsUsed)
                 .ToListAsync(cancellationToken);
 
@@ -1388,7 +1399,7 @@ namespace IMSBackend.Controllers
             var emailBody = $@"
         <h2>Email Verification</h2>
 
-        <p>Hello {pendingUser.Name},</p>
+        <p>Hello {recipientName},</p>
 
         <p>Your email verification OTP is:</p>
 
@@ -1396,7 +1407,7 @@ namespace IMSBackend.Controllers
 
         <p>This OTP is valid for 10 minutes.</p>
 
-        <p>If you did not register for an account, please ignore this email.</p>";
+        <p>If you did not request this, please ignore this email.</p>";
 
             await _emailService.SendEmailAsync(
                 email,
@@ -1407,6 +1418,79 @@ namespace IMSBackend.Controllers
                 null,
                 "Verification OTP sent successfully.",
                 HttpContext.TraceIdentifier));
+        }
+
+        [HttpPost("resend-login-otp")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResendLoginOtp(
+            ResendLoginOtpDto dto,
+            CancellationToken cancellationToken)
+        {
+            if (dto == null || (string.IsNullOrWhiteSpace(dto.Email) && (dto.UserId == null || dto.UserId <= 0)))
+            {
+                return BadRequest(ApiResponse<object>.Fail("Email or User ID is required.", traceId: HttpContext.TraceIdentifier));
+            }
+
+            User? user = null;
+            PendingUser? pendingUser = null;
+
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+            {
+                var email = dto.Email.Trim().ToLowerInvariant();
+                user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email, cancellationToken);
+                if (user == null)
+                {
+                    pendingUser = await _context.PendingUsers.FirstOrDefaultAsync(x => x.Email == email, cancellationToken);
+                }
+            }
+            else if (dto.UserId.HasValue)
+            {
+                user = await _context.Users.FirstOrDefaultAsync(x => x.Id == dto.UserId.Value, cancellationToken);
+            }
+
+            if (user == null && pendingUser == null)
+            {
+                return NotFound(ApiResponse<object>.Fail("No account matches that information.", traceId: HttpContext.TraceIdentifier));
+            }
+
+            var targetEmail = user?.Email ?? pendingUser?.Email;
+            var recipientName = user?.Name ?? pendingUser?.Name ?? "User";
+
+            if (string.IsNullOrWhiteSpace(targetEmail))
+            {
+                return BadRequest(ApiResponse<object>.Fail("Email address is missing.", traceId: HttpContext.TraceIdentifier));
+            }
+
+            // Remove old unused OTPs
+            var oldOtps = await _context.Otps
+                .Where(x => x.Email == targetEmail && !x.IsUsed)
+                .ToListAsync(cancellationToken);
+            _context.Otps.RemoveRange(oldOtps);
+
+            var otpCode = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
+            var otp = new Otp
+            {
+                Email = targetEmail,
+                Code = otpCode,
+                CreatedAt = DateTime.UtcNow,
+                ExpiryTime = DateTime.UtcNow.AddMinutes(10),
+                IsUsed = false,
+                Purpose = "Login"
+            };
+
+            _context.Otps.Add(otp);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            var emailBody = $@"
+        <h2>Login Verification Code</h2>
+        <p>Hello {recipientName},</p>
+        <p>Your verification code is:</p>
+        <h1 style='color:blue'>{otpCode}</h1>
+        <p>This code is valid for 10 minutes.</p>";
+
+            await _emailService.SendEmailAsync(targetEmail, "Login Verification Code", emailBody);
+
+            return Ok(ApiResponse<object>.Ok(null, "Verification code resent successfully.", HttpContext.TraceIdentifier));
         }
 
 

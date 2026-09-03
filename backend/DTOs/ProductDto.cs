@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 public class ProductDto
 {
-    [RegularExpression(@"^[A-Za-z\s]+$", ErrorMessage = "Name can contain only letters and spaces.")]
+    [RegularExpression(@"^[A-Za-z0-9\s.,&'/\-()]+$", ErrorMessage = "Name contains invalid characters.")]
     public string Name { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "SKU is required.")]

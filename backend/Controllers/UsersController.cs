@@ -173,9 +173,9 @@ namespace IMSBackend.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUser(CreateUserDto dto)
         {
-            if (!string.IsNullOrWhiteSpace(dto.Name) && !System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+            if (!string.IsNullOrWhiteSpace(dto.Name) && !System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z0-9\s.,&'/\-()]+$"))
             {
-                return BadRequest(new { message = "Name can contain only letters and spaces." });
+                return BadRequest(new { message = "Name contains invalid characters." });
             }
             var currentUserRole = GetCurrentUserRole();
 
@@ -324,9 +324,9 @@ namespace IMSBackend.Controllers
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(dto.Name) && !System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+            if (!string.IsNullOrWhiteSpace(dto.Name) && !System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z0-9\s.,&'/\-()]+$"))
             {
-                return BadRequest(new { message = "Name can contain only letters and spaces." });
+                return BadRequest(new { message = "Name contains invalid characters." });
             }
 
             var email = dto.Email.Trim().ToLowerInvariant();

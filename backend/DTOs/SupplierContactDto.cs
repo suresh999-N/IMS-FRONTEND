@@ -6,9 +6,12 @@ namespace IMSBackend.DTOs.Suppliers
     {
         public int? ContactId { get; set; }
 
+        public int? Id { get; set; }
+
+        [MaxLength(100, ErrorMessage = "Contact name cannot exceed 100 characters.")]
         [RegularExpression(
-            @"^[A-Za-z\s]+$",
-            ErrorMessage = "Name can contain only letters and spaces."
+            @"^[A-Za-z0-9\s.,&'/\-()]+$",
+            ErrorMessage = "Name can contain letters, numbers, spaces, and common punctuation only."
         )]
         public string? Name { get; set; }
 

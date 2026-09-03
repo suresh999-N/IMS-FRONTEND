@@ -1,10 +1,10 @@
-﻿namespace IMSBackend.DTOs
+namespace IMSBackend.DTOs
 {
     public class SupplierPaymentDto
     {
         public int SupplierId { get; set; }
 
-        public int PoId { get; set; }
+        public int? PoId { get; set; }
 
         public decimal Amount { get; set; }
 

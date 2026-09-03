@@ -59,7 +59,10 @@ export default function VerifyEmail() {
   const token =
     (searchParams.get("token") || searchParams.get("Token"))?.trim() || "";
   const initialEmail = sanitizeEmailInput(
-    searchParams.get("email") || searchParams.get("Email") || "",
+    searchParams.get("email") ||
+      searchParams.get("Email") ||
+      (typeof window !== "undefined" ? sessionStorage.getItem("ims_verify_email") : "") ||
+      "",
   );
   const [userEmail, setUserEmail] = useState(initialEmail);
   const [state, setState] = useState({
@@ -75,6 +78,24 @@ export default function VerifyEmail() {
   const [otpCode, setOtpCode] = useState("");
   const [otpError, setOtpError] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    const targetEmail = userEmail || initialEmail;
+    if (targetEmail && typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem("ims_verify_email", targetEmail);
+      } catch {}
+    }
+  }, [initialEmail, userEmail]);
+
+  useEffect(() => {
+    if (cooldown <= 0) return undefined;
+    const timer = setInterval(() => {
+      setCooldown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   const redirectToLogin = useCallback(
     ({ confirmed = false, message = "", notice = "" } = {}) => {
@@ -267,7 +288,7 @@ export default function VerifyEmail() {
   }
 
   async function handleResend() {
-    if (resendState.status === "loading") return;
+    if (resendState.status === "loading" || cooldown > 0) return;
     const targetEmail = sanitizeEmailInput(userEmail || initialEmail).toLowerCase().trim();
     const emailError = getEmailError(targetEmail, { required: true });
     if (emailError) {
@@ -292,30 +313,22 @@ export default function VerifyEmail() {
       }
     }
 
-    const responseMessage = response.message || response.error || "";
-    if (
-      !response.success &&
-      isEmailAlreadyVerifiedMessage(responseMessage)
-    ) {
-      announceEmailVerificationCompleted(targetEmail);
-      redirectToLogin({ confirmed: true });
-      return;
-    }
-
     if (!response.success) {
       setResendState({
         status: "error",
         message: getAuthErrorMessage(
           response.error || response.message,
-          "We could not resend the verification email. Please check the email address or try again.",
+          "Unable to resend verification code. Please try again.",
         ),
       });
       return;
     }
 
+    setOtpCode("");
+    setCooldown(30);
     setResendState({
       status: "success",
-      message: "A new verification code has been sent to your email.",
+      message: "Verification code resent successfully.",
     });
   }
 
@@ -443,7 +456,7 @@ export default function VerifyEmail() {
               <button
                 type="button"
                 onClick={handleResend}
-                disabled={resendState.status === "loading"}
+                disabled={resendState.status === "loading" || cooldown > 0}
               >
                 {resendState.status === "loading" ? (
                   <LoaderCircle className="animate-spin" size={17} />
@@ -452,7 +465,9 @@ export default function VerifyEmail() {
                 )}
                 {resendState.status === "loading"
                   ? "Sending..."
-                  : "Resend verification code"}
+                  : cooldown > 0
+                    ? `Resend available in ${cooldown}s`
+                    : "Resend verification code"}
               </button>
               <div className="links" style={{ marginTop: "1rem" }}>
                 <Link to="/login">Back to sign in</Link>

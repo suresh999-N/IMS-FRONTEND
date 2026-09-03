@@ -28,13 +28,30 @@ function cleanSuccessMessage(rawMessage, fallback = 'A verification code has bee
 export default function VerifyOTP() {
   const navigate = useNavigate()
   const location = useLocation()
-  const email = location.state?.email || ''
+  const email = location.state?.email || (typeof window !== 'undefined' ? sessionStorage.getItem('ims_verify_otp_email') : '') || ''
   const initialMessage = cleanSuccessMessage(location.state?.message)
   const [otp, setOtp] = useState('')
   const [error, setError] = useState('')
   const [message, setMessage] = useState(initialMessage)
   const [loading, setLoading] = useState(false)
   const [resendLoading, setResendLoading] = useState(false)
+  const [cooldown, setCooldown] = useState(0)
+
+  useEffect(() => {
+    if (email && typeof window !== 'undefined') {
+      try {
+        sessionStorage.setItem('ims_verify_otp_email', email)
+      } catch {}
+    }
+  }, [email])
+
+  useEffect(() => {
+    if (cooldown <= 0) return undefined
+    const timer = setInterval(() => {
+      setCooldown((prev) => prev - 1)
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [cooldown])
 
   if (!email) {
     return (
@@ -122,15 +139,30 @@ export default function VerifyOTP() {
   }
 
   async function handleResendCode() {
+    if (resendLoading || cooldown > 0) return
     setError('')
     setMessage('')
     try {
       setResendLoading(true)
-      const response = await resendLoginOtp(email)
+      let response = await resendLoginOtp(email)
+
+      if (!response.success) {
+        // Fallback for forgot password OTP resend
+        const forgotPasswordResp = await apiRequest(API_ENDPOINTS.auth.forgotPassword, {
+          method: 'POST',
+          body: { email },
+        })
+        if (forgotPasswordResp.success) {
+          response = forgotPasswordResp
+        }
+      }
+
       if (response.success) {
-        setMessage('A new verification code has been sent to your email.')
+        setOtp('')
+        setCooldown(30)
+        setMessage('Verification code resent successfully.')
       } else {
-        setError(response.error || 'Unable to resend verification code.')
+        setError(getAuthErrorMessage(response.error || response.message, 'Unable to resend verification code.'))
       }
     } catch {
       setError('Unable to resend verification code. Please try again.')
@@ -219,10 +251,10 @@ export default function VerifyOTP() {
               <button
                 type="button"
                 onClick={handleResendCode}
-                disabled={resendLoading}
-                style={{ background: 'none', border: 'none', color: 'var(--ims-accent-color, #0284c7)', cursor: 'pointer', fontSize: '0.875rem', padding: 0 }}
+                disabled={resendLoading || cooldown > 0}
+                style={{ background: 'none', border: 'none', color: 'var(--ims-accent-color, #0284c7)', cursor: (resendLoading || cooldown > 0) ? 'not-allowed' : 'pointer', fontSize: '0.875rem', padding: 0 }}
               >
-                {resendLoading ? 'Resending...' : 'Resend Code'}
+                {resendLoading ? 'Resending...' : cooldown > 0 ? `Resend available in ${cooldown}s` : 'Resend Code'}
               </button>
             </div>
 

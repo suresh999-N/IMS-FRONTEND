@@ -2,7 +2,7 @@ import { apiRequest, buildApiHeaders, buildUrl, getResponseData, getResponseList
 import { API_ENDPOINTS } from './endpoints'
 import { getCustomers } from './customersApi'
 import { getProductCatalog } from './productApi'
-import { getSuppliers } from './suppliersApi'
+import { getSuppliers, invalidateSupplierCache } from './suppliersApi'
 
 function idOf(item, keys) {
   for (const key of keys) {
@@ -979,12 +979,20 @@ export async function getSupplierPayments() {
   return response.success ? { ...response, data: getResponseList(response).map((item) => normalizePayment(item, 'supplier')) } : response
 }
 
-export function createSupplierPayment(data) {
-  return apiRequest(API_ENDPOINTS.supplierPayments.list, { method: 'POST', body: data })
+export async function createSupplierPayment(data) {
+  const response = await apiRequest(API_ENDPOINTS.supplierPayments.list, { method: 'POST', body: data })
+  if (response.success) {
+    invalidateSupplierCache()
+  }
+  return response
 }
 
-export function deleteSupplierPayment(id) {
-  return apiRequest(API_ENDPOINTS.supplierPayments.byId(id), { method: 'DELETE' })
+export async function deleteSupplierPayment(id) {
+  const response = await apiRequest(API_ENDPOINTS.supplierPayments.byId(id), { method: 'DELETE' })
+  if (response.success) {
+    invalidateSupplierCache()
+  }
+  return response
 }
 
 

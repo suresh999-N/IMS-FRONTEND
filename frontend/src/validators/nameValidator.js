@@ -64,8 +64,6 @@ export function getNameError(value, options = {}) {
     label = 'Full Name',
     min = 2,
     max = NAME_MAX_LENGTH,
-    allowAmpersand = false,
-    allowNumbers = false,
   } = opts
 
   const rawValue = String(value ?? '')
@@ -75,24 +73,9 @@ export function getNameError(value, options = {}) {
     return required ? `${label} is required.` : ''
   }
 
-  // Reject numeric characters or special characters when allowNumbers/allowAmpersand are false
-  if (!allowNumbers && !allowAmpersand) {
-    if (/[^a-zA-Z\p{L}\s]/u.test(cleanValue) || /\d/.test(cleanValue)) {
-      return `${label} must contain only letters and spaces.`
-    }
-    if (/^\s/.test(rawValue) || /\s{2,}/.test(rawValue)) {
-      return `${label} must contain only letters and spaces.`
-    }
-  } else {
-    if (!allowNumbers && /\d/.test(cleanValue)) {
-      return `${label} must contain only letters and spaces.`
-    }
-    const pattern = allowAmpersand
-      ? /^(?=.*[a-zA-Z\p{L}])[a-zA-Z\p{L}0-9 .&'-]+$/u
-      : /^(?=.*[a-zA-Z\p{L}])[a-zA-Z\p{L}0-9\s'-]+$/u
-    if (!pattern.test(cleanValue)) {
-      return `${label} contains invalid characters.`
-    }
+  const pattern = /^(?=.*[a-zA-Z\p{L}])[a-zA-Z\p{L}0-9\s.,&'/\-()]+$/u
+  if (!pattern.test(cleanValue)) {
+    return `${label} contains invalid characters.`
   }
 
   if (cleanValue.length < min) {

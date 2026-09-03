@@ -1535,9 +1535,19 @@ export default function ProductForm({
                 )}
               </label>
               <div className="product-form__image-actions">
-                <label className="button product-form__upload-button" htmlFor="image-upload">
+                <label
+                  className="button product-form__upload-button"
+                  htmlFor="image-upload"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      document.getElementById('image-upload')?.click()
+                    }
+                  }}
+                >
                   <ImagePlus size={16} />
-                  {imagePreview ? 'Change Image' : 'Add Image'}
+                  {imagePreview ? 'Change Image' : 'Upload Image'}
                 </label>
                 {imagePreview ? (
                   <button

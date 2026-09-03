@@ -456,10 +456,12 @@ function getAddressLineError(value, label, required = false) {
   if (!cleanValue) return required ? `${label} is required.` : ''
   if (cleanValue.length < 3) return `${label} must be at least 3 characters.`
   if (cleanValue.length > 200) return `${label} cannot exceed 200 characters.`
-  if (!/[A-Za-z0-9]/.test(cleanValue)) return `${label} must contain letters or numbers.`
-  return /^[A-Za-z0-9 .,/#&'-]+$/.test(cleanValue)
+  if (!/[A-Za-z]/.test(cleanValue)) {
+    return 'Address must contain meaningful text.'
+  }
+  return /^[A-Za-z0-9 .,/#'()\--]+$/.test(cleanValue)
     ? ''
-    : `${label} contains invalid address characters.`
+    : 'Enter a valid address using letters, numbers, spaces and common address punctuation.'
 }
 
 function getBankNameError(value) {
@@ -625,7 +627,14 @@ function getAddressErrors(address) {
       !collapseSpaces(address.pincode)
         ? ''
         : isIndiaCountry(country)
-          ? (PINCODE_PATTERN.test(address.pincode) ? '' : 'Pincode must be 6 digits.')
+          ? (!PINCODE_PATTERN.test(address.pincode)
+              ? 'Enter a valid 6-digit pincode.'
+              : (() => {
+                  const prefixes = STATE_PINCODE_PREFIXES[state] || []
+                  return (prefixes.length > 0 && !prefixes.some((prefix) => address.pincode.startsWith(prefix)))
+                    ? 'Pincode does not belong to the selected state.'
+                    : ''
+                })())
           : (/^[A-Za-z0-9 -]{3,12}$/.test(address.pincode) ? '' : 'Postal code must be 3 to 12 characters.'),
   }
 }
@@ -1962,7 +1971,7 @@ export default function CustomerForm({
                         <InputField id={`customer-address-city-${index}`} name="city" label="City *" icon={MapPin} value={address.city} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} error={(submitAttempted || touched.collections) ? addressError.city : ''} placeholder="Enter city" disabled={isReadOnly} />
                         <InputField id={`customer-address-state-${index}`} name="state" label="State *" icon={MapPin} value={address.state} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} error={(submitAttempted || touched.collections) ? addressError.state : ''} placeholder="Enter state" disabled={isReadOnly} />
                         <InputField id={`customer-address-country-${index}`} name="country" label="Country *" icon={MapPin} value={address.country} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} error={(submitAttempted || touched.collections) ? addressError.country : ''} placeholder="Enter country" disabled={isReadOnly} />
-                        <InputField id={`customer-address-pincode-${index}`} name="pincode" label="Pincode *" icon={Hash} value={address.pincode} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} error={(submitAttempted || touched.collections) ? addressError.pincode : ''} placeholder="560001" inputMode="numeric" maxLength={6} disabled={isReadOnly} />
+                        <InputField id={`customer-address-pincode-${index}`} name="pincode" label="Pincode *" icon={Hash} value={address.pincode} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} error={(submitAttempted || touched.collections || (address.pincode && String(address.pincode).trim().length >= 6)) ? addressError.pincode : ''} placeholder="560001" inputMode="numeric" maxLength={6} disabled={isReadOnly} />
                       </div>
                     </article>
                   )

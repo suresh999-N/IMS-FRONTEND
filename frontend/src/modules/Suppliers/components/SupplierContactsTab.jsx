@@ -137,11 +137,15 @@ export default function SupplierContactsTab({
             const emailBlurred = hasBlurred(index, 'email')
             const emailFocused = isFocused(index, 'email')
 
+            const nameError = contactErrors.name && (showErrors || nameBlurred || (contact.name && contactErrors.name.includes('already exists')))
+              ? contactErrors.name
+              : getVisibleError({ error: contactErrors.name, blurred: nameBlurred, focused: nameFocused, submitted: showErrors })
+
             return (
-              <div className="supplier-contact-card" key={contact.id ?? index}>
+              <div className="supplier-contact-card" key={contact.contactId ?? contact.id ?? index}>
                 <div className="supplier-repeat-card__header supplier-contact-card__header">
                   <div>
-                    <strong>{contact.name || `Contact ${index + 1}`}</strong>
+                    <strong>{`Contact ${index + 1}`}</strong>
                   </div>
                   <div className="supplier-contact-card__header-actions">
                     {contact.isPrimary ? (
@@ -178,7 +182,7 @@ export default function SupplierContactsTab({
                     onFocus={(event) => handleContactFocus(index, event)}
                     onChange={(event) => handleContactChange(index, event)}
                     onBlur={(event) => handleContactBlur(index, event)}
-                    error={getVisibleError({ error: contactErrors.name, blurred: nameBlurred, focused: nameFocused, submitted: showErrors })}
+                    error={nameError}
                     className={`supplier-contact-field ${getCompleteClass({ value: contact.name, error: contactErrors.name, blurred: nameBlurred && !nameFocused })}`.trim()}
                     disabled={readOnly}
                   />

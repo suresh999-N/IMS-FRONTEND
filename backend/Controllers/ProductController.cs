@@ -273,10 +273,10 @@ namespace IMSBackend.Controllers
                     traceId: HttpContext.TraceIdentifier));
             }
 
-            if (!System.Text.RegularExpressions.Regex.IsMatch(product.Name.Trim(), @"^[A-Za-z\s]+$"))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(product.Name.Trim(), @"^[A-Za-z0-9\s.,&'/\-()]+$"))
             {
                 return BadRequest(ApiResponse<object>.Fail(
-                    "Name can contain only letters and spaces.",
+                    "Name contains invalid characters.",
                     traceId: HttpContext.TraceIdentifier));
             }
 
@@ -544,10 +544,10 @@ namespace IMSBackend.Controllers
                     traceId: HttpContext.TraceIdentifier));
             }
 
-            if (!System.Text.RegularExpressions.Regex.IsMatch(updated.Name.Trim(), @"^[A-Za-z\s]+$"))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(updated.Name.Trim(), @"^[A-Za-z0-9\s.,&'/\-()]+$"))
             {
                 return BadRequest(ApiResponse<object>.Fail(
-                    "Name can contain only letters and spaces.",
+                    "Name contains invalid characters.",
                     traceId: HttpContext.TraceIdentifier));
             }
 
@@ -1596,9 +1596,9 @@ namespace IMSBackend.Controllers
                 return "Product name is required.";
             }
 
-            if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z0-9\s.,&'/\-()]+$"))
             {
-                return "Name can contain only letters and spaces.";
+                return "Name contains invalid characters.";
             }
 
             var skuError = ValidateSkuFormat(dto.SKU);
@@ -1947,9 +1947,9 @@ namespace IMSBackend.Controllers
 
             foreach (var variant in variants)
             {
-                if (!string.IsNullOrWhiteSpace(variant.VariantName) && !System.Text.RegularExpressions.Regex.IsMatch(variant.VariantName.Trim(), @"^[A-Za-z\s]+$"))
+                if (!string.IsNullOrWhiteSpace(variant.VariantName) && !System.Text.RegularExpressions.Regex.IsMatch(variant.VariantName.Trim(), @"^[A-Za-z0-9\s.,&'/\-()]+$"))
                 {
-                    return "Name can contain only letters and spaces.";
+                    return "Name contains invalid characters.";
                 }
                 if ((variant.PriceDelta ?? 0) < 0)
                 {

@@ -352,7 +352,15 @@ export default function SupplierAddressTab({
               : getVisibleError({ error: addressErrors.state, blurred: stateBlurred, focused: stateFocused, submitted: showErrors })
             const pincodeError = pincodeSuppressed
               ? ''
-              : getVisibleError({ error: addressErrors.pincode, blurred: pincodeBlurred, focused: pincodeFocused, submitted: showErrors })
+              : addressErrors.pincode && (showErrors || pincodeBlurred || (address.pincode && String(address.pincode).trim().length >= 6))
+                ? addressErrors.pincode
+                : getVisibleError({ error: addressErrors.pincode, blurred: pincodeBlurred, focused: pincodeFocused, submitted: showErrors })
+            const line1Error = addressErrors.addressLine1 && (showErrors || line1Blurred || (address.addressLine1 && address.addressLine1.trim().length >= 3))
+              ? addressErrors.addressLine1
+              : getVisibleError({ error: addressErrors.addressLine1, blurred: line1Blurred, focused: line1Focused, submitted: showErrors })
+            const line2Error = addressErrors.addressLine2 && (showErrors || line2Blurred || (address.addressLine2 && address.addressLine2.trim().length >= 3))
+              ? addressErrors.addressLine2
+              : getVisibleError({ error: addressErrors.addressLine2, blurred: line2Blurred, focused: line2Focused, submitted: showErrors })
             const countryError = countrySuppressed
               ? ''
               : getVisibleError({ error: addressErrors.country, blurred: countryBlurred, focused: countryFocused, submitted: showErrors })
@@ -399,7 +407,7 @@ export default function SupplierAddressTab({
                   onFocus={(event) => handleAddressFocus(index, event)}
                   onChange={(event) => handleAddressChange(index, event)}
                   onBlur={(event) => handleAddressBlur(index, event)}
-                  error={getVisibleError({ error: addressErrors.addressLine1, blurred: line1Blurred, focused: line1Focused, submitted: showErrors })}
+                  error={line1Error}
                   className={`supplier-address-field ${getCompleteClass({ value: address.addressLine1, error: addressErrors.addressLine1, blurred: line1Blurred && !line1Focused })}`.trim()}
                   disabled={readOnly}
                 />
@@ -412,7 +420,7 @@ export default function SupplierAddressTab({
                   onFocus={(event) => handleAddressFocus(index, event)}
                   onChange={(event) => handleAddressChange(index, event)}
                   onBlur={(event) => handleAddressBlur(index, event)}
-                  error={getVisibleError({ error: addressErrors.addressLine2, blurred: line2Blurred, focused: line2Focused, submitted: showErrors })}
+                  error={line2Error}
                   className={`supplier-address-field ${getCompleteClass({ value: address.addressLine2, error: addressErrors.addressLine2, blurred: line2Blurred && !line2Focused })}`.trim()}
                   disabled={readOnly}
                 />

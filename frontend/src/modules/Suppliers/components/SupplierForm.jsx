@@ -157,6 +157,31 @@ function isIndiaCountry(value) {
   return normalizeCountry(value).toLowerCase() === 'india'
 }
 
+export function getPincodeStateError(pincode, state, country = 'India') {
+  const cleanPincode = cleanString(pincode)
+  const cleanState = cleanString(getSelectValue(state))
+  const cleanCountry = normalizeCountry(country)
+
+  if (!isIndiaCountry(cleanCountry) || !/^[0-9]{6}$/.test(cleanPincode) || !cleanState) {
+    return ''
+  }
+
+  const matchingStateKey = Object.keys(STATE_PINCODE_PREFIXES).find(
+    (key) => key.toLowerCase() === cleanState.toLowerCase()
+  )
+
+  if (!matchingStateKey) {
+    return ''
+  }
+
+  const prefixes = STATE_PINCODE_PREFIXES[matchingStateKey] || []
+  if (prefixes.length > 0 && !prefixes.some((prefix) => cleanPincode.startsWith(prefix))) {
+    return 'Pincode does not belong to the selected state.'
+  }
+
+  return ''
+}
+
 function normalizeAddress(address = {}) {
   const country = normalizeCountry(address.country) || 'India'
   const state = cleanString(getSelectValue(address.state))
@@ -301,25 +326,23 @@ function getContactNameError(value) {
   if (nextValue.length > INPUT_LIMITS.contactName) return `Contact name cannot exceed ${INPUT_LIMITS.contactName} characters.`
   if (!/[A-Za-z]/.test(nextValue) || /^\d+$/.test(nextValue)) return 'Contact name must contain alphabetic characters and cannot contain only numbers.'
   if (/\s{2,}/.test(nextValue)) return 'Contact name cannot contain repeated spaces.'
-  return /^[A-Za-z ]+$/.test(nextValue)
+  return /^[A-Za-z0-9 .&'/\-()]+$/.test(nextValue)
     ? ''
-    : 'Contact name can contain only letters and spaces.'
+    : 'Contact name can contain letters, numbers, spaces, and common punctuation only.'
 }
 
-function getBusinessNameError(value, label, { required = true, min = 3, max = 150, allowAmpersand = false } = {}) {
+function getBusinessNameError(value, label, { required = true, min = 3, max = 150 } = {}) {
   const nextValue = cleanString(value)
-  const allowedPattern = allowAmpersand ? /^[A-Za-z0-9 .&'-]+$/ : /^[A-Za-z0-9 .'-]+$/
+  const allowedPattern = /^[A-Za-z0-9\s.,&'/\-()]+$/
 
   if (!nextValue) return required ? `${label} is required.` : ''
   if (nextValue.length < min) return `${label} must be at least ${min} characters.`
   if (nextValue.length > max) return `${label} cannot exceed ${max} characters.`
   if (!/[A-Za-z]/.test(nextValue) || /^\d+$/.test(nextValue)) return `${label} must contain alphabetic characters and cannot contain only numbers.`
   if (!allowedPattern.test(nextValue)) {
-    return allowAmpersand
-      ? `${label} can contain letters, numbers, spaces, periods, ampersands, apostrophes, and hyphens only.`
-      : `${label} can contain letters, numbers, spaces, periods, apostrophes, and hyphens only.`
+    return `${label} contains invalid characters.`
   }
-  return /([.&'-])\1{1,}/.test(nextValue) ? `${label} contains repeated punctuation.` : ''
+  return ''
 }
 
 function getBankNameError(value) {
@@ -347,11 +370,15 @@ function getAddressLineError(value, label, required = false) {
   const nextValue = cleanString(value)
   if (!nextValue) return required ? `${label} is required.` : ''
   if (nextValue.length < 3) return `${label} must be at least 3 characters.`
-  if (nextValue.length > INPUT_LIMITS.addressLine) return `${label} cannot exceed ${INPUT_LIMITS.addressLine} characters.`
-  if (!/[A-Za-z0-9]/.test(nextValue)) return `${label} must contain letters or numbers.`
-  return /^[A-Za-z0-9 .,/#&'-]+$/.test(nextValue)
+  if (INPUT_LIMITS?.addressLine && nextValue.length > INPUT_LIMITS.addressLine) {
+    return `${label} cannot exceed ${INPUT_LIMITS.addressLine} characters.`
+  }
+  if (!/[A-Za-z]/.test(nextValue)) {
+    return 'Address must contain meaningful text.'
+  }
+  return /^[A-Za-z0-9 .,/#'()\--]+$/.test(nextValue)
     ? ''
-    : `${label} contains invalid address characters.`
+    : 'Enter a valid address using letters, numbers, spaces and common address punctuation.'
 }
 
 function getEmailError(value) {
@@ -559,7 +586,17 @@ function uniqueCleanValues(values) {
 
 function getInitialContacts(initialValues) {
   if (Array.isArray(initialValues?.contacts) && initialValues.contacts.length > 0) {
-    return initialValues.contacts
+    return initialValues.contacts.map((contact) => ({
+      ...contact,
+      contactId: contact.contactId || contact.id || null,
+      id: contact.contactId || contact.id || null,
+      name: contact.name || '',
+      designation: contact.designation || '',
+      department: contact.department || '',
+      phone: contact.phone || '',
+      email: contact.email || '',
+      isPrimary: Boolean(contact.isPrimary),
+    }))
   }
 
   if (!initialValues?.contact && !initialValues?.phone && !initialValues?.email) {
@@ -871,9 +908,9 @@ export default function SupplierForm({
   const contactErrors = useMemo(() => {
     const phones = supplier.contacts.map((contact) => sanitizePhoneInput(contact.phone)).filter(Boolean)
     const emails = supplier.contacts.map((contact) => sanitizeEmailInput(contact.email)).filter(Boolean)
-    const contactKeys = supplier.contacts
-      .map((contact) => `${cleanString(contact.name).toLowerCase()}|${sanitizePhoneInput(contact.phone)}|${sanitizeEmailInput(contact.email)}`)
-      .filter((key) => key !== '||')
+    const normalizedContactNames = supplier.contacts
+      .map((contact) => cleanString(contact.name).toLowerCase())
+      .filter(Boolean)
     const primaryCount = supplier.contacts.filter((contact) => contact.isPrimary).length
 
     return supplier.contacts.map((contact) => {
@@ -881,19 +918,23 @@ export default function SupplierForm({
         return {}
       }
 
+      const normalizedName = cleanString(contact.name).toLowerCase()
+
       return {
-        name: getContactNameError(contact.name),
+        name:
+          getContactNameError(contact.name) ||
+          (normalizedName && hasDuplicate(normalizedContactNames, normalizedName)
+            ? 'A contact with this name already exists for this supplier.'
+            : ''),
         designation: getBusinessTitleError(contact.designation, 'Designation'),
         department: getBusinessTitleError(contact.department, 'Department'),
-        phone: getPhoneError(contact.phone, 'Contact phone') ||
+        phone:
+          getPhoneError(contact.phone, 'Contact phone') ||
           (hasDuplicate(phones, sanitizePhoneInput(contact.phone)) ? 'Contact phone is already used.' : ''),
-        email: getOptionalEmailError(contact.email) ||
+        email:
+          getOptionalEmailError(contact.email) ||
           (hasDuplicate(emails, sanitizeEmailInput(contact.email)) ? 'Contact email is already used.' : ''),
-        duplicate:
-          (hasDuplicate(contactKeys, `${cleanString(contact.name).toLowerCase()}|${sanitizePhoneInput(contact.phone)}|${sanitizeEmailInput(contact.email)}`)
-            ? 'Duplicate contact is not allowed.'
-            : '') ||
-          (primaryCount > 1 ? 'Only one primary contact is allowed.' : ''),
+        duplicate: primaryCount > 1 ? 'Only one primary contact is allowed.' : '',
       }
     })
   }, [supplier.contacts])
@@ -926,25 +967,14 @@ export default function SupplierForm({
           !cleanString(address.pincode)
             ? ''
             : isIndiaCountry(country)
-              ? getPatternError(address.pincode, /^[0-9]{6}$/, 'Pincode must be 6 digits.')
+              ? (getPatternError(address.pincode, /^[0-9]{6}$/, 'Enter a valid 6-digit pincode.') ||
+                 getPincodeStateError(address.pincode, state, country))
               : getPatternError(address.pincode, /^[A-Za-z0-9 -]{3,12}$/, 'Postal code must be 3 to 12 characters.'),
       }
     })
   }, [supplier.addresses])
 
-  const addressWarnings = useMemo(() => supplier.addresses.map((address) => {
-    const country = normalizeCountry(address.country)
-    const state = cleanString(getSelectValue(address.state))
-
-    if (!isIndiaCountry(country) || !/^[0-9]{6}$/.test(address.pincode) || !state) {
-      return {}
-    }
-
-    const prefixes = STATE_PINCODE_PREFIXES[state] || []
-    return prefixes.length > 0 && !prefixes.some((prefix) => address.pincode.startsWith(prefix))
-      ? { pincode: 'Pincode may not belong to the selected state.' }
-      : {}
-  }), [supplier.addresses])
+  const addressWarnings = useMemo(() => supplier.addresses.map(() => ({})), [supplier.addresses])
 
   const bankErrors = useMemo(() => {
     const accountNumbers = supplier.bankAccounts.map((account) => onlyDigits(account.accountNumber)).filter(Boolean)
@@ -1005,15 +1035,10 @@ export default function SupplierForm({
     const { name, value } = event.target
     const nextValue = sanitizeBasicValue(name, value)
 
-    setSupplier((currentValue) => {
-      const nextSupplier = { ...currentValue, [name]: nextValue }
-
-      if (['name', 'phone', 'email'].includes(name)) {
-        return syncFirstContact(nextSupplier, currentValue, contactDirtyFields)
-      }
-
-      return nextSupplier
-    })
+    setSupplier((currentValue) => ({
+      ...currentValue,
+      [name]: nextValue,
+    }))
   }
 
   function handleBlur(event) {

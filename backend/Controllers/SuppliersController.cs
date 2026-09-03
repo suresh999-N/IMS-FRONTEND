@@ -118,6 +118,130 @@ namespace IMSBackend.Controllers
             return null;
         }
 
+        private static readonly Dictionary<string, string[]> StatePincodePrefixes = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Andaman And Nicobar Islands", new[] { "744" } },
+            { "Andhra Pradesh", new[] { "51", "52", "53" } },
+            { "Arunachal Pradesh", new[] { "790", "791", "792" } },
+            { "Assam", new[] { "78" } },
+            { "Bihar", new[] { "80", "81", "82", "83", "84", "85" } },
+            { "Chandigarh", new[] { "160" } },
+            { "Chhattisgarh", new[] { "49" } },
+            { "Dadra And Nagar Haveli And Daman And Diu", new[] { "396" } },
+            { "Delhi", new[] { "11" } },
+            { "Goa", new[] { "403" } },
+            { "Gujarat", new[] { "36", "37", "38", "39" } },
+            { "Haryana", new[] { "12", "13" } },
+            { "Himachal Pradesh", new[] { "17" } },
+            { "Jammu And Kashmir", new[] { "18", "19" } },
+            { "Jharkhand", new[] { "81", "82", "83" } },
+            { "Karnataka", new[] { "56", "57", "58", "59" } },
+            { "Kerala", new[] { "67", "68", "69" } },
+            { "Ladakh", new[] { "194" } },
+            { "Lakshadweep", new[] { "682" } },
+            { "Madhya Pradesh", new[] { "45", "46", "47", "48" } },
+            { "Maharashtra", new[] { "40", "41", "42", "43", "44" } },
+            { "Manipur", new[] { "795" } },
+            { "Meghalaya", new[] { "793", "794" } },
+            { "Mizoram", new[] { "796" } },
+            { "Nagaland", new[] { "797", "798" } },
+            { "Odisha", new[] { "75", "76", "77" } },
+            { "Puducherry", new[] { "605" } },
+            { "Punjab", new[] { "14", "15", "16" } },
+            { "Rajasthan", new[] { "30", "31", "32", "33", "34" } },
+            { "Sikkim", new[] { "737" } },
+            { "Tamil Nadu", new[] { "60", "61", "62", "63", "64" } },
+            { "Telangana", new[] { "50" } },
+            { "Tripura", new[] { "799" } },
+            { "Uttar Pradesh", new[] { "20", "21", "22", "23", "24", "25", "26", "27", "28" } },
+            { "Uttarakhand", new[] { "24", "25", "26" } },
+            { "West Bengal", new[] { "70", "71", "72", "73", "74" } }
+        };
+
+        private static string? ValidateAddressLines(SupplierAddressDto? address)
+        {
+            if (address == null) return null;
+
+            var line1 = !string.IsNullOrWhiteSpace(address.AddressLine1)
+                ? address.AddressLine1.Trim()
+                : (address.AddressLine ?? "").Trim();
+
+            var line2 = (address.AddressLine2 ?? "").Trim();
+
+            if (string.IsNullOrWhiteSpace(line1))
+            {
+                return "Address Line 1 is required.";
+            }
+
+            var line1Error = CheckAddressLineText(line1, "Address Line 1");
+            if (line1Error != null) return line1Error;
+
+            if (!string.IsNullOrWhiteSpace(line2))
+            {
+                var line2Error = CheckAddressLineText(line2, "Address Line 2");
+                if (line2Error != null) return line2Error;
+            }
+
+            return null;
+        }
+
+        private static string? CheckAddressLineText(string value, string label)
+        {
+            if (value.Length < 3)
+            {
+                return $"{label} must be at least 3 characters.";
+            }
+            if (value.Length > 150)
+            {
+                return $"{label} cannot exceed 150 characters.";
+            }
+            if (!System.Text.RegularExpressions.Regex.IsMatch(value, @"[A-Za-z]"))
+            {
+                return "Address must contain meaningful text.";
+            }
+            if (!System.Text.RegularExpressions.Regex.IsMatch(value, @"^[A-Za-z0-9 .,/#'()\--]+$"))
+            {
+                return "Enter a valid address using letters, numbers, spaces and common address punctuation.";
+            }
+            return null;
+        }
+
+        private static string? ValidateAddressPincode(SupplierAddressDto? address)
+        {
+            if (address == null) return null;
+
+            var country = string.IsNullOrWhiteSpace(address.Country) ? "India" : address.Country.Trim();
+            var isIndia = string.Equals(country, "India", StringComparison.OrdinalIgnoreCase);
+
+            var pincode = (address.Pincode ?? "").Trim();
+            var state = (address.State ?? "").Trim();
+
+            if (!isIndia)
+            {
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(pincode))
+            {
+                return null;
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(pincode, @"^\d{6}$"))
+            {
+                return "Enter a valid 6-digit pincode.";
+            }
+
+            if (!string.IsNullOrWhiteSpace(state) && StatePincodePrefixes.TryGetValue(state, out var prefixes))
+            {
+                if (prefixes.Length > 0 && !prefixes.Any(prefix => pincode.StartsWith(prefix)))
+                {
+                    return "Pincode does not belong to the selected state.";
+                }
+            }
+
+            return null;
+        }
+
         private static string? ValidateWebsite(string? value)
         {
             if (string.IsNullOrWhiteSpace(value)) return null;
@@ -538,6 +662,8 @@ namespace IMSBackend.Controllers
 
                     Purchases = x.Purchases,
                     TotalPurchaseAmount = x.Purchases,
+                    PaidAmount = x.PaidAmount,
+                    TotalPaid = x.PaidAmount,
                     Outstanding = x.Purchases - x.PaidAmount,
                     OutstandingPayable = x.Purchases - x.PaidAmount,
                     LastPurchaseDate = x.LastPurchaseDate
@@ -681,6 +807,8 @@ namespace IMSBackend.Controllers
 
                 Purchases = supplier.Purchases,
                 TotalPurchaseAmount = supplier.Purchases,
+                PaidAmount = supplier.PaidAmount,
+                TotalPaid = supplier.PaidAmount,
                 Outstanding = supplier.Purchases - supplier.PaidAmount,
                 OutstandingPayable = supplier.Purchases - supplier.PaidAmount,
                 LastPurchaseDate = supplier.LastPurchaseDate
@@ -771,6 +899,46 @@ namespace IMSBackend.Controllers
                         return BadRequest(new
                         {
                             message = websiteError
+                        });
+                    }
+                }
+
+                if (dto.Addresses != null && dto.Addresses.Any())
+                {
+                    foreach (var addr in dto.Addresses)
+                    {
+                        var addressLineError = ValidateAddressLines(addr);
+                        if (addressLineError != null)
+                        {
+                            return BadRequest(new
+                            {
+                                message = addressLineError
+                            });
+                        }
+
+                        var addressPincodeError = ValidateAddressPincode(addr);
+                        if (addressPincodeError != null)
+                        {
+                            return BadRequest(new
+                            {
+                                message = addressPincodeError
+                            });
+                        }
+                    }
+                }
+
+                if (dto.Contacts != null && dto.Contacts.Any())
+                {
+                    var validContactNames = dto.Contacts
+                        .Where(c => c != null && !string.IsNullOrWhiteSpace(c.Name))
+                        .Select(c => System.Text.RegularExpressions.Regex.Replace(c.Name!.Trim(), @"\s+", " ").ToLower())
+                        .ToList();
+
+                    if (validContactNames.Count != validContactNames.Distinct().Count())
+                    {
+                        return BadRequest(new
+                        {
+                            message = "A contact with this name already exists for this supplier."
                         });
                     }
                 }
@@ -1112,6 +1280,46 @@ namespace IMSBackend.Controllers
                     }
                 }
 
+                if (dto.Addresses != null && dto.Addresses.Any())
+                {
+                    foreach (var addr in dto.Addresses)
+                    {
+                        var addressLineError = ValidateAddressLines(addr);
+                        if (addressLineError != null)
+                        {
+                            return BadRequest(new
+                            {
+                                message = addressLineError
+                            });
+                        }
+
+                        var addressPincodeError = ValidateAddressPincode(addr);
+                        if (addressPincodeError != null)
+                        {
+                            return BadRequest(new
+                            {
+                                message = addressPincodeError
+                            });
+                        }
+                    }
+                }
+
+                if (dto.Contacts != null && dto.Contacts.Any())
+                {
+                    var validContactNames = dto.Contacts
+                        .Where(c => c != null && !string.IsNullOrWhiteSpace(c.Name))
+                        .Select(c => System.Text.RegularExpressions.Regex.Replace(c.Name!.Trim(), @"\s+", " ").ToLower())
+                        .ToList();
+
+                    if (validContactNames.Count != validContactNames.Distinct().Count())
+                    {
+                        return BadRequest(new
+                        {
+                            message = "A contact with this name already exists for this supplier."
+                        });
+                    }
+                }
+
                 var normalizedStatus = SupplierStatusNormalizer.Normalize(dto.Status, supplier.Status ?? "active");
                 if (normalizedStatus == null)
                 {
@@ -1221,7 +1429,8 @@ namespace IMSBackend.Controllers
 
                 foreach (var contactDto in incomingContacts)
                 {
-                    var targetContactId = contactDto.ContactId; SupplierContact? existingContact = null;
+                    var targetContactId = contactDto.ContactId ?? contactDto.Id;
+                    SupplierContact? existingContact = null;
 
                     if (targetContactId.HasValue && targetContactId.Value > 0)
                     {

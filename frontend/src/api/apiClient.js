@@ -453,11 +453,23 @@ export async function apiRequest(endpoint, options = {}) {
       })
  
       if (response.status === 401) {
-        window.dispatchEvent(
-          new CustomEvent(AUTH_UNAUTHORIZED_EVENT, {
-            detail: { status: response.status },
-          }),
-        )
+        const isPublicAuthEndpoint =
+          requestUrl.includes('/auth/login') ||
+          requestUrl.includes('/auth/resend-verification') ||
+          requestUrl.includes('/auth/resend-login-otp') ||
+          requestUrl.includes('/auth/verify-otp') ||
+          requestUrl.includes('/auth/verify-email-otp') ||
+          requestUrl.includes('/auth/forgot-password') ||
+          requestUrl.includes('/auth/reset-password') ||
+          requestUrl.includes('/auth/register');
+
+        if (!isPublicAuthEndpoint) {
+          window.dispatchEvent(
+            new CustomEvent(AUTH_UNAUTHORIZED_EVENT, {
+              detail: { status: response.status },
+            }),
+          )
+        }
       }
  
       return {

@@ -42,8 +42,8 @@ namespace IMSBackend.Controllers
             if (string.IsNullOrWhiteSpace(dto.Name))
                 return BadRequest("Name is required");
 
-            if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
-                return BadRequest("Name can contain only letters and spaces.");
+            if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z0-9\s.,&'/\-()]+$"))
+                return BadRequest("Name contains invalid characters.");
 
             var attribute = new ProductAttribute
             {
@@ -68,8 +68,8 @@ namespace IMSBackend.Controllers
             if (string.IsNullOrWhiteSpace(dto.Name))
                 return BadRequest("Name is required");
 
-            if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
-                return BadRequest("Name can contain only letters and spaces.");
+            if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z0-9\s.,&'/\-()]+$"))
+                return BadRequest("Name contains invalid characters.");
 
             attribute.Name = dto.Name;
 

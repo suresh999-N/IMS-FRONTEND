@@ -107,10 +107,10 @@ namespace IMSBackend.Controllers
 
                 PurchaseOrder? po = null;
 
-                if (dto.PoId > 0)
+                if (dto.PoId.HasValue && dto.PoId.Value > 0)
                 {
                     po = await _context.PurchaseOrders
-                        .FirstOrDefaultAsync(x => x.PoId == dto.PoId, cancellationToken);
+                        .FirstOrDefaultAsync(x => x.PoId == dto.PoId.Value, cancellationToken);
 
                     if (po == null)
                         return NotFound("Purchase order not found");
@@ -120,7 +120,7 @@ namespace IMSBackend.Controllers
 
                     var paidAmount = await _context.SupplierPayments
                         .Where(x =>
-                            x.PoId == dto.PoId &&
+                            x.PoId == dto.PoId.Value &&
                             !x.IsCancelled)
                         .SumAsync(x => x.Amount ?? 0, cancellationToken);
                     var remainingBalance = (po.TotalAmount ?? 0) - paidAmount;
@@ -133,7 +133,7 @@ namespace IMSBackend.Controllers
                 var payment = new SupplierPayment
                 {
                     SupplierId = dto.SupplierId,
-                    PoId = dto.PoId > 0 ? dto.PoId : null,
+                    PoId = (dto.PoId.HasValue && dto.PoId.Value > 0) ? dto.PoId.Value : null,
                     Amount = dto.Amount,
                     PaymentDate = dto.PaymentDate,
                     PaymentMethod = dto.PaymentMethod,

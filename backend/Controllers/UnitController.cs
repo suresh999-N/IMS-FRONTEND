@@ -254,9 +254,9 @@ namespace IMSBackend.Controllers
                 return "Unit name is required.";
             }
 
-            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-z\s\-°%()]+$"))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-z0-9\s.,&'/\-°%()]+$"))
             {
-                return "Name can contain only letters and spaces.";
+                return "Name contains invalid characters.";
             }
 
             if (string.IsNullOrWhiteSpace(shortName))
