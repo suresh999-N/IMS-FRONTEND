@@ -133,7 +133,57 @@ export default function SupplierDetailsPage({
 }) {
   const [activeTab, setActiveTab] = useState(initialTab)
   const currentSupplier = supplier || {}
-  const performance = useMemo(() => currentSupplier.performance || {}, [currentSupplier])
+
+  const performance = useMemo(() => {
+    const apiPerf = currentSupplier.performance || {}
+    const totalOrdersFromApi = apiPerf.totalOrders ?? apiPerf.TotalOrders
+    if (totalOrdersFromApi != null && totalOrdersFromApi !== '' && Number(totalOrdersFromApi) > 0) {
+      return apiPerf
+    }
+
+    const poList = Array.isArray(purchases) ? purchases : []
+    const totalOrders = poList.length
+
+    if (totalOrders === 0) {
+      return apiPerf
+    }
+
+    const completedOrReceived = poList.filter((p) => {
+      const st = String(p?.status || p?.orderStatus || p?.Status || '').toLowerCase()
+      return ['completed', 'received', 'delivered', 'fulfilled', 'closed', 'ordered'].includes(st)
+    }).length
+
+    const delayedCount = poList.filter((p) => {
+      const st = String(p?.status || p?.orderStatus || p?.Status || '').toLowerCase()
+      return ['delayed', 'overdue', 'cancelled', 'late'].includes(st)
+    }).length
+
+    const onTimeDeliveries = Math.max(0, completedOrReceived - delayedCount)
+    const onTimeRate = totalOrders > 0 ? Math.round((onTimeDeliveries / totalOrders) * 100) : 100
+
+    const sortedDates = poList
+      .map((p) => p?.orderDate || p?.receivedDate || p?.createdAt || p?.createdDate || p?.date)
+      .filter(Boolean)
+      .sort((a, b) => new Date(b) - new Date(a))
+
+    const lastSupplyDate = sortedDates[0] || null
+
+    let calculatedRating = '5.0'
+    if (onTimeRate < 50) calculatedRating = '2.5'
+    else if (onTimeRate < 75) calculatedRating = '3.5'
+    else if (onTimeRate < 90) calculatedRating = '4.2'
+    else if (onTimeRate < 100) calculatedRating = '4.8'
+
+    return {
+      ...apiPerf,
+      totalOrders,
+      onTimeDeliveries,
+      delayedDeliveries: delayedCount,
+      vendorRating: apiPerf.vendorRating || apiPerf.rating || calculatedRating,
+      lastSupplyDate: apiPerf.lastSupplyDate || lastSupplyDate,
+      returnPercentage: apiPerf.returnPercentage || 0,
+    }
+  }, [currentSupplier, purchases])
 
   if (!supplier || (!supplier.id && !supplier.supplierId && !supplier.name)) {
     return null

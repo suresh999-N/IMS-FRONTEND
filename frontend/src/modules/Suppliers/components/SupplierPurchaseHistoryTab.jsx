@@ -12,17 +12,17 @@ export default function SupplierPurchaseHistoryTab({ purchases }) {
       sortable: true,
       render: (po) => (
         <button type="button" className="supplier-link-button">
-          {formatEmpty(po.poNumber)}
+          {formatEmpty(po.poNumber || po.purchaseOrderNumber || po.PoNumber || po.PurchaseOrderNumber || (po.id ? `PO-${po.id}` : ''))}
           <ExternalLink size={13} />
         </button>
       ),
     },
-    { key: 'orderDate', label: 'Order Date', sortable: true, render: (po) => formatDate(po.orderDate) || 'Date pending' },
-    { key: 'totalAmount', label: 'Total Amount', sortable: true, render: (po) => formatCurrency(po.totalAmount) },
+    { key: 'orderDate', label: 'Order Date', sortable: true, render: (po) => formatDate(po.orderDate || po.createdAt || po.createdDate || po.date) || 'Date pending' },
+    { key: 'totalAmount', label: 'Total Amount', sortable: true, render: (po) => formatCurrency(po.totalAmount ?? po.grandTotal ?? po.amount ?? 0) },
     { key: 'status', label: 'Status', sortable: true, render: (po) => <StatusBadge type={getStatusBadgeType(po.status)}>{formatStatus(po.status)}</StatusBadge> },
-    { key: 'receivedQuantity', label: 'Received Qty', sortable: true, render: (po) => formatEmpty(po.receivedQuantity) },
-    { key: 'pendingQuantity', label: 'Pending Qty', sortable: true, render: (po) => formatEmpty(po.pendingQuantity) },
-    { key: 'paymentStatus', label: 'Payment Status', sortable: true, render: (po) => <StatusBadge type={getStatusBadgeType(po.paymentStatus)}>{formatStatus(po.paymentStatus)}</StatusBadge> },
+    { key: 'receivedQuantity', label: 'Received Qty', sortable: true, render: (po) => formatEmpty(po.receivedQuantity ?? po.totalQuantity ?? po.quantity) },
+    { key: 'pendingQuantity', label: 'Pending Qty', sortable: true, render: (po) => formatEmpty(po.pendingQuantity ?? 0) },
+    { key: 'paymentStatus', label: 'Payment Status', sortable: true, render: (po) => <StatusBadge type={getStatusBadgeType(po.paymentStatus || po.invoiceStatus || 'Pending')}>{formatStatus(po.paymentStatus || po.invoiceStatus || 'Pending')}</StatusBadge> },
   ]
 
   return (

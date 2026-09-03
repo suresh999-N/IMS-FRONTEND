@@ -5,9 +5,10 @@ import { SupplierSection } from './SupplierFormSections'
 
 export default function SupplierPaymentsTab({ payments }) {
   const columns = [
-    { key: 'paymentDate', label: 'Payment Date', sortable: true, render: (payment) => formatDate(payment.paymentDate) || 'Date pending' },
-    { key: 'amount', label: 'Amount', sortable: true, render: (payment) => formatCurrency(payment.amount) },
-    { key: 'referenceNumber', label: 'Reference Number', sortable: true, render: (payment) => formatEmpty(payment.referenceNumber) },
+    { key: 'paymentNumber', label: 'Payment #', sortable: true, render: (payment) => formatEmpty(payment.paymentNumber || payment.id ? `PAY-${payment.id}` : '') },
+    { key: 'paymentDate', label: 'Payment Date', sortable: true, render: (payment) => formatDate(payment.paymentDate || payment.createdAt || payment.date) || 'Date pending' },
+    { key: 'amount', label: 'Amount', sortable: true, render: (payment) => formatCurrency(payment.amount ?? payment.paymentAmount ?? 0) },
+    { key: 'referenceNumber', label: 'Reference Number', sortable: true, render: (payment) => formatEmpty(payment.referenceNumber || payment.chequeNo || payment.transactionId) },
     { key: 'paymentMethod', label: 'Payment Method', sortable: true, render: (payment) => formatEmpty(formatPaymentMethod(payment.paymentMethod)) },
     { key: 'status', label: 'Status', sortable: true, render: (payment) => <StatusBadge type={getStatusBadgeType(payment.status)}>{formatStatus(payment.status)}</StatusBadge> },
   ]

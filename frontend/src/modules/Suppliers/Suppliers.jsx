@@ -27,6 +27,10 @@ import {
   restoreSupplier,
   updateSupplier,
 } from '../../api/suppliersApi'
+import {
+  getPurchaseOrders,
+  getSupplierPayments,
+} from '../../api/businessApi'
 import { getCategories } from '../../api/productApi'
 import SupplierDetailsPage from './components/SupplierDetailsPage'
 import SupplierForm from './components/SupplierForm'
@@ -283,6 +287,8 @@ export default function Suppliers({
   const { hasPermission } = useAuth()
 
   const [suppliers, setSuppliers] = useState([])
+  const [purchasesState, setPurchasesState] = useState([])
+  const [supplierPaymentsState, setSupplierPaymentsState] = useState([])
   const [editingSupplier, setEditingSupplier] = useState(null)
   const [detailsSupplier, setDetailsSupplier] = useState(null)
   const [detailsInitialTab, setDetailsInitialTab] = useState('overview')
@@ -301,6 +307,14 @@ export default function Suppliers({
   const listRequestRef = useRef(0)
   const detailRequestRef = useRef(0)
   const debouncedSearch = useDebouncedValue(filters.search, 300)
+
+  const activePurchases = useMemo(() => {
+    return Array.isArray(purchases) && purchases.length > 0 ? purchases : purchasesState
+  }, [purchases, purchasesState])
+
+  const activeSupplierPayments = useMemo(() => {
+    return Array.isArray(supplierPayments) && supplierPayments.length > 0 ? supplierPayments : supplierPaymentsState
+  }, [supplierPayments, supplierPaymentsState])
 
   const canCreate = hasPermission('suppliers', 'create')
   const canEdit = hasPermission('suppliers', 'edit')
@@ -321,18 +335,30 @@ export default function Suppliers({
     setIsLoading(true)
 
     try {
-      const response = await getSuppliers()
+      const [suppliersRes, purchasesRes, paymentsRes] = await Promise.allSettled([
+        getSuppliers(),
+        getPurchaseOrders(),
+        getSupplierPayments(),
+      ])
 
       if (requestId !== listRequestRef.current) {
         return
       }
 
-      if (!response.success) {
-        throw new Error(getSupplierApiError(response, 'Suppliers could not be loaded from the IMS API.'))
+      if (suppliersRes.status === 'fulfilled' && suppliersRes.value?.success) {
+        setSuppliers(Array.isArray(suppliersRes.value.data) ? suppliersRes.value.data : [])
+        setMessage(null)
+      } else if (suppliersRes.status === 'fulfilled' && suppliersRes.value) {
+        throw new Error(getSupplierApiError(suppliersRes.value, 'Suppliers could not be loaded from the IMS API.'))
       }
 
-      setSuppliers(Array.isArray(response.data) ? response.data : [])
-      setMessage(null)
+      if (purchasesRes.status === 'fulfilled' && purchasesRes.value?.success) {
+        setPurchasesState(Array.isArray(purchasesRes.value.data) ? purchasesRes.value.data : [])
+      }
+
+      if (paymentsRes.status === 'fulfilled' && paymentsRes.value?.success) {
+        setSupplierPaymentsState(Array.isArray(paymentsRes.value.data) ? paymentsRes.value.data : [])
+      }
     } catch (error) {
       const nextMessage = {
         success: false,
@@ -440,19 +466,21 @@ export default function Suppliers({
     const targetId = String(selectedSupplier.id || selectedSupplier.supplierId || '').trim().toLowerCase()
     const targetCode = String(selectedSupplier.supplierCode || selectedSupplier.code || '').trim().toLowerCase()
     const targetName = String(selectedSupplier.name || '').trim().toLowerCase()
+    const targetCompany = String(selectedSupplier.companyName || '').trim().toLowerCase()
 
-    return purchases.filter((item) => {
-      const itemSupId = String(item.supplierId || item.SupplierId || item.supplier_id || '').trim().toLowerCase()
-      const itemSupCode = String(item.supplierCode || item.SupplierCode || item.code || '').trim().toLowerCase()
-      const itemSupName = String(item.supplierName || item.SupplierName || item.supplier || '').trim().toLowerCase()
+    return activePurchases.filter((item) => {
+      const itemSupId = String(item.supplierId || item.SupplierId || item.supplier_id || item.supplierID || '').trim().toLowerCase()
+      const itemSupCode = String(item.supplierCode || item.SupplierCode || item.code || item.supplier_code || '').trim().toLowerCase()
+      const itemSupName = String(item.supplierName || item.SupplierName || item.supplier || item.partyName || item.companyName || item.vendorName || '').trim().toLowerCase()
 
-      return (
-        (targetId && (itemSupId === targetId || itemSupCode === targetId)) ||
-        (targetCode && (itemSupId === targetCode || itemSupCode === targetCode)) ||
-        (targetName && itemSupName && itemSupName === targetName)
-      )
+      const matchId = targetId && (itemSupId === targetId || itemSupCode === targetId)
+      const matchCode = targetCode && (itemSupId === targetCode || itemSupCode === targetCode)
+      const matchName = (targetName && itemSupName && (itemSupName === targetName || itemSupName.includes(targetName) || targetName.includes(itemSupName))) ||
+                        (targetCompany && itemSupName && (itemSupName === targetCompany || itemSupName.includes(targetCompany) || targetCompany.includes(itemSupName)))
+
+      return Boolean(matchId || matchCode || matchName)
     })
-  }, [selectedSupplier, purchases])
+  }, [selectedSupplier, activePurchases])
 
   const selectedPayments = useMemo(() => {
     if (!selectedSupplier) return []
@@ -460,19 +488,21 @@ export default function Suppliers({
     const targetId = String(selectedSupplier.id || selectedSupplier.supplierId || '').trim().toLowerCase()
     const targetCode = String(selectedSupplier.supplierCode || selectedSupplier.code || '').trim().toLowerCase()
     const targetName = String(selectedSupplier.name || '').trim().toLowerCase()
+    const targetCompany = String(selectedSupplier.companyName || '').trim().toLowerCase()
 
-    return supplierPayments.filter((item) => {
-      const itemSupId = String(item.supplierId || item.SupplierId || item.supplier_id || '').trim().toLowerCase()
-      const itemSupCode = String(item.supplierCode || item.SupplierCode || item.code || '').trim().toLowerCase()
-      const itemSupName = String(item.supplierName || item.SupplierName || item.supplier || '').trim().toLowerCase()
+    return activeSupplierPayments.filter((item) => {
+      const itemSupId = String(item.supplierId || item.SupplierId || item.supplier_id || item.supplierID || item.partyId || '').trim().toLowerCase()
+      const itemSupCode = String(item.supplierCode || item.SupplierCode || item.code || item.supplier_code || '').trim().toLowerCase()
+      const itemSupName = String(item.supplierName || item.SupplierName || item.supplier || item.partyName || item.companyName || item.vendorName || '').trim().toLowerCase()
 
-      return (
-        (targetId && (itemSupId === targetId || itemSupCode === targetId)) ||
-        (targetCode && (itemSupId === targetCode || itemSupCode === targetCode)) ||
-        (targetName && itemSupName && itemSupName === targetName)
-      )
+      const matchId = targetId && (itemSupId === targetId || itemSupCode === targetId)
+      const matchCode = targetCode && (itemSupId === targetCode || itemSupCode === targetCode)
+      const matchName = (targetName && itemSupName && (itemSupName === targetName || itemSupName.includes(targetName) || targetName.includes(itemSupName))) ||
+                        (targetCompany && itemSupName && (itemSupName === targetCompany || itemSupName.includes(targetCompany) || targetCompany.includes(itemSupName)))
+
+      return Boolean(matchId || matchCode || matchName)
     })
-  }, [selectedSupplier, supplierPayments])
+  }, [selectedSupplier, activeSupplierPayments])
 
   const selectedSuppliers = useMemo(() => {
     const selectedIdSet = new Set(selectedSupplierIds.map(String))
@@ -515,6 +545,15 @@ export default function Suppliers({
   async function openSupplierDetails(supplier, tab = 'overview') {
     setDetailsInitialTab(tab)
     const baseSupplier = supplier || {}
+
+    getPurchaseOrders().then((res) => {
+      if (res?.success && Array.isArray(res.data)) setPurchasesState(res.data)
+    }).catch(() => {})
+
+    getSupplierPayments().then((res) => {
+      if (res?.success && Array.isArray(res.data)) setSupplierPaymentsState(res.data)
+    }).catch(() => {})
+
     const detailedSupplier = await loadSupplierDetail(supplier)
 
     const mergedSupplier = detailedSupplier
