@@ -122,15 +122,17 @@ function getAllChildren(category, allCategories = []) {
     : []
 
   directChildren.forEach((sub) => {
+    const subId = String(sub.subCategoryId || sub.id || '')
     const nameKey = comparable(sub.name)
     if (nameKey) {
       childMap.set(nameKey, {
         ...sub,
-        id: String(sub.id || sub.subCategoryId || `sub-${nameKey}`),
-        subCategoryId: String(sub.id || sub.subCategoryId || ''),
+        id: subId ? `subcat-${subId}` : `sub-${nameKey}`,
+        subCategoryId: subId,
+        categoryId: catId,
+        parentId: catId,
         name: sub.name,
         description: sub.description || '',
-        parentId: catId,
         parentName: category.name,
         status: sub.status || 'Active',
         sourceType: 'subcategory',
@@ -141,18 +143,18 @@ function getAllChildren(category, allCategories = []) {
   allCategories.forEach((item) => {
     const itemParentId = parentIdOf(item)
     const itemId = categoryIdOf(item)
-    if (itemParentId && itemParentId === catId && itemId !== catId) {
+    if (itemParentId && itemParentId === catId && itemId !== catId && item.sourceType === 'subcategory') {
       const nameKey = comparable(item.name)
       if (nameKey && !childMap.has(nameKey)) {
         childMap.set(nameKey, {
           ...item,
-          id: itemId,
+          id: `subcat-${itemId}`,
           name: item.name,
           description: item.description || '',
           parentId: catId,
           parentName: category.name,
           status: item.status || 'Active',
-          sourceType: 'category',
+          sourceType: 'subcategory',
         })
       }
     }
@@ -226,11 +228,9 @@ function buildVisibleRows(categories, expandedIds, viewMode = 'grid') {
   // Subcategories are accessed via the dedicated Subcategories Drawer Modal.
   if (viewMode === 'grid') {
     const mainCategories = categories.filter((item) => {
+      if (item.sourceType === 'subcategory') return false
       const pId = parentIdOf(item)
-      if (!pId || pId === '0' || pId === 'null' || pId === 'undefined') {
-        return true
-      }
-      return false
+      return !pId || pId === '0' || pId === 'null' || pId === 'undefined'
     })
 
     return sortByName(mainCategories).map((node) => {
@@ -250,10 +250,11 @@ function buildVisibleRows(categories, expandedIds, viewMode = 'grid') {
     })
   }
 
-  // In Tree View: Display expandable hierarchy with tree guide lines and child rows.
+  // In Tree View: Root categories are top-level categories (not subcategory records)
   const rootCategories = categories.filter((item) => {
+    if (item.sourceType === 'subcategory') return false
     const pId = parentIdOf(item)
-    return !pId || pId === '0' || pId === 'null' || pId === 'undefined' || !categoryMap.has(pId)
+    return !pId || pId === '0' || pId === 'null' || pId === 'undefined'
   })
 
   const rows = []
@@ -293,7 +294,7 @@ function buildVisibleRows(categories, expandedIds, viewMode = 'grid') {
         visitedNodeIds.add(childId)
 
         const childInMap = categoryMap.get(categoryIdOf(child))
-        if (childInMap && categoryIdOf(childInMap) !== nodeCatId) {
+        if (childInMap && categoryIdOf(childInMap) !== nodeCatId && childInMap.sourceType !== 'subcategory') {
           processNode(childInMap, depth + 1, sortPath)
         } else {
           const childSubChildren = getAllChildren(child, categories)
