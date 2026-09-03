@@ -1858,8 +1858,8 @@ function ResourcePage({ config, navigationContent = null }) {
           : [];
         if (isUsersPage && key === 'roles') {
           list = list.filter((role) => {
-            const isActive = readResourceValue(role, 'isActive', false)
-            return isActive === true || String(isActive).toLowerCase() === 'true'
+            const isActive = readResourceValue(role, 'isActive', true)
+            return isActive !== false && String(isActive).toLowerCase() !== 'false'
           })
         }
         if (list.length === 0 && (key === 'products' || key === 'warehouses')) {

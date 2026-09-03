@@ -1194,7 +1194,7 @@ export const RESOURCE_CONFIGS = {
       roles: API_ENDPOINTS.roles.list,
     },
     referenceListKeys: {
-      roles: 'items',
+      roles: 'roles',
     },
     fields: [
       {

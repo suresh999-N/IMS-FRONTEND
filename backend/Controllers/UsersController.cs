@@ -74,7 +74,7 @@ namespace IMSBackend.Controllers
 
             var users = rawUsers.Select(x =>
             {
-                var roleIsActive = roleStatusDict.TryGetValue(x.Role, out var rActive) ? rActive : false;
+                var roleIsActive = roleStatusDict.TryGetValue(x.Role, out var rActive) ? rActive : true;
                 var effectiveIsActive = x.IsActive && roleIsActive;
                 return new
                 {
@@ -83,7 +83,7 @@ namespace IMSBackend.Controllers
                     x.Email,
                     x.PhoneNumber,
                     x.Role,
-                    IsActive = effectiveIsActive,
+                    IsActive = x.IsActive,
                     UserIsActive = x.IsActive,
                     RoleIsActive = roleIsActive,
                     EffectiveIsActive = effectiveIsActive
