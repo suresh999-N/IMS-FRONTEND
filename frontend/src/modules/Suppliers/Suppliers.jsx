@@ -376,12 +376,16 @@ export default function Suppliers({
         throw new Error(getSupplierApiError(suppliersRes.value, 'Suppliers could not be loaded from the IMS API.'))
       }
 
-      if (purchasesRes.status === 'fulfilled' && purchasesRes.value?.success) {
-        setPurchasesState(Array.isArray(purchasesRes.value.data) ? purchasesRes.value.data : [])
+      if (purchasesRes.status === 'fulfilled' && purchasesRes.value) {
+        const val = purchasesRes.value
+        const poData = Array.isArray(val?.data) ? val.data : (Array.isArray(val) ? val : [])
+        setPurchasesState(poData)
       }
 
-      if (paymentsRes.status === 'fulfilled' && paymentsRes.value?.success) {
-        setSupplierPaymentsState(Array.isArray(paymentsRes.value.data) ? paymentsRes.value.data : [])
+      if (paymentsRes.status === 'fulfilled' && paymentsRes.value) {
+        const val = paymentsRes.value
+        const payData = Array.isArray(val?.data) ? val.data : (Array.isArray(val) ? val : [])
+        setSupplierPaymentsState(payData)
       }
     } catch (error) {
       const nextMessage = {
@@ -492,17 +496,26 @@ export default function Suppliers({
     const targetName = String(selectedSupplier.name || '').trim().toLowerCase()
     const targetCompany = String(selectedSupplier.companyName || '').trim().toLowerCase()
 
+    const cleanTargetName = targetName.replace(/[^a-z0-9]/g, '')
+    const cleanTargetCompany = targetCompany.replace(/[^a-z0-9]/g, '')
+
     return activePurchases.filter((item) => {
       const itemSupId = String(item.supplierId || item.SupplierId || item.supplier_id || item.supplierID || '').trim().toLowerCase()
       const itemSupCode = String(item.supplierCode || item.SupplierCode || item.code || item.supplier_code || '').trim().toLowerCase()
       const itemSupName = String(item.supplierName || item.SupplierName || item.supplier || item.partyName || item.companyName || item.vendorName || '').trim().toLowerCase()
+      const cleanItemSupName = itemSupName.replace(/[^a-z0-9]/g, '')
 
-      const matchId = targetId && (itemSupId === targetId || itemSupCode === targetId)
-      const matchCode = targetCode && (itemSupId === targetCode || itemSupCode === targetCode)
-      const matchName = (targetName && itemSupName && (itemSupName === targetName || itemSupName.includes(targetName) || targetName.includes(itemSupName))) ||
-                        (targetCompany && itemSupName && (itemSupName === targetCompany || itemSupName.includes(targetCompany) || targetCompany.includes(itemSupName)))
+      const matchId = Boolean(targetId && targetId !== '0' && (itemSupId === targetId || itemSupCode === targetId))
+      const matchCode = Boolean(targetCode && (itemSupId === targetCode || itemSupCode === targetCode))
 
-      return Boolean(matchId || matchCode || matchName)
+      const matchName = Boolean(
+        (targetName && itemSupName && (itemSupName === targetName || itemSupName.includes(targetName) || targetName.includes(itemSupName))) ||
+        (targetCompany && itemSupName && (itemSupName === targetCompany || itemSupName.includes(targetCompany) || targetCompany.includes(itemSupName))) ||
+        (cleanTargetName && cleanItemSupName && (cleanTargetName === cleanItemSupName || cleanItemSupName.includes(cleanTargetName) || cleanTargetName.includes(cleanItemSupName))) ||
+        (cleanTargetCompany && cleanItemSupName && (cleanTargetCompany === cleanItemSupName || cleanItemSupName.includes(cleanTargetCompany) || cleanTargetCompany.includes(cleanItemSupName)))
+      )
+
+      return matchId || matchCode || matchName
     })
   }, [selectedSupplier, activePurchases])
 
@@ -514,17 +527,26 @@ export default function Suppliers({
     const targetName = String(selectedSupplier.name || '').trim().toLowerCase()
     const targetCompany = String(selectedSupplier.companyName || '').trim().toLowerCase()
 
+    const cleanTargetName = targetName.replace(/[^a-z0-9]/g, '')
+    const cleanTargetCompany = targetCompany.replace(/[^a-z0-9]/g, '')
+
     return activeSupplierPayments.filter((item) => {
       const itemSupId = String(item.supplierId || item.SupplierId || item.supplier_id || item.supplierID || item.partyId || '').trim().toLowerCase()
       const itemSupCode = String(item.supplierCode || item.SupplierCode || item.code || item.supplier_code || '').trim().toLowerCase()
       const itemSupName = String(item.supplierName || item.SupplierName || item.supplier || item.partyName || item.companyName || item.vendorName || '').trim().toLowerCase()
+      const cleanItemSupName = itemSupName.replace(/[^a-z0-9]/g, '')
 
-      const matchId = targetId && (itemSupId === targetId || itemSupCode === targetId)
-      const matchCode = targetCode && (itemSupId === targetCode || itemSupCode === targetCode)
-      const matchName = (targetName && itemSupName && (itemSupName === targetName || itemSupName.includes(targetName) || targetName.includes(itemSupName))) ||
-                        (targetCompany && itemSupName && (itemSupName === targetCompany || itemSupName.includes(targetCompany) || targetCompany.includes(itemSupName)))
+      const matchId = Boolean(targetId && targetId !== '0' && (itemSupId === targetId || itemSupCode === targetId))
+      const matchCode = Boolean(targetCode && (itemSupId === targetCode || itemSupCode === targetCode))
 
-      return Boolean(matchId || matchCode || matchName)
+      const matchName = Boolean(
+        (targetName && itemSupName && (itemSupName === targetName || itemSupName.includes(targetName) || targetName.includes(itemSupName))) ||
+        (targetCompany && itemSupName && (itemSupName === targetCompany || itemSupName.includes(targetCompany) || targetCompany.includes(itemSupName))) ||
+        (cleanTargetName && cleanItemSupName && (cleanTargetName === cleanItemSupName || cleanItemSupName.includes(cleanTargetName) || cleanTargetName.includes(cleanItemSupName))) ||
+        (cleanTargetCompany && cleanItemSupName && (cleanTargetCompany === cleanItemSupName || cleanItemSupName.includes(cleanTargetCompany) || cleanTargetCompany.includes(cleanItemSupName)))
+      )
+
+      return matchId || matchCode || matchName
     })
   }, [selectedSupplier, activeSupplierPayments])
 
@@ -571,11 +593,13 @@ export default function Suppliers({
     const baseSupplier = supplier || {}
 
     getPurchaseOrders().then((res) => {
-      if (res?.success && Array.isArray(res.data)) setPurchasesState(res.data)
+      const poData = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : [])
+      if (poData.length > 0) setPurchasesState(poData)
     }).catch(() => {})
 
     getSupplierPayments().then((res) => {
-      if (res?.success && Array.isArray(res.data)) setSupplierPaymentsState(res.data)
+      const payData = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : [])
+      if (payData.length > 0) setSupplierPaymentsState(payData)
     }).catch(() => {})
 
     const detailedSupplier = await loadSupplierDetail(supplier)
