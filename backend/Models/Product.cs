@@ -13,6 +13,9 @@ namespace IMSBackend.Models
         [RegularExpression(@"^[A-Za-z\s]+$", ErrorMessage = "Name can contain only letters and spaces.")]
         public string Name { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "SKU is required.")]
+        [StringLength(50, MinimumLength = 6, ErrorMessage = "SKU must contain at least 6 characters.")]
+        [RegularExpression(@"^[A-Za-z0-9_-]+$", ErrorMessage = "SKU can contain only letters, numbers, hyphens, and underscores.")]
         public string SKU { get; set; } = string.Empty;
 
         [Column("category_id")]

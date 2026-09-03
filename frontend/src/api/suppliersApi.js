@@ -163,6 +163,7 @@ export function toSupplierPayload(data = {}) {
   return {
     supplierCode: cleanString(data.supplierCode).toUpperCase(),
     name: cleanString(data.name),
+    companyName: cleanString(data.companyName),
     gstNumber: cleanCode(data.gstNumber, 15),
     panNumber: cleanCode(data.panNumber, 10),
     phone: sanitizePhoneInput(data.phone),

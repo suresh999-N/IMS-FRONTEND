@@ -10,6 +10,8 @@ namespace IMSBackend.DTOs
         public int? ParentId { get; set; }
 
         public string Description { get; set; } = string.Empty;
+
+        public string Status { get; set; } = "Active";
     }
 
     public sealed class CategoryListResponseDto

@@ -112,7 +112,8 @@ namespace IMSBackend.Controllers
             {
                 Name = FormatCategoryName(dto.Name),
                 ParentId = dto.ParentId,
-                Description = Clean(dto.Description)
+                Description = Clean(dto.Description),
+                Status = NormalizeStatus(dto.Status)
             };
 
             _context.Categories.Add(category);
@@ -161,6 +162,7 @@ namespace IMSBackend.Controllers
             category.Name = FormatCategoryName(dto.Name);
             category.ParentId = dto.ParentId;
             category.Description = Clean(dto.Description);
+            category.Status = NormalizeStatus(dto.Status);
 
             await _context.SaveChangesAsync(cancellationToken);
 
@@ -255,9 +257,9 @@ namespace IMSBackend.Controllers
                 return "Category name is required.";
             }
 
-            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-z\s]+$"))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-z0-9\s\&\-\/\(\)\,\.]+$"))
             {
-                return "Name can contain only letters and spaces.";
+                return "Name contains invalid characters.";
             }
 
             if (dto.ParentId.HasValue)
@@ -330,7 +332,7 @@ namespace IMSBackend.Controllers
                 Name = category.Name,
                 ParentId = category.ParentId,
                 Description = category.Description,
-                Status = "Active",
+                Status = NormalizeStatus(category.Status),
                 SubcategoryCount = combinedChildren.Count,
                 ChildSubCategories = combinedChildren
             };

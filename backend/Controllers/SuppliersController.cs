@@ -290,7 +290,10 @@ namespace IMSBackend.Controllers
 
                 if (!System.IO.File.Exists(temporaryPath))
                 {
-                    throw new FileNotFoundException("Staged supplier document file was not found.", temporaryPath);
+                    document.IsDeleted = true;
+                    document.DeletedAt = now;
+                    document.Status = "missing_file";
+                    continue;
                 }
 
                 if (System.IO.File.Exists(permanentPath))

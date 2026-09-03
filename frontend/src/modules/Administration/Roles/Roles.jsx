@@ -1856,12 +1856,7 @@ function ResourcePage({ config, navigationContent = null }) {
         let list = referenceResponses[index]?.success
           ? getResponseList(referenceResponses[index], config.referenceListKeys?.[key]).map((row) => normalizeResourceRow(row, {}))
           : [];
-        if (isUsersPage && key === 'roles') {
-          list = list.filter((role) => {
-            const isActive = readResourceValue(role, 'isActive', false)
-            return isActive === true || String(isActive).toLowerCase() === 'true'
-          })
-        }
+
         if (list.length === 0 && (key === 'products' || key === 'warehouses')) {
           try {
             const rawData = localStorage.getItem('ims-frontend-data');

@@ -85,10 +85,10 @@
 
 /* ─── Table Card & Actions ───────────────────────────────────────── */
 
-.resource-center__page--units .resource-center__inventory-table td.units-col-actions,
-.resource-center__page--units .resource-center__inventory-table th.units-col-actions {
-  text-align: center;
-}
+.resource-center__page--units .resource-center__inventory-table :where(th, td).units-col-name       { width: 45%; }
+.resource-center__page--units .resource-center__inventory-table :where(th, td).units-col-shortname  { width: 25%; }
+.resource-center__page--units .resource-center__inventory-table :where(th, td).units-col-status     { width: 15%; text-align: center; }
+.resource-center__page--units .resource-center__inventory-table :where(th, td).units-col-actions    { width: 15%; text-align: center; }
 
 .units-page__row-actions {
   display: flex;

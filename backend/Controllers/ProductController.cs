@@ -246,6 +246,14 @@ namespace IMSBackend.Controllers
         public async Task<IActionResult> Create([FromBody] Product product, CancellationToken cancellationToken)
         {
             product.SKU = NormalizeSku(product.SKU);
+            var skuFormatError = ValidateSkuFormat(product.SKU);
+            if (skuFormatError != null)
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    skuFormatError,
+                    traceId: HttpContext.TraceIdentifier));
+            }
+
             try
             {
                 product.Barcode = await ResolveBarcodeForCreate(product.Barcode, cancellationToken);
@@ -258,10 +266,10 @@ namespace IMSBackend.Controllers
                     traceId: HttpContext.TraceIdentifier));
             }
 
-            if (string.IsNullOrWhiteSpace(product.Name) || string.IsNullOrWhiteSpace(product.SKU))
+            if (string.IsNullOrWhiteSpace(product.Name))
             {
                 return BadRequest(ApiResponse<object>.Fail(
-                    "Product name and SKU are required.",
+                    "Product name is required.",
                     traceId: HttpContext.TraceIdentifier));
             }
 
@@ -304,14 +312,11 @@ namespace IMSBackend.Controllers
                     traceId: HttpContext.TraceIdentifier));
             }
 
-            var skuExists = await _context.Products
-                .AsNoTracking()
-                .AnyAsync(item => item.SKU == product.SKU, cancellationToken);
-
-            if (skuExists)
+            var skuUniquenessError = await ValidateSkuUniqueness(product.SKU, null, cancellationToken);
+            if (skuUniquenessError != null)
             {
                 return Conflict(ApiResponse<object>.Fail(
-                    "SKU already exists.",
+                    skuUniquenessError,
                     traceId: HttpContext.TraceIdentifier));
             }
 
@@ -400,17 +405,22 @@ namespace IMSBackend.Controllers
             }
 
             var normalizedSku = NormalizeSku(dto.SKU);
+            var skuUniquenessError = await ValidateSkuUniqueness(normalizedSku, null, cancellationToken);
+            if (skuUniquenessError != null)
+            {
+                return Conflict(ApiResponse<object>.Fail(
+                    skuUniquenessError,
+                    traceId: HttpContext.TraceIdentifier));
+            }
+
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
             try
             {
-                var product = await _context.Products
-                    .FirstOrDefaultAsync(item => item.SKU == normalizedSku, cancellationToken);
-
-                var isNewProduct = product == null;
+                var isNewProduct = true;
                 var duplicateNameError = await ValidateDuplicateProductName(
                     dto.Name,
-                    product?.ProductId,
+                    null,
                     productRules,
                     cancellationToken);
 
@@ -423,24 +433,14 @@ namespace IMSBackend.Controllers
                 }
 
                 var requestedBarcode = NormalizeBarcode(dto.Barcode);
-                var barcode = isNewProduct
-                    ? await ResolveBarcodeForCreate(requestedBarcode, cancellationToken)
-                    : await ResolveBarcodeForUpdate(
-                        string.IsNullOrWhiteSpace(requestedBarcode)
-                            ? product?.Barcode
-                            : requestedBarcode,
-                        product!.ProductId,
-                        cancellationToken);
+                var barcode = await ResolveBarcodeForCreate(requestedBarcode, cancellationToken);
 
-                if (product == null)
+                var product = new Product
                 {
-                    product = new Product
-                    {
-                        SKU = normalizedSku,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    _context.Products.Add(product);
-                }
+                    SKU = normalizedSku,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.Products.Add(product);
 
                 ApplyProductDto(product, dto, normalizedSku, barcode);
                 await _context.SaveChangesAsync(cancellationToken);
@@ -529,10 +529,18 @@ namespace IMSBackend.Controllers
             }
 
             var normalizedSku = NormalizeSku(updated.SKU);
-            if (string.IsNullOrWhiteSpace(updated.Name) || string.IsNullOrWhiteSpace(normalizedSku))
+            var skuFormatError = ValidateSkuFormat(normalizedSku);
+            if (skuFormatError != null)
             {
                 return BadRequest(ApiResponse<object>.Fail(
-                    "Product name and SKU are required.",
+                    skuFormatError,
+                    traceId: HttpContext.TraceIdentifier));
+            }
+
+            if (string.IsNullOrWhiteSpace(updated.Name))
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    "Product name is required.",
                     traceId: HttpContext.TraceIdentifier));
             }
 
@@ -543,14 +551,11 @@ namespace IMSBackend.Controllers
                     traceId: HttpContext.TraceIdentifier));
             }
 
-            var duplicateSku = await _context.Products
-                .AsNoTracking()
-                .AnyAsync(item => item.SKU == normalizedSku && item.ProductId != id, cancellationToken);
-
-            if (duplicateSku)
+            var skuUniquenessError = await ValidateSkuUniqueness(normalizedSku, id, cancellationToken);
+            if (skuUniquenessError != null)
             {
                 return Conflict(ApiResponse<object>.Fail(
-                    "SKU already exists.",
+                    skuUniquenessError,
                     traceId: HttpContext.TraceIdentifier));
             }
 
@@ -724,21 +729,19 @@ namespace IMSBackend.Controllers
                         case "sku":
                         {
                             var normalizedSku = NormalizeSku(ReadOptionalString(update.Value));
-                            if (string.IsNullOrWhiteSpace(normalizedSku))
+                            var skuFormatError = ValidateSkuFormat(normalizedSku);
+                            if (skuFormatError != null)
                             {
                                 return BadRequest(ApiResponse<object>.Fail(
-                                    "Product SKU is required.",
+                                    skuFormatError,
                                     traceId: HttpContext.TraceIdentifier));
                             }
 
-                            var duplicateSku = await _context.Products
-                                .AsNoTracking()
-                                .AnyAsync(item => item.SKU == normalizedSku && item.ProductId != id, cancellationToken);
-
-                            if (duplicateSku)
+                            var skuUniquenessError = await ValidateSkuUniqueness(normalizedSku, id, cancellationToken);
+                            if (skuUniquenessError != null)
                             {
                                 return Conflict(ApiResponse<object>.Fail(
-                                    "SKU already exists.",
+                                    skuUniquenessError,
                                     traceId: HttpContext.TraceIdentifier));
                             }
 
@@ -1598,9 +1601,10 @@ namespace IMSBackend.Controllers
                 return "Name can contain only letters and spaces.";
             }
 
-            if (string.IsNullOrWhiteSpace(dto.SKU))
+            var skuError = ValidateSkuFormat(dto.SKU);
+            if (skuError != null)
             {
-                return "Product SKU is required.";
+                return skuError;
             }
 
             if ((rules.CategoryRequired || rules.SubCategoryRequired) && (dto.CategoryId == null || dto.CategoryId <= 0))
@@ -1759,6 +1763,54 @@ namespace IMSBackend.Controllers
 
         private static string NormalizeSku(string? sku)
             => sku?.Trim().ToUpperInvariant() ?? string.Empty;
+
+        private static string? ValidateSkuFormat(string? sku)
+        {
+            var normalized = NormalizeSku(sku);
+
+            if (string.IsNullOrWhiteSpace(normalized))
+            {
+                return "SKU is required.";
+            }
+
+            if (normalized.Length < 6)
+            {
+                return "SKU must contain at least 6 characters.";
+            }
+
+            if (normalized.Length > 50)
+            {
+                return "SKU must not exceed 50 characters.";
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(normalized, @"^[A-Z0-9_-]+$"))
+            {
+                return "SKU can contain only letters, numbers, hyphens, and underscores.";
+            }
+
+            return null;
+        }
+
+        private async Task<string?> ValidateSkuUniqueness(
+            string normalizedSku,
+            int? excludingProductId,
+            CancellationToken cancellationToken)
+        {
+            var exists = await _context.Products
+                .AsNoTracking()
+                .AnyAsync(item =>
+                    !item.IsDeleted &&
+                    item.SKU == normalizedSku &&
+                    (excludingProductId == null || item.ProductId != excludingProductId.Value),
+                    cancellationToken);
+
+            if (exists)
+            {
+                return "SKU already exists. Please enter a unique SKU.";
+            }
+
+            return null;
+        }
 
         private static string NormalizeBarcode(string? barcode)
             => barcode?.Trim().ToUpperInvariant() ?? string.Empty;

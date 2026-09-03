@@ -74,7 +74,7 @@ namespace IMSBackend.Controllers
 
             var users = rawUsers.Select(x =>
             {
-                var roleIsActive = roleStatusDict.TryGetValue(x.Role, out var rActive) ? rActive : false;
+                var roleIsActive = roleStatusDict.TryGetValue(x.Role, out var rActive) ? rActive : true;
                 var effectiveIsActive = x.IsActive && roleIsActive;
                 return new
                 {
@@ -83,7 +83,7 @@ namespace IMSBackend.Controllers
                     x.Email,
                     x.PhoneNumber,
                     x.Role,
-                    IsActive = effectiveIsActive,
+                    IsActive = x.IsActive,
                     UserIsActive = x.IsActive,
                     RoleIsActive = roleIsActive,
                     EffectiveIsActive = effectiveIsActive
@@ -316,12 +316,11 @@ namespace IMSBackend.Controllers
             // Admin can still edit their own name, email, phone,
             // and role. Only their own status change is blocked.
             // ========================================================
-            if (currentUserId.Value == id &&
-                dto.IsActive != user.IsActive)
+            if (currentUserId.Value == id && !dto.IsActive)
             {
                 return BadRequest(new
                 {
-                    message = "You cannot change your own active/inactive status."
+                    message = "You cannot deactivate your own account."
                 });
             }
 

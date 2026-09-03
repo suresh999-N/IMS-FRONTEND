@@ -448,6 +448,12 @@ using (var scope = app.Services.CreateScope())
             "cancellation_reason",
             "TEXT NULL");
 
+        await EnsureColumnExistsAsync(
+            connection,
+            "categories",
+            "status",
+            "VARCHAR(32) NOT NULL DEFAULT 'Active'");
+
 
         // =====================================================
         // PUTAWAY AUDITS TABLE
@@ -551,6 +557,17 @@ using (var scope = app.Services.CreateScope())
                 INDEX `idx_warehouse_transfer_audits_created_at`
                     (`created_at`)
             )");
+
+
+        // =====================================================
+        // SUPPLIERS COMPANY_NAME COLUMN AUTOMATIC MIGRATION
+        // =====================================================
+
+        await EnsureColumnExistsAsync(
+            connection,
+            "suppliers",
+            "company_name",
+            "ALTER TABLE `suppliers` ADD COLUMN `company_name` VARCHAR(150) NULL;");
 
 
         // =====================================================

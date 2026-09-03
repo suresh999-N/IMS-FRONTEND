@@ -183,6 +183,7 @@ namespace IMSBackend.Controllers
 
             role.RoleName = updated.RoleName;
             role.Description = updated.Description;
+            role.IsActive = updated.IsActive;
 
             await _context.SaveChangesAsync();
 

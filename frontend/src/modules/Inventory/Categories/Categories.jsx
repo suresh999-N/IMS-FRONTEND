@@ -478,6 +478,7 @@ function CategoryForm({
     name: editingCategory?.name ?? '',
     parentId: editingCategory ? parentIdOf(editingCategory) : initialParentId,
     description: editingCategory?.description ?? '',
+    status: editingCategory?.status ?? 'Active',
   }))
   const [touched, setTouched] = useState({})
 
@@ -511,12 +512,15 @@ function CategoryForm({
     !isEditing ||
     name !== clean(editingCategory?.name) ||
     parentId !== parentIdOf(editingCategory) ||
-    clean(formData.description) !== clean(editingCategory?.description)
+    clean(formData.description) !== clean(editingCategory?.description) ||
+    clean(formData.status) !== clean(editingCategory?.status)
 
   const parentOptions = categories
     .filter((category) => {
       const id = categoryIdOf(category)
-      return id !== editingId && !descendantIds.has(id)
+      const isCurrentParent = editingCategory && parentIdOf(editingCategory) === id
+      const isActive = comparable(category.status || 'active') !== 'inactive'
+      return id !== editingId && !descendantIds.has(id) && (isActive || isCurrentParent)
     })
     .map((category) => ({
       value: categoryIdOf(category),
@@ -550,14 +554,14 @@ function CategoryForm({
       name,
       parentId: parentId ? Number(parentId) : null,
       description: clean(formData.description),
+      status: clean(formData.status) || 'Active',
+      isActive: (clean(formData.status) || 'Active') === 'Active',
     })
   }
 
   return (
     <form className="catalog-form" onSubmit={handleSubmit} autoComplete="off">
       <div className="catalog-form__section">
-        
-
         <div className="form-grid">
           <InputField
             id="category-name"
@@ -581,6 +585,20 @@ function CategoryForm({
             placeholder="No parent category"
             error={errors.parentId}
             showError={Boolean(touched.parentId && errors.parentId)}
+          />
+
+          <SearchableSelect
+            id="category-status"
+            name="status"
+            label="Status"
+            value={formData.status}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            options={[
+              { value: 'Active', label: 'Active' },
+              { value: 'Inactive', label: 'Inactive' },
+            ]}
+            placeholder="Select status"
           />
 
           <InputField
@@ -812,6 +830,58 @@ export default function Categories() {
       message: `Category ${formState?.category ? 'updated' : 'created'} successfully.`,
     })
     setFormState(null)
+  }
+
+  async function handleToggleStatus(category, targetStatus) {
+    const catId = categoryIdOf(category)
+    const isInactive = comparable(category.status) === 'inactive'
+    const nextStatus = targetStatus || (isInactive ? 'Active' : 'Inactive')
+
+    setCategories((currentValue) =>
+      currentValue.map((item) =>
+        categoryIdOf(item) === catId ? { ...item, status: nextStatus } : item,
+      ),
+    )
+
+    setIsSaving(true)
+    const response = await updateCategory(catId, {
+      name: category.name,
+      parentId: category.parentId ? Number(category.parentId) : null,
+      description: category.description || '',
+      status: nextStatus,
+    })
+    setIsSaving(false)
+
+    if (!response.success) {
+      setCategories((currentValue) =>
+        currentValue.map((item) =>
+          categoryIdOf(item) === catId ? { ...item, status: category.status } : item,
+        ),
+      )
+      showToast({
+        type: 'error',
+        title: 'Categories',
+        message: response.error || `Unable to set category to ${nextStatus}.`,
+      })
+      return
+    }
+
+    if (response.data) {
+      const normalizedData = normalizeCategory(response.data)
+      setCategories((currentValue) =>
+        currentValue.map((item) =>
+          categoryIdOf(item) === catId ? { ...item, ...normalizedData, status: nextStatus } : item,
+        ),
+      )
+    }
+
+    await loadCategories({ force: true })
+
+    showToast({
+      type: 'success',
+      title: 'Categories',
+      message: `Category status updated to ${nextStatus}.`,
+    })
   }
 
   function handleDeleteClick(category) {
@@ -1058,6 +1128,12 @@ export default function Categories() {
                   icon: Pencil,
                   onClick: () => setFormState({ category, initialParentId: '' }),
                 } : null,
+                canEdit ? {
+                  key: 'toggle-status',
+                  label: comparable(category.status) === 'inactive' ? 'Activate Category' : 'Deactivate Category',
+                  icon: Check,
+                  onClick: () => handleToggleStatus(category, comparable(category.status) === 'inactive' ? 'Active' : 'Inactive'),
+                } : null,
                 canDelete ? {
                   key: 'delete',
                   label: 'Delete',
@@ -1142,6 +1218,12 @@ export default function Categories() {
                   label: 'Edit',
                   icon: Pencil,
                   onClick: () => setFormState({ category: row, initialParentId: '' }),
+                } : null,
+                canEdit ? {
+                  key: 'toggle-status',
+                  label: comparable(row.status) === 'inactive' ? 'Activate Category' : 'Deactivate Category',
+                  icon: SlidersHorizontal,
+                  onClick: () => handleToggleStatus(row, comparable(row.status) === 'inactive' ? 'Active' : 'Inactive'),
                 } : null,
                 canDelete ? {
                   key: 'delete',

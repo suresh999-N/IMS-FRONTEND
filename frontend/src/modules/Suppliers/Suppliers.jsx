@@ -100,9 +100,9 @@ function getSupplierApiError(response, fallback = 'Supplier action failed.', act
   if (status === 404) return 'Supplier record was not found. Refresh the list and try again.'
   if (status === 409) return message || 'Supplier conflicts with an existing record.'
   if (status >= 500) {
-    if (/status/i.test(message)) return 'Unable to update supplier status. Please select Active, Blocked, Inactive, or Pending.'
+    if (/status/i.test(message) && !/database|failed/i.test(message)) return 'Unable to update supplier status. Please select Active, Blocked, Inactive, or Pending.'
     if (actionType === 'load') return message || fallback || 'Supplier details could not be loaded.'
-    return message || fallback || `Supplier ${actionType} failed. Please try again or contact support if the problem continues.`
+    return message || fallback || `Supplier ${actionType} failed.`
   }
   if (/exception|stack|sql|mysql|inner/i.test(message)) return fallback
 

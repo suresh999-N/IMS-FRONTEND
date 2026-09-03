@@ -257,6 +257,10 @@ export default function Units() {
         key: 'name',
         label: 'Unit Name',
         sortable: true,
+        className: 'units-col-name',
+        tableWidth: 360,
+        style: { width: '45%', minWidth: 200 },
+        headerStyle: { width: '45%', minWidth: 200 },
         render: (item) => (
           <div className="units__identity">
             <strong title={item.name}>{item.name}</strong>
@@ -267,27 +271,29 @@ export default function Units() {
         key: 'shortName',
         label: 'Abbreviation',
         sortable: true,
-        tableWidth: 180,
-        style: { width: 180, minWidth: 180 },
-        headerStyle: { width: 180, minWidth: 180 },
+        className: 'units-col-shortname',
+        tableWidth: 200,
+        style: { width: '25%', minWidth: 120 },
+        headerStyle: { width: '25%', minWidth: 120 },
         render: (item) => <span className="font-mono text-sm">{item.shortName}</span>,
       },
       {
         key: 'status',
         label: 'Status',
         sortable: false,
-        tableWidth: 100,
-        style: { width: 100, minWidth: 100 },
-        headerStyle: { width: 100, minWidth: 100 },
+        className: 'units-col-status',
+        tableWidth: 120,
+        style: { width: '15%', minWidth: 100 },
+        headerStyle: { width: '15%', minWidth: 100 },
         render: () => <StatusBadge type="active">Active</StatusBadge>,
       },
       {
         key: 'actions',
         label: 'Actions',
         className: 'units-col-actions',
-        tableWidth: 80,
-        style: { width: 80, minWidth: 80 },
-        headerStyle: { width: 80, minWidth: 80 },
+        tableWidth: 120,
+        style: { width: '15%', minWidth: 80 },
+        headerStyle: { width: '15%', minWidth: 80 },
         render: (item) => {
           const menuItems = [
             canEdit
