@@ -378,6 +378,21 @@ form > * {
   line-height: 1.15;
 }
 
+.required-asterisk,
+.required,
+.erp-form-control__required,
+label .required,
+label span.required,
+.field label span.required,
+.field label span.required-asterisk,
+label .text-red-500,
+label .text-red-600 {
+  color: #dc2626 !important;
+  font-weight: 700 !important;
+  margin-left: 2px !important;
+  display: inline-block !important;
+}
+
 input,
 textarea,
 select {

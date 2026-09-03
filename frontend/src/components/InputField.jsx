@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { autoCapitalizeWords, shouldAutoCapitalizeField } from '../validators/nameValidator'
 
+import { renderFormLabel } from '../utils/labelUtils'
+
 export default function InputField({
   id,
   label,
@@ -84,7 +86,7 @@ export default function InputField({
 
   return (
     <div className={`field ${error ? 'field--error' : ''} ${className}`.trim()}>
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={id}>{renderFormLabel(label)}</label>
       <div
         className={`input-with-icon ${isTextarea ? 'input-with-icon--textarea' : ''} ${
           error ? 'field--error' : ''

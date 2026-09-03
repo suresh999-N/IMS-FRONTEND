@@ -418,7 +418,7 @@ export default function Units() {
               <div className="resource-form__section">
                 <div className="resource-form__grid-2">
                   <div className="resource-form__field">
-                    <label htmlFor="unitName">Unit Name *</label>
+                    <label htmlFor="unitName">Unit Name <span className="required-asterisk">*</span></label>
                     <InputField
                       id="unitName"
                       name="name"
@@ -435,7 +435,7 @@ export default function Units() {
                   </div>
 
                   <div className="resource-form__field">
-                    <label htmlFor="unitAbbreviation">Abbreviation / Symbol *</label>
+                    <label htmlFor="unitAbbreviation">Abbreviation / Symbol <span className="required-asterisk">*</span></label>
                     <InputField
                       id="unitAbbreviation"
                       name="shortName"

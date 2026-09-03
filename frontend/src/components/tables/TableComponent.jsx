@@ -677,7 +677,7 @@ export default function TableComponent({
                     onChange={() => handleToggleColumn(columnKey)}
                   />
                   <span className="table-component__columns-check" aria-hidden="true">
-                    {isChecked ? <Check size={12} /> : null}
+                    {isChecked ? <Check size={12} strokeWidth={2.8} /> : null}
                   </span>
                   <span>{column.label}</span>
                 </label>

@@ -288,7 +288,7 @@ function getProductEntityId(product) {
   return product?.id ?? product?.productId ?? product?._id ?? ''
 }
 
-function getSkuError(value) {
+function getSkuError(value, options = {}) {
   const normalized = String(value ?? '').trim().toUpperCase()
 
   if (!normalized) {
@@ -299,12 +299,30 @@ function getSkuError(value) {
     return 'SKU must contain at least 6 characters.'
   }
 
-  if (normalized.length > 50) {
-    return 'SKU must not exceed 50 characters.'
+  if (normalized.length > 20) {
+    return 'SKU must not exceed 20 characters.'
   }
 
   if (!/^[A-Z0-9_-]+$/.test(normalized)) {
     return 'SKU can contain only letters, numbers, hyphens, and underscores.'
+  }
+
+  if (/(.)\1{3,}/i.test(normalized)) {
+    return 'Please enter a valid, meaningful SKU.'
+  }
+
+  const currentProductId = String(options.currentProductId ?? '')
+  const productList = options.products ?? []
+  if (Array.isArray(productList) && productList.length > 0) {
+    const isDuplicate = productList.some((product) => {
+      const pId = String(product.id ?? product.productId ?? product._id ?? '')
+      const pSku = String(product.sku ?? product.SKU ?? '').trim().toUpperCase()
+      return pSku === normalized && Boolean(normalized) && pId !== currentProductId
+    })
+
+    if (isDuplicate) {
+      return 'SKU already exists. Please enter a unique SKU.'
+    }
   }
 
   return ''
@@ -444,7 +462,10 @@ function getFieldError(name, value, mode, options = {}) {
   }
 
   if (name === 'sku') {
-    return getSkuError(value)
+    return getSkuError(value, {
+      products: options.products,
+      currentProductId: options.currentProductId,
+    })
   }
 
   if (name === 'price') {
@@ -484,6 +505,7 @@ export default function ProductForm({
   modeOverride,
   canSubmit,
   isSaving = false,
+  products = [],
   onSubmit,
   onCancel,
 }) {
@@ -708,15 +730,22 @@ export default function ProductForm({
         subCategories,
         brands,
         categoryId: formData.categoryId,
+        products,
+        currentProductId: getProductEntityId(initialValues),
       })
       return error ? { ...nextErrors, [field]: error } : nextErrors
     }, {})
-  }, [changedFields, categories, subCategories, brands, formData, isEdit, mode])
+  }, [changedFields, categories, subCategories, brands, formData, isEdit, mode, products, initialValues])
 
-  const hasChanges = isEdit ? changedFields.length > 0 || variantsChanged : true
+  const hasChanges = isEdit
+    ? changedFields.length > 0 || variantsChanged || selectedImageFile !== null || imageRemoved
+    : true
   const isFormValid = Object.keys(errors).length === 0
   const canSave = canSubmit && hasChanges && isFormValid && !isSaving
-  const changedCount = changedFields.length + (variantsChanged ? 1 : 0)
+  const changedCount =
+    changedFields.length +
+    (variantsChanged ? 1 : 0) +
+    (selectedImageFile !== null || imageRemoved ? 1 : 0)
 
   async function handleAddCategory(draft) {
     const label = normalizeString(draft?.name)
@@ -1233,10 +1262,11 @@ export default function ProductForm({
           <InputField
             id="sku"
             name="sku"
-            label="SKU"
+            label="SKU *"
             value={formData.sku || ''}
             onChange={handleChange}
             onBlur={handleBlur}
+            required
             placeholder="e.g. SKU-100001"
             error={shouldShowError('sku') ? errors.sku : ''}
           />
@@ -1385,14 +1415,6 @@ export default function ProductForm({
                 onChange={handleVariantDraftChange}
                 placeholder="Variant SKU"
               />
-              <CurrencyInput
-                id="variant-price-delta"
-                name="priceDelta"
-                label="Price Delta"
-                value={variantDraft.priceDelta || ''}
-                onChange={handleVariantDraftChange}
-                placeholder="0"
-              />
               <SearchableSelect
                 id="variant-attribute-id"
                 name="attributeId"
@@ -1416,8 +1438,16 @@ export default function ProductForm({
                 }
                 disabled={!variantDraft.attributeId}
               />
+              <CurrencyInput
+                id="variant-price-delta"
+                name="priceDelta"
+                label="Price Delta"
+                value={variantDraft.priceDelta || ''}
+                onChange={handleVariantDraftChange}
+                placeholder="0"
+              />
               <div className="button-row field--full">
-                <button type="button" className="button" onClick={handleAddVariantDraft}>
+                <button type="button" className="button button-primary" onClick={handleAddVariantDraft}>
                   {variantDraft.id ? 'Update Variant' : 'Add Variant'}
                 </button>
               </div>
@@ -1488,7 +1518,13 @@ export default function ProductForm({
               />
               <label className="product-form__image-preview" htmlFor="image-upload" title={imagePreview ? "Click to change image" : "Click to upload image"}>
                 {imagePreview ? (
-                  <img src={resolveApiAssetUrl(imagePreview)} alt="Product preview" />
+                  <img
+                    src={resolveApiAssetUrl(imagePreview)}
+                    alt="Product preview"
+                    onError={() => {
+                      setImagePreview('')
+                    }}
+                  />
                 ) : (
                   <div className="product-form__image-empty">
                     <ImagePlus size={32} className="product-form__image-empty-icon" />
