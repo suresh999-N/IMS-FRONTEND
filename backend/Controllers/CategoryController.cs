@@ -332,11 +332,7 @@ namespace IMSBackend.Controllers
                 Name = category.Name,
                 ParentId = category.ParentId,
                 Description = category.Description,
-<<<<<<< HEAD
                 Status = NormalizeStatus(category.Status),
-=======
-                Status = string.IsNullOrWhiteSpace(category.Status) ? "Active" : category.Status,
->>>>>>> 02aca06a (fix: persist Category Status in Category model, DTO and Controller responses)
                 SubcategoryCount = combinedChildren.Count,
                 ChildSubCategories = combinedChildren
             };
