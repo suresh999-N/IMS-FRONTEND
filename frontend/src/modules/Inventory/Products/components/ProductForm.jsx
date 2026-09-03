@@ -299,12 +299,16 @@ function getSkuError(value, options = {}) {
     return 'SKU must contain at least 6 characters.'
   }
 
-  if (normalized.length > 50) {
-    return 'SKU must not exceed 50 characters.'
+  if (normalized.length > 20) {
+    return 'SKU must not exceed 20 characters.'
   }
 
   if (!/^[A-Z0-9_-]+$/.test(normalized)) {
     return 'SKU can contain only letters, numbers, hyphens, and underscores.'
+  }
+
+  if (/(.)\1{3,}/i.test(normalized)) {
+    return 'Please enter a valid, meaningful SKU.'
   }
 
   const currentProductId = String(options.currentProductId ?? '')

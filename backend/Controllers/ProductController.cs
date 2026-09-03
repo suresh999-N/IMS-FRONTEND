@@ -1778,14 +1778,19 @@ namespace IMSBackend.Controllers
                 return "SKU must contain at least 6 characters.";
             }
 
-            if (normalized.Length > 50)
+            if (normalized.Length > 20)
             {
-                return "SKU must not exceed 50 characters.";
+                return "SKU must not exceed 20 characters.";
             }
 
             if (!System.Text.RegularExpressions.Regex.IsMatch(normalized, @"^[A-Z0-9_-]+$"))
             {
                 return "SKU can contain only letters, numbers, hyphens, and underscores.";
+            }
+
+            if (System.Text.RegularExpressions.Regex.IsMatch(normalized, @"(.)\1{3,}"))
+            {
+                return "Please enter a valid, meaningful SKU.";
             }
 
             return null;
