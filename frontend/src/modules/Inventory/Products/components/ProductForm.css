@@ -161,15 +161,24 @@
   resize: vertical;
 }
 
-.product-form .select-add__control,
-.product-form .searchable-select__trigger {
-  min-height: var(--touch-target);
-  border-radius: var(--radius-input);
+.product-form .select-add {
+  align-items: flex-start;
 }
 
+.product-form .select-add__control {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+}
+
+.product-form .searchable-select__trigger,
 .product-form .select-add__trigger {
-  min-height: var(--touch-target);
-  align-self: flex-end;
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  border-radius: 9px !important;
+  align-self: flex-start !important;
+  box-sizing: border-box !important;
 }
 
 .product-form .button-row {

@@ -8,21 +8,88 @@
 .select-add__control {
   flex: 1;
   min-width: 0;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+}
+
+.select-add .searchable-select__trigger,
+.select-add__trigger {
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  box-sizing: border-box !important;
+  border-radius: 9px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  align-self: flex-start !important;
+  margin: 0 !important;
+}
+
+.select-add .searchable-select__trigger {
+  padding: 0 10px !important;
 }
 
 .select-add__trigger {
   min-width: 92px;
   max-width: 100%;
+  padding: 0 14px !important;
+  justify-content: center !important;
+  border: 1px solid #a7f3d0 !important;
+  background: #ecfdf5 !important;
+  background-color: #ecfdf5 !important;
+  color: #047857 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+  transition: all 160ms ease-in-out;
+}
+
+.select-add__trigger:hover:not(:disabled),
+.select-add__trigger:focus-visible {
+  border-color: #6ee7b7 !important;
+  background: #d1fae5 !important;
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
+}
+
+.select-add__trigger.is-active {
+  border-color: #0284c7 !important;
+  background: #e0f2fe !important;
+  background-color: #e0f2fe !important;
+  color: #0369a1 !important;
+}
+
+.select-add__trigger:disabled {
+  border-color: #e2e8f0 !important;
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed;
+  opacity: 0.65;
 }
 
 .select-add__panel {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-button);
-  background: var(--surface-muted);
-  padding: 10px;
+  margin-top: 8px;
+  border: 1px solid #bae6fd;
+  border-radius: 12px;
+  background: #f0f9ff;
+  padding: 12px;
   display: grid;
   gap: 10px;
   min-width: 0;
+  box-shadow: 0 4px 14px rgba(14, 165, 183, 0.09);
+  animation: select-add-panel-slide 160ms ease-out;
+}
+
+@keyframes select-add-panel-slide {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .select-add__panel-header {

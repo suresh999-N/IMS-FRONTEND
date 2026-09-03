@@ -116,7 +116,7 @@ function SupplierDetailsOverview({ supplier = {}, purchases = [], payments = [] 
         </div>
         <div>
           <span>GST / PAN</span>
-          <strong>{formatEmpty([currentSupplier.gstNumber, currentSupplier.panNumber].filter(Boolean).join(' / '))}</strong>
+          <strong>{formatEmpty([currentSupplier.gstNumber || currentSupplier.gstin || currentSupplier.gst, currentSupplier.panNumber || currentSupplier.pan].filter(Boolean).join(' / '))}</strong>
         </div>
       </div>
     </div>

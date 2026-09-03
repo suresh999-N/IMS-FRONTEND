@@ -673,7 +673,6 @@ export default function Customers() {
       {!customerId ? (
         <section className="customers-workspace-header resource-center__inventory-header" aria-label="Customer summary">
           <div className="customers-workspace-header__main resource-center__inventory-header-main">
-            <h1>Customers</h1>
             <div className="resource-center__inventory-metrics" aria-label="Customer metrics">
               <span className="customers-metric-badge resource-center__inventory-metric resource-center__inventory-metric--total">
                 <strong>{isSummaryLoading ? '...' : dashboardMetrics.totalCustomers}</strong> Customers

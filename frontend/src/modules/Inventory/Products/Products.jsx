@@ -1227,7 +1227,7 @@ export default function Products({
                   <span className="product-details-item__value">{viewTarget.variantSize || 'Standard'}</span>
                 </div>
                 <div className="product-details-item">
-                  <span className="product-details-item__label">Variant Color / Finish</span>
+                  <span className="product-details-item__label">Variant Attribute</span>
                   <span className="product-details-item__value">{viewTarget.variantColor || 'Standard'}</span>
                 </div>
                 <div className="product-details-item">

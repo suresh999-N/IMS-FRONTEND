@@ -36,11 +36,14 @@ export default function ActionMenu({
     const popoverWidth = Math.max(defaultMinWidth, rect.width)
     const popoverHeight = popoverRef.current?.offsetHeight || Math.min(260, 14 + enabledActions.length * 40)
     const gutter = 8
-    const left = align === 'left'
-      ? Math.min(rect.left, window.innerWidth - popoverWidth - gutter)
+    const maxLeft = Math.max(gutter, window.innerWidth - popoverWidth - gutter)
+    const calculatedLeft = align === 'left'
+      ? rect.left
       : align === 'center'
-      ? Math.max(gutter, Math.min(rect.left + rect.width / 2 - popoverWidth / 2, window.innerWidth - popoverWidth - gutter))
-      : Math.max(gutter, rect.right - popoverWidth)
+      ? rect.left + rect.width / 2 - popoverWidth / 2
+      : rect.right - popoverWidth
+
+    const left = Math.max(gutter, Math.min(calculatedLeft, maxLeft))
     const spaceBelow = window.innerHeight - rect.bottom - gutter
     const shouldOpenAbove = spaceBelow < popoverHeight && rect.top > popoverHeight
     const top = shouldOpenAbove
@@ -50,7 +53,7 @@ export default function ActionMenu({
     setPopoverStyle({
       position: 'fixed',
       top: `${Math.max(gutter, top)}px`,
-      left: `${Math.max(gutter, left)}px`,
+      left: `${left}px`,
       minWidth: `${popoverWidth}px`,
       width: 'max-content',
       zIndex: 1600,
@@ -128,7 +131,7 @@ export default function ActionMenu({
     >
       {enabledActions.map((action) => {
         const Icon = action.icon
-        const isDanger = action.variant === 'danger' || action.tone === 'danger'
+        const isDanger = action.variant === 'danger' || action.tone === 'danger' || action.danger === true || action.key === 'delete' || action.label?.toLowerCase().includes('delete') || action.label?.toLowerCase().includes('remove')
 
         return (
           <button
@@ -157,6 +160,12 @@ export default function ActionMenu({
     </div>
   ) : null
 
+  const tooltipText = iconOnly
+    ? label && label.startsWith('Actions for')
+      ? 'Actions'
+      : label || 'Actions'
+    : undefined
+
   return (
     <div
       className={`erp-action-menu erp-action-menu--${align} ${className}`.trim()}
@@ -170,8 +179,9 @@ export default function ActionMenu({
         disabled={isDisabled}
         aria-haspopup="menu"
         aria-expanded={isOpen}
-        aria-label={iconOnly ? label : undefined}
-        title={iconOnly ? label : undefined}
+        aria-label={label || 'Actions'}
+        title={tooltipText}
+        data-tooltip={tooltipText}
         onPointerDown={(event) => {
           event.stopPropagation()
         }}

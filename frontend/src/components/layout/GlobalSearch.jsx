@@ -19,6 +19,7 @@ import { Fragment, memo, useCallback, useEffect, useId, useMemo, useRef, useStat
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { getGlobalSearchCounts, searchGlobal } from '../../api/searchApi'
+import { validateSearchQuery } from '../../utils/searchValidationUtils'
 
 const MIN_QUERY_LENGTH = 2
 const DEBOUNCE_MS = 300
@@ -539,6 +540,11 @@ function SearchDropdown({
               />
             )
           })}
+        </div>
+      ) : validateSearchQuery(query).isInvalid ? (
+        <div className="global-search__state global-search__state--invalid" role="status" aria-live="polite">
+          <strong>Invalid search term</strong>
+          <p>Please enter a valid search term (e.g., product, customer, supplier, invoice, or date).</p>
         </div>
       ) : (
         <div className="global-search__state global-search__state--empty" role="status" aria-live="polite">

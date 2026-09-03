@@ -630,13 +630,31 @@ function getInitialPaymentTerm(initialValues) {
 function getInitialSupplier(initialValues) {
   const supplier = initialValues ? { ...emptyBasic, ...initialValues } : emptyBasic
 
+  const gstNumber =
+    supplier.gstNumber ||
+    supplier.GstNumber ||
+    supplier.gstin ||
+    supplier.GSTIN ||
+    supplier.gst ||
+    supplier.GST ||
+    supplier.taxNumber ||
+    ''
+
+  const panNumber =
+    supplier.panNumber ||
+    supplier.PanNumber ||
+    supplier.pan ||
+    supplier.PAN ||
+    supplier.panNo ||
+    ''
+
   return {
     ...supplier,
     supplierCode: supplier.supplierCode || supplier.code || '',
     companyName: supplier.companyName || supplier.company || '',
     category: supplier.category || '',
-    gstNumber: supplier.gstNumber || supplier.gst || '',
-    panNumber: supplier.panNumber || supplier.pan || '',
+    gstNumber,
+    panNumber,
     website: supplier.website || '',
     contacts: getInitialContacts(initialValues),
     addresses: getInitialAddresses(initialValues),
@@ -1278,6 +1296,11 @@ export default function SupplierForm({
 
     onSubmit({
       ...supplier,
+      gstNumber: supplier.gstNumber,
+      panNumber: supplier.panNumber,
+      gstin: supplier.gstNumber,
+      gst: supplier.gstNumber,
+      pan: supplier.panNumber,
       contacts: supplier.contacts.filter((contact) => !isBlankContact(contact)),
       addresses: supplier.addresses.filter((address) => !isBlankAddress(address)),
       bankAccounts: supplier.bankAccounts.filter((account) => !isBlankBankAccount(account)),

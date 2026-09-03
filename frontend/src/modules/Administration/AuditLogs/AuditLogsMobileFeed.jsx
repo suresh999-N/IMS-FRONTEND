@@ -16,6 +16,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Activity, CalendarDays, Database, Hash, UserRound } from 'lucide-react'
 import { readResourceValue } from '../../../api/resourceApi'
+import { validateSearchQuery } from '../../../utils/searchValidationUtils'
 import { formatDate } from '../../../utils/helpers'
 
 const AUDIT_MOBILE_PAGE_SIZE = 10
@@ -141,11 +142,26 @@ export default function AuditLogsMobileFeed({ rows, isLoading }) {
       </label>
 
       {filteredRows.length === 0 ? (
-        <div className="resource-center__audit-empty">
-          <Activity size={20} />
-          <strong>No matching activity</strong>
-          <span>Adjust the search text to review a broader audit range.</span>
-        </div>
+        (() => {
+          const validation = validateSearchQuery(query)
+          if (validation.isInvalid) {
+            return (
+              <div className="resource-center__audit-empty resource-center__audit-empty--invalid">
+                <Activity size={20} />
+                <strong>Invalid search term</strong>
+                <span>Please enter a valid search term (e.g., action, user, module, date).</span>
+              </div>
+            )
+          }
+
+          return (
+            <div className="resource-center__audit-empty">
+              <Activity size={20} />
+              <strong>No matching activity</strong>
+              <span>Please check your search term or adjust filters to review a broader range.</span>
+            </div>
+          )
+        })()
       ) : null}
 
       {filteredRows.length > 0 ? (

@@ -687,7 +687,7 @@
 }
 
 .app-header__search {
-  width: min(100%, 360px);
+  width: min(100%, 420px);
   min-width: 220px;
   min-height: 38px;
   display: grid;
@@ -744,7 +744,7 @@
 
 .global-search {
   position: relative;
-  width: min(100%, 360px);
+  width: min(100%, 420px);
   min-width: 220px;
 }
 

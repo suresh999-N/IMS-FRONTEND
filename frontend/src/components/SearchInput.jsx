@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Search } from 'lucide-react'
+import { Search, X } from 'lucide-react'
+import { validateSearchQuery } from '../utils/searchValidationUtils'
 import './SearchInput.css'
 
 export default function SearchInput({
@@ -9,6 +10,7 @@ export default function SearchInput({
   debounce = 200,
 }) {
   const [internalValue, setInternalValue] = useState(value ?? '')
+  const validation = validateSearchQuery(internalValue)
 
   useEffect(() => {
     setInternalValue(value ?? '')
@@ -22,9 +24,14 @@ export default function SearchInput({
     return () => clearTimeout(timer)
   }, [internalValue, onChange, debounce])
 
+  function handleClear() {
+    setInternalValue('')
+    onChange('')
+  }
+
   return (
     <div className="search-input-container">
-      <div className="search-wrapper">
+      <div className={`search-wrapper ${validation.isInvalid ? 'search-wrapper--invalid' : ''}`.trim()}>
         <Search className="search-icon" size={16} />
         <input
           type="search"
@@ -32,9 +39,25 @@ export default function SearchInput({
           onChange={(event) => setInternalValue(event.target.value)}
           placeholder={placeholder}
           aria-label={placeholder}
+          aria-invalid={validation.isInvalid}
           autoComplete="off"
         />
+        {internalValue ? (
+          <button
+            type="button"
+            className="search-clear-button"
+            onClick={handleClear}
+            aria-label="Clear search text"
+          >
+            <X size={14} />
+          </button>
+        ) : null}
       </div>
+      {validation.isInvalid ? (
+        <span className="search-input-error" role="alert">
+          {validation.errorMessage}
+        </span>
+      ) : null}
     </div>
   )
 }

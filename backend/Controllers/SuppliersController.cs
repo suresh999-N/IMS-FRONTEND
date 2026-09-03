@@ -819,9 +819,24 @@ namespace IMSBackend.Controllers
                     CreatedAt = DateTime.UtcNow
                 };
 
-                _context.Suppliers.Add(supplier);
-
-                await _context.SaveChangesAsync();
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex) when (ex.Message.Contains("company_name", StringComparison.OrdinalIgnoreCase) || ex.InnerException?.Message.Contains("company_name", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    try
+                    {
+                        await _context.Database.ExecuteSqlRawAsync("ALTER TABLE `suppliers` ADD COLUMN `company_name` VARCHAR(150) NULL;");
+                        await _context.SaveChangesAsync();
+                    }
+                    catch
+                    {
+                        supplier.CompanyName = null;
+                        _context.Entry(supplier).Property(x => x.CompanyName).IsModified = false;
+                        await _context.SaveChangesAsync();
+                    }
+                }
 
                 // ===============================
                 // CONTACTS
@@ -1127,10 +1142,23 @@ namespace IMSBackend.Controllers
                 supplier.Phone = dto.Phone;
                 supplier.Email = dto.Email;
                 supplier.Website = string.IsNullOrWhiteSpace(dto.Website) ? null : dto.Website.Trim();
-                supplier.Status = normalizedStatus;
-                supplier.UpdatedAt = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex) when (ex.Message.Contains("company_name", StringComparison.OrdinalIgnoreCase) || ex.InnerException?.Message.Contains("company_name", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    try
+                    {
+                        await _context.Database.ExecuteSqlRawAsync("ALTER TABLE `suppliers` ADD COLUMN `company_name` VARCHAR(150) NULL;");
+                        await _context.SaveChangesAsync();
+                    }
+                    catch
+                    {
+                        _context.Entry(supplier).Property(x => x.CompanyName).IsModified = false;
+                        await _context.SaveChangesAsync();
+                    }
+                }
 
                 // ===============================
                 // REMOVE OLD CHILD RECORDS (ADDRESSES, PAYMENT TERMS, BANK ACCOUNTS)

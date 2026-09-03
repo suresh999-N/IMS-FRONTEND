@@ -103,7 +103,7 @@ export default function SelectWithAdd(props) {
         {onAddOption ? (
           <button
             type="button"
-            className="button button-secondary select-add__trigger"
+            className={`button button-secondary select-add__trigger ${isAdding ? 'is-active' : ''}`}
             onClick={handleToggleAdd}
             disabled={disabled}
           >

@@ -50,7 +50,7 @@ export default function BusinessInsights({ insights = [] }) {
             return (
               <article className={`insight-item insight-item--${tone} ${index === 0 ? 'is-priority' : ''}`} key={insight.title}>
                 <span className="insight-item__icon" aria-hidden="true">
-                  <Icon size={13} />
+                  <Icon size={16} />
                 </span>
                 <div>
                   <small>{index === 0 ? 'Priority' : meta.label}</small>

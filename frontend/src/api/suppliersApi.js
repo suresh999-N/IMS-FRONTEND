@@ -130,6 +130,9 @@ export function normalizeSupplier(supplier) {
   const paymentTerm = normalizePaymentTerm(supplier)
   const bankAccounts = normalizeBankAccounts(readValue(supplier, 'bankAccounts', 'BankAccounts'))
 
+  const gstNumber = readValue(supplier, 'gstNumber', 'GstNumber', 'gst', 'gstin', 'GSTIN', 'GSTNumber', 'taxNumber', 'taxId') || ''
+  const panNumber = readValue(supplier, 'panNumber', 'PanNumber', 'pan', 'PAN', 'panNo', 'PanNo') || ''
+
   return {
     ...supplier,
     id,
@@ -138,8 +141,11 @@ export function normalizeSupplier(supplier) {
     name: readValue(supplier, 'name', 'Name') || '',
     companyName: readValue(supplier, 'companyName', 'CompanyName', 'company') || '',
     category: readValue(supplier, 'category', 'Category') || '',
-    gstNumber: readValue(supplier, 'gstNumber', 'GstNumber', 'gst') || '',
-    panNumber: readValue(supplier, 'panNumber', 'PanNumber', 'pan') || '',
+    gstNumber,
+    panNumber,
+    gstin: gstNumber,
+    gst: gstNumber,
+    pan: panNumber,
     contact: readValue(supplier, 'contact', 'Contact') || contacts.find((contact) => contact.isPrimary)?.name || readValue(supplier, 'name', 'Name') || '',
     email: readValue(supplier, 'email', 'Email') || contacts.find((contact) => contact.isPrimary)?.email || '',
     phone: readValue(supplier, 'phone', 'Phone') || contacts.find((contact) => contact.isPrimary)?.phone || '',
@@ -160,12 +166,21 @@ export function normalizeSupplier(supplier) {
 export function toSupplierPayload(data = {}) {
   const paymentTerm = data.paymentTermsProfile || data.paymentTerm || {}
 
+  const rawGst = data.gstNumber || data.gstin || data.gst || data.GSTIN || data.GSTNumber || data.taxNumber
+  const rawPan = data.panNumber || data.pan || data.PAN || data.PanNumber || data.panNo
+
+  const gstNumber = cleanCode(rawGst, 15)
+  const panNumber = cleanCode(rawPan, 10)
+
   return {
     supplierCode: cleanString(data.supplierCode).toUpperCase(),
     name: cleanString(data.name),
     companyName: cleanString(data.companyName),
-    gstNumber: cleanCode(data.gstNumber, 15),
-    panNumber: cleanCode(data.panNumber, 10),
+    gstNumber,
+    panNumber,
+    gstin: gstNumber,
+    gst: gstNumber,
+    pan: panNumber,
     phone: sanitizePhoneInput(data.phone),
     email: sanitizeEmailInput(data.email),
     website: cleanString(data.website),

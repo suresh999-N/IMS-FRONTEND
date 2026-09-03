@@ -24,7 +24,7 @@ export default function SelectWithAddPanel({
       </div>
 
       <div className="select-add__panel-grid">
-        {addFields.map((field) =>
+        {addFields.map((field, index) =>
           field.type === 'select' ? (
             <SearchableSelect
               key={field.name}
@@ -47,6 +47,7 @@ export default function SelectWithAddPanel({
                 onChange={onDraftChange}
                 placeholder={field.placeholder}
                 autoComplete="off"
+                autoFocus={index === 0}
               />
             </div>
           ),
