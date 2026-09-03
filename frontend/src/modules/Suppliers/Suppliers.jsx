@@ -89,7 +89,7 @@ function getSupplierDeleteApiError(response) {
   return getSupplierDeleteError(message)
 }
 
-function getSupplierApiError(response, fallback) {
+function getSupplierApiError(response, fallback = 'Supplier action failed.', actionType = 'action') {
   const status = Number(response?.status || 0)
   const message = String(response?.error || response?.message || '').trim()
 
@@ -101,7 +101,8 @@ function getSupplierApiError(response, fallback) {
   if (status === 409) return message || 'Supplier conflicts with an existing record.'
   if (status >= 500) {
     if (/status/i.test(message)) return 'Unable to update supplier status. Please select Active, Blocked, Inactive, or Pending.'
-    return 'Supplier update failed. Please try again or contact support if the problem continues.'
+    if (actionType === 'load') return message || fallback || 'Supplier details could not be loaded.'
+    return message || fallback || `Supplier ${actionType} failed. Please try again or contact support if the problem continues.`
   }
   if (/exception|stack|sql|mysql|inner/i.test(message)) return fallback
 
@@ -498,17 +499,11 @@ export default function Suppliers({
       }
 
       if (!response.success) {
-        throw new Error(getSupplierApiError(response, 'Supplier details could not be loaded.'))
+        return null
       }
 
       return buildSupplierProfile(response.data, 0)
-    } catch (error) {
-      const nextMessage = {
-        success: false,
-        message: error instanceof Error ? error.message : 'Supplier details could not be loaded.',
-      }
-      setMessage(nextMessage)
-      notify(nextMessage)
+    } catch {
       return null
     } finally {
       if (requestId === detailRequestRef.current) {
