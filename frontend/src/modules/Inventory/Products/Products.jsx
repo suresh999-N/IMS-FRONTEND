@@ -86,7 +86,7 @@ function ProductsHeader({ canCreate, summary, activeStatusFilter, onFilterStatus
               title={metric.title}
               aria-pressed={metric.isActive}
             >
-              {metric.key === 'inventoryValue' ? '' : `${metric.value} `}{metric.label}
+              {metric.value ? `${metric.value} ` : ''}{metric.label}
             </button>
           ))}
         </div>
