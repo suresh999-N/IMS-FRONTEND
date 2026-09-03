@@ -1026,6 +1026,41 @@ var totalRecords = await query.CountAsync();
                     });
                 }
 
+                if (!string.IsNullOrWhiteSpace(dto.SupplierCode))
+                {
+                    var codeExists = await _context.Suppliers.AnyAsync(x => x.SupplierId != id && !x.IsDeleted && x.SupplierCode == dto.SupplierCode.Trim());
+                    if (codeExists)
+                    {
+                        return BadRequest(new
+                        {
+                            message = $"Supplier Code '{dto.SupplierCode.Trim()}' is already assigned to another supplier."
+                        });
+                    }
+                }
+
+                var cleanName = dto.Name.Trim();
+                var nameExists = await _context.Suppliers.AnyAsync(x => x.SupplierId != id && !x.IsDeleted && x.Name.ToLower() == cleanName.ToLower());
+                if (nameExists)
+                {
+                    return BadRequest(new
+                    {
+                        message = $"A supplier with name '{cleanName}' already exists."
+                    });
+                }
+
+                if (!string.IsNullOrWhiteSpace(dto.Email))
+                {
+                    var cleanEmail = dto.Email.Trim();
+                    var emailExists = await _context.Suppliers.AnyAsync(x => x.SupplierId != id && !x.IsDeleted && x.Email.ToLower() == cleanEmail.ToLower());
+                    if (emailExists)
+                    {
+                        return BadRequest(new
+                        {
+                            message = $"A supplier with email '{cleanEmail}' already exists."
+                        });
+                    }
+                }
+
                 if (!string.IsNullOrWhiteSpace(dto.CompanyName))
                 {
                     var companyNameError = ValidateCompanyName(dto.CompanyName);
@@ -1262,12 +1297,17 @@ var totalRecords = await query.CountAsync();
         {
             var databaseMessage = exception.InnerException?.Message ?? exception.Message;
 
+            if (databaseMessage.Contains("UNIQUE", StringComparison.OrdinalIgnoreCase) || databaseMessage.Contains("duplicate", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Supplier record could not be saved because matching details (Code, Name, or Email) are already assigned to another supplier.";
+            }
+
             if (databaseMessage.Contains("status", StringComparison.OrdinalIgnoreCase))
             {
                 return "Supplier status could not be saved because the database status column is not aligned. Run the supplier status workflow migration.";
             }
 
-            return "Supplier data could not be saved. Please retry or contact support if the problem continues.";
+            return "Supplier data could not be saved. Please review your input and try again.";
         }
 
         // =========================
