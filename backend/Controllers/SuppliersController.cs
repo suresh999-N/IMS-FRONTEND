@@ -824,18 +824,20 @@ var totalRecords = await query.CountAsync();
                 // CONTACTS
                 // ===============================
 
-                if (dto.Contacts.Any())
+                if (dto.Contacts != null && dto.Contacts.Any())
                 {
-                    var contacts = dto.Contacts.Select(contact => new SupplierContact
-                    {
-                        SupplierId = supplier.SupplierId,
-                        Name = contact.Name,
-                        Designation = contact.Designation,
-                        Department = contact.Department,
-                        Phone = contact.Phone,
-                        Email = contact.Email,
-                        IsPrimary = contact.IsPrimary
-                    });
+                    var contacts = dto.Contacts
+                        .Where(c => c != null && (!string.IsNullOrWhiteSpace(c.Name) || !string.IsNullOrWhiteSpace(c.Phone) || !string.IsNullOrWhiteSpace(c.Email)))
+                        .Select(contact => new SupplierContact
+                        {
+                            SupplierId = supplier.SupplierId,
+                            Name = contact.Name,
+                            Designation = contact.Designation,
+                            Department = contact.Department,
+                            Phone = contact.Phone,
+                            Email = contact.Email,
+                            IsPrimary = contact.IsPrimary
+                        });
 
                     await _context.SupplierContacts.AddRangeAsync(contacts);
                 }
@@ -844,18 +846,20 @@ var totalRecords = await query.CountAsync();
                 // ADDRESSES
                 // ===============================
 
-                if (dto.Addresses.Any())
+                if (dto.Addresses != null && dto.Addresses.Any())
                 {
-                    var addresses = dto.Addresses.Select(address => new SupplierAddress
-                    {
-                        SupplierId = supplier.SupplierId,
-                        AddressType = address.AddressType,
-                        AddressLine = address.AddressLine,
-                        City = address.City,
-                        State = address.State,
-                        Country = address.Country,
-                        Pincode = address.Pincode
-                    });
+                    var addresses = dto.Addresses
+                        .Where(a => a != null && (!string.IsNullOrWhiteSpace(a.AddressLine) || !string.IsNullOrWhiteSpace(a.City) || !string.IsNullOrWhiteSpace(a.State)))
+                        .Select(address => new SupplierAddress
+                        {
+                            SupplierId = supplier.SupplierId,
+                            AddressType = address.AddressType,
+                            AddressLine = address.AddressLine,
+                            City = address.City,
+                            State = address.State,
+                            Country = address.Country,
+                            Pincode = address.Pincode
+                        });
 
                     await _context.SupplierAddresses.AddRangeAsync(addresses);
                 }
@@ -882,19 +886,21 @@ var totalRecords = await query.CountAsync();
                 // BANK ACCOUNTS
                 // ===============================
 
-                if (dto.BankAccounts.Any())
+                if (dto.BankAccounts != null && dto.BankAccounts.Any())
                 {
-                    var bankAccounts = dto.BankAccounts.Select(bank => new SupplierBankAccount
-                    {
-                        SupplierId = supplier.SupplierId,
-                        AccountName = bank.AccountName,
-                        AccountNumber = bank.AccountNumber,
-                        BankName = bank.BankName,
-                        IfscCode = bank.IfscCode,
-                        Branch = bank.Branch,
-                        BankState = bank.BankState,
-                        BankCity = bank.BankCity
-                    });
+                    var bankAccounts = dto.BankAccounts
+                        .Where(b => b != null && (!string.IsNullOrWhiteSpace(b.AccountName) || !string.IsNullOrWhiteSpace(b.AccountNumber) || !string.IsNullOrWhiteSpace(b.BankName)))
+                        .Select(bank => new SupplierBankAccount
+                        {
+                            SupplierId = supplier.SupplierId,
+                            AccountName = bank.AccountName,
+                            AccountNumber = bank.AccountNumber,
+                            BankName = bank.BankName,
+                            IfscCode = bank.IfscCode,
+                            Branch = bank.Branch,
+                            BankState = bank.BankState,
+                            BankCity = bank.BankCity
+                        });
 
                     await _context.SupplierBankAccounts.AddRangeAsync(bankAccounts);
                 }
@@ -1153,18 +1159,20 @@ var totalRecords = await query.CountAsync();
                 // INSERT CONTACTS
                 // ===============================
 
-                if (dto.Contacts.Any())
+                if (dto.Contacts != null && dto.Contacts.Any())
                 {
-                    var contacts = dto.Contacts.Select(contact => new SupplierContact
-                    {
-                        SupplierId = supplier.SupplierId,
-                        Name = contact.Name,
-                        Designation = contact.Designation,
-                        Department = contact.Department,
-                        Phone = contact.Phone,
-                        Email = contact.Email,
-                        IsPrimary = contact.IsPrimary
-                    });
+                    var contacts = dto.Contacts
+                        .Where(c => c != null && (!string.IsNullOrWhiteSpace(c.Name) || !string.IsNullOrWhiteSpace(c.Phone) || !string.IsNullOrWhiteSpace(c.Email)))
+                        .Select(contact => new SupplierContact
+                        {
+                            SupplierId = supplier.SupplierId,
+                            Name = contact.Name,
+                            Designation = contact.Designation,
+                            Department = contact.Department,
+                            Phone = contact.Phone,
+                            Email = contact.Email,
+                            IsPrimary = contact.IsPrimary
+                        });
 
                     await _context.SupplierContacts.AddRangeAsync(contacts);
                 }
@@ -1173,18 +1181,20 @@ var totalRecords = await query.CountAsync();
                 // INSERT ADDRESSES
                 // ===============================
 
-                if (dto.Addresses.Any())
+                if (dto.Addresses != null && dto.Addresses.Any())
                 {
-                    var addresses = dto.Addresses.Select(address => new SupplierAddress
-                    {
-                        SupplierId = supplier.SupplierId,
-                        AddressType = address.AddressType,
-                        AddressLine = address.AddressLine,
-                        City = address.City,
-                        State = address.State,
-                        Country = address.Country,
-                        Pincode = address.Pincode
-                    });
+                    var addresses = dto.Addresses
+                        .Where(a => a != null && (!string.IsNullOrWhiteSpace(a.AddressLine) || !string.IsNullOrWhiteSpace(a.City) || !string.IsNullOrWhiteSpace(a.State)))
+                        .Select(address => new SupplierAddress
+                        {
+                            SupplierId = supplier.SupplierId,
+                            AddressType = address.AddressType,
+                            AddressLine = address.AddressLine,
+                            City = address.City,
+                            State = address.State,
+                            Country = address.Country,
+                            Pincode = address.Pincode
+                        });
 
                     await _context.SupplierAddresses.AddRangeAsync(addresses);
                 }
@@ -1211,19 +1221,21 @@ var totalRecords = await query.CountAsync();
                 // INSERT BANK ACCOUNTS
                 // ===============================
 
-                if (dto.BankAccounts.Any())
+                if (dto.BankAccounts != null && dto.BankAccounts.Any())
                 {
-                    var bankAccounts = dto.BankAccounts.Select(bank => new SupplierBankAccount
-                    {
-                        SupplierId = supplier.SupplierId,
-                        AccountName = bank.AccountName,
-                        AccountNumber = bank.AccountNumber,
-                        BankName = bank.BankName,
-                        IfscCode = bank.IfscCode,
-                        Branch = bank.Branch,
-                        BankState = bank.BankState,
-                        BankCity = bank.BankCity
-                    });
+                    var bankAccounts = dto.BankAccounts
+                        .Where(b => b != null && (!string.IsNullOrWhiteSpace(b.AccountName) || !string.IsNullOrWhiteSpace(b.AccountNumber) || !string.IsNullOrWhiteSpace(b.BankName)))
+                        .Select(bank => new SupplierBankAccount
+                        {
+                            SupplierId = supplier.SupplierId,
+                            AccountName = bank.AccountName,
+                            AccountNumber = bank.AccountNumber,
+                            BankName = bank.BankName,
+                            IfscCode = bank.IfscCode,
+                            Branch = bank.Branch,
+                            BankState = bank.BankState,
+                            BankCity = bank.BankCity
+                        });
 
                     await _context.SupplierBankAccounts.AddRangeAsync(bankAccounts);
                 }
@@ -1280,15 +1292,16 @@ var totalRecords = await query.CountAsync();
                 TryRestorePromotedSupplierDocumentFiles(documentPromotion);
                 _logger.LogError(
                     ex,
-                    "Supplier update failed. SupplierId={SupplierId}, SupplierCode={SupplierCode}, RequestedStatus={RequestedStatus}, TraceId={TraceId}",
+                    "Supplier update failed. SupplierId={SupplierId}, SupplierCode={SupplierCode}, RequestedStatus={RequestedStatus}, ExceptionMessage={ExceptionMessage}, TraceId={TraceId}",
                     id,
                     dto.SupplierCode,
                     dto.Status,
+                    ex.Message,
                     HttpContext.TraceIdentifier);
 
                 return StatusCode(500, new
                 {
-                    message = "Supplier update failed. Please retry or contact support if the problem continues."
+                    message = $"Supplier update failed: {ex.InnerException?.Message ?? ex.Message}"
                 });
             }
         }
