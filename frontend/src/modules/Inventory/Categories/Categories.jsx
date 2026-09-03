@@ -210,12 +210,44 @@ function buildPath(categories, category) {
 function buildVisibleRows(categories, expandedIds, viewMode = 'grid') {
   const categoryMap = new Map()
   categories.forEach((item) => {
-    categoryMap.set(categoryIdOf(item), item)
+    const id = categoryIdOf(item)
+    if (id) {
+      categoryMap.set(id, item)
+    }
   })
 
+  // In Grid View: Display uniform tabular grid of Main Top-Level categories only.
+  // Subcategories are accessed via the dedicated Subcategories Drawer Modal.
+  if (viewMode === 'grid') {
+    const mainCategories = categories.filter((item) => {
+      const pId = parentIdOf(item)
+      if (!pId || pId === '0' || pId === 'null' || pId === 'undefined') {
+        return true
+      }
+      return false
+    })
+
+    return sortByName(mainCategories).map((node) => {
+      const nodeCatId = categoryIdOf(node)
+      const children = getAllChildren(node, categories)
+      return {
+        ...node,
+        id: nodeCatId,
+        rowType: 'category',
+        parentCategoryId: null,
+        parentName: 'Main category',
+        depth: 0,
+        childCount: children.length,
+        hasChildren: children.length > 0,
+        sortPath: node.name,
+      }
+    })
+  }
+
+  // In Tree View: Display expandable hierarchy with tree guide lines and child rows.
   const rootCategories = categories.filter((item) => {
     const pId = parentIdOf(item)
-    return !pId || !categoryMap.has(pId)
+    return !pId || pId === '0' || pId === 'null' || pId === 'undefined' || !categoryMap.has(pId)
   })
 
   const rows = []
