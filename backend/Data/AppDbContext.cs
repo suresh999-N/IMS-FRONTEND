@@ -570,6 +570,9 @@ namespace IMSBackend.Data
             // =========================================================
 
             modelBuilder.Entity<Supplier>()
+                .Ignore(supplier => supplier.CompanyName);
+
+            modelBuilder.Entity<Supplier>()
                 .Property(supplier => supplier.Email)
                 .HasMaxLength(256);
 
