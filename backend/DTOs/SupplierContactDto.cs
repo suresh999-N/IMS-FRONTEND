@@ -4,6 +4,8 @@ namespace IMSBackend.DTOs.Suppliers
 {
     public class SupplierContactDto
     {
+        public int? ContactId { get; set; }
+
         [RegularExpression(
             @"^[A-Za-z\s]+$",
             ErrorMessage = "Name can contain only letters and spaces."

@@ -1,6 +1,0 @@
-2026-08-09 02:17:31.004 +05:30 [INF] Refresh Token Cleanup Service Started.
-2026-08-09 02:17:31.111 +05:30 [INF] IMS Backend started successfully. Swagger: http://localhost:5237/swagger
-2026-08-09 02:18:15.061 +05:30 [INF] JWT Valid. User: SK
-2026-08-09 02:18:15.215 +05:30 [INF] GET /api/Notifications/unread-count => 200 (532 ms)
-2026-08-09 02:19:29.833 +05:30 [INF] GET /swagger/index.html => 200 (321 ms)
-2026-08-09 02:19:32.890 +05:30 [INF] GET /swagger/v1/swagger.json => 200 (2316 ms)

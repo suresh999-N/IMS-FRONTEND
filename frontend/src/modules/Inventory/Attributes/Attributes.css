@@ -252,8 +252,8 @@
 /* ─── Search input ──────────────────────────────────────────────── */
 
 .resource-center__page--attributes .resource-center__inventory-table :where(.erp-search-bar, .search-input-container) {
-  flex: 0 1 360px;
-  width: min(100%, 360px);
+  flex: 0 1 540px;
+  width: min(100%, 540px);
   min-width: 220px;
   max-width: 100%;
   margin: 0;

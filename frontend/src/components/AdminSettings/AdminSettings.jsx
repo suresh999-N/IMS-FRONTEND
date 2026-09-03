@@ -1319,6 +1319,7 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
     return (
       <div className="page admin-settings-page">
         <PageHeader
+          icon={Settings}
           title={st.title || "Settings"}
         />
 
@@ -1475,8 +1476,9 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
                 className="settings-close-btn"
                 onClick={onClose}
                 disabled={savingSettings || uploadingLogo || loadingSettings}
+                aria-label="Close settings"
               >
-                ×
+                <X size={16} />
               </button>
             </div>
           </div>

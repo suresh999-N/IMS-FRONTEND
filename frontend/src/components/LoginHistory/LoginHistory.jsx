@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { X } from "lucide-react";
 import "./LoginHistory.css";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '').replace(/\/api$/, '');
@@ -442,8 +443,8 @@ function LoginHistory({ settingsData, onClose }) {
             <p>{h.subtitle}</p>
           </div>
 
-          <button className="login-history-close-btn" onClick={onClose}>
-            ×
+          <button className="login-history-close-btn" onClick={onClose} aria-label="Close modal">
+            <X size={16} />
           </button>
         </div>
 

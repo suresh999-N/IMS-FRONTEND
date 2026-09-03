@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { X } from "lucide-react";
 import { getNameError, sanitizeNameInput } from "../../validators/nameValidator";
 import "./EditProfile.css";
 
@@ -1067,8 +1068,9 @@ function EditProfile({ adminProfile, settingsData, onClose, onSaveProfile }) {
             onClick={onClose}
             disabled={isBusy}
             type="button"
+            aria-label="Close modal"
           >
-            ×
+            <X size={16} />
           </button>
         </div>
 

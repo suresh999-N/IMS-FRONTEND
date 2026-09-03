@@ -39,12 +39,13 @@ export default function LowStockWidget({ items = [], isLoading }) {
                 className="low-stock-row"
                 key={item.id || item.sku || item.name}
                 to={`/inventory/products/${item.productId || item.ProductId || item.id}`}
+                title={item.name}
               >
                 <span className="low-stock-row__icon" aria-hidden="true">
                   <AlertTriangle size={16} />
                 </span>
                 <div>
-                  <strong>{item.name}</strong>
+                  <strong title={item.name}>{item.name}</strong>
                   <span>Stock: {item.stock} - Reorder Level: {item.reorderLevel}</span>
                 </div>
                 <span className={`low-stock-row__badge ${isZeroStock ? 'is-critical' : ''}`}>

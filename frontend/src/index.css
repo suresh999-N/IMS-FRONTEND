@@ -845,7 +845,7 @@ select:focus {
   color: #0f172a;
 }
 
-/* Light Red Cancel Buttons - Maximum Specificity Rule Overriding All Container CSS */
+/* Safe Secondary Blue Cancel Buttons - Maximum Specificity Rule Overriding All Container CSS */
 #root .button-cancel,
 #root .btn-cancel,
 #root .button--cancel,
@@ -863,10 +863,10 @@ select:focus {
 #root .button-secondary.button-cancel,
 #root .button.button-cancel,
 body .button-cancel {
-  border-color: var(--cancel-border, rgba(239, 68, 68, 0.3)) !important;
-  background: var(--cancel-bg, #fef2f2) !important;
-  background-color: var(--cancel-bg, #fef2f2) !important;
-  color: var(--cancel-text, #dc2626) !important;
+  border-color: var(--cancel-border, #bfdbfe) !important;
+  background: var(--cancel-bg, #eff6ff) !important;
+  background-color: var(--cancel-bg, #eff6ff) !important;
+  color: var(--cancel-text, #1d4ed8) !important;
   box-shadow: none !important;
 }
 
@@ -894,10 +894,10 @@ body .button-cancel {
 #root .button-secondary.button-cancel:hover:not(:disabled),
 #root .button.button-cancel:hover:not(:disabled),
 body .button-cancel:hover:not(:disabled) {
-  border-color: var(--cancel-border-hover, rgba(239, 68, 68, 0.5)) !important;
-  background: var(--cancel-bg-hover, #fee2e2) !important;
-  background-color: var(--cancel-bg-hover, #fee2e2) !important;
-  color: var(--cancel-text-hover, #b91c1c) !important;
+  border-color: var(--cancel-border-hover, #93c5fd) !important;
+  background: var(--cancel-bg-hover, #dbeafe) !important;
+  background-color: var(--cancel-bg-hover, #dbeafe) !important;
+  color: var(--cancel-text-hover, #1e40af) !important;
 }
 
 /* Universal Small Minimalist Modal Close Button Rule for All Modules & Popups */
@@ -915,21 +915,22 @@ html body #root :is(
   .payment-drawer__close,
   .app-sidebar__mobile-close
 ) {
-  width: 24px !important;
-  height: 24px !important;
-  min-width: 24px !important;
-  min-height: 24px !important;
-  max-width: 24px !important;
-  max-height: 24px !important;
+  width: 22px !important;
+  height: 22px !important;
+  min-width: 22px !important;
+  min-height: 22px !important;
+  max-width: 22px !important;
+  max-height: 22px !important;
   padding: 0 !important;
   border: 0 !important;
-  border-radius: 5px !important;
+  border-radius: 4px !important;
   background: transparent !important;
   color: #64748b !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   line-height: 1 !important;
+  font-size: 13px !important;
   box-shadow: none !important;
 }
 
@@ -966,9 +967,9 @@ html body #root :is(
   .payment-drawer__close,
   .app-sidebar__mobile-close
 ) svg {
-  width: 14px !important;
-  height: 14px !important;
-  stroke-width: 2px !important;
+  width: 13px !important;
+  height: 13px !important;
+  stroke-width: 2.2px !important;
 }
 
 .button:disabled {

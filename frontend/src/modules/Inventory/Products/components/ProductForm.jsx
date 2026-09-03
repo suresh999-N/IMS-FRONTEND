@@ -1,8 +1,11 @@
 // ProductForm.jsx
 import {
+  Barcode,
+  CheckCircle2,
   ChevronDown,
   FileText,
   GitBranch,
+  ImagePlus,
   Pencil,
   Plus,
   RotateCcw,
@@ -444,6 +447,7 @@ export default function ProductForm({
   const [attributes, setAttributes] = useState(defaultAttributes)
   const [attributeValues, setAttributeValues] = useState(defaultAttributeValues)
   const [variantDraft, setVariantDraft] = useState(emptyVariant)
+  const [barcodeSuccessMessage, setBarcodeSuccessMessage] = useState('')
 
   useEffect(() => {
     const nextInitialForm = getInitialForm(initialValues)
@@ -455,6 +459,7 @@ export default function ProductForm({
     setSelectedImageFile(null)
     setImageRemoved(false)
     setVariantDraft(emptyVariant)
+    setBarcodeSuccessMessage('')
   }, [initialValues])
 
   useEffect(() => {
@@ -834,6 +839,10 @@ export default function ProductForm({
   function handleChange(event) {
     const { name, value } = event.target
 
+    if (name === 'barcode') {
+      setBarcodeSuccessMessage('')
+    }
+
     setFormData((currentValue) => ({
       ...currentValue,
       [name]: value,
@@ -989,19 +998,13 @@ export default function ProductForm({
         ...currentValue,
         barcode: true,
       }))
+      setBarcodeSuccessMessage('Barcode generated successfully.')
 
-      showToast({
-        type: 'success',
-        title: 'Barcode Generated',
-        message: `Generated barcode: ${nextBarcode}`,
-      })
+      showToast('Barcode generated successfully.', 'success')
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to generate barcode.'
-      showToast({
-        type: 'error',
-        title: 'Barcode Error',
-        message,
-      })
+      setBarcodeSuccessMessage('')
+      showToast(message, 'error')
     }
   }
 
@@ -1044,6 +1047,7 @@ export default function ProductForm({
     setSelectedImageFile(null)
     setImageRemoved(false)
     setVariantDraft(emptyVariant)
+    setBarcodeSuccessMessage('')
   }
 
   const actionLabel = isSaving
@@ -1204,21 +1208,31 @@ export default function ProductForm({
             error={shouldShowError('sku') ? errors.sku : ''}
           />
           <div className="product-form__barcode-field">
-            <InputField
-              id="barcode"
-              name="barcode"
-              label="Barcode"
-              value={formData.barcode || ''}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              placeholder="Enter barcode value"
-              error={shouldShowError('barcode') ? errors.barcode : ''}
-            />
+            <div className="product-form__barcode-input-wrap">
+              <InputField
+                id="barcode"
+                name="barcode"
+                label="Barcode"
+                value={formData.barcode || ''}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="Enter barcode value"
+                error={shouldShowError('barcode') ? errors.barcode : ''}
+              />
+              {barcodeSuccessMessage && !errors.barcode ? (
+                <span className="product-form__barcode-success" role="status">
+                  <CheckCircle2 size={13} />
+                  {barcodeSuccessMessage}
+                </span>
+              ) : null}
+            </div>
             <button
               type="button"
-              className="button"
+              className="button product-form__generate-button"
               onClick={handleGenerateBarcode}
+              title="Generate a unique barcode"
             >
+              <Barcode size={16} />
               Generate
             </button>
           </div>
@@ -1438,27 +1452,31 @@ export default function ProductForm({
                 accept="image/*"
                 onChange={handleImageChange}
               />
-              <label className="product-form__image-preview" htmlFor="image-upload">
+              <label className="product-form__image-preview" htmlFor="image-upload" title={imagePreview ? "Click to change image" : "Click to upload image"}>
                 {imagePreview ? (
                   <img src={resolveApiAssetUrl(imagePreview)} alt="Product preview" />
                 ) : (
                   <div className="product-form__image-empty">
-                    <strong>Drop product image or browse</strong>
-                    <span>PNG, JPG, or WebP preview</span>
+                    <ImagePlus size={32} className="product-form__image-empty-icon" />
+                    <strong>Add Product Image</strong>
+                    <span>Drag & drop image here, or click to browse</span>
+                    <small>PNG, JPG, or WebP preview</small>
                   </div>
                 )}
               </label>
               <div className="product-form__image-actions">
-                <label className="product-form__upload-button" htmlFor="image-upload">
-                  {imagePreview ? 'Change image' : 'Upload image'}
+                <label className="button product-form__upload-button" htmlFor="image-upload">
+                  <ImagePlus size={16} />
+                  {imagePreview ? 'Change Image' : 'Add Image'}
                 </label>
                 {imagePreview ? (
                   <button
                     type="button"
-                    className="product-form__remove-image-button"
+                    className="button product-form__remove-image-button"
                     onClick={handleRemoveImage}
                   >
-                    Remove image
+                    <Trash2 size={16} />
+                    Remove Image
                   </button>
                 ) : null}
               </div>

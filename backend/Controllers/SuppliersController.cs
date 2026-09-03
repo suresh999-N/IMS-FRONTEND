@@ -451,8 +451,8 @@ namespace IMSBackend.Controllers
             }
 
 
-// ================= TOTAL COUNT =================
-var totalRecords = await query.CountAsync();
+            // ================= TOTAL COUNT =================
+            var totalRecords = await query.CountAsync();
 
             // ================= SORTING =================
             query = (sortBy.ToLower(), sortOrder.ToLower()) switch
@@ -550,7 +550,7 @@ var totalRecords = await query.CountAsync();
             });
         }
 
-        
+
         // =========================
         // 🔹 GET BY ID
         // =========================
@@ -954,7 +954,7 @@ var totalRecords = await query.CountAsync();
             }
         }
 
-        
+
         // =========================
         // 🔹 UPDATE
         // =========================
@@ -1045,7 +1045,7 @@ var totalRecords = await query.CountAsync();
                 }
 
                 var cleanName = dto.Name.Trim();
-                var nameExists = await _context.Suppliers.AnyAsync(x => x.SupplierId != id && !x.IsDeleted && x.Name.ToLower() == cleanName.ToLower());
+                var nameExists = await _context.Suppliers.AnyAsync(x => x.SupplierId != id && !x.IsDeleted && x.Name != null && x.Name.ToLower() == cleanName.ToLower());
                 if (nameExists)
                 {
                     return BadRequest(new
@@ -1057,7 +1057,7 @@ var totalRecords = await query.CountAsync();
                 if (!string.IsNullOrWhiteSpace(dto.Email))
                 {
                     var cleanEmail = dto.Email.Trim();
-                    var emailExists = await _context.Suppliers.AnyAsync(x => x.SupplierId != id && !x.IsDeleted && x.Email.ToLower() == cleanEmail.ToLower());
+                    var emailExists = await _context.Suppliers.AnyAsync(x => x.SupplierId != id && !x.IsDeleted && x.Email != null && x.Email.ToLower() == cleanEmail.ToLower());
                     if (emailExists)
                     {
                         return BadRequest(new
@@ -1130,13 +1130,8 @@ var totalRecords = await query.CountAsync();
                 await _context.SaveChangesAsync();
 
                 // ===============================
-                // REMOVE OLD CHILD RECORDS
+                // REMOVE OLD CHILD RECORDS (ADDRESSES, PAYMENT TERMS, BANK ACCOUNTS)
                 // ===============================
-
-                var oldContacts = _context.SupplierContacts
-                    .Where(x => x.SupplierId == id);
-
-                _context.SupplierContacts.RemoveRange(oldContacts);
 
                 var oldAddresses = _context.SupplierAddresses
                     .Where(x => x.SupplierId == id);
@@ -1156,25 +1151,95 @@ var totalRecords = await query.CountAsync();
                 await _context.SaveChangesAsync();
 
                 // ===============================
-                // INSERT CONTACTS
+                // RECONCILE CONTACTS
                 // ===============================
 
-                if (dto.Contacts != null && dto.Contacts.Any())
+                var existingContacts = await _context.SupplierContacts
+                    .Where(x => x.SupplierId == id)
+                    .ToListAsync();
+
+                var incomingContacts = (dto.Contacts ?? new List<SupplierContactDto>())
+                    .Where(c => c != null && (!string.IsNullOrWhiteSpace(c.Name) || !string.IsNullOrWhiteSpace(c.Phone) || !string.IsNullOrWhiteSpace(c.Email)))
+                    .ToList();
+
+                var hasExplicitPrimary = incomingContacts.Any(c => c.IsPrimary);
+                bool primarySet = false;
+                for (int i = 0; i < incomingContacts.Count; i++)
                 {
-                    var contacts = dto.Contacts
-                        .Where(c => c != null && (!string.IsNullOrWhiteSpace(c.Name) || !string.IsNullOrWhiteSpace(c.Phone) || !string.IsNullOrWhiteSpace(c.Email)))
-                        .Select(contact => new SupplierContact
+                    if (hasExplicitPrimary)
+                    {
+                        if (incomingContacts[i].IsPrimary && !primarySet)
+                        {
+                            primarySet = true;
+                        }
+                        else
+                        {
+                            incomingContacts[i].IsPrimary = false;
+                        }
+                    }
+                    else
+                    {
+                        incomingContacts[i].IsPrimary = (i == 0);
+                    }
+                }
+
+                var processedContactIds = new HashSet<int>();
+
+                foreach (var contactDto in incomingContacts)
+                {
+                    var targetContactId = contactDto.ContactId; SupplierContact? existingContact = null;
+
+                    if (targetContactId.HasValue && targetContactId.Value > 0)
+                    {
+                        existingContact = existingContacts.FirstOrDefault(c => c.ContactId == targetContactId.Value);
+                    }
+
+                    if (existingContact != null)
+                    {
+                        existingContact.Name = contactDto.Name;
+                        existingContact.Designation = contactDto.Designation;
+                        existingContact.Department = contactDto.Department;
+                        existingContact.Phone = contactDto.Phone;
+                        existingContact.Email = contactDto.Email;
+                        existingContact.IsPrimary = contactDto.IsPrimary;
+                        processedContactIds.Add(existingContact.ContactId);
+                    }
+                    else
+                    {
+                        var newContact = new SupplierContact
                         {
                             SupplierId = supplier.SupplierId,
-                            Name = contact.Name,
-                            Designation = contact.Designation,
-                            Department = contact.Department,
-                            Phone = contact.Phone,
-                            Email = contact.Email,
-                            IsPrimary = contact.IsPrimary
-                        });
+                            Name = contactDto.Name,
+                            Designation = contactDto.Designation,
+                            Department = contactDto.Department,
+                            Phone = contactDto.Phone,
+                            Email = contactDto.Email,
+                            IsPrimary = contactDto.IsPrimary
+                        };
+                        await _context.SupplierContacts.AddAsync(newContact);
+                    }
+                }
 
-                    await _context.SupplierContacts.AddRangeAsync(contacts);
+                var contactsToRemove = existingContacts
+                    .Where(c => !processedContactIds.Contains(c.ContactId))
+                    .ToList();
+
+                if (contactsToRemove.Any())
+                {
+                    _context.SupplierContacts.RemoveRange(contactsToRemove);
+                }
+
+                var primaryContactDto = incomingContacts.FirstOrDefault(c => c.IsPrimary) ?? incomingContacts.FirstOrDefault();
+                if (primaryContactDto != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(primaryContactDto.Phone))
+                    {
+                        supplier.Phone = primaryContactDto.Phone;
+                    }
+                    if (!string.IsNullOrWhiteSpace(primaryContactDto.Email))
+                    {
+                        supplier.Email = primaryContactDto.Email;
+                    }
                 }
 
                 // ===============================

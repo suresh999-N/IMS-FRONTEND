@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { X } from "lucide-react";
 import "./AdminProfile.css";
 
 import EditProfile from "../EditProfile/EditProfile";
@@ -894,8 +895,9 @@ function AdminProfile({
               className="profile-close-btn"
               onClick={onClose}
               type="button"
+              aria-label="Close profile"
             >
-              ×
+              <X size={16} />
             </button>
           </div>
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import { notifyRolesUpdated } from "../../api/rolesApi";
 import { PERMISSION_OPTIONS } from "../../utils/permissions";
 import "./ManagePermissions.css";
@@ -579,8 +580,9 @@ function ManagePermissions({ settingsData, onClose }) {
             className="permissions-close-btn"
             onClick={onClose}
             disabled={saving}
+            aria-label="Close modal"
           >
-            ×
+            <X size={16} />
           </button>
         </div>
 

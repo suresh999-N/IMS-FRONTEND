@@ -4,4 +4,8 @@ bin/
 obj/
 **/bin/
 **/obj/
+.vs/
+**/.vs/
+Logs/
+**/Logs/
 

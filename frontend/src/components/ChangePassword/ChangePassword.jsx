@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, X } from "lucide-react";
 import "./ChangePassword.css";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '').replace(/\/api$/, '');
@@ -418,8 +418,9 @@ function ChangePassword({ settingsData, onClose }) {
             className="password-close-btn"
             onClick={onClose}
             disabled={saving}
+            aria-label="Close modal"
           >
-            ×
+            <X size={16} />
           </button>
         </div>
 

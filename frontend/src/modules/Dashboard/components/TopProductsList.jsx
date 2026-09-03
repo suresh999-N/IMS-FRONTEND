@@ -21,14 +21,22 @@ export default function TopProductsList({ products = [] }) {
           {topProducts.map((product, index) => {
             const revenue = Number(product.revenue || 0)
             const percent = totalRevenue > 0 ? Math.round((revenue / totalRevenue) * 100) : 0
+            const productName = product.name || 'Unnamed Product'
+            const skuText = product.sku || 'No SKU'
+            const soldText = `${product.totalSold || 0} sold`
+            const subText = `${skuText} - ${soldText}`
 
             return (
-              <article className="top-product-row" key={product.id || product.name || index}>
+              <article
+                className="top-product-row"
+                key={product.id || product.name || index}
+                title={productName}
+              >
                 <span className="top-product-row__rank">#{index + 1}</span>
                 <div className="top-product-row__main">
-                  <div className="top-product-row__copy">
-                    <strong>{product.name}</strong>
-                    <small>{product.sku || 'No SKU'} - {product.totalSold || 0} sold</small>
+                  <div className="top-product-row__copy" title={productName}>
+                    <strong title={productName}>{productName}</strong>
+                    <small title={subText}>{subText}</small>
                   </div>
                   <div className="top-product-row__bar" aria-label={`${percent}% of top product revenue`}>
                     <span style={{ width: `${percent}%` }} />

@@ -80,17 +80,18 @@
 }
 
 .settings-close-btn {
-  width: 24px !important;
-  height: 24px !important;
+  width: 22px !important;
+  height: 22px !important;
   border: none;
   background: transparent;
   color: var(--ims-text);
-  font-size: 28px;
+  font-size: 13px;
   font-weight: 400;
-  border-radius: 10px;
+  border-radius: 4px;
   cursor: pointer;
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .settings-close-btn:hover {
@@ -907,10 +908,10 @@
 }
 
 .settings-cancel-btn {
-  background: var(--color-danger-50, #fef2f2);
-  background-color: var(--color-danger-50, #fef2f2);
-  color: #dc2626;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: var(--color-info-50, #eff6ff);
+  background-color: var(--color-info-50, #eff6ff);
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
   border-radius: 10px;
   padding: 12px 20px;
   font-weight: 500;
@@ -919,10 +920,10 @@
 }
 
 .settings-cancel-btn:hover {
-  background: var(--color-danger-100, #fee2e2);
-  background-color: var(--color-danger-100, #fee2e2);
-  color: #b91c1c;
-  border-color: rgba(239, 68, 68, 0.5);
+  background: var(--color-info-100, #dbeafe);
+  background-color: var(--color-info-100, #dbeafe);
+  color: #1e40af;
+  border-color: #93c5fd;
 }
 
 .settings-sidebar-bottom-toggle {
@@ -1336,9 +1337,15 @@
 .admin-settings-page {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   width: 100%;
   position: relative !important;
+}
+
+.admin-settings-page .app-page-header {
+  padding: 0 0 2px;
+  margin: 0;
+  width: 100%;
 }
 
 .admin-settings-card {
@@ -1349,22 +1356,24 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Compact Page & Section Headings for Settings */
 .admin-settings-page .page-header__title,
 .admin-settings-page .page-header h1,
 .admin-settings-page h1 {
-  font-size: 1.35rem !important;
-  font-weight: 700 !important;
-  line-height: 1.25 !important;
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
   margin: 0 !important;
 }
 
 .admin-settings-card h3 {
   margin: 0;
-  font-size: 1.05rem !important;
-  font-weight: 600 !important;
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
   color: var(--ims-heading, #0f172a);
 }
 

@@ -72,16 +72,17 @@
 }
 
 .permissions-close-btn {
-  width: 24px !important;
-  height: 24px !important;
+  width: 22px !important;
+  height: 22px !important;
   border: none;
   background: transparent;
   color: var(--ims-text);
-  font-size: 28px;
-  border-radius: 10px;
+  font-size: 13px;
+  border-radius: 4px;
   cursor: pointer;
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .permissions-close-btn:hover {
@@ -383,17 +384,17 @@
 }
 
 .permissions-cancel-btn {
-  background: var(--color-danger-50, #fef2f2);
-  background-color: var(--color-danger-50, #fef2f2);
-  color: #dc2626;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: var(--color-info-50, #eff6ff);
+  background-color: var(--color-info-50, #eff6ff);
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
 }
 
 .permissions-cancel-btn:hover {
-  background: var(--color-danger-100, #fee2e2);
-  background-color: var(--color-danger-100, #fee2e2);
-  color: #b91c1c;
-  border-color: rgba(239, 68, 68, 0.5);
+  background: var(--color-info-100, #dbeafe);
+  background-color: var(--color-info-100, #dbeafe);
+  color: #1e40af;
+  border-color: #93c5fd;
 }
 
 .permissions-save-btn {
