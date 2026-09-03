@@ -88,7 +88,7 @@ function SupplierDetailsOverview({ supplier = {}, purchases = [], payments = [] 
         <div>
           <span>{formatEmpty(currentSupplier.supplierCode)}</span>
           <h2>{formatEmpty(currentSupplier.name)}</h2>
-          {currentSupplier.companyName ? <p>{currentSupplier.companyName}</p> : null}
+          <p>{formatEmpty(currentSupplier.companyName)}</p>
         </div>
         <StatusBadge type={getStatusBadgeType(currentSupplier.status)}>
           {formatStatus(currentSupplier.status)}

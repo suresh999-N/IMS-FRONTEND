@@ -152,7 +152,7 @@ function buildSupplierProfile(supplier) {
     ...supplier,
     id,
     supplierCode: supplier.supplierCode || supplier.code || '',
-    companyName: supplier.companyName || supplier.company || '',
+    companyName: supplier.companyName ?? supplier.CompanyName ?? supplier.company ?? supplier.Company ?? '',
     gstNumber,
     panNumber,
     gstin: gstNumber,
