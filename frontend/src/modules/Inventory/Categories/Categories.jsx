@@ -478,6 +478,7 @@ function CategoryForm({
     name: editingCategory?.name ?? '',
     parentId: editingCategory ? parentIdOf(editingCategory) : initialParentId,
     description: editingCategory?.description ?? '',
+    status: editingCategory?.status ?? 'Active',
   }))
   const [touched, setTouched] = useState({})
 
@@ -511,7 +512,8 @@ function CategoryForm({
     !isEditing ||
     name !== clean(editingCategory?.name) ||
     parentId !== parentIdOf(editingCategory) ||
-    clean(formData.description) !== clean(editingCategory?.description)
+    clean(formData.description) !== clean(editingCategory?.description) ||
+    (formData.status || 'Active') !== (editingCategory?.status || 'Active')
 
   const parentOptions = categories
     .filter((category) => {
@@ -550,6 +552,8 @@ function CategoryForm({
       name,
       parentId: parentId ? Number(parentId) : null,
       description: clean(formData.description),
+      status: formData.status || 'Active',
+      isActive: (formData.status || 'Active') === 'Active',
     })
   }
 
@@ -581,6 +585,20 @@ function CategoryForm({
             placeholder="No parent category"
             error={errors.parentId}
             showError={Boolean(touched.parentId && errors.parentId)}
+          />
+
+          <SearchableSelect
+            id="category-status"
+            name="status"
+            label="Status"
+            value={formData.status}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            options={[
+              { value: 'Active', label: 'Active' },
+              { value: 'Inactive', label: 'Inactive' },
+            ]}
+            placeholder="Select status"
           />
 
           <InputField
@@ -829,6 +847,39 @@ export default function Categories() {
     setDeleteTarget(category)
   }
 
+  async function handleToggleStatus(category) {
+    const currentStatus = String(category.status || 'Active').toLowerCase()
+    const nextStatus = currentStatus === 'inactive' ? 'Active' : 'Inactive'
+
+    setIsSaving(true)
+    const payload = {
+      name: category.name,
+      parentId: parentIdOf(category) ? Number(parentIdOf(category)) : null,
+      description: clean(category.description),
+      status: nextStatus,
+      isActive: nextStatus === 'Active',
+    }
+
+    const response = await updateCategory(categoryIdOf(category), payload)
+    setIsSaving(false)
+
+    if (!response.success) {
+      showToast({
+        type: 'error',
+        title: 'Categories',
+        message: response.error || 'Unable to update status.',
+      })
+      return
+    }
+
+    showToast({
+      type: 'success',
+      title: 'Categories',
+      message: `Category "${category.name}" status changed to ${nextStatus}.`,
+    })
+    await loadCategories({ force: true })
+  }
+
   function handleBulkDeleteClick() {
     const deletableCategories = selectedCategories.filter((category) => category.rowType === 'category')
 
@@ -1058,6 +1109,12 @@ export default function Categories() {
                   icon: Pencil,
                   onClick: () => setFormState({ category, initialParentId: '' }),
                 } : null,
+                canEdit ? {
+                  key: 'toggle-status',
+                  label: String(category.status || 'Active').toLowerCase() === 'inactive' ? 'Activate Category' : 'Deactivate Category',
+                  icon: SlidersHorizontal,
+                  onClick: () => handleToggleStatus(category),
+                } : null,
                 canDelete ? {
                   key: 'delete',
                   label: 'Delete',
@@ -1142,6 +1199,12 @@ export default function Categories() {
                   label: 'Edit',
                   icon: Pencil,
                   onClick: () => setFormState({ category: row, initialParentId: '' }),
+                } : null,
+                canEdit ? {
+                  key: 'toggle-status',
+                  label: String(row.status || 'Active').toLowerCase() === 'inactive' ? 'Activate Category' : 'Deactivate Category',
+                  icon: SlidersHorizontal,
+                  onClick: () => handleToggleStatus(row),
                 } : null,
                 canDelete ? {
                   key: 'delete',
