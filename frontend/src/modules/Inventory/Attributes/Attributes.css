@@ -347,6 +347,11 @@
   border-radius: 14px;
 }
 
+.form-modal--attributes .form-modal__header,
+.form-modal__dialog--attributes .form-modal__header {
+  padding: 10px 20px !important;
+}
+
 .form-modal__body--attributes {
   flex: 0 1 auto !important;
   padding: 8px 16px 14px !important;
