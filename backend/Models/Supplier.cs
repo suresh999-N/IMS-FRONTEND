@@ -13,7 +13,7 @@ public class Supplier
 
     public string? Name { get; set; }
 
-    [NotMapped]
+    [Column("company_name")]
     public string? CompanyName { get; set; }
 
     public string? Category { get; set; }

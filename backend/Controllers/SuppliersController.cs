@@ -567,7 +567,7 @@ var totalRecords = await query.CountAsync();
                     x.SupplierId,
                     x.SupplierCode,
                     x.Name,
-                    CompanyName = (string?)null,
+                    x.CompanyName,
                     x.Category,
                     x.GstNumber,
                     x.PanNumber,

@@ -560,6 +560,17 @@ using (var scope = app.Services.CreateScope())
 
 
         // =====================================================
+        // SUPPLIERS COMPANY_NAME COLUMN AUTOMATIC MIGRATION
+        // =====================================================
+
+        await EnsureColumnExistsAsync(
+            connection,
+            "suppliers",
+            "company_name",
+            "ALTER TABLE `suppliers` ADD COLUMN `company_name` VARCHAR(150) NULL;");
+
+
+        // =====================================================
         // NEW:
         // ENSURE ALL ACTIVE ROLES HAVE ALL ACTIVE MODULE
         // PERMISSION RECORDS
