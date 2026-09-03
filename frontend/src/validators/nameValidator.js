@@ -61,7 +61,7 @@ export function getNameError(value, options = {}) {
   const opts = typeof options === 'string' ? { label: options } : options
   const {
     required = true,
-    label = 'Name',
+    label = 'Full Name',
     min = 2,
     max = NAME_MAX_LENGTH,
     allowAmpersand = false,
@@ -75,36 +75,32 @@ export function getNameError(value, options = {}) {
     return required ? `${label} is required.` : ''
   }
 
-  // Reject leading spaces or excessive consecutive spaces
-  if (/^\s/.test(rawValue) || /\s{2,}/.test(rawValue)) {
-    return 'Name cannot contain leading or consecutive spaces.'
+  // Reject numeric characters or special characters when allowNumbers/allowAmpersand are false
+  if (!allowNumbers && !allowAmpersand) {
+    if (/[^a-zA-Z\p{L}\s]/u.test(cleanValue) || /\d/.test(cleanValue)) {
+      return `${label} must contain only letters and spaces.`
+    }
+    if (/^\s/.test(rawValue) || /\s{2,}/.test(rawValue)) {
+      return `${label} must contain only letters and spaces.`
+    }
+  } else {
+    if (!allowNumbers && /\d/.test(cleanValue)) {
+      return `${label} must contain only letters and spaces.`
+    }
+    const pattern = allowAmpersand
+      ? /^(?=.*[a-zA-Z\p{L}])[a-zA-Z\p{L}0-9 .&'-]+$/u
+      : /^(?=.*[a-zA-Z\p{L}])[a-zA-Z\p{L}0-9\s'-]+$/u
+    if (!pattern.test(cleanValue)) {
+      return `${label} contains invalid characters.`
+    }
   }
 
   if (cleanValue.length < min) {
-    return `${label} must be at least ${min} characters.`
+    return `${label} must contain at least ${min} characters.`
   }
 
   if (cleanValue.length > max) {
     return `${label} cannot exceed ${max} characters.`
-  }
-
-  // Reject numeric characters when allowNumbers is false
-  if (!allowNumbers && /\d/.test(cleanValue)) {
-    return 'Name must contain only valid letters.'
-  }
-
-  // Reject strings without alphabetic characters
-  if (!/[a-zA-Z\p{L}]/u.test(cleanValue)) {
-    return 'Name must contain only valid letters.'
-  }
-
-  // Validate allowed characters: letters, spaces, hyphens, and apostrophes
-  const pattern = (allowNumbers || allowAmpersand)
-    ? /^(?=.*[a-zA-Z\p{L}])[a-zA-Z\p{L}0-9 .&'-]+$/u
-    : /^(?=.*[a-zA-Z\p{L}])[a-zA-Z\p{L}\s'-]+$/u
-
-  if (!pattern.test(cleanValue)) {
-    return 'Name must contain only valid letters.'
   }
 
   // Reject 3 or more consecutive identical characters (e.g. "aaa")
@@ -112,10 +108,10 @@ export function getNameError(value, options = {}) {
     return `${label} contains invalid repeated characters.`
   }
 
-  // Reject single words longer than 20 characters
+  // Reject single words longer than 15 characters
   const nameWords = cleanValue.split(/[\s'-]+/)
-  if (nameWords.some(word => word.length > 20)) {
-    return `${label} cannot contain words longer than 20 characters.`
+  if (nameWords.some((word) => word.length > 15)) {
+    return `${label} cannot contain words longer than 15 characters.`
   }
 
   // Gibberish / keyboard mashing validation
@@ -128,6 +124,11 @@ export function getNameError(value, options = {}) {
 
   // Reject repeated character blocks (e.g., "asdfasdf", "ababab")
   if (/(.{2,4})\1{2,}/i.test(cleanValue)) {
+    return 'Please enter a valid name.'
+  }
+
+  // Reject 5 or more consecutive consonants (e.g. "jhjjhhyh")
+  if (/[bcdfghjklmnpqrstvwxz]{5,}/i.test(cleanValue)) {
     return 'Please enter a valid name.'
   }
 

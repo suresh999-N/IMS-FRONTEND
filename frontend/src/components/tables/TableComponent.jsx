@@ -219,7 +219,7 @@ export default function TableComponent({
   columns,
   keyField = 'id',
   searchKeys = [],
-  searchPlaceholder = 'Search by name, ID, or category',
+  searchPlaceholder = 'Search by name or keyword...',
   showSearch = true,
   emptyMessage = 'No records available.',
   loading = false,
@@ -246,6 +246,8 @@ export default function TableComponent({
   enableRowSelection = false,
   selectedRowKeys,
   onSelectionChange,
+  searchTerm: externalSearchTerm,
+  onSearchChange,
   fitExplicitColumnsToContainer = true,
   showHorizontalScrollbar = false,
 }) {
@@ -253,7 +255,10 @@ export default function TableComponent({
   const tableContainerRef = useRef(null)
   const horizontalScrollbarRef = useRef(null)
   const selectAllCheckboxRef = useRef(null)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [internalSearchTerm, setInternalSearchTerm] = useState('')
+  const isSearchControlled = externalSearchTerm !== undefined
+  const searchTerm = isSearchControlled ? externalSearchTerm : internalSearchTerm
+  const setSearchTerm = isSearchControlled ? (onSearchChange || (() => {})) : setInternalSearchTerm
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(defaultPageSize)
   const [isColumnMenuOpen, setIsColumnMenuOpen] = useState(false)
@@ -338,7 +343,7 @@ export default function TableComponent({
 
   useEffect(() => {
     setPage(1)
-  }, [searchTerm, pageSize, rows.length])
+  }, [searchTerm, pageSize, rows])
 
   useEffect(() => {
     if (!tableContainerRef.current) {
@@ -614,17 +619,15 @@ export default function TableComponent({
     setVisibleColumnKeys(allKeys)
   }
 
-  const selectionSummary = selectedKeys.length > 0 && shouldShowSelection && !hideSelectionSummary ? (
+  const isSelectionActive = selectedKeys.length > 0 && shouldShowSelection
+  const selectionSummary = isSelectionActive && !hideSelectionSummary ? (
     <div className="table-component__selection-summary" aria-live="polite">
       <Check size={14} />
       <strong>{selectedKeys.length} selected</strong>
-      <button type="button" onClick={() => updateSelection([])}>
-        Clear
-      </button>
     </div>
   ) : null
 
-  const searchControl = showSearch ? (
+  const searchControl = showSearch && !isSelectionActive ? (
     <SearchBar
       value={searchTerm}
       onChange={setSearchTerm}
@@ -809,6 +812,7 @@ export default function TableComponent({
                     <th
                       key={column.key || column.label}
                       scope="col"
+                      data-column={column.key || getColumnLabel(column)}
                       className={column.headerClassName || column.className || ''}
                       style={column.headerStyle || column.style}
                     >

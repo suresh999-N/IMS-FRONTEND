@@ -174,9 +174,33 @@ namespace IMSBackend.Controllers
                     item.SKU,
                     item.Barcode,
                     item.CategoryId,
+                    CategoryName = item.CategoryId.HasValue
+                        ? _context.Categories
+                            .Where(c => c.CategoryId == item.CategoryId.Value && !c.IsDeleted)
+                            .Select(c => c.Name)
+                            .FirstOrDefault()
+                        : null,
                     item.SubCategoryId,
+                    SubCategoryName = item.SubCategoryId.HasValue
+                        ? _context.SubCategories
+                            .Where(sc => sc.SubCategoryId == item.SubCategoryId.Value && !sc.IsDeleted)
+                            .Select(sc => sc.Name)
+                            .FirstOrDefault()
+                        : null,
                     item.BrandId,
+                    BrandName = item.BrandId.HasValue
+                        ? _context.Brands
+                            .Where(b => b.BrandId == item.BrandId.Value && !b.IsDeleted)
+                            .Select(b => b.Name)
+                            .FirstOrDefault()
+                        : null,
                     item.UnitId,
+                    UnitName = item.UnitId.HasValue
+                        ? _context.Units
+                            .Where(u => u.UnitId == item.UnitId.Value && !u.IsDeleted)
+                            .Select(u => u.Name)
+                            .FirstOrDefault()
+                        : null,
                     item.Price,
                     item.CostPrice,
                     Stock = _context.Stocks
@@ -184,7 +208,19 @@ namespace IMSBackend.Controllers
                         .Sum(stock => (decimal?)stock.Quantity) ?? 0,
                     item.ReorderLevel,
                     item.SupplierId,
+                    SupplierName = item.SupplierId.HasValue
+                        ? _context.Suppliers
+                            .Where(s => s.SupplierId == item.SupplierId.Value)
+                            .Select(s => s.Name)
+                            .FirstOrDefault()
+                        : null,
                     item.WarehouseId,
+                    WarehouseName = item.WarehouseId.HasValue
+                        ? _context.Warehouses
+                            .Where(w => w.WarehouseId == item.WarehouseId.Value)
+                            .Select(w => w.Name)
+                            .FirstOrDefault()
+                        : null,
                     item.Status,
                     item.IsArchived,
                     item.Description,
@@ -2007,13 +2043,21 @@ namespace IMSBackend.Controllers
             int? warehouseId,
             CancellationToken cancellationToken)
         {
-            if (
-                categoryId.HasValue &&
-                !await _context.Categories
-                    .AsNoTracking()
-                    .AnyAsync(category => category.CategoryId == categoryId.Value && !category.IsDeleted, cancellationToken))
+            if (categoryId.HasValue)
             {
-                return "Selected category does not exist.";
+                if (categoryId.Value <= 0)
+                {
+                    return "Category is required.";
+                }
+
+                var category = await _context.Categories
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(item => item.CategoryId == categoryId.Value && !item.IsDeleted, cancellationToken);
+
+                if (category == null)
+                {
+                    return "Invalid category selected.";
+                }
             }
 
             if (
@@ -2054,17 +2098,12 @@ namespace IMSBackend.Controllers
                 return "Selected warehouse does not exist.";
             }
 
-            if (subCategoryId.HasValue)
+            if (subCategoryId.HasValue && subCategoryId.Value > 0)
             {
-                if (subCategoryId <= 0)
-                {
-                    return "Selected subcategory is invalid.";
-                }
-
                 var subCategory = await _context.SubCategories
                     .AsNoTracking()
                     .Where(item => item.SubCategoryId == subCategoryId.Value && !item.IsDeleted)
-                    .Select(item => new { item.CategoryId })
+                    .Select(item => new { item.CategoryId, item.Status })
                     .FirstOrDefaultAsync(cancellationToken);
 
                 if (subCategory == null)
@@ -2075,6 +2114,11 @@ namespace IMSBackend.Controllers
                 if (categoryId.HasValue && subCategory.CategoryId != categoryId.Value)
                 {
                     return "Selected subcategory does not belong to the selected category.";
+                }
+
+                if (string.Equals(subCategory.Status, "Inactive", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Selected subcategory is inactive.";
                 }
             }
 

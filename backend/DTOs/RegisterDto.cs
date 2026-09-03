@@ -5,15 +5,20 @@ namespace IMSBackend.DTOs
     public class RegisterDto
     {
         [Required(ErrorMessage = "Full name is required.")]
+        [MinLength(2, ErrorMessage = "Full name must contain at least 2 characters.")]
         [MaxLength(50, ErrorMessage = "Full name cannot exceed 50 characters.")]
+        [RegularExpression(
+            @"^[a-zA-Z\p{L}]+(?:\s[a-zA-Z\p{L}]+)*$",
+            ErrorMessage = "Full name must contain only letters and spaces."
+        )]
         public string Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email address is required.")]
         [EmailAddress(ErrorMessage = "Enter a valid email address.")]
         [MaxLength(254, ErrorMessage = "Email address cannot exceed 254 characters.")]
         [RegularExpression(
-            @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,24}$",
-            ErrorMessage = "Enter a valid email address format and domain extension."
+            @"^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+(?<!\.)@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,24}$",
+            ErrorMessage = "Enter a valid email address."
         )]
         public string Email { get; set; } = string.Empty;
 

@@ -89,7 +89,7 @@ function getSupplierDeleteApiError(response) {
   return getSupplierDeleteError(message)
 }
 
-function getSupplierApiError(response, fallback) {
+function getSupplierApiError(response, fallback = 'Supplier action failed.', actionType = 'action') {
   const status = Number(response?.status || 0)
   const message = String(response?.error || response?.message || '').trim()
 
@@ -101,7 +101,8 @@ function getSupplierApiError(response, fallback) {
   if (status === 409) return message || 'Supplier conflicts with an existing record.'
   if (status >= 500) {
     if (/status/i.test(message)) return 'Unable to update supplier status. Please select Active, Blocked, Inactive, or Pending.'
-    return 'Supplier update failed. Please try again or contact support if the problem continues.'
+    if (actionType === 'load') return message || fallback || 'Supplier details could not be loaded.'
+    return message || fallback || `Supplier ${actionType} failed. Please try again or contact support if the problem continues.`
   }
   if (/exception|stack|sql|mysql|inner/i.test(message)) return fallback
 
@@ -433,12 +434,45 @@ export default function Suppliers({
   }, [supplierProfiles])
 
   const selectedSupplier = editingSupplier || detailsSupplier
-  const selectedPurchases = selectedSupplier
-    ? purchases.filter((item) => String(item.supplierId) === String(selectedSupplier.id))
-    : []
-  const selectedPayments = selectedSupplier
-    ? supplierPayments.filter((item) => String(item.supplierId) === String(selectedSupplier.id))
-    : []
+  const selectedPurchases = useMemo(() => {
+    if (!selectedSupplier) return []
+
+    const targetId = String(selectedSupplier.id || selectedSupplier.supplierId || '').trim().toLowerCase()
+    const targetCode = String(selectedSupplier.supplierCode || selectedSupplier.code || '').trim().toLowerCase()
+    const targetName = String(selectedSupplier.name || '').trim().toLowerCase()
+
+    return purchases.filter((item) => {
+      const itemSupId = String(item.supplierId || item.SupplierId || item.supplier_id || '').trim().toLowerCase()
+      const itemSupCode = String(item.supplierCode || item.SupplierCode || item.code || '').trim().toLowerCase()
+      const itemSupName = String(item.supplierName || item.SupplierName || item.supplier || '').trim().toLowerCase()
+
+      return (
+        (targetId && (itemSupId === targetId || itemSupCode === targetId)) ||
+        (targetCode && (itemSupId === targetCode || itemSupCode === targetCode)) ||
+        (targetName && itemSupName && itemSupName === targetName)
+      )
+    })
+  }, [selectedSupplier, purchases])
+
+  const selectedPayments = useMemo(() => {
+    if (!selectedSupplier) return []
+
+    const targetId = String(selectedSupplier.id || selectedSupplier.supplierId || '').trim().toLowerCase()
+    const targetCode = String(selectedSupplier.supplierCode || selectedSupplier.code || '').trim().toLowerCase()
+    const targetName = String(selectedSupplier.name || '').trim().toLowerCase()
+
+    return supplierPayments.filter((item) => {
+      const itemSupId = String(item.supplierId || item.SupplierId || item.supplier_id || '').trim().toLowerCase()
+      const itemSupCode = String(item.supplierCode || item.SupplierCode || item.code || '').trim().toLowerCase()
+      const itemSupName = String(item.supplierName || item.SupplierName || item.supplier || '').trim().toLowerCase()
+
+      return (
+        (targetId && (itemSupId === targetId || itemSupCode === targetId)) ||
+        (targetCode && (itemSupId === targetCode || itemSupCode === targetCode)) ||
+        (targetName && itemSupName && itemSupName === targetName)
+      )
+    })
+  }, [selectedSupplier, supplierPayments])
 
   const selectedSuppliers = useMemo(() => {
     const selectedIdSet = new Set(selectedSupplierIds.map(String))
@@ -465,17 +499,11 @@ export default function Suppliers({
       }
 
       if (!response.success) {
-        throw new Error(getSupplierApiError(response, 'Supplier details could not be loaded.'))
+        return null
       }
 
       return buildSupplierProfile(response.data, 0)
-    } catch (error) {
-      const nextMessage = {
-        success: false,
-        message: error instanceof Error ? error.message : 'Supplier details could not be loaded.',
-      }
-      setMessage(nextMessage)
-      notify(nextMessage)
+    } catch {
       return null
     } finally {
       if (requestId === detailRequestRef.current) {
@@ -486,10 +514,33 @@ export default function Suppliers({
 
   async function openSupplierDetails(supplier, tab = 'overview') {
     setDetailsInitialTab(tab)
+    const baseSupplier = supplier || {}
     const detailedSupplier = await loadSupplierDetail(supplier)
-    if (detailedSupplier) {
-      setDetailsSupplier(detailedSupplier)
-    }
+
+    const mergedSupplier = detailedSupplier
+      ? {
+          ...baseSupplier,
+          ...detailedSupplier,
+          totalPurchaseAmount:
+            detailedSupplier.totalPurchaseAmount ??
+            detailedSupplier.purchases ??
+            baseSupplier.totalPurchaseAmount ??
+            baseSupplier.purchases ??
+            null,
+          outstandingPayable:
+            detailedSupplier.outstandingPayable ??
+            detailedSupplier.outstanding ??
+            baseSupplier.outstandingPayable ??
+            baseSupplier.outstanding ??
+            null,
+          lastPurchaseDate:
+            detailedSupplier.lastPurchaseDate ||
+            baseSupplier.lastPurchaseDate ||
+            null,
+        }
+      : baseSupplier
+
+    setDetailsSupplier(mergedSupplier)
   }
 
   function handleSupplierDocumentsChange(nextDocuments) {
@@ -541,15 +592,17 @@ export default function Suppliers({
 
     setIsSaving(true)
 
+    const targetId = editingSupplier?.id || editingSupplier?.supplierId
+
     try {
-      const response = editingSupplier?.id
-        ? await updateSupplier(editingSupplier.id, values)
+      const response = targetId
+        ? await updateSupplier(targetId, values)
         : await createSupplier(values)
 
       const result = response.success
         ? {
             success: true,
-            message: editingSupplier
+            message: targetId
               ? 'Supplier updated successfully.'
               : 'Supplier added successfully.',
           }
@@ -724,9 +777,8 @@ export default function Suppliers({
     {
       key: 'name',
       label: 'Supplier',
-      tableWidth: '260px',
-      style: { width: '260px', minWidth: '260px' },
-      headerStyle: { width: '260px', minWidth: '260px' },
+      style: { minWidth: '180px' },
+      headerStyle: { minWidth: '180px' },
       sortable: true,
       mobilePrimary: true,
       render: (supplier) => (
@@ -744,9 +796,10 @@ export default function Suppliers({
     {
       key: 'category',
       label: 'Category',
+      tableWidth: '130px',
       sortable: true,
-      style: { width: '150px', minWidth: '150px' },
-      headerStyle: { width: '150px', minWidth: '150px' },
+      style: { width: '130px', minWidth: '130px' },
+      headerStyle: { width: '130px', minWidth: '130px' },
       render: (supplier) => (
         <span className={`supplier-category-badge ${supplier.category ? '' : 'is-empty'}`}>
           {formatCategory(supplier.category)}
@@ -756,9 +809,10 @@ export default function Suppliers({
     {
       key: 'tax',
       label: 'GST / PAN',
+      tableWidth: '140px',
       sortable: false,
-      style: { width: '160px', minWidth: '160px' },
-      headerStyle: { width: '160px', minWidth: '160px' },
+      style: { width: '140px', minWidth: '140px' },
+      headerStyle: { width: '140px', minWidth: '140px' },
       render: (supplier) => (
         <div className="suppliers-page__table-stack supplier-tax-stack">
           <span className={supplier.gstNumber ? '' : 'is-empty'}>{formatTaxValue(supplier.gstNumber, 'GST')}</span>
@@ -769,27 +823,32 @@ export default function Suppliers({
     {
       key: 'totalPurchaseAmount',
       label: 'Purchases',
+      tableWidth: '110px',
       sortable: true,
       className: 'is-numeric',
-      style: { width: '120px', minWidth: '120px' },
-      headerStyle: { width: '120px', minWidth: '120px' },
+      headerClassName: 'is-numeric',
+      style: { width: '110px', minWidth: '110px', textAlign: 'right' },
+      headerStyle: { width: '110px', minWidth: '110px', textAlign: 'right' },
       render: (supplier) => formatNullableCurrency(formatCurrency, supplier.totalPurchaseAmount),
     },
     {
       key: 'outstandingPayable',
       label: 'Outstanding',
+      tableWidth: '110px',
       sortable: true,
       className: 'is-numeric',
-      style: { width: '120px', minWidth: '120px' },
-      headerStyle: { width: '120px', minWidth: '120px' },
+      headerClassName: 'is-numeric',
+      style: { width: '110px', minWidth: '110px', textAlign: 'right' },
+      headerStyle: { width: '110px', minWidth: '110px', textAlign: 'right' },
       render: (supplier) => formatNullableCurrency(formatCurrency, supplier.outstandingPayable),
     },
     {
       key: 'status',
       label: 'Status',
+      tableWidth: '100px',
       sortable: true,
-      style: { width: '110px', minWidth: '110px' },
-      headerStyle: { width: '110px', minWidth: '110px' },
+      style: { width: '100px', minWidth: '100px' },
+      headerStyle: { width: '100px', minWidth: '100px' },
       render: (supplier) => {
         const displayStatus = supplier.isDeleted ? 'archived' : supplier.status
         return <StatusBadge type={getStatusBadgeType(displayStatus)}>{formatStatus(displayStatus)}</StatusBadge>
@@ -798,9 +857,11 @@ export default function Suppliers({
     {
       key: 'actions',
       label: 'Actions',
-      className: 'supplier-actions-column',
-      style: { width: '80px', minWidth: '80px' },
-      headerStyle: { width: '80px', minWidth: '80px' },
+      tableWidth: '70px',
+      className: 'supplier-actions-column text-center',
+      headerClassName: 'text-center',
+      style: { width: '70px', minWidth: '70px', textAlign: 'center' },
+      headerStyle: { width: '70px', minWidth: '70px', textAlign: 'center' },
       render: (supplier) => {
         if (supplier.isDeleted) {
           return (
@@ -1028,7 +1089,7 @@ export default function Suppliers({
             defaultPageSize={20}
             defaultSortKey=""
             showSearch={!hasSelectedSuppliers}
-            searchPlaceholder="Search suppliers by name, code, category, GST, email..."
+            searchPlaceholder="Search suppliers by name, code..."
             emptyMessage={isLoading ? 'Loading suppliers...' : 'No suppliers match the current filters.'}
             enableRowSelection
             selectedRowKeys={selectedSupplierIds}

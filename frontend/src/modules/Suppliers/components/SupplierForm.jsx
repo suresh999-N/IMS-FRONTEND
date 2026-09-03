@@ -1,4 +1,4 @@
-import { LoaderCircle, RotateCcw, Save } from 'lucide-react'
+import { LoaderCircle, Save } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { getSupplierIfscDetails } from '../../../api/suppliersApi'
 import { getRequiredError } from '../../../utils/helpers'
@@ -116,7 +116,7 @@ const INPUT_LIMITS = {
   notes: 1000,
 }
 
-const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}Z[A-Z0-9]{1}$/
+const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{3}$/
 const PAN_PATTERN = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/
 
 function stripUnsafeText(value) {
@@ -428,11 +428,35 @@ function getPatternError(value, pattern, message) {
 }
 
 function getSupplierNameError(value) {
-  return getBusinessNameError(value, 'Supplier name', { max: INPUT_LIMITS.supplierName })
+  return getBusinessNameError(value, 'Supplier name', { max: INPUT_LIMITS.supplierName, allowAmpersand: true })
 }
 
 function getCompanyNameError(value) {
-  return getBusinessNameError(value, 'Company name', { required: false, max: INPUT_LIMITS.companyName, allowAmpersand: true })
+  const nextValue = cleanString(value).replace(/\s+/g, ' ')
+  if (!nextValue) return ''
+
+  if (nextValue.length < 2) return 'Company name must be at least 2 characters.'
+  if (nextValue.length > INPUT_LIMITS.companyName) return `Company name cannot exceed ${INPUT_LIMITS.companyName} characters.`
+  if (!/[A-Za-z]/.test(nextValue) || /^\d+$/.test(nextValue)) return 'Company name must contain at least one letter.'
+
+  const allowedPattern = /^[A-Za-z0-9 .&',()/-]+$/
+  if (!allowedPattern.test(nextValue)) {
+    return 'Company name can contain letters, numbers, spaces, and common business punctuation only.'
+  }
+
+  if (/([.&',()/-])\1{1,}/.test(nextValue)) return 'Company name contains repeated punctuation.'
+  if (/([A-Za-z0-9])\1{3,}/.test(nextValue)) return 'Enter a valid company name.'
+  if (/([A-Za-z0-9]{1,2})\1{3,}/i.test(nextValue)) return 'Enter a valid company name.'
+
+  const words = nextValue.split(' ')
+  for (const word of words) {
+    const cleanWord = word.replace(/[^A-Za-z]/g, '')
+    if (cleanWord.length > 15 && /[^aeiouyAEIOUY]{7,}/.test(cleanWord)) {
+      return 'Enter a valid company name.'
+    }
+  }
+
+  return ''
 }
 
 function getSupplierCodeError(value, existingCodes = []) {
@@ -449,15 +473,69 @@ function getPhoneError(value, label = 'Phone') {
 const getOptionalEmailError = getEmailError
 
 function getWebsiteError(value) {
-  const website = cleanString(value)
-  if (!website) return ''
-  const normalizedWebsite = /^https?:\/\//i.test(website) ? website : `https://${website}`
+  const raw = String(value ?? '')
+  const trimmed = raw.trim()
+
+  if (!trimmed) {
+    return ''
+  }
+
+  if (trimmed.length > INPUT_LIMITS.website) {
+    return `Website URL cannot exceed ${INPUT_LIMITS.website} characters.`
+  }
+
+  if (/\s/.test(trimmed)) {
+    return 'Enter a valid website URL, including http:// or https://.'
+  }
+
+  if (!/^https?:\/\//i.test(trimmed)) {
+    return 'Enter a valid website URL, including http:// or https://.'
+  }
+
+  if (/^https?:\/\/\s*$/i.test(trimmed)) {
+    return 'Enter a valid website URL, including http:// or https://.'
+  }
+
+  if (trimmed.includes('..')) {
+    return 'Enter a valid website URL, including http:// or https://.'
+  }
 
   try {
-    const url = new URL(normalizedWebsite)
-    return ['http:', 'https:'].includes(url.protocol) ? '' : 'Website must start with http:// or https://.'
+    const url = new URL(trimmed)
+
+    if (!['http:', 'https:'].includes(url.protocol)) {
+      return 'Enter a valid website URL, including http:// or https://.'
+    }
+
+    const hostname = url.hostname.toLowerCase()
+
+    if (!hostname || hostname.startsWith('.') || hostname.endsWith('.') || !hostname.includes('.')) {
+      return 'Enter a valid website URL, including http:// or https://.'
+    }
+
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'Enter a valid website URL, including http:// or https://.'
+    }
+
+    const domainParts = hostname.split('.')
+    if (domainParts.length < 2) {
+      return 'Enter a valid website URL, including http:// or https://.'
+    }
+
+    for (const part of domainParts) {
+      if (!part || part.startsWith('-') || part.endsWith('-') || !/^[a-z0-9-]+$/i.test(part)) {
+        return 'Enter a valid website URL, including http:// or https://.'
+      }
+    }
+
+    const tld = domainParts[domainParts.length - 1]
+    if (!tld || !/^[a-z]{2,24}$/i.test(tld)) {
+      return 'Enter a valid website URL, including http:// or https://.'
+    }
+
+    return ''
   } catch {
-    return 'Enter a valid website URL.'
+    return 'Enter a valid website URL, including http:// or https://.'
   }
 }
 
@@ -651,9 +729,7 @@ function sanitizeCollectionValue(collectionName, item, name, value) {
 }
 
 function normalizeWebsiteValue(value) {
-  const website = cleanString(value)
-  if (!website) return ''
-  return /^https?:\/\//i.test(website) ? website : `https://${website}`
+  return cleanString(value)
 }
 
 function scrollToFirstError() {
@@ -763,7 +839,7 @@ export default function SupplierForm({
     name: getSupplierNameError(supplier.name),
     supplierCode: getSupplierCodeError(supplier.supplierCode, uniqueCodeCandidates),
     companyName: getCompanyNameError(supplier.companyName),
-    email: getSharedEmailError(supplier.email, { required: true }),
+    email: getSharedEmailError(supplier.email, { required: true, label: 'Email' }),
     phone: getPhoneError(supplier.phone),
     category: effectiveCategoryOptions.length === 0
       ? 'No supplier categories are available.'
@@ -931,7 +1007,9 @@ export default function SupplierForm({
         ...currentValue,
         [name]: name === 'website'
           ? normalizeWebsiteValue(currentValue[name])
-          : cleanString(currentValue[name]),
+          : name === 'companyName'
+            ? cleanString(currentValue[name]).replace(/\s+/g, ' ')
+            : cleanString(currentValue[name]),
       }))
     }
   }
@@ -1330,7 +1408,6 @@ export default function SupplierForm({
         {!readOnly && isDirty ? <span className="supplier-form__dirty-note">Unsaved changes</span> : <span aria-hidden="true" />}
         <div className="supplier-form__action-buttons">
           <button type="button" className="button button-cancel" onClick={onCancel} disabled={isSubmitting}>
-            <RotateCcw size={16} />
             {readOnly ? 'Close' : 'Cancel'}
           </button>
           {!readOnly ? (

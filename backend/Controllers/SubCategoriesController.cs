@@ -26,7 +26,8 @@ namespace IMSBackend.Controllers
         public async Task<IActionResult> GetSubCategories(
             int page = 1,
             int pageSize = 500,
-            string? search = null)
+            string? search = null,
+            string? status = null)
         {
             page = Math.Max(page, 1);
             pageSize = Math.Clamp(pageSize, 1, 500);
@@ -48,6 +49,21 @@ namespace IMSBackend.Controllers
                     CategoryId = cat.CategoryId,
                     CategoryName = cat.Name
                 };
+
+            // ================= STATUS FILTER =================
+
+            if (!string.IsNullOrWhiteSpace(status) && !status.Equals("all", StringComparison.OrdinalIgnoreCase))
+            {
+                var normStatus = status.Trim().ToLower();
+                if (normStatus == "active")
+                {
+                    query = query.Where(x => string.IsNullOrEmpty(x.Status) || x.Status.ToLower() == "active");
+                }
+                else
+                {
+                    query = query.Where(x => x.Status != null && x.Status.ToLower() == normStatus);
+                }
+            }
 
             // ================= SEARCH =================
 
@@ -152,6 +168,10 @@ namespace IMSBackend.Controllers
 
             model.CreatedAt = DateTime.Now;
             model.IsDeleted = false;
+            if (string.IsNullOrWhiteSpace(model.Status))
+            {
+                model.Status = "Active";
+            }
 
             _context.SubCategories.Add(model);
 

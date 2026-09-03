@@ -36,7 +36,7 @@ namespace IMSBackend.Controllers
             => CustomerDto.CollapseSpaces(value);
 
         private static string NormalizeEmail(string? value)
-            => Regex.Replace(Clean(value).ToLowerInvariant(), @"\s+", string.Empty);
+            => (value ?? string.Empty).Trim().ToLowerInvariant();
 
         private static void NormalizeSinglePrimary<T>(
             List<T> items,

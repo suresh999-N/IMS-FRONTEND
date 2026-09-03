@@ -58,6 +58,127 @@ namespace IMSBackend.Controllers
                 : normalizedValue[..maxLength];
         }
 
+        private static bool IsValidEmailAddress(string? email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return false;
+            var trimmed = email.Trim();
+            if (trimmed.Contains("..") || trimmed.Contains(" ") || trimmed.StartsWith(".") || trimmed.EndsWith(".")) return false;
+            var parts = trimmed.Split('@');
+            if (parts.Length != 2) return false;
+            var local = parts[0];
+            var domain = parts[1];
+            if (string.IsNullOrWhiteSpace(local) || string.IsNullOrWhiteSpace(domain)) return false;
+            var domainParts = domain.Split('.');
+            if (domainParts.Length < 2) return false;
+            foreach (var part in domainParts)
+            {
+                if (string.IsNullOrWhiteSpace(part) || part.StartsWith("-") || part.EndsWith("-")) return false;
+            }
+            var tld = domainParts[^1];
+            if (tld.Length < 2 || !System.Text.RegularExpressions.Regex.IsMatch(tld, @"^[A-Za-z]+$")) return false;
+            return new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(trimmed);
+        }
+
+        private static string? ValidateCompanyName(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return null;
+            var trimmed = System.Text.RegularExpressions.Regex.Replace(value.Trim(), @"\s+", " ");
+
+            if (trimmed.Length < 2)
+                return "Company name must be at least 2 characters.";
+
+            if (trimmed.Length > 150)
+                return "Company name cannot exceed 150 characters.";
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"[A-Za-z]") || System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"^\d+$"))
+                return "Company name must contain at least one letter.";
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"^[A-Za-z0-9 .&',()/-]+$"))
+                return "Company name can contain letters, numbers, spaces, and common business punctuation only.";
+
+            if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"([.&',()/-])\1{1,}"))
+                return "Company name contains repeated punctuation.";
+
+            if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"([A-Za-z0-9])\1{3,}"))
+                return "Enter a valid company name.";
+
+            if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"(?i)([A-Za-z0-9]{1,2})\1{3,}"))
+                return "Enter a valid company name.";
+
+            var words = trimmed.Split(' ');
+            foreach (var word in words)
+            {
+                var cleanWord = System.Text.RegularExpressions.Regex.Replace(word, @"[^A-Za-z]", "");
+                if (cleanWord.Length > 15 && System.Text.RegularExpressions.Regex.IsMatch(cleanWord, @"[^aeiouyAEIOUY]{7,}"))
+                {
+                    return "Enter a valid company name.";
+                }
+            }
+
+            return null;
+        }
+
+        private static string? ValidateWebsite(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return null;
+            var trimmed = value.Trim();
+
+            if (trimmed.Length > 150)
+                return "Website URL cannot exceed 150 characters.";
+
+            if (trimmed.Contains(" "))
+                return "Enter a valid website URL, including http:// or https://.";
+
+            if (!trimmed.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                !trimmed.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Enter a valid website URL, including http:// or https://.";
+            }
+
+            if (trimmed.Contains(".."))
+                return "Enter a valid website URL, including http:// or https://.";
+
+            if (!Uri.TryCreate(trimmed, UriKind.Absolute, out var uri) ||
+                (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+            {
+                return "Enter a valid website URL, including http:// or https://.";
+            }
+
+            var host = uri.Host.ToLowerInvariant();
+            if (string.IsNullOrWhiteSpace(host) || host.StartsWith(".") || host.EndsWith(".") || !host.Contains("."))
+            {
+                return "Enter a valid website URL, including http:// or https://.";
+            }
+
+            if (host == "localhost" || host == "127.0.0.1")
+            {
+                return "Enter a valid website URL, including http:// or https://.";
+            }
+
+            var domainParts = host.Split('.');
+            if (domainParts.Length < 2)
+            {
+                return "Enter a valid website URL, including http:// or https://.";
+            }
+
+            foreach (var part in domainParts)
+            {
+                if (string.IsNullOrWhiteSpace(part) || part.StartsWith("-") || part.EndsWith("-") ||
+                    !System.Text.RegularExpressions.Regex.IsMatch(part, @"^[a-z0-9-]+$"))
+                {
+                    return "Enter a valid website URL, including http:// or https://.";
+                }
+            }
+
+            var tld = domainParts[^1];
+            if (string.IsNullOrWhiteSpace(tld) || !System.Text.RegularExpressions.Regex.IsMatch(tld, @"^[a-z]{2,24}$"))
+            {
+                return "Enter a valid website URL, including http:// or https://.";
+            }
+
+            return null;
+        }
+
         private static void VerifySupplierDocumentUploadFolder(string uploadFolder)
         {
             var probePath = Path.Combine(uploadFolder, $".write-check-{Guid.NewGuid():N}.tmp");
@@ -383,7 +504,13 @@ var totalRecords = await query.CountAsync();
                         .Where(payment =>
                             payment.SupplierId == x.SupplierId &&
                             !payment.IsCancelled)
-                        .Sum(payment => (decimal?)payment.Amount) ?? 0m
+                        .Sum(payment => (decimal?)payment.Amount) ?? 0m,
+
+                    LastPurchaseDate = _context.PurchaseOrders
+                        .Where(po => po.SupplierId == x.SupplierId && !po.IsCancelled)
+                        .OrderByDescending(po => po.OrderDate)
+                        .Select(po => (DateTime?)po.OrderDate)
+                        .FirstOrDefault()
                 })
                 .ToListAsync();
 
@@ -405,7 +532,10 @@ var totalRecords = await query.CountAsync();
                     x.DeletedAt,
 
                     Purchases = x.Purchases,
-                    Outstanding = x.Purchases - x.PaidAmount
+                    TotalPurchaseAmount = x.Purchases,
+                    Outstanding = x.Purchases - x.PaidAmount,
+                    OutstandingPayable = x.Purchases - x.PaidAmount,
+                    LastPurchaseDate = x.LastPurchaseDate
                 })
                 .ToList();
 
@@ -434,6 +564,7 @@ var totalRecords = await query.CountAsync();
                     x.SupplierId,
                     x.SupplierCode,
                     x.Name,
+                    x.CompanyName,
                     x.Category,
                     x.GstNumber,
                     x.PanNumber,
@@ -443,6 +574,20 @@ var totalRecords = await query.CountAsync();
                     x.Status,
                     x.CreatedAt,
                     x.UpdatedAt,
+
+                    Purchases = _context.PurchaseOrders
+                        .Where(po => po.SupplierId == x.SupplierId && !po.IsCancelled)
+                        .Sum(po => (decimal?)po.TotalAmount) ?? 0m,
+
+                    PaidAmount = _context.SupplierPayments
+                        .Where(payment => payment.SupplierId == x.SupplierId && !payment.IsCancelled)
+                        .Sum(payment => (decimal?)payment.Amount) ?? 0m,
+
+                    LastPurchaseDate = _context.PurchaseOrders
+                        .Where(po => po.SupplierId == x.SupplierId && !po.IsCancelled)
+                        .OrderByDescending(po => po.OrderDate)
+                        .Select(po => (DateTime?)po.OrderDate)
+                        .FirstOrDefault(),
 
                     Contacts = _context.SupplierContacts
                         .Where(c => c.SupplierId == x.SupplierId)
@@ -509,7 +654,33 @@ var totalRecords = await query.CountAsync();
                 });
             }
 
-            return Ok(supplier);
+            var result = new
+            {
+                supplier.SupplierId,
+                supplier.SupplierCode,
+                supplier.Name,
+                supplier.Category,
+                supplier.GstNumber,
+                supplier.PanNumber,
+                supplier.Phone,
+                supplier.Email,
+                supplier.Website,
+                supplier.Status,
+                supplier.CreatedAt,
+                supplier.UpdatedAt,
+                supplier.Contacts,
+                supplier.Addresses,
+                supplier.PaymentTerm,
+                supplier.BankAccounts,
+
+                Purchases = supplier.Purchases,
+                TotalPurchaseAmount = supplier.Purchases,
+                Outstanding = supplier.Purchases - supplier.PaidAmount,
+                OutstandingPayable = supplier.Purchases - supplier.PaidAmount,
+                LastPurchaseDate = supplier.LastPurchaseDate
+            };
+
+            return Ok(result);
         }
 
         // =========================
@@ -534,12 +705,68 @@ var totalRecords = await query.CountAsync();
                     });
                 }
 
+                if (dto.Name.Trim().Length > 120)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Supplier name cannot exceed 120 characters."
+                    });
+                }
+
+                if (dto.SupplierCode != null && dto.SupplierCode.Trim().Length > 40)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Supplier code cannot exceed 40 characters."
+                    });
+                }
+
                 if (string.IsNullOrWhiteSpace(dto.Phone))
                 {
                     return BadRequest(new
                     {
                         message = "Phone number is required."
                     });
+                }
+
+                if (string.IsNullOrWhiteSpace(dto.Email))
+                {
+                    return BadRequest(new
+                    {
+                        message = "Email is required."
+                    });
+                }
+
+                if (!IsValidEmailAddress(dto.Email))
+                {
+                    return BadRequest(new
+                    {
+                        message = "Enter a valid email address."
+                    });
+                }
+
+                if (!string.IsNullOrWhiteSpace(dto.CompanyName))
+                {
+                    var companyNameError = ValidateCompanyName(dto.CompanyName);
+                    if (companyNameError != null)
+                    {
+                        return BadRequest(new
+                        {
+                            message = companyNameError
+                        });
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(dto.Website))
+                {
+                    var websiteError = ValidateWebsite(dto.Website);
+                    if (websiteError != null)
+                    {
+                        return BadRequest(new
+                        {
+                            message = websiteError
+                        });
+                    }
                 }
 
                 var normalizedStatus = SupplierStatusNormalizer.Normalize(dto.Status, "active");
@@ -578,12 +805,13 @@ var totalRecords = await query.CountAsync();
                 {
                     SupplierCode = dto.SupplierCode,
                     Name = dto.Name,
+                    CompanyName = string.IsNullOrWhiteSpace(dto.CompanyName) ? null : System.Text.RegularExpressions.Regex.Replace(dto.CompanyName.Trim(), @"\s+", " "),
                     Category = dto.Category,
                     GstNumber = dto.GstNumber,
                     PanNumber = dto.PanNumber,
                     Phone = dto.Phone,
                     Email = dto.Email,
-                    Website = dto.Website,
+                    Website = string.IsNullOrWhiteSpace(dto.Website) ? null : dto.Website.Trim(),
                     Status = normalizedStatus,
                     CreatedAt = DateTime.UtcNow
                 };
@@ -751,36 +979,75 @@ var totalRecords = await query.CountAsync();
                     });
                 }
 
-                if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+                if (dto.Name.Trim().Length > 120)
                 {
                     return BadRequest(new
                     {
-                        message = "Name can contain only letters and spaces."
+                        message = "Supplier name cannot exceed 120 characters."
                     });
                 }
 
-                if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+                if (dto.SupplierCode != null && dto.SupplierCode.Trim().Length > 40)
                 {
                     return BadRequest(new
                     {
-                        message = "Name can contain only letters and spaces."
+                        message = "Supplier code cannot exceed 40 characters."
                     });
                 }
 
-                if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+                if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z0-9\s.,&'/\-()]+$"))
                 {
                     return BadRequest(new
                     {
-                        message = "Name can contain only letters and spaces."
+                        message = "Name contains invalid characters."
                     });
                 }
-
                 if (string.IsNullOrWhiteSpace(dto.Phone))
                 {
                     return BadRequest(new
                     {
                         message = "Phone number is required."
                     });
+                }
+
+                if (string.IsNullOrWhiteSpace(dto.Email))
+                {
+                    return BadRequest(new
+                    {
+                        message = "Email is required."
+                    });
+                }
+
+                if (!IsValidEmailAddress(dto.Email))
+                {
+                    return BadRequest(new
+                    {
+                        message = "Enter a valid email address."
+                    });
+                }
+
+                if (!string.IsNullOrWhiteSpace(dto.CompanyName))
+                {
+                    var companyNameError = ValidateCompanyName(dto.CompanyName);
+                    if (companyNameError != null)
+                    {
+                        return BadRequest(new
+                        {
+                            message = companyNameError
+                        });
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(dto.Website))
+                {
+                    var websiteError = ValidateWebsite(dto.Website);
+                    if (websiteError != null)
+                    {
+                        return BadRequest(new
+                        {
+                            message = websiteError
+                        });
+                    }
                 }
 
                 var normalizedStatus = SupplierStatusNormalizer.Normalize(dto.Status, supplier.Status ?? "active");
@@ -809,12 +1076,13 @@ var totalRecords = await query.CountAsync();
 
                 supplier.SupplierCode = dto.SupplierCode;
                 supplier.Name = dto.Name;
+                supplier.CompanyName = string.IsNullOrWhiteSpace(dto.CompanyName) ? null : System.Text.RegularExpressions.Regex.Replace(dto.CompanyName.Trim(), @"\s+", " ");
                 supplier.Category = dto.Category;
                 supplier.GstNumber = dto.GstNumber;
                 supplier.PanNumber = dto.PanNumber;
                 supplier.Phone = dto.Phone;
                 supplier.Email = dto.Email;
-                supplier.Website = dto.Website;
+                supplier.Website = string.IsNullOrWhiteSpace(dto.Website) ? null : dto.Website.Trim();
                 supplier.Status = normalizedStatus;
                 supplier.UpdatedAt = DateTime.UtcNow;
 

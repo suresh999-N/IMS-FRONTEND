@@ -56,7 +56,7 @@ public sealed class InventoryHealthService
                 SKU = item.SKU,
                 CurrentStock = item.CurrentStock,
                 ReorderLevel = item.ReorderLevel,
-                Status = item.CurrentStock <= 0 ? "Critical" : "Low Stock"
+                Status = item.CurrentStock <= 0 ? "Out of Stock" : "Low Stock"
             })
             .ToList();
     }

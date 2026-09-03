@@ -42,6 +42,7 @@ export default function CreatableSearchableSelect({
 }) {
   const rootRef = useRef(null)
   const searchRef = useRef(null)
+  const instanceIdRef = useRef(`creatable-select-${Math.random().toString(36).substring(2, 9)}`)
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const normalizedOptions = useMemo(() => normalizeSelectOptions(options), [options])
@@ -51,6 +52,18 @@ export default function CreatableSearchableSelect({
     option.label.toLowerCase().includes(cleanTerm.toLowerCase()),
   )
   const canCreate = Boolean(cleanTerm) && !normalizedOptions.some((option) => option.label.toLowerCase() === cleanTerm.toLowerCase())
+
+  useEffect(() => {
+    function handleGlobalDropdownOpened(event) {
+      if (event.detail?.id !== instanceIdRef.current) {
+        setIsOpen(false)
+        setSearchTerm('')
+      }
+    }
+
+    window.addEventListener('ims:dropdown-opened', handleGlobalDropdownOpened)
+    return () => window.removeEventListener('ims:dropdown-opened', handleGlobalDropdownOpened)
+  }, [])
 
   useEffect(() => {
     if (!isOpen) return undefined
@@ -63,7 +76,11 @@ export default function CreatableSearchableSelect({
     }
 
     document.addEventListener('mousedown', handlePointerDown)
-    return () => document.removeEventListener('mousedown', handlePointerDown)
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown)
+      document.removeEventListener('pointerdown', handlePointerDown)
+    }
   }, [isOpen, name, onBlur, value])
 
   useEffect(() => {
@@ -79,6 +96,18 @@ export default function CreatableSearchableSelect({
     setSearchTerm('')
   }
 
+  function handleToggleOpen() {
+    if (disabled) return
+
+    setIsOpen((currentValue) => {
+      const nextState = !currentValue
+      if (nextState) {
+        window.dispatchEvent(new CustomEvent('ims:dropdown-opened', { detail: { id: instanceIdRef.current } }))
+      }
+      return nextState
+    })
+  }
+
   function handleTriggerKeyDown(event) {
     if (event.key === 'Escape') {
       setIsOpen(false)
@@ -89,6 +118,7 @@ export default function CreatableSearchableSelect({
 
     if ((event.key === 'ArrowDown' || event.key === 'Enter') && !isOpen) {
       event.preventDefault()
+      window.dispatchEvent(new CustomEvent('ims:dropdown-opened', { detail: { id: instanceIdRef.current } }))
       setIsOpen(true)
     }
   }
@@ -122,7 +152,7 @@ export default function CreatableSearchableSelect({
         id={id}
         type="button"
         className={`searchable-select__trigger ${isOpen ? 'is-open' : ''}`}
-        onClick={() => !disabled && setIsOpen((currentValue) => !currentValue)}
+        onClick={handleToggleOpen}
         onKeyDown={handleTriggerKeyDown}
         disabled={disabled}
         aria-disabled={disabled}

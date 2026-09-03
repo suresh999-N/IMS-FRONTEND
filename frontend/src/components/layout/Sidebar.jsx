@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { ChevronLeft, ChevronUp, Menu, User, X } from 'lucide-react'
+import { ChevronLeft, ChevronUp, Menu, User } from 'lucide-react'
 import imsSidebarIcon from '../../assets/brand/ims-sidebar-icon.png'
 import SidebarItem from './SidebarItem'
 import SidebarSection from './SidebarSection'
@@ -163,14 +163,6 @@ export default function Sidebar({
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isCollapsed ? <Menu size={17} /> : <ChevronLeft size={17} />}
-        </button>
-        <button
-          type="button"
-          className="app-sidebar__mobile-close"
-          aria-label="Close navigation"
-          onClick={onCloseDrawer}
-        >
-          <X size={15} />
         </button>
       </div>
 

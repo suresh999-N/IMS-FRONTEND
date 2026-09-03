@@ -352,6 +352,27 @@ function readBooleanFlag(value, fallback = false) {
   return fallback
 }
 
+const TITLE_CASE_MINOR_WORDS = new Set([
+  'and', 'or', 'nor', 'but', 'a', 'an', 'the', 'as', 'at', 'by', 'for', 'in', 'of', 'on', 'per', 'to', 'with', '&',
+])
+
+const TITLE_CASE_ACRONYMS = new Set([
+  'IT', 'USB', 'LED', 'LCD', 'TV', 'RAM', 'SSD', 'POS', 'CCTV', 'GPS', 'SKU', 'SIM', 'VIP', 'AC', 'DC', 'RO', 'PVC', 'HD', 'FHD', 'UHD', '4K', '5G', '4G', '3G',
+])
+
+export function getCanonicalUnitStem(str) {
+  if (!str) return ''
+  let s = String(str).trim().toLowerCase()
+  if (s.endsWith('ies') && s.length > 3) {
+    s = s.slice(0, -3) + 'y'
+  } else if (s.endsWith('es') && s.length > 3 && (s.endsWith('shes') || s.endsWith('ches') || s.endsWith('boxes') || s.endsWith('xes'))) {
+    s = s.slice(0, -2)
+  } else if (s.endsWith('s') && !s.endsWith('ss') && s.length > 2) {
+    s = s.slice(0, -1)
+  }
+  return s
+}
+
 export function formatUnitTitle(value) {
   if (!value) return ''
   const str = String(value).trim()
@@ -359,7 +380,14 @@ export function formatUnitTitle(value) {
 
   return str
     .split(/\s+/)
-    .map((word) => (word ? word.charAt(0).toUpperCase() + word.slice(1) : ''))
+    .map((word, index) => {
+      if (!word) return ''
+      const upper = word.toUpperCase()
+      if (TITLE_CASE_ACRONYMS.has(upper)) return upper
+      const lower = word.toLowerCase()
+      if (index > 0 && TITLE_CASE_MINOR_WORDS.has(lower)) return lower
+      return lower.charAt(0).toUpperCase() + lower.slice(1)
+    })
     .join(' ')
 }
 

@@ -8,13 +8,15 @@ export default function AnalyticsCard({
 }) {
   return (
     <article className={`analytics-card analytics-card--${tone} ${isPlaceholder ? 'is-placeholder' : ''}`}>
-      <span className="analytics-card__icon" aria-hidden="true">
-        <Icon size={18} />
-      </span>
-      <div>
-        <span>{title}</span>
-        <strong>{value}</strong>
-        <p>{caption}</p>
+      <div className="analytics-card__header">
+        <span className="analytics-card__icon" aria-hidden="true">
+          <Icon size={16} />
+        </span>
+        <span className="analytics-card__title">{title}</span>
+      </div>
+      <div className="analytics-card__content">
+        <strong className="analytics-card__value">{value}</strong>
+        {caption ? <span className="analytics-card__caption">{caption}</span> : null}
       </div>
     </article>
   )

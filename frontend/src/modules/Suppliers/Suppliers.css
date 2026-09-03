@@ -192,11 +192,11 @@
   height: 100%;
   max-height: none;
   margin: 0;
-  overflow-x: scroll !important;
+  overflow-x: hidden !important;
   overflow-y: auto;
   border: 0;
   border-radius: 0;
-  scrollbar-gutter: stable;
+  scrollbar-gutter: auto !important;
 }
 
 /* ─── Table Container Custom Scrollbars ─────────────────────────── */
@@ -315,10 +315,56 @@
 
 .resource-center__page--suppliers .resource-center__inventory-table th,
 .resource-center__page--suppliers .resource-center__inventory-table td {
+  box-sizing: border-box !important;
   padding: 6px 12px;
   border-right: 1px solid #e2e8f0;
   border-bottom: 1px solid #e2e8f0;
   vertical-align: middle;
+}
+
+.resource-center__page--suppliers .resource-center__inventory-table :is(th, td)[data-column='name'] {
+  width: auto;
+  min-width: 180px;
+}
+
+.resource-center__page--suppliers .resource-center__inventory-table :is(th, td)[data-column='category'] {
+  width: 130px;
+  min-width: 130px;
+}
+
+.resource-center__page--suppliers .resource-center__inventory-table :is(th, td)[data-column='tax'] {
+  width: 140px;
+  min-width: 140px;
+}
+
+.resource-center__page--suppliers .resource-center__inventory-table :is(th, td)[data-column='totalPurchaseAmount'],
+.resource-center__page--suppliers .resource-center__inventory-table :is(th, td)[data-column='outstandingPayable'] {
+  width: 110px;
+  min-width: 110px;
+  text-align: right !important;
+}
+
+.resource-center__page--suppliers .resource-center__inventory-table th.is-numeric .table-component__sort-button {
+  justify-content: flex-end !important;
+  width: 100% !important;
+}
+
+.resource-center__page--suppliers .resource-center__inventory-table :is(th, td)[data-column='status'] {
+  width: 100px;
+  min-width: 100px;
+}
+
+.resource-center__page--suppliers .resource-center__inventory-table :is(th, td)[data-column='actions'] {
+  width: 70px;
+  min-width: 70px;
+  text-align: center !important;
+  overflow: visible !important;
+}
+
+.resource-center__page--suppliers .resource-center__inventory-table td[data-column='actions'] .action-menu {
+  display: inline-flex !important;
+  justify-content: center !important;
+  margin: 0 auto !important;
 }
 
 .resource-center__page--suppliers .resource-center__inventory-table th {
@@ -4051,12 +4097,16 @@
 .supplier-details__terms strong {
   display: block;
   margin-top: 3px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .supplier-detail-card p {
   margin: 3px 0 0;
   color: var(--text-soft);
   font-size: 0.8rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .supplier-details__terms {

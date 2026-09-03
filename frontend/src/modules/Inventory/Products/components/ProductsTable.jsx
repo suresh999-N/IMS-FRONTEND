@@ -271,6 +271,7 @@ export default function ProductTable({
       sortable: true,
       mobilePrimary: true,
       mobileLabel: 'Product',
+      hideable: false,
       searchValue: (product) =>
         `${product.name} ${product.sku} ${product.barcode} ${product.category} ${product.subCategory} ${product.brand}`,
       render: (product) => (
@@ -601,9 +602,12 @@ export default function ProductTable({
         columns={columns}
         defaultPageSize={20}
         defaultVisibleColumnKeys={['name', 'sku', 'category', 'stock', 'price', 'status', 'actions']}
+        lockedColumnKeys={['name', 'actions']}
         columnStorageKey="ims.products.table.visibleColumns.workspace.v2"
         keyField="productId"
         searchPlaceholder="Search products by name, SKU, or category"
+        searchTerm={filters.search || ''}
+        onSearchChange={(value) => onFilterChange?.('search', value)}
         emptyMessage={emptyMessage}
         loading={loading}
         showSearch={!hasSelectedProducts}

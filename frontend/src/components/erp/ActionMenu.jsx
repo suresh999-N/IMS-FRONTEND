@@ -74,7 +74,7 @@ export default function ActionMenu({
     }
 
     function handleMenuOpen(event) {
-      if (event.detail?.menuId !== menuIdRef.current) {
+      if ((event.detail?.menuId || event.detail?.id) !== menuIdRef.current) {
         setIsOpen(false)
       }
     }
@@ -82,11 +82,13 @@ export default function ActionMenu({
     document.addEventListener('pointerdown', handlePointerDown)
     document.addEventListener('keydown', handleKeyDown)
     window.addEventListener(ACTION_MENU_OPEN_EVENT, handleMenuOpen)
+    window.addEventListener('ims:dropdown-opened', handleMenuOpen)
 
     return () => {
       document.removeEventListener('pointerdown', handlePointerDown)
       document.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener(ACTION_MENU_OPEN_EVENT, handleMenuOpen)
+      window.removeEventListener('ims:dropdown-opened', handleMenuOpen)
     }
   }, [])
 
@@ -181,6 +183,9 @@ export default function ActionMenu({
             if (nextIsOpen) {
               window.dispatchEvent(new CustomEvent(ACTION_MENU_OPEN_EVENT, {
                 detail: { menuId: menuIdRef.current },
+              }))
+              window.dispatchEvent(new CustomEvent('ims:dropdown-opened', {
+                detail: { id: menuIdRef.current },
               }))
             }
 

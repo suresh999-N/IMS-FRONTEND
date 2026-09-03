@@ -427,12 +427,23 @@
 .auth-wrapper--login {
   position: relative;
   align-items: stretch;
-  padding: clamp(18px, 2.8vw, 34px);
+  height: 100vh !important;
+  max-height: 100vh !important;
+  padding: clamp(12px, 1.5vh, 20px) clamp(16px, 1.8vw, 28px);
   background:
     radial-gradient(circle at 14% 22%, rgba(22, 101, 52, .14), transparent 26%),
     #080d0f;
   color: #0f172a;
-  overflow: hidden;
+  overflow: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.auth-wrapper--login::-webkit-scrollbar,
+.auth-wrapper--login *::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 .auth-wrapper--login::after {
@@ -865,9 +876,9 @@
 .auth-login-divider {
   display: flex;
   align-items: center;
-  margin: 22px 0 16px;
+  margin: 14px 0 12px;
   color: #94a3b8;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 500;
 }
 
@@ -879,16 +890,17 @@
 }
 
 .auth-login-divider span {
-  padding: 0 12px;
+  padding: 0 10px;
   color: #64748b;
 }
 
 .auth-login-signup-prompt {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   gap: 6px;
+  margin-top: 4px;
   text-align: center;
 }
 
@@ -967,33 +979,33 @@
 
 .auth-wrapper--login .login-card {
   box-sizing: border-box;
-  width: min(100%, 610px);
-  max-height: 100%;
-  padding: clamp(22px, 3vh, 36px) clamp(24px, 3vw, 42px);
-  overflow: hidden;
+  width: min(100%, 480px);
+  max-width: 480px;
+  padding: clamp(18px, 2.4vh, 28px) clamp(24px, 2.5vw, 36px);
+  overflow: visible;
 }
 
 .auth-wrapper--login .auth-login-lock {
-  width: 62px;
-  height: 62px;
-  margin-bottom: 14px;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 10px;
 }
 
 .auth-wrapper--login .login-card .sub {
-  margin: 6px 0 22px;
+  margin: 4px 0 16px;
 }
 
 .auth-wrapper--login .input-box {
-  min-height: 46px;
-  margin-bottom: 14px;
+  min-height: 44px;
+  margin-bottom: 12px;
 }
 
 .auth-wrapper--login .links {
-  margin: 0 0 16px;
+  margin: 0 0 14px;
 }
 
 .auth-wrapper--login form > button[type='submit'] {
-  min-height: 46px;
+  min-height: 44px;
 }
 
 @media (max-height: 720px) and (min-width: 1025px) {
@@ -1002,30 +1014,30 @@
   }
 
   .auth-wrapper--login .login-card {
-    padding-block: 18px;
+    padding-block: 14px;
   }
 
   .auth-wrapper--login .auth-login-lock {
-    width: 52px;
-    height: 52px;
-    margin-bottom: 10px;
+    width: 46px;
+    height: 46px;
+    margin-bottom: 8px;
   }
 
   .auth-wrapper--login .login-card .sub {
-    margin-bottom: 15px;
+    margin-bottom: 12px;
   }
 
   .auth-wrapper--login .input-box {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   .auth-wrapper--login .links {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 }
 
 /* Reference correction: both halves form one full-height shell. The right
-   white panel remains, while the inner form card ends at the Login button. */
+   white panel remains, with the inner form fitting cleanly inside. */
 @media (min-width: 1025px) {
   .auth-wrapper--login .auth-left-panel,
   .auth-wrapper--login .auth-right-panel {
@@ -1045,20 +1057,24 @@
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: clamp(22px, 3vw, 48px) !important;
+    padding: clamp(16px, 2vw, 36px) !important;
     border: 1px solid #e2e8f0 !important;
     border-left: 0 !important;
     border-radius: 0 22px 22px 0 !important;
     background: linear-gradient(145deg, #fff, #f8fafc) !important;
     box-shadow: none !important;
+    overflow: hidden !important;
+    scrollbar-width: none !important;
   }
 
   .auth-wrapper--login .login-card {
-    width: min(100%, 610px) !important;
+    width: min(100%, 480px) !important;
+    max-width: 480px !important;
     height: auto !important;
-    max-height: none !important;
-    padding: clamp(22px, 3vh, 36px) clamp(24px, 3vw, 42px) !important;
-    overflow: visible !important;
+    padding: clamp(20px, 2.4vh, 30px) clamp(24px, 2.5vw, 36px) !important;
+    overflow: hidden !important;
+    scrollbar-width: none !important;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05) !important;
   }
 }
 
@@ -1078,7 +1094,7 @@
 }
 
 .auth-wrapper--register .login-card {
-  max-width: 610px;
+  max-width: 480px;
 }
 
 .auth-wrapper--register .auth-login-lock {
@@ -1104,7 +1120,7 @@
 
 /* Register uses the right-hand shell as its single visible container. */
 .auth-wrapper--register .login-card {
-  width: min(100%, 610px) !important;
+  width: min(100%, 480px) !important;
   padding: 0 !important;
   border: 0 !important;
   border-radius: 0 !important;

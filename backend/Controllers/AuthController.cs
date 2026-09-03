@@ -73,7 +73,8 @@ namespace IMSBackend.Controllers
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(dto.Name))
+                var nameTrimmed = dto.Name?.Trim() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(nameTrimmed))
                 {
                     return BadRequest(ApiResponse<object>.Fail(
                         "Full name is required.",
@@ -84,7 +85,18 @@ namespace IMSBackend.Controllers
                         traceId: HttpContext.TraceIdentifier));
                 }
 
-                if (dto.Name.Trim().Length > 50)
+                if (nameTrimmed.Length < 2)
+                {
+                    return BadRequest(ApiResponse<object>.Fail(
+                        "Full name must contain at least 2 characters.",
+                        new Dictionary<string, string[]>
+                        {
+                            { "Name", new[] { "Full name must contain at least 2 characters." } }
+                        },
+                        traceId: HttpContext.TraceIdentifier));
+                }
+
+                if (nameTrimmed.Length > 50)
                 {
                     return BadRequest(ApiResponse<object>.Fail(
                         "Full name cannot exceed 50 characters.",
@@ -95,8 +107,42 @@ namespace IMSBackend.Controllers
                         traceId: HttpContext.TraceIdentifier));
                 }
 
-                var email = dto.Email.Trim().ToLowerInvariant();
-                var phone = dto.PhoneNumber.Trim();
+                if (!System.Text.RegularExpressions.Regex.IsMatch(nameTrimmed, @"^[a-zA-Z\p{L}]+(?:\s[a-zA-Z\p{L}]+)*$"))
+                {
+                    return BadRequest(ApiResponse<object>.Fail(
+                        "Full name must contain only letters and spaces.",
+                        new Dictionary<string, string[]>
+                        {
+                            { "Name", new[] { "Full name must contain only letters and spaces." } }
+                        },
+                        traceId: HttpContext.TraceIdentifier));
+                }
+
+                var rawEmail = dto.Email?.Trim() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(rawEmail))
+                {
+                    return BadRequest(ApiResponse<object>.Fail(
+                        "Email address is required.",
+                        new Dictionary<string, string[]>
+                        {
+                            { "Email", new[] { "Email address is required." } }
+                        },
+                        traceId: HttpContext.TraceIdentifier));
+                }
+
+                var email = rawEmail.ToLowerInvariant();
+                if (email.Contains("..") || !System.Text.RegularExpressions.Regex.IsMatch(email, @"^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+(?<!\.)@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,24}$"))
+                {
+                    return BadRequest(ApiResponse<object>.Fail(
+                        "Enter a valid email address.",
+                        new Dictionary<string, string[]>
+                        {
+                            { "Email", new[] { "Enter a valid email address." } }
+                        },
+                        traceId: HttpContext.TraceIdentifier));
+                }
+
+                var phone = dto.PhoneNumber?.Trim() ?? string.Empty;
 
                 // Cleanup expired pending users
                 var expiredPendingUsers = await _context.PendingUsers
@@ -282,6 +328,19 @@ namespace IMSBackend.Controllers
             {
                 return Unauthorized(ApiResponse<object>.Fail(
                 "Your account is inactive.",
+                traceId: HttpContext.TraceIdentifier));
+            }
+
+            var roleIsActive = await _context.Roles
+                .AsNoTracking()
+                .Where(r => r.RoleName.ToLower() == user.Role.ToLower())
+                .Select(r => r.IsActive)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (!roleIsActive)
+            {
+                return Unauthorized(ApiResponse<object>.Fail(
+                "Your assigned role is inactive. Please contact the administrator.",
                 traceId: HttpContext.TraceIdentifier));
             }
 

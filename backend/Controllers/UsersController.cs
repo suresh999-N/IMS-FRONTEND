@@ -56,7 +56,11 @@ namespace IMSBackend.Controllers
                 });
             }
 
-            var users = await _context.Users
+            var roleStatusDict = await _context.Roles
+                .AsNoTracking()
+                .ToDictionaryAsync(r => r.RoleName, r => r.IsActive, StringComparer.OrdinalIgnoreCase);
+
+            var rawUsers = await _context.Users
                 .Select(x => new
                 {
                     x.Id,
@@ -67,6 +71,24 @@ namespace IMSBackend.Controllers
                     x.IsActive
                 })
                 .ToListAsync();
+
+            var users = rawUsers.Select(x =>
+            {
+                var roleIsActive = roleStatusDict.TryGetValue(x.Role, out var rActive) ? rActive : false;
+                var effectiveIsActive = x.IsActive && roleIsActive;
+                return new
+                {
+                    x.Id,
+                    x.Name,
+                    x.Email,
+                    x.PhoneNumber,
+                    x.Role,
+                    IsActive = effectiveIsActive,
+                    UserIsActive = x.IsActive,
+                    RoleIsActive = roleIsActive,
+                    EffectiveIsActive = effectiveIsActive
+                };
+            }).ToList();
 
             return Ok(users);
         }
@@ -100,7 +122,7 @@ namespace IMSBackend.Controllers
                 });
             }
 
-            var user = await _context.Users
+            var rawUser = await _context.Users
                 .Where(x => x.Id == id)
                 .Select(x => new
                 {
@@ -113,13 +135,34 @@ namespace IMSBackend.Controllers
                 })
                 .FirstOrDefaultAsync();
 
-            if (user == null)
+            if (rawUser == null)
             {
                 return NotFound(new
                 {
                     message = "User not found."
                 });
             }
+
+            var roleIsActive = await _context.Roles
+                .AsNoTracking()
+                .Where(r => r.RoleName.ToLower() == rawUser.Role.ToLower())
+                .Select(r => r.IsActive)
+                .FirstOrDefaultAsync();
+
+            var effectiveIsActive = rawUser.IsActive && roleIsActive;
+
+            var user = new
+            {
+                rawUser.Id,
+                rawUser.Name,
+                rawUser.Email,
+                rawUser.PhoneNumber,
+                rawUser.Role,
+                IsActive = effectiveIsActive,
+                UserIsActive = rawUser.IsActive,
+                RoleIsActive = roleIsActive,
+                EffectiveIsActive = effectiveIsActive
+            };
 
             return Ok(user);
         }

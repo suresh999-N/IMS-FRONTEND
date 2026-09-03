@@ -40,7 +40,7 @@ namespace IMSBackend.Controllers
                 TotalCategories = categories.Count,
                 TotalSubCategories = totalSubCategories,
                 CategoriesWithChildrenCount = categories.Count(category => category.SubCategories.Any()),
-                Categories = categories.Select(ToCategoryResponse).ToList()
+                Categories = categories.Select(c => ToCategoryResponse(c, categories)).ToList()
             };
 
             return Ok(ApiResponse<CategoryListResponseDto>.Ok(
@@ -59,7 +59,7 @@ namespace IMSBackend.Controllers
                 .ToListAsync(cancellationToken);
 
             return Ok(ApiResponse<object>.Ok(
-                new { categories = categories.Select(ToCategoryResponse).ToList() },
+                new { categories = categories.Select(c => ToCategoryResponse(c, categories)).ToList() },
                 traceId: HttpContext.TraceIdentifier));
         }
 
@@ -110,7 +110,7 @@ namespace IMSBackend.Controllers
 
             var category = new Category
             {
-                Name = Clean(dto.Name),
+                Name = FormatCategoryName(dto.Name),
                 ParentId = dto.ParentId,
                 Description = Clean(dto.Description)
             };
@@ -158,7 +158,7 @@ namespace IMSBackend.Controllers
                     traceId: HttpContext.TraceIdentifier));
             }
 
-            category.Name = Clean(dto.Name);
+            category.Name = FormatCategoryName(dto.Name);
             category.ParentId = dto.ParentId;
             category.Description = Clean(dto.Description);
 
@@ -291,9 +291,9 @@ namespace IMSBackend.Controllers
                 : null;
         }
 
-        private static CategoryResponseDto ToCategoryResponse(Category category)
+        private static CategoryResponseDto ToCategoryResponse(Category category, List<Category>? allCategories = null)
         {
-            var children = category.SubCategories
+            var subCatChildren = category.SubCategories
                 .Where(subCategory => !subCategory.IsDeleted)
                 .OrderBy(subCategory => subCategory.Name)
                 .Select(subCategory =>
@@ -304,6 +304,26 @@ namespace IMSBackend.Controllers
                 })
                 .ToList();
 
+            var categoryChildren = allCategories != null
+                ? allCategories
+                    .Where(c => c.ParentId == category.CategoryId && !c.IsDeleted)
+                    .Select(c => new ChildSubCategoryDto
+                    {
+                        SubCategoryId = c.CategoryId,
+                        CategoryId = category.CategoryId,
+                        Name = c.Name,
+                        Description = c.Description,
+                        Status = "Active",
+                        CreatedAt = DateTime.UtcNow,
+                        CategoryName = category.Name
+                    })
+                    .ToList()
+                : new List<ChildSubCategoryDto>();
+
+            var combinedChildren = subCatChildren
+                .Concat(categoryChildren.Where(cc => !subCatChildren.Any(sc => sc.Name.Equals(cc.Name, StringComparison.OrdinalIgnoreCase))))
+                .ToList();
+
             return new CategoryResponseDto
             {
                 CategoryId = category.CategoryId,
@@ -311,8 +331,8 @@ namespace IMSBackend.Controllers
                 ParentId = category.ParentId,
                 Description = category.Description,
                 Status = "Active",
-                SubcategoryCount = children.Count,
-                ChildSubCategories = children
+                SubcategoryCount = combinedChildren.Count,
+                ChildSubCategories = combinedChildren
             };
         }
 
@@ -328,6 +348,42 @@ namespace IMSBackend.Controllers
                 CreatedAt = subCategory.CreatedAt,
                 CategoryName = subCategory.Category?.Name
             };
+        }
+
+        private static readonly HashSet<string> MinorWords = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "and", "or", "nor", "but", "a", "an", "the", "as", "at", "by", "for", "in", "of", "on", "per", "to", "with", "&"
+        };
+
+        private static readonly HashSet<string> Acronyms = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "IT", "USB", "LED", "LCD", "TV", "RAM", "SSD", "POS", "CCTV", "GPS", "SKU", "SIM", "VIP", "AC", "DC", "RO", "PVC", "HD", "FHD", "UHD", "4K", "5G", "4G", "3G"
+        };
+
+        private static string FormatCategoryName(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+            var words = System.Text.RegularExpressions.Regex.Split(value.Trim(), @"\s+");
+            var result = new List<string>();
+            for (int i = 0; i < words.Length; i++)
+            {
+                var word = words[i];
+                if (string.IsNullOrEmpty(word)) continue;
+                if (Acronyms.Contains(word))
+                {
+                    result.Add(word.ToUpperInvariant());
+                }
+                else if (i > 0 && MinorWords.Contains(word))
+                {
+                    result.Add(word.ToLowerInvariant());
+                }
+                else
+                {
+                    var lower = word.ToLowerInvariant();
+                    result.Add(char.ToUpperInvariant(lower[0]) + lower[1..]);
+                }
+            }
+            return string.Join(" ", result);
         }
 
         private static string Clean(string? value)

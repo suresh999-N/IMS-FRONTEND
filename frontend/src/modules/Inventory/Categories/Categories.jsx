@@ -4,8 +4,12 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  ClipboardList,
   Download,
   FileText,
+  FolderTree,
+  Layers,
+  LayoutGrid,
   Pencil,
   Plus,
   Printer,
@@ -18,6 +22,7 @@ import {
   createCategory,
   deleteCategory,
   getCategories,
+  getSubCategoryRecords,
   normalizeCategory,
   updateCategory,
 } from '../../../api/productApi'
@@ -35,10 +40,10 @@ const CATEGORY_COLUMNS_STORAGE_KEY = 'ims.categories.table.visibleColumns.wareho
 const CATEGORY_DEFAULT_COLUMNS = ['name', 'parentId', 'childCount', 'status', 'actions']
 const CATEGORY_COLUMN_WIDTHS = {
   name: 250,
-  parentId: 170,
-  childCount: 124,
+  parentId: 160,
+  childCount: 150,
   status: 96,
-  updatedAt: 170,
+  updatedAt: 160,
   actions: 90,
 }
 
@@ -51,11 +56,17 @@ function comparable(value) {
 }
 
 function categoryIdOf(category) {
-  return String(category?.id ?? category?.categoryId ?? '')
+  if (!category) return ''
+  return String(category.id ?? category.categoryId ?? category.subCategoryId ?? '')
 }
 
 function parentIdOf(category) {
-  return String(category?.parentId ?? '')
+  if (!category) return ''
+  const pId = category.parentId ?? category.parentCategoryId ?? null
+  if (pId === null || pId === undefined || pId === '' || pId === 0 || pId === '0' || pId === 'null' || pId === 'undefined') {
+    return ''
+  }
+  return String(pId)
 }
 
 function sortByName(items) {
@@ -70,20 +81,95 @@ function getLegacyChildren(categories, parentId) {
   )
 }
 
-function childSubCategoriesOf(category) {
-  return Array.isArray(category?.childSubCategories)
-    ? sortByName(category.childSubCategories)
+function childSubCategoriesOf(category, allCategories = []) {
+  const directChildren = Array.isArray(category?.childSubCategories)
+    ? category.childSubCategories
     : []
+  const legacyChildren = Array.isArray(allCategories)
+    ? getLegacyChildren(allCategories, categoryIdOf(category))
+    : []
+
+  const mergedMap = new Map()
+  directChildren.forEach((child) =>
+    mergedMap.set(String(child.id || child.subCategoryId || child.categoryId), child),
+  )
+  legacyChildren.forEach((child) => {
+    const id = categoryIdOf(child)
+    if (!mergedMap.has(id)) {
+      mergedMap.set(id, {
+        id,
+        name: child.name,
+        description: child.description,
+        status: child.status,
+        createdAt: child.createdAt,
+        updatedAt: child.updatedAt,
+        parentName: category.name,
+      })
+    }
+  })
+
+  return sortByName([...mergedMap.values()])
 }
 
-function getSubcategoryCount(category) {
-  const children = childSubCategoriesOf(category)
-  const count = Number(category?.subcategoryCount)
-  return Number.isFinite(count) ? count : children.length
+function getAllChildren(category, allCategories = []) {
+  const catId = categoryIdOf(category)
+  if (!catId) return []
+
+  const childMap = new Map()
+
+  const directChildren = Array.isArray(category?.childSubCategories)
+    ? category.childSubCategories
+    : []
+
+  directChildren.forEach((sub) => {
+    const subId = String(sub.subCategoryId || sub.id || '')
+    const nameKey = comparable(sub.name)
+    if (nameKey) {
+      childMap.set(nameKey, {
+        ...sub,
+        id: subId ? `subcat-${subId}` : `sub-${nameKey}`,
+        subCategoryId: subId,
+        categoryId: catId,
+        parentId: catId,
+        name: sub.name,
+        description: sub.description || '',
+        parentName: category.name,
+        status: sub.status || 'Active',
+        sourceType: 'subcategory',
+      })
+    }
+  })
+
+  allCategories.forEach((item) => {
+    const itemParentId = parentIdOf(item)
+    const itemId = categoryIdOf(item)
+    if (itemParentId && itemParentId === catId && itemId !== catId && item.sourceType === 'subcategory') {
+      const nameKey = comparable(item.name)
+      if (nameKey && !childMap.has(nameKey)) {
+        childMap.set(nameKey, {
+          ...item,
+          id: `subcat-${itemId}`,
+          name: item.name,
+          description: item.description || '',
+          parentId: catId,
+          parentName: category.name,
+          status: item.status || 'Active',
+          sourceType: 'subcategory',
+        })
+      }
+    }
+  })
+
+  return sortByName(Array.from(childMap.values()))
 }
 
-function hasChildSubCategories(category) {
-  return getSubcategoryCount(category) > 0 || childSubCategoriesOf(category).length > 0
+function getCategoryChildCount(category, allCategories = []) {
+  if (!category) return 0
+  return getAllChildren(category, allCategories).length
+}
+
+function hasChildSubCategories(category, allCategories = []) {
+  return getCategoryChildCount(category, allCategories) > 0
 }
 
 function getDescendantIds(categories, categoryId) {
@@ -129,40 +215,107 @@ function buildPath(categories, category) {
   return names.join(' / ')
 }
 
-function buildVisibleRows(categories, expandedIds) {
-  const rows = []
+function buildVisibleRows(categories, expandedIds, viewMode = 'grid') {
+  const categoryMap = new Map()
+  categories.forEach((item) => {
+    const id = categoryIdOf(item)
+    if (id) {
+      categoryMap.set(id, item)
+    }
+  })
 
-  sortByName(categories).forEach((category) => {
-    const categoryId = categoryIdOf(category)
-    const children = childSubCategoriesOf(category)
-    const childCount = getSubcategoryCount(category)
-    const hasChildren = childCount > 0 || children.length > 0
-
-    rows.push({
-      ...category,
-      id: categoryId,
-      rowType: 'category',
-      depth: 0,
-      childCount,
-      hasChildren,
-      sortPath: category.name,
+  // In Grid View: Display uniform tabular grid of Main Top-Level categories only.
+  // Subcategories are accessed via the dedicated Subcategories Drawer Modal.
+  if (viewMode === 'grid') {
+    const mainCategories = categories.filter((item) => {
+      if (item.sourceType === 'subcategory') return false
+      const pId = parentIdOf(item)
+      return !pId || pId === '0' || pId === 'null' || pId === 'undefined'
     })
 
-    if (expandedIds.has(categoryId)) {
+    return sortByName(mainCategories).map((node) => {
+      const nodeCatId = categoryIdOf(node)
+      const children = getAllChildren(node, categories)
+      return {
+        ...node,
+        id: nodeCatId,
+        rowType: 'category',
+        parentCategoryId: null,
+        parentName: 'Main category',
+        depth: 0,
+        childCount: children.length,
+        hasChildren: children.length > 0,
+        sortPath: node.name,
+      }
+    })
+  }
+
+  // In Tree View: Root categories are top-level categories (not subcategory records)
+  const rootCategories = categories.filter((item) => {
+    if (item.sourceType === 'subcategory') return false
+    const pId = parentIdOf(item)
+    return !pId || pId === '0' || pId === 'null' || pId === 'undefined'
+  })
+
+  const rows = []
+  const visitedNodeIds = new Set()
+
+  function processNode(node, depth = 0, parentPath = '') {
+    const nodeCatId = categoryIdOf(node)
+    if (!nodeCatId || visitedNodeIds.has(nodeCatId)) return
+    visitedNodeIds.add(nodeCatId)
+
+    const children = getAllChildren(node, categories)
+    const childCount = children.length
+    const hasChildren = childCount > 0
+    const sortPath = parentPath ? `${parentPath} / ${node.name}` : node.name
+    const parentObj = parentIdOf(node) ? categoryMap.get(parentIdOf(node)) : null
+
+    rows.push({
+      ...node,
+      id: nodeCatId,
+      rowType: depth === 0 ? 'category' : 'subcategory',
+      parentCategoryId: parentIdOf(node),
+      parentName: parentObj ? parentObj.name : (node.parentName || node.categoryName || 'Main category'),
+      depth,
+      childCount,
+      hasChildren,
+      sortPath,
+    })
+
+    if (viewMode === 'tree' && hasChildren && expandedIds.has(nodeCatId)) {
       children.forEach((child) => {
-        rows.push({
-          ...child,
-          id: `${categoryId}-sub-${child.id}`,
-          rowType: 'subcategory',
-          parentCategoryId: categoryId,
-          parentName: category.name,
-          depth: 1,
-          childCount: 0,
-          hasChildren: false,
-          sortPath: `${category.name} / ${child.name}`,
-        })
+        const rawChildId = categoryIdOf(child) || String(child.id || child.subCategoryId || '')
+        const childId = rawChildId
+          ? (rawChildId.includes('-sub-') ? rawChildId : `${nodeCatId}-sub-${rawChildId}`)
+          : `${nodeCatId}-sub-${comparable(child.name)}`
+
+        if (visitedNodeIds.has(childId)) return
+        visitedNodeIds.add(childId)
+
+        const childInMap = categoryMap.get(categoryIdOf(child))
+        if (childInMap && categoryIdOf(childInMap) !== nodeCatId && childInMap.sourceType !== 'subcategory') {
+          processNode(childInMap, depth + 1, sortPath)
+        } else {
+          const childSubChildren = getAllChildren(child, categories)
+          rows.push({
+            ...child,
+            id: childId,
+            rowType: 'subcategory',
+            parentCategoryId: nodeCatId,
+            parentName: node.name,
+            depth: depth + 1,
+            childCount: childSubChildren.length,
+            hasChildren: childSubChildren.length > 0,
+            sortPath: `${sortPath} / ${child.name}`,
+          })
+        }
       })
     }
+  }
+
+  sortByName(rootCategories).forEach((root) => {
+    processNode(root, 0, '')
   })
 
   return rows
@@ -280,8 +433,8 @@ function printCategories(categories, allCategories) {
 
 function CategoriesHeader({ canCreate, summary, onAdd }) {
   const metrics = [
-    { key: 'total', label: 'Categories', value: summary.total, tone: 'success' },
-    { key: 'active', label: 'Active', value: summary.active, tone: 'info' },
+    { key: 'total', label: 'Categories', value: summary.total, tone: 'info' },
+    { key: 'active', label: 'Active', value: summary.active, tone: 'success' },
     { key: 'inactive', label: 'Inactive', value: summary.inactive, tone: 'warning' },
   ]
 
@@ -474,8 +627,10 @@ export default function Categories() {
   const [error, setError] = useState('')
   const [formState, setFormState] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [subcategoriesViewTarget, setSubcategoriesViewTarget] = useState(null)
   const [selectedCategoryIds, setSelectedCategoryIds] = useState([])
   const [statusFilter, setStatusFilter] = useState('all')
+  const [viewMode, setViewMode] = useState('grid')
 
   const canCreate = hasPermission('categories', 'create')
   const canEdit = hasPermission('categories', 'edit')
@@ -491,7 +646,10 @@ export default function Categories() {
 
     setError('')
 
-    const response = await getCategories({ force })
+    const [response, subResponse] = await Promise.all([
+      getCategories({ force }),
+      getSubCategoryRecords({ force }).catch(() => ({ success: false })),
+    ])
 
     if (!response.success) {
       setError(response.error || 'Unable to load categories.')
@@ -503,7 +661,43 @@ export default function Categories() {
       return
     }
 
-    const nextCategories = upsertCategories([], response.data ?? [])
+    const rawCategories = response.data ?? []
+    const rawSubCategories = subResponse?.success ? (subResponse.data ?? []) : []
+
+    const subCategoriesByParent = new Map()
+    rawSubCategories.forEach((sub) => {
+      const pId = String(sub.categoryId || sub.parentId || sub.parentCategoryId || '')
+      if (pId) {
+        if (!subCategoriesByParent.has(pId)) {
+          subCategoriesByParent.set(pId, [])
+        }
+        subCategoriesByParent.get(pId).push(sub)
+      }
+    })
+
+    const categoriesWithMergedChildren = rawCategories.map((cat) => {
+      const catId = categoryIdOf(cat)
+      const existingChildren = cat.childSubCategories || []
+      const fetchedChildren = subCategoriesByParent.get(catId) || []
+
+      const mergedMap = new Map()
+      existingChildren.forEach((child) => mergedMap.set(String(child.id || child.subCategoryId || child.categoryId), child))
+      fetchedChildren.forEach((child) => {
+        const childId = String(child.id || child.subCategoryId || child.categoryId)
+        if (!mergedMap.has(childId)) {
+          mergedMap.set(childId, child)
+        }
+      })
+
+      const childSubCategories = Array.from(mergedMap.values())
+      return {
+        ...cat,
+        childSubCategories,
+        subcategoryCount: childSubCategories.length,
+      }
+    })
+
+    const nextCategories = upsertCategories([], categoriesWithMergedChildren)
     const meta = response.meta ?? {}
 
     setCategories(nextCategories)
@@ -532,8 +726,8 @@ export default function Categories() {
   }, [loadCategories])
 
   const visibleRows = useMemo(
-    () => buildVisibleRows(categories, expandedIds),
-    [categories, expandedIds],
+    () => buildVisibleRows(categories, expandedIds, viewMode),
+    [categories, expandedIds, viewMode],
   )
 
   const filteredRows = useMemo(() => {
@@ -571,7 +765,7 @@ export default function Categories() {
   function toggleCategory(category) {
     const id = categoryIdOf(category)
 
-    if (!hasChildSubCategories(category)) {
+    if (!hasChildSubCategories(category, categories)) {
       return
     }
 
@@ -606,6 +800,10 @@ export default function Categories() {
       return
     }
 
+    if (values.parentId) {
+      setExpandedIds((currentValue) => new Set([...currentValue, String(values.parentId)]))
+    }
+
     await loadCategories({ force: true })
 
     showToast({
@@ -617,10 +815,9 @@ export default function Categories() {
   }
 
   function handleDeleteClick(category) {
-    const children = childSubCategoriesOf(category)
-    const legacyChildren = getLegacyChildren(categories, categoryIdOf(category))
+    const childCount = getCategoryChildCount(category, categories)
 
-    if (children.length > 0 || legacyChildren.length > 0) {
+    if (childCount > 0) {
       showToast({
         type: 'error',
         title: 'Categories',
@@ -694,45 +891,47 @@ export default function Categories() {
       mobileLabel: 'Category',
       searchValue: (category) =>
         `${category.name} ${category.description} ${category.parentName ?? ''} ${category.categoryName ?? ''} ${buildPath(categories, category)}`,
-      sortValue: (category) => category.sortPath ?? buildPath(categories, category),
-      render: (category) => (
-        <div
-          className={`catalog-page__tree-cell ${
-            category.rowType === 'subcategory' ? 'catalog-page__tree-cell--child' : ''
-          }`}
-          style={{ '--catalog-depth': category.depth }}
-        >
-          <span className="catalog-page__tree-spacer" aria-hidden="true" />
-          {category.rowType === 'category' && category.hasChildren ? (
-            <button
-              type="button"
-              className="catalog-page__tree-toggle"
-              onClick={(event) => {
-                event.stopPropagation()
-                toggleCategory(category)
-              }}
-              aria-label={`${expandedIds.has(category.id) ? 'Collapse' : 'Expand'} ${category.name}`}
-              title="Toggle subcategories"
-            >
-              {expandedIds.has(category.id) ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            </button>
-          ) : (
-            <span className="catalog-page__tree-toggle-placeholder" aria-hidden="true" />
-          )}
-          {category.rowType === 'subcategory' ? (
-            <span className="catalog-page__tree-branch" aria-hidden="true" />
-          ) : null}
-          {category.rowType === 'subcategory' ? (
-            <FileText size={16} className="catalog-page__tree-icon catalog-page__child-icon" />
-          ) : (
-            <Boxes size={16} className="catalog-page__tree-icon" />
-          )}
-          <div className="catalog-page__entity">
-            <strong>{category.name}</strong>
-            {category.description ? <span>{category.description}</span> : null}
+      sortValue: (category) => (viewMode === 'tree' ? (category.sortPath ?? buildPath(categories, category)) : category.name),
+      render: (category) => {
+        const depth = category.depth || 0
+        const isChild = depth > 0 || category.rowType === 'subcategory'
+        const catId = categoryIdOf(category)
+        const isExpanded = expandedIds.has(catId)
+
+        return (
+          <div
+            className={`catalog-page__tree-cell ${isChild ? 'catalog-page__tree-cell--child' : ''}`}
+            style={{ paddingLeft: depth > 0 ? `${depth * 24}px` : undefined }}
+          >
+            {viewMode === 'tree' && category.hasChildren ? (
+              <button
+                type="button"
+                className="catalog-page__tree-toggle"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  toggleCategory(category)
+                }}
+                aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${category.name}`}
+                title="Toggle subcategories"
+              >
+                {isExpanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
+              </button>
+            ) : null}
+            {isChild ? (
+              <span className="catalog-page__tree-branch" aria-hidden="true" />
+            ) : null}
+            {isChild ? (
+              <FileText size={16} className="catalog-page__tree-icon catalog-page__child-icon" />
+            ) : (
+              <Boxes size={16} className="catalog-page__tree-icon" />
+            )}
+            <div className="catalog-page__entity">
+              <strong>{category.name}</strong>
+              {category.description ? <span>{category.description}</span> : null}
+            </div>
           </div>
-        </div>
-      ),
+        )
+      },
     },
     {
       key: 'description',
@@ -740,11 +939,13 @@ export default function Categories() {
       tableWidth: 260,
       className: 'catalog-page__description-column',
       mobileDescription: true,
-      render: (category) =>
-        category.description ||
-        (category.rowType === 'subcategory'
-          ? `Nested under ${category.parentName || category.categoryName || 'parent category'}`
-          : 'No description provided'),
+      sortable: true,
+      sortValue: (category) => (category.description || '').toLowerCase(),
+      render: (category) => (
+        <span className={`catalog-page__cell-description ${category.description ? '' : 'is-empty'}`}>
+          {category.description || 'No description provided'}
+        </span>
+      ),
     },
     {
       key: 'parentId',
@@ -754,8 +955,16 @@ export default function Categories() {
       style: { width: CATEGORY_COLUMN_WIDTHS.parentId, minWidth: CATEGORY_COLUMN_WIDTHS.parentId, maxWidth: CATEGORY_COLUMN_WIDTHS.parentId },
       headerStyle: { width: CATEGORY_COLUMN_WIDTHS.parentId, minWidth: CATEGORY_COLUMN_WIDTHS.parentId, maxWidth: CATEGORY_COLUMN_WIDTHS.parentId },
       mobileLabel: 'Parent',
-      sortValue: (category) => buildPath(categories, category),
-      render: (category) => categoryParentLabel(categories, category),
+      sortable: true,
+      sortValue: (category) => categoryParentLabel(categories, category).toLowerCase(),
+      render: (category) => {
+        const label = categoryParentLabel(categories, category)
+        return (
+          <span className={label === 'Main category' ? 'catalog-page__parent-main' : 'catalog-page__parent-name'}>
+            {label}
+          </span>
+        )
+      },
     },
     {
       key: 'childCount',
@@ -765,12 +974,33 @@ export default function Categories() {
       style: { width: CATEGORY_COLUMN_WIDTHS.childCount, minWidth: CATEGORY_COLUMN_WIDTHS.childCount, maxWidth: CATEGORY_COLUMN_WIDTHS.childCount },
       headerStyle: { width: CATEGORY_COLUMN_WIDTHS.childCount, minWidth: CATEGORY_COLUMN_WIDTHS.childCount, maxWidth: CATEGORY_COLUMN_WIDTHS.childCount },
       mobileLabel: 'Subcats',
-      render: (category) =>
-        category.rowType === 'subcategory' ? (
-          <span className="catalog-page__muted-value">Child item</span>
-        ) : (
-          category.childCount
-        ),
+      sortable: true,
+      sortValue: (category) => (category.rowType === 'subcategory' ? 0 : Number(category.childCount ?? 0)),
+      render: (category) => {
+        if (category.rowType === 'subcategory') {
+          return <span className="catalog-page__muted-value">—</span>
+        }
+        const activeChildren = getAllChildren(category, categories)
+        const childCount = activeChildren.length
+        if (childCount > 0) {
+          const label = childCount === 1 ? '1 Subcategory' : `${childCount} Subcategories`
+          return (
+            <button
+              type="button"
+              className="catalog-page__subcat-badge-btn"
+              onClick={(e) => {
+                e.stopPropagation()
+                setSubcategoriesViewTarget(category)
+              }}
+              title="View subcategories grid"
+            >
+              <Layers size={13} className="catalog-page__subcat-icon" />
+              <span>{label}</span>
+            </button>
+          )
+        }
+        return <span className="catalog-page__subcat-zero">0</span>
+      },
     },
     {
       key: 'status',
@@ -780,9 +1010,10 @@ export default function Categories() {
       style: { width: CATEGORY_COLUMN_WIDTHS.status, minWidth: CATEGORY_COLUMN_WIDTHS.status, maxWidth: CATEGORY_COLUMN_WIDTHS.status },
       headerStyle: { width: CATEGORY_COLUMN_WIDTHS.status, minWidth: CATEGORY_COLUMN_WIDTHS.status, maxWidth: CATEGORY_COLUMN_WIDTHS.status },
       mobileStatus: true,
-      sortValue: (category) => category.status ?? 'Active',
+      sortable: true,
+      sortValue: (category) => (category.status || 'Active').toLowerCase(),
       render: (category) => (
-        <StatusBadge type={String(category.status).toLowerCase() === 'inactive' ? 'critical' : 'active'}>
+        <StatusBadge status={category.status || 'Active'}>
           {category.status || 'Active'}
         </StatusBadge>
       ),
@@ -809,12 +1040,18 @@ export default function Categories() {
       hideable: false,
       render: (category) => (
         <div className="catalog-page__row-actions">
-          {canEdit || canDelete ? (
+          {canEdit || canDelete || (category.childCount > 0) ? (
             <ActionMenu
               iconOnly
               className="inventory-row-action-menu"
               label={`Actions for ${category.name}`}
               actions={[
+                category.childCount > 0 ? {
+                  key: 'view-subcategories',
+                  label: 'View Subcategories',
+                  icon: ClipboardList,
+                  onClick: () => setSubcategoriesViewTarget(category),
+                } : null,
                 canEdit ? {
                   key: 'edit',
                   label: 'Edit',
@@ -1019,6 +1256,24 @@ export default function Categories() {
             <FilterBar className="categories-list-page__toolbar-actions" ariaLabel="Category table actions">
               <button
                 type="button"
+                className={`button button-secondary categories-toolbar-btn ${viewMode === 'grid' ? 'is-active' : ''}`}
+                onClick={() => setViewMode('grid')}
+                title="Tabular Grid View (Uniform main categories table)"
+              >
+                <LayoutGrid size={15} />
+                Grid View
+              </button>
+              <button
+                type="button"
+                className={`button button-secondary categories-toolbar-btn ${viewMode === 'tree' ? 'is-active' : ''}`}
+                onClick={() => setViewMode('tree')}
+                title="Expandable Tree View (Nested hierarchy)"
+              >
+                <FolderTree size={15} />
+                Tree View
+              </button>
+              <button
+                type="button"
                 className="button button-secondary"
                 onClick={() => loadCategories({ force: true, showLoading: true })}
                 disabled={isLoading}
@@ -1085,6 +1340,100 @@ export default function Categories() {
                 Delete
               </button>
             </div>
+          </div>
+        </FormModal>
+      ) : null}
+
+      {subcategoriesViewTarget ? (
+        <FormModal
+          title={`${subcategoriesViewTarget.name} — Subcategories`}
+          onClose={() => setSubcategoriesViewTarget(null)}
+          dialogClassName="catalog-category-subcategories-modal"
+        >
+          <div className="catalog-subcategories-drawer">
+            <div className="catalog-subcategories-drawer__header">
+              <div>
+                <strong>{subcategoriesViewTarget.name}</strong>
+                <span className="subtext">
+                  {getAllChildren(subcategoriesViewTarget, categories).length} Subcategories
+                </span>
+              </div>
+              {canCreate ? (
+                <button
+                  type="button"
+                  className="button button-primary button-sm"
+                  onClick={() => {
+                    setFormState({ category: null, initialParentId: subcategoriesViewTarget.id })
+                  }}
+                >
+                  <Plus size={14} /> Add Subcategory
+                </button>
+              ) : null}
+            </div>
+
+            {getAllChildren(subcategoriesViewTarget, categories).length > 0 ? (
+              <div className="catalog-subcategories-drawer__table-wrapper">
+                <table className="catalog-subcategories-mini-table">
+                  <thead>
+                    <tr>
+                      <th>Subcategory Name</th>
+                      <th>Description</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getAllChildren(subcategoriesViewTarget, categories).map((sub) => (
+                      <tr key={sub.id}>
+                        <td>
+                          <strong>{sub.name}</strong>
+                        </td>
+                        <td>{sub.description || 'No description provided'}</td>
+                        <td>
+                          <StatusBadge status={sub.status || 'Active'}>
+                            {sub.status || 'Active'}
+                          </StatusBadge>
+                        </td>
+                        <td>
+                          <div className="catalog-page__row-actions">
+                            {canEdit ? (
+                              <button
+                                type="button"
+                                className="button button-text button-sm"
+                                title="Edit subcategory"
+                                onClick={() => {
+                                  setSubcategoriesViewTarget(null)
+                                  setFormState({ category: sub, initialParentId: subcategoriesViewTarget.id })
+                                }}
+                              >
+                                <Pencil size={14} />
+                              </button>
+                            ) : null}
+                            {canDelete ? (
+                              <button
+                                type="button"
+                                className="button button-text button-danger button-sm"
+                                title="Delete subcategory"
+                                onClick={() => {
+                                  setSubcategoriesViewTarget(null)
+                                  handleDeleteClick(sub)
+                                }}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            ) : null}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="catalog-subcategories-drawer__empty">
+                No subcategories created under {subcategoriesViewTarget.name} yet.
+              </div>
+            )}
           </div>
         </FormModal>
       ) : null}

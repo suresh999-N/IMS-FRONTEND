@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  SlidersHorizontal,
   Pencil,
   Plus,
   RefreshCw,
@@ -75,13 +74,17 @@ function validateAttributeName(name, existingAttributes = [], editingId = null) 
 export default function Attributes() {
   const { hasPermission } = useAuth()
   const [attributes, setAttributes] = useState([])
+  const [selectedAttributeIds, setSelectedAttributeIds] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
   const [error, setError] = useState('')
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [bulkDeleteTarget, setBulkDeleteTarget] = useState(null)
 
   const [formValues, setFormValues] = useState({ name: '' })
   const [touched, setTouched] = useState({ name: false })
@@ -91,6 +94,37 @@ export default function Attributes() {
   const canCreate = hasPermission('productAttributes', 'create')
   const canEdit = hasPermission('productAttributes', 'edit')
   const canDelete = hasPermission('productAttributes', 'delete')
+
+  // Filtered attributes based on search
+  const filteredAttributes = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase()
+    if (!term) return attributes
+    return attributes.filter((attr) => {
+      const text = `${attr.name || ''} ${attr.values?.join(' ') || ''}`.toLowerCase()
+      return text.includes(term)
+    })
+  }, [attributes, searchTerm])
+
+  // Reconcile stale selections
+  useEffect(() => {
+    if (selectedAttributeIds.length === 0) return
+    const validIdSet = new Set(filteredAttributes.map((attr) => String(attr.attributeId ?? attr.id)))
+    setSelectedAttributeIds((prev) => {
+      const filtered = prev.filter((id) => validIdSet.has(String(id)))
+      return filtered.length === prev.length ? prev : filtered
+    })
+  }, [attributes, filteredAttributes, selectedAttributeIds])
+
+  // Selection metrics
+  const selectedCount = selectedAttributeIds.length
+  const selectedAttributeSet = useMemo(
+    () => new Set(selectedAttributeIds.map(String)),
+    [selectedAttributeIds],
+  )
+  const selectedAttributes = useMemo(
+    () => filteredAttributes.filter((attr) => selectedAttributeSet.has(String(attr.attributeId ?? attr.id))),
+    [filteredAttributes, selectedAttributeSet],
+  )
 
   // ── Load Data ──────────────────────────────────────────────────────────────
   const loadData = useCallback(async (options = {}) => {
@@ -276,10 +310,48 @@ export default function Attributes() {
     }
   }
 
+  // ── Bulk Handlers ─────────────────────────────────────────────────────────
+  function handleBulkDelete() {
+    if (selectedCount === 0 || !canDelete) return
+    setBulkDeleteTarget(selectedAttributes)
+  }
+
+  async function confirmBulkDelete() {
+    if (!bulkDeleteTarget || bulkDeleteTarget.length === 0) return
+    setIsBulkDeleting(true)
+
+    try {
+      const results = await Promise.all(
+        bulkDeleteTarget.map((attr) => deleteResource(config, attr.attributeId ?? attr.id)),
+      )
+      const failed = results.filter((res) => !res.success)
+      if (failed.length > 0) {
+        throw new Error('Failed to delete some attributes.')
+      }
+
+      showToast({
+        type: 'success',
+        title: 'Attributes',
+        message: `${bulkDeleteTarget.length} attribute${bulkDeleteTarget.length > 1 ? 's' : ''} deleted successfully.`,
+      })
+
+      setSelectedAttributeIds([])
+      setBulkDeleteTarget(null)
+      await loadData({ force: true, showLoading: false })
+    } catch (err) {
+      showToast({
+        type: 'error',
+        title: 'Attributes',
+        message: err instanceof Error ? err.message : 'Unable to delete selected attributes.',
+      })
+    } finally {
+      setIsBulkDeleting(false)
+    }
+  }
+
   // ── Column Definitions ─────────────────────────────────────────────────────
   const columns = useMemo(
     () => [
-
       {
         key: 'name',
         label: 'Attribute Name',
@@ -342,7 +414,21 @@ export default function Attributes() {
   )
 
   // ── Toolbar Rendering ──────────────────────────────────────────────────────
-  const primaryToolbarContent = null
+  const primaryToolbarContent = useMemo(
+    () =>
+      canDelete && selectedCount > 0 ? (
+        <button
+          type="button"
+          className="button button-secondary button-danger"
+          onClick={handleBulkDelete}
+          disabled={isBulkDeleting}
+        >
+          <Trash2 size={15} />
+          {isBulkDeleting ? 'Deleting...' : 'Delete'}
+        </button>
+      ) : null,
+    [canDelete, selectedCount, handleBulkDelete, isBulkDeleting],
+  )
 
   const toolbarContent = useMemo(
     () => (
@@ -358,7 +444,7 @@ export default function Attributes() {
         </button>
       </FilterBar>
     ),
-    [isLoading, loadData],
+    [loadData, isLoading],
   )
 
   // ── Modal Forms ────────────────────────────────────────────────────────────
@@ -421,11 +507,16 @@ export default function Attributes() {
           <DataTable
             className="resource-center__inventory-table"
             columns={columns}
-            rows={attributes}
+            rows={filteredAttributes}
             keyField="attributeId"
-            searchPlaceholder="Search attributes by name"
+            searchPlaceholder="Search attributes by name..."
             loading={isLoading}
             showSearch={true}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            enableRowSelection={true}
+            selectedRowKeys={selectedAttributeIds}
+            onSelectionChange={setSelectedAttributeIds}
             splitToolbar
             fitExplicitColumnsToContainer
             filterContent={primaryToolbarContent}
@@ -486,7 +577,7 @@ export default function Attributes() {
         </FormModal>
       ) : null}
 
-      {/* Delete Confirmation Modal */}
+      {/* Single Delete Confirmation Modal */}
       {deleteTarget ? (
         <FormModal
           title="Delete Attribute"
@@ -514,6 +605,39 @@ export default function Attributes() {
             >
               <Trash2 size={16} />
               {isDeleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </FormModal>
+      ) : null}
+
+      {/* Bulk Delete Confirmation Modal */}
+      {bulkDeleteTarget ? (
+        <FormModal
+          title="Delete Selected Attributes"
+          onClose={() => setBulkDeleteTarget(null)}
+          className="form-modal--delete-confirmation"
+        >
+          <p>
+            Are you sure you want to delete <strong>{bulkDeleteTarget.length} selected attributes</strong>?
+            This action cannot be undone.
+          </p>
+          <div className="button-row resource-form__footer">
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={() => setBulkDeleteTarget(null)}
+              disabled={isBulkDeleting}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="button button-danger"
+              onClick={confirmBulkDelete}
+              disabled={isBulkDeleting}
+            >
+              <Trash2 size={16} />
+              {isBulkDeleting ? 'Deleting...' : 'Delete Selected Attributes'}
             </button>
           </div>
         </FormModal>

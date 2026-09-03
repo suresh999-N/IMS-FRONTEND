@@ -5,7 +5,7 @@ import './SearchInput.css'
 export default function SearchInput({
   value,
   onChange,
-  placeholder = 'Search by name or keyword',
+  placeholder = 'Search by name or keyword...',
   debounce = 200,
 }) {
   const [internalValue, setInternalValue] = useState(value ?? '')

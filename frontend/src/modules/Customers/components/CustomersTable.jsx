@@ -351,7 +351,7 @@ export default function CustomersTable({
     },
     {
       key: 'createdAt',
-      label: 'Created',
+      label: 'Created Date',
       className: 'customers-col-created',
       sortable: true,
       sortValue: (customer) => getDateSortValue(customer.createdAt),
@@ -515,7 +515,7 @@ export default function CustomersTable({
           'gstNumber',
           'taxNumber',
         ]}
-        searchPlaceholder="Search customers by name, company..."
+        searchPlaceholder="Search customers by name..."
         emptyMessage="No customers found."
         defaultPageSize={20}
         defaultSortKey=""

@@ -53,6 +53,7 @@ const trackedProductFields = [
 const createRequiredFields = [
   'name',
   'categoryId',
+  'brandId',
 ]
 
 const defaultCategories = [
@@ -244,12 +245,12 @@ function toOption(item) {
     item?.id ??
     item?._id ??
     item?.value ??
-    item?.categoryId ??
-    item?.category_id ??
-    item?.CategoryId ??
     item?.subCategoryId ??
     item?.sub_category_id ??
     item?.SubCategoryId ??
+    item?.categoryId ??
+    item?.category_id ??
+    item?.CategoryId ??
     item?.brandId ??
     item?.brand_id ??
     item?.BrandId ??
@@ -306,9 +307,60 @@ function getProductNameError(value) {
   return ''
 }
 
-function getFieldError(name, value, mode) {
+function getFieldError(name, value, mode, options = {}) {
   if (name === 'name') {
     return getProductNameError(value)
+  }
+
+  if (name === 'categoryId') {
+    if (!value || value === '' || value === '0') {
+      return 'Category is required.'
+    }
+
+    const categoryList = options.categories ?? []
+    if (categoryList.length > 0) {
+      const isValid = categoryList.some((category) => String(category.id) === String(value))
+      if (!isValid) {
+        return 'Please select a valid category.'
+      }
+    }
+
+    return ''
+  }
+
+  if (name === 'subCategoryId') {
+    if (value && value !== '' && value !== '0') {
+      const subCategoryList = options.subCategories ?? []
+      if (subCategoryList.length > 0) {
+        const selectedCategory = options.categoryId
+        const isValid = subCategoryList.some(
+          (subCat) =>
+            String(subCat.id) === String(value) &&
+            (!selectedCategory || String(subCat.categoryId ?? subCat.parentId ?? '') === String(selectedCategory)),
+        )
+        if (!isValid) {
+          return 'Please select a valid subcategory for the selected category.'
+        }
+      }
+    }
+
+    return ''
+  }
+
+  if (name === 'brandId') {
+    if (!value || value === '' || value === '0') {
+      return 'Brand is required.'
+    }
+
+    const brandList = options.brands ?? []
+    if (brandList.length > 0) {
+      const isValid = brandList.some((brand) => String(brand.id) === String(value))
+      if (!isValid) {
+        return 'Please select a valid brand.'
+      }
+    }
+
+    return ''
   }
 
   if (mode === 'create' && createRequiredFields.includes(name)) {
@@ -577,15 +629,22 @@ export default function ProductForm({
   const errors = useMemo(() => {
     const fieldsToValidate = Array.from(
       new Set(
-        isEdit ? changedFields : createRequiredFields,
+        isEdit
+          ? [...changedFields, 'categoryId', 'subCategoryId', 'brandId']
+          : [...createRequiredFields, 'categoryId', 'subCategoryId', 'brandId'],
       ),
     )
 
     return fieldsToValidate.reduce((nextErrors, field) => {
-      const error = getFieldError(field, formData[field], mode)
+      const error = getFieldError(field, formData[field], mode, {
+        categories,
+        subCategories,
+        brands,
+        categoryId: formData.categoryId,
+      })
       return error ? { ...nextErrors, [field]: error } : nextErrors
     }, {})
-  }, [changedFields, formData, isEdit, mode])
+  }, [changedFields, categories, subCategories, brands, formData, isEdit, mode])
 
   const hasChanges = isEdit ? changedFields.length > 0 || variantsChanged : true
   const isFormValid = Object.keys(errors).length === 0
@@ -687,6 +746,12 @@ export default function ProductForm({
   async function handleAddBrand(draft) {
     const label = normalizeString(draft?.name)
     if (!label) {
+      showToast('Brand name is required.', 'error')
+      return null
+    }
+
+    if (!/^[A-Za-z\s]+$/.test(label)) {
+      showToast('Brand name can contain only letters and spaces.', 'error')
       return null
     }
 
@@ -772,10 +837,12 @@ export default function ProductForm({
     setFormData((currentValue) => ({
       ...currentValue,
       [name]: value,
+      ...(name === 'categoryId' ? { subCategoryId: '' } : {}),
     }))
     setTouched((currentValue) => ({
       ...currentValue,
       [name]: true,
+      ...(name === 'categoryId' ? { subCategoryId: true } : {}),
     }))
   }
 

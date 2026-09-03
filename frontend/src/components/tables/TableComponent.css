@@ -53,6 +53,7 @@
   border-collapse: separate;
   border-spacing: 0;
   table-layout: auto;
+  border: 1px solid #dbe4ee;
 }
 
 .table-container th,
@@ -115,6 +116,7 @@
   border-bottom: 1px solid #cbd5e1;
   box-shadow: inset 0 -1px 0 #cbd5e1;
   background-clip: padding-box;
+  background: #f8fafc;
 }
 
 .table-component__table tbody tr {

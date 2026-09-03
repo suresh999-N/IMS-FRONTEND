@@ -11,6 +11,7 @@ export default function ExportMenu({
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef(null)
+  const instanceIdRef = useRef(`export-menu-${Math.random().toString(36).substring(2, 9)}`)
   const enabledActions = actions.filter(Boolean)
   const isDisabled = disabled || enabledActions.length === 0
 
@@ -27,13 +28,32 @@ export default function ExportMenu({
       }
     }
 
+    function handleGlobalDropdownOpened(event) {
+      if (event.detail?.id !== instanceIdRef.current) {
+        setIsOpen(false)
+      }
+    }
+
     document.addEventListener('pointerdown', handlePointerDown)
     document.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('ims:dropdown-opened', handleGlobalDropdownOpened)
     return () => {
       document.removeEventListener('pointerdown', handlePointerDown)
       document.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('ims:dropdown-opened', handleGlobalDropdownOpened)
     }
   }, [])
+
+  function handleToggleOpen() {
+    if (isDisabled) return
+    setIsOpen((currentValue) => {
+      const nextState = !currentValue
+      if (nextState) {
+        window.dispatchEvent(new CustomEvent('ims:dropdown-opened', { detail: { id: instanceIdRef.current } }))
+      }
+      return nextState
+    })
+  }
 
   return (
     <div className={`erp-export-menu erp-export-menu--${align} ${className}`.trim()} ref={menuRef}>
@@ -43,7 +63,7 @@ export default function ExportMenu({
         disabled={isDisabled}
         aria-haspopup="menu"
         aria-expanded={isOpen}
-        onClick={() => setIsOpen((currentValue) => !currentValue)}
+        onClick={handleToggleOpen}
       >
         <Download size={15} />
         {label}
