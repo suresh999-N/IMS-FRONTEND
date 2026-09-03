@@ -284,11 +284,18 @@ function buildVisibleRows(categories, expandedIds, viewMode = 'grid') {
 
     if (viewMode === 'tree' && hasChildren && expandedIds.has(nodeCatId)) {
       children.forEach((child) => {
+        const rawChildId = categoryIdOf(child) || String(child.id || child.subCategoryId || '')
+        const childId = rawChildId
+          ? (rawChildId.includes('-sub-') ? rawChildId : `${nodeCatId}-sub-${rawChildId}`)
+          : `${nodeCatId}-sub-${comparable(child.name)}`
+
+        if (visitedNodeIds.has(childId)) return
+        visitedNodeIds.add(childId)
+
         const childInMap = categoryMap.get(categoryIdOf(child))
-        if (childInMap) {
+        if (childInMap && categoryIdOf(childInMap) !== nodeCatId) {
           processNode(childInMap, depth + 1, sortPath)
         } else {
-          const childId = `${nodeCatId}-sub-${child.id}`
           const childSubChildren = getAllChildren(child, categories)
           rows.push({
             ...child,
@@ -297,7 +304,7 @@ function buildVisibleRows(categories, expandedIds, viewMode = 'grid') {
             parentCategoryId: nodeCatId,
             parentName: node.name,
             depth: depth + 1,
-            childCount: 0,
+            childCount: childSubChildren.length,
             hasChildren: childSubChildren.length > 0,
             sortPath: `${sortPath} / ${child.name}`,
           })
