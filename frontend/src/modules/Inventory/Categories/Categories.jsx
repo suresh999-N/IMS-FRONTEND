@@ -56,11 +56,17 @@ function comparable(value) {
 }
 
 function categoryIdOf(category) {
-  return String(category?.id ?? category?.categoryId ?? '')
+  if (!category) return ''
+  return String(category.id ?? category.categoryId ?? category.subCategoryId ?? '')
 }
 
 function parentIdOf(category) {
-  return String(category?.parentId ?? '')
+  if (!category) return ''
+  const pId = category.parentId ?? category.parentCategoryId ?? null
+  if (pId === null || pId === undefined || pId === '' || pId === 0 || pId === '0' || pId === 'null' || pId === 'undefined') {
+    return ''
+  }
+  return String(pId)
 }
 
 function sortByName(items) {
