@@ -832,10 +832,10 @@ export default function Categories() {
     setFormState(null)
   }
 
-  async function handleToggleStatus(category) {
+  async function handleToggleStatus(category, targetStatus) {
     const catId = categoryIdOf(category)
     const isInactive = comparable(category.status) === 'inactive'
-    const nextStatus = isInactive ? 'Active' : 'Inactive'
+    const nextStatus = targetStatus || (isInactive ? 'Active' : 'Inactive')
 
     setCategories((currentValue) =>
       currentValue.map((item) =>
@@ -844,7 +844,7 @@ export default function Categories() {
     )
 
     setIsSaving(true)
-    const response = await updateCategory(category.id, {
+    const response = await updateCategory(catId, {
       name: category.name,
       parentId: category.parentId ? Number(category.parentId) : null,
       description: category.description || '',
@@ -897,39 +897,6 @@ export default function Categories() {
     }
 
     setDeleteTarget(category)
-  }
-
-  async function handleToggleStatus(category) {
-    const currentStatus = String(category.status || 'Active').toLowerCase()
-    const nextStatus = currentStatus === 'inactive' ? 'Active' : 'Inactive'
-
-    setIsSaving(true)
-    const payload = {
-      name: category.name,
-      parentId: parentIdOf(category) ? Number(parentIdOf(category)) : null,
-      description: clean(category.description),
-      status: nextStatus,
-      isActive: nextStatus === 'Active',
-    }
-
-    const response = await updateCategory(categoryIdOf(category), payload)
-    setIsSaving(false)
-
-    if (!response.success) {
-      showToast({
-        type: 'error',
-        title: 'Categories',
-        message: response.error || 'Unable to update status.',
-      })
-      return
-    }
-
-    showToast({
-      type: 'success',
-      title: 'Categories',
-      message: `Category "${category.name}" status changed to ${nextStatus}.`,
-    })
-    await loadCategories({ force: true })
   }
 
   function handleBulkDeleteClick() {
@@ -1163,9 +1130,9 @@ export default function Categories() {
                 } : null,
                 canEdit ? {
                   key: 'toggle-status',
-                  label: comparable(category.status) === 'inactive' ? 'Active' : 'Inactive',
+                  label: comparable(category.status) === 'inactive' ? 'Activate Category' : 'Deactivate Category',
                   icon: Check,
-                  onClick: () => handleToggleStatus(category),
+                  onClick: () => handleToggleStatus(category, comparable(category.status) === 'inactive' ? 'Active' : 'Inactive'),
                 } : null,
                 canDelete ? {
                   key: 'delete',
@@ -1254,9 +1221,9 @@ export default function Categories() {
                 } : null,
                 canEdit ? {
                   key: 'toggle-status',
-                  label: String(row.status || 'Active').toLowerCase() === 'inactive' ? 'Activate Category' : 'Deactivate Category',
+                  label: comparable(row.status) === 'inactive' ? 'Activate Category' : 'Deactivate Category',
                   icon: SlidersHorizontal,
-                  onClick: () => handleToggleStatus(row),
+                  onClick: () => handleToggleStatus(row, comparable(row.status) === 'inactive' ? 'Active' : 'Inactive'),
                 } : null,
                 canDelete ? {
                   key: 'delete',
