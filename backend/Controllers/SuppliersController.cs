@@ -1045,7 +1045,7 @@ var totalRecords = await query.CountAsync();
                 }
 
                 var cleanName = dto.Name.Trim();
-                var nameExists = await _context.Suppliers.AnyAsync(x => x.SupplierId != id && !x.IsDeleted && x.Name.ToLower() == cleanName.ToLower());
+                var nameExists = await _context.Suppliers.AnyAsync(x => x.SupplierId != id && !x.IsDeleted && x.Name != null && x.Name.ToLower() == cleanName.ToLower());
                 if (nameExists)
                 {
                     return BadRequest(new
@@ -1057,7 +1057,7 @@ var totalRecords = await query.CountAsync();
                 if (!string.IsNullOrWhiteSpace(dto.Email))
                 {
                     var cleanEmail = dto.Email.Trim();
-                    var emailExists = await _context.Suppliers.AnyAsync(x => x.SupplierId != id && !x.IsDeleted && x.Email.ToLower() == cleanEmail.ToLower());
+                    var emailExists = await _context.Suppliers.AnyAsync(x => x.SupplierId != id && !x.IsDeleted && x.Email != null && x.Email.ToLower() == cleanEmail.ToLower());
                     if (emailExists)
                     {
                         return BadRequest(new
