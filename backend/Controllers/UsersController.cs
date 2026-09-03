@@ -316,12 +316,11 @@ namespace IMSBackend.Controllers
             // Admin can still edit their own name, email, phone,
             // and role. Only their own status change is blocked.
             // ========================================================
-            if (currentUserId.Value == id &&
-                dto.IsActive != user.IsActive)
+            if (currentUserId.Value == id && !dto.IsActive)
             {
                 return BadRequest(new
                 {
-                    message = "You cannot change your own active/inactive status."
+                    message = "You cannot deactivate your own account."
                 });
             }
 
