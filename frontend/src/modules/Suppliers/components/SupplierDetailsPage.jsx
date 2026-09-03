@@ -37,66 +37,70 @@ function DetailCard({ icon: Icon, label, value, helper }) {
   )
 }
 
-function SupplierDetailsOverview({ supplier, purchases = [] }) {
-  const primaryContact = supplier.contacts?.find((contact) => contact.isPrimary) || supplier.contacts?.[0]
-  const primaryBank = supplier.bankAccounts?.[0]
-  const paymentTerms = supplier.paymentTerm || supplier.paymentTermsProfile || {}
+function SupplierDetailsOverview({ supplier = {}, purchases = [], payments = [] }) {
+  const currentSupplier = supplier || {}
+  const primaryContact = Array.isArray(currentSupplier.contacts)
+    ? currentSupplier.contacts.find((contact) => contact?.isPrimary) || currentSupplier.contacts[0]
+    : null
+  const primaryBank = Array.isArray(currentSupplier.bankAccounts) ? currentSupplier.bankAccounts[0] : null
+  const paymentTerms = currentSupplier.paymentTerm || currentSupplier.paymentTermsProfile || {}
 
   const computedTotalPurchases = useMemo(() => {
-    const rawTotal = supplier.totalPurchaseAmount ?? supplier.purchases ?? supplier.totalPurchases ?? supplier.totalAmount ?? supplier.purchaseAmount
-    if (rawTotal != null && Number(rawTotal) > 0) {
+    if (!currentSupplier) return 0
+    const rawTotal = currentSupplier.totalPurchaseAmount ?? currentSupplier.purchases ?? currentSupplier.totalPurchases ?? currentSupplier.totalAmount ?? currentSupplier.purchaseAmount
+    if (rawTotal != null && !isNaN(Number(rawTotal)) && Number(rawTotal) > 0) {
       return Number(rawTotal)
     }
-    if (purchases && purchases.length > 0) {
-      return purchases.reduce((sum, p) => sum + (Number(p.totalAmount ?? p.TotalAmount ?? p.amount ?? p.grandTotal ?? 0)), 0)
+    if (Array.isArray(purchases) && purchases.length > 0) {
+      return purchases.reduce((sum, p) => sum + (Number(p?.totalAmount ?? p?.TotalAmount ?? p?.amount ?? p?.grandTotal ?? 0) || 0), 0)
     }
-    return rawTotal ?? 0
-  }, [purchases, supplier])
+    return Number(rawTotal) || 0
+  }, [purchases, currentSupplier])
 
   const computedLastPurchaseDate = useMemo(() => {
-    if (supplier.lastPurchaseDate) {
-      return supplier.lastPurchaseDate
+    if (currentSupplier.lastPurchaseDate) {
+      return currentSupplier.lastPurchaseDate
     }
-    if (purchases && purchases.length > 0) {
+    if (Array.isArray(purchases) && purchases.length > 0) {
       const dates = purchases
-        .map((p) => p.orderDate || p.createdAt || p.createdDate || p.date)
+        .map((p) => p?.orderDate || p?.createdAt || p?.createdDate || p?.date)
         .filter(Boolean)
         .sort((a, b) => new Date(b) - new Date(a))
       if (dates.length > 0) return dates[0]
     }
     return null
-  }, [purchases, supplier])
+  }, [purchases, currentSupplier])
 
   const computedOutstandingPayable = useMemo(() => {
-    const rawOutstanding = supplier.outstandingPayable ?? supplier.outstandingAmount ?? supplier.outstandingBalance ?? supplier.balanceAmount ?? supplier.outstanding ?? supplier.balance
-    if (rawOutstanding != null && Number(rawOutstanding) > 0) {
+    const rawOutstanding = currentSupplier.outstandingPayable ?? currentSupplier.outstandingAmount ?? currentSupplier.outstandingBalance ?? currentSupplier.balanceAmount ?? currentSupplier.outstanding ?? currentSupplier.balance
+    if (rawOutstanding != null && !isNaN(Number(rawOutstanding)) && Number(rawOutstanding) > 0) {
       return Number(rawOutstanding)
     }
     if (computedTotalPurchases > 0) {
       return computedTotalPurchases
     }
     return Number(rawOutstanding || 0)
-  }, [supplier, computedTotalPurchases])
+  }, [currentSupplier, computedTotalPurchases])
 
   return (
     <div className="supplier-details__overview">
       <div className="card supplier-profile-card">
         <div>
-          <span>{formatEmpty(supplier.supplierCode)}</span>
-          <h2>{formatEmpty(supplier.name)}</h2>
-          <p>{formatEmpty(supplier.companyName)}</p>
+          <span>{formatEmpty(currentSupplier.supplierCode)}</span>
+          <h2>{formatEmpty(currentSupplier.name)}</h2>
+          <p>{formatEmpty(currentSupplier.companyName)}</p>
         </div>
-        <StatusBadge type={getStatusBadgeType(supplier.status)}>
-          {formatStatus(supplier.status)}
+        <StatusBadge type={getStatusBadgeType(currentSupplier.status)}>
+          {formatStatus(currentSupplier.status)}
         </StatusBadge>
       </div>
 
       <div className="supplier-detail-grid">
         <DetailCard icon={CreditCard} label="Outstanding Payable" value={formatNullableCurrency(formatCurrency, computedOutstandingPayable)} helper="API-reported open payable" />
-        <DetailCard icon={Truck} label="Total Purchases" value={formatNullableCurrency(formatCurrency, computedTotalPurchases)} helper={`${purchases ? purchases.length : 0} purchase order records`} />
-        <DetailCard icon={Building2} label="Last Purchase" value={formatLastPurchase(computedLastPurchaseDate, formatDate)} helper={formatCategory(supplier.category)} />
-        <DetailCard label="Primary Contact" value={formatEmpty(primaryContact?.name || supplier.contact)} helper={formatEmpty(primaryContact?.phone || supplier.phone)} />
-        <DetailCard icon={Mail} label="Email" value={formatEmpty(supplier.email || primaryContact?.email)} helper="Supplier communication" />
+        <DetailCard icon={Truck} label="Total Purchases" value={formatNullableCurrency(formatCurrency, computedTotalPurchases)} helper={`${Array.isArray(purchases) ? purchases.length : 0} purchase order records`} />
+        <DetailCard icon={Building2} label="Last Purchase" value={formatLastPurchase(computedLastPurchaseDate, formatDate)} helper={formatCategory(currentSupplier.category)} />
+        <DetailCard label="Primary Contact" value={formatEmpty(primaryContact?.name || currentSupplier.contact)} helper={formatEmpty(primaryContact?.phone || currentSupplier.phone)} />
+        <DetailCard icon={Mail} label="Email" value={formatEmpty(currentSupplier.email || primaryContact?.email)} helper="Supplier communication" />
         <DetailCard icon={Landmark} label="Bank Summary" value={formatEmpty(primaryBank?.bankName)} helper={formatEmpty(primaryBank?.accountName || formatPaymentMethod(paymentTerms.preferredPaymentMethod))} />
       </div>
 
@@ -112,7 +116,7 @@ function SupplierDetailsOverview({ supplier, purchases = [] }) {
         </div>
         <div>
           <span>GST / PAN</span>
-          <strong>{formatEmpty([supplier.gstNumber, supplier.panNumber].filter(Boolean).join(' / '))}</strong>
+          <strong>{formatEmpty([currentSupplier.gstNumber, currentSupplier.panNumber].filter(Boolean).join(' / '))}</strong>
         </div>
       </div>
     </div>
@@ -120,21 +124,26 @@ function SupplierDetailsOverview({ supplier, purchases = [] }) {
 }
 
 export default function SupplierDetailsPage({
-  supplier,
-  purchases,
-  payments,
+  supplier = {},
+  purchases = [],
+  payments = [],
   initialTab = 'overview',
   onBack,
   onDocumentsChange,
 }) {
   const [activeTab, setActiveTab] = useState(initialTab)
-  const performance = useMemo(() => supplier.performance || {}, [supplier])
+  const currentSupplier = supplier || {}
+  const performance = useMemo(() => currentSupplier.performance || {}, [currentSupplier])
+
+  if (!supplier || (!supplier.id && !supplier.supplierId && !supplier.name)) {
+    return null
+  }
 
   return (
     <div className="supplier-details">
       <div className="supplier-details__header">
         <div>
-          <h2>{formatEmpty(supplier.name)}</h2>
+          <h2>{formatEmpty(currentSupplier.name)}</h2>
           <p>Supplier operational workspace with procurement, payment, and performance context.</p>
         </div>
         <button type="button" className="button button-primary" onClick={onBack}>
@@ -156,14 +165,14 @@ export default function SupplierDetailsPage({
         ))}
       </div>
 
-      {activeTab === 'overview' ? <SupplierDetailsOverview supplier={supplier} purchases={purchases} payments={payments} /> : null}
+      {activeTab === 'overview' ? <SupplierDetailsOverview supplier={currentSupplier} purchases={purchases} payments={payments} /> : null}
       {activeTab === 'purchaseHistory' ? <SupplierPurchaseHistoryTab purchases={purchases} /> : null}
       {activeTab === 'paymentHistory' ? <SupplierPaymentsTab payments={payments} /> : null}
       {activeTab === 'performance' ? <SupplierPerformanceTab performance={performance} /> : null}
       {activeTab === 'documents' ? (
         <SupplierDocumentsTab
-          supplierId={supplier.id || supplier.supplierId}
-          documents={supplier.documents || []}
+          supplierId={currentSupplier.id || currentSupplier.supplierId}
+          documents={currentSupplier.documents || []}
           onDocumentsChange={onDocumentsChange}
         />
       ) : null}
