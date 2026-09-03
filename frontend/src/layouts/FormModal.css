@@ -47,14 +47,14 @@
 .form-modal__header {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 50 !important;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
   padding: 10px 20px;
   border-bottom: 1px solid #e2e8f0;
-  background: #ffffff;
+  background: #ffffff !important;
   min-width: 0;
   flex-shrink: 0;
 }
