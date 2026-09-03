@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { renderFormLabel } from '../utils/labelUtils'
 import { sanitizeNumericInput } from './numericInputUtils'
 
 function getDisplayValue(value, options) {
@@ -77,7 +78,7 @@ export default function NumberInput({
 
   return (
     <div className={`field ${className}`.trim()}>
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={id}>{renderFormLabel(label)}</label>
       <div className={`input-with-icon ${error ? 'field--error' : ''}`.trim()}>
         {Icon ? <Icon size={18} /> : null}
         {prefix ? <span className="input-prefix">{prefix}</span> : null}

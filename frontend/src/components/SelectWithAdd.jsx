@@ -5,6 +5,8 @@ import SelectWithAddPanel from './SelectWithAddPanel'
 import { getInitialDraft, normalizeAddLabel } from './selectWithAddUtils'
 import './SelectWithAdd.css'
 
+import { renderFormLabel } from '../utils/labelUtils'
+
 export default function SelectWithAdd(props) {
   const {
     id,
@@ -79,7 +81,7 @@ export default function SelectWithAdd(props) {
 
   return (
     <div className="field">
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={id}>{renderFormLabel(label)}</label>
 
       <div className="select-add">
         <div className="select-add__control">

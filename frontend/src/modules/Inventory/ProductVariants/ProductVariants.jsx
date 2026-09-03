@@ -693,7 +693,7 @@ export default function ProductVariants() {
               <div className="resource-form__section">
                 {/* Product Selection */}
                 <div className="resource-form__field resource-form__field--full">
-                  <label htmlFor="productId">Parent Product *</label>
+                  <label htmlFor="productId">Parent Product <span className="required-asterisk">*</span></label>
                   {editingItem ? (
                     <input
                       type="text"
@@ -739,7 +739,7 @@ export default function ProductVariants() {
                 {/* Variant Name & SKU */}
                 <div className="resource-form__grid-2">
                   <div className="resource-form__field">
-                    <label htmlFor="variantName">Variant Name *</label>
+                    <label htmlFor="variantName">Variant Name <span className="required-asterisk">*</span></label>
                     <InputField
                       id="variantName"
                       value={formValues.variantName}
@@ -756,7 +756,7 @@ export default function ProductVariants() {
                   </div>
 
                   <div className="resource-form__field">
-                    <label htmlFor="sku">Variant SKU *</label>
+                    <label htmlFor="sku">Variant SKU <span className="required-asterisk">*</span></label>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <InputField
                         id="sku"

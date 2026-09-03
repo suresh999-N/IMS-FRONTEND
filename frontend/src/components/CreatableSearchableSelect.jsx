@@ -2,6 +2,7 @@ import { Check, ChevronDown, Plus, Search } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { getSelectedOption, normalizeSelectOptions } from './searchableSelectUtils'
 import './SearchableSelect.css'
+import { renderFormLabel } from '../utils/labelUtils'
 
 function stripUnsafeSearchText(value) {
   return Array.from(value).filter((character) => {
@@ -147,7 +148,7 @@ export default function CreatableSearchableSelect({
 
   return (
     <div className={`field searchable-select ${showError && error ? 'field--error' : ''} ${className}`.trim()} ref={rootRef}>
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={id}>{renderFormLabel(label)}</label>
       <button
         id={id}
         type="button"

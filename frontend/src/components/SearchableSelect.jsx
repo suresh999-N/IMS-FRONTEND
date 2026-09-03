@@ -2,6 +2,7 @@ import { Check, ChevronDown, Search } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { getSelectedOption, normalizeSelectOptions } from './searchableSelectUtils'
+import { renderFormLabel } from '../utils/labelUtils'
 import { validateSearchQuery } from '../utils/searchValidationUtils'
 import './SearchableSelect.css'
 
@@ -330,7 +331,7 @@ export default function SearchableSelect(props) {
       className={`${hideLabel ? 'searchable-select' : 'field searchable-select'} ${showError && error ? 'field--error' : ''} ${className}`.trim()}
       ref={rootRef}
     >
-      {hideLabel ? null : <label htmlFor={id}>{label}</label>}
+      {hideLabel ? null : <label htmlFor={id}>{renderFormLabel(label)}</label>}
 
       <button
         id={id}
