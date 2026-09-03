@@ -292,7 +292,25 @@ function getSkuError(value) {
   return ''
 }
 
+function getProductNameError(value) {
+  const normalized = normalizeString(value)
+
+  if (!normalized) {
+    return 'Product name is required.'
+  }
+
+  if (!/^[a-zA-Z0-9 ]+$/.test(normalized)) {
+    return 'Product name can only contain alphanumeric characters and spaces.'
+  }
+
+  return ''
+}
+
 function getFieldError(name, value, mode) {
+  if (name === 'name') {
+    return getProductNameError(value)
+  }
+
   if (mode === 'create' && createRequiredFields.includes(name)) {
     const label = {
       categoryId: 'Category',

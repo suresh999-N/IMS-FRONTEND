@@ -198,7 +198,7 @@ export default function SupplierBasicInfoTab({
         <InputField
           id="supplier-gst"
           name="gstNumber"
-          label="GST Number"
+          label="GST Number *"
           value={formData.gstNumber}
           onChange={onChange}
           onBlur={onBlur}
@@ -213,7 +213,7 @@ export default function SupplierBasicInfoTab({
         <InputField
           id="supplier-pan"
           name="panNumber"
-          label="PAN Number"
+          label="PAN Number *"
           value={formData.panNumber}
           onChange={onChange}
           onBlur={onBlur}

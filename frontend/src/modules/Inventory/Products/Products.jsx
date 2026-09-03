@@ -62,10 +62,10 @@ function ProductsHeader({ canCreate, summary, activeStatusFilter, onFilterStatus
       title: 'Filter out-of-stock products',
     },
     {
-      key: 'inventoryValue',
+      key: 'inStock',
       filterValue: 'In Stock',
-      label: 'Value',
-      value: summary.inventoryValueLabel,
+      label: 'In Stock',
+      value: formatCompactCount(summary.inStock),
       tone: 'info',
       isActive: activeStatusFilter === 'In Stock',
       title: 'Filter in-stock inventory products',
@@ -86,7 +86,7 @@ function ProductsHeader({ canCreate, summary, activeStatusFilter, onFilterStatus
               title={metric.title}
               aria-pressed={metric.isActive}
             >
-              {metric.key === 'inventoryValue' ? '' : `${metric.value} `}{metric.label}
+              {`${metric.value} `}{metric.label}
             </button>
           ))}
         </div>
@@ -975,6 +975,7 @@ export default function Products({
       total: products.length,
       lowStock: activeInventoryProducts.filter((product) => getProductDisplayStatus(product) === 'Low Stock').length,
       outOfStock: activeInventoryProducts.filter((product) => getProductDisplayStatus(product) === 'Out Of Stock').length,
+      inStock: activeInventoryProducts.filter((product) => getProductDisplayStatus(product) === 'In Stock').length,
       inventoryValue: value,
       inventoryValueLabel: formatCompactInventoryValue(value),
     }

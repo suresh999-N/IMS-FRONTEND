@@ -536,7 +536,7 @@ function ManagePermissions({ settingsData, onClose }) {
       notifyRolesUpdated();
 
       const roleDisplayName = selectedRoleData ? getRoleLabel(selectedRoleData) : selectedRole;
-      setSuccessMessage(`${roleDisplayName} ${p.saved}`);
+      setSuccessMessage(p.saved.charAt(0).toUpperCase() + p.saved.slice(1));
 
       setTimeout(() => {
         setSuccessMessage("");
@@ -624,10 +624,6 @@ function ManagePermissions({ settingsData, onClose }) {
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
-
-              <span className="selected-role-badge">
-                {selectedRoleData ? getRoleLabel(selectedRoleData) : selectedRole}
-              </span>
             </div>
 
             {loading && (

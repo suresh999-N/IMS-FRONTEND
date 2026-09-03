@@ -1395,13 +1395,15 @@ function AdminSettings({ settingsData: propsSettingsData, t: propsT, onUpdateSet
               </div>
             ))}
 
-          <div style={{ display: 'flex', gap: '12px', marginTop: '16px', flexWrap: 'wrap' }}>
+          <div className="settings-actions-wrapper">
             {user?.role === "Admin" && (
               <button
-                className="settings-outline-btn"
+                type="button"
+                className="settings-manage-permissions-btn"
                 onClick={() => setShowManagePermissions(true)}
                 disabled={loadingSettings || savingSettings}
               >
+                <ShieldCheck size={16} />
                 {st.roles.managePermissions}
               </button>
             )}

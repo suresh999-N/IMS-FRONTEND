@@ -360,7 +360,7 @@ function getEmailError(value) {
 
 function getGstNumberError(value) {
   const gstNumber = cleanString(value).toUpperCase()
-  if (!gstNumber) return ''
+  if (!gstNumber) return 'GST Number is required.'
   return gstNumber.length === INPUT_LIMITS.gst && GSTIN_PATTERN.test(gstNumber)
     ? ''
     : 'Enter valid 15-character GSTIN.'
@@ -368,7 +368,7 @@ function getGstNumberError(value) {
 
 function getPanNumberError(value) {
   const panNumber = cleanString(value).toUpperCase()
-  if (!panNumber) return ''
+  if (!panNumber) return 'PAN Number is required.'
   return panNumber.length === INPUT_LIMITS.pan && PAN_PATTERN.test(panNumber)
     ? ''
     : 'PAN must follow format ABCDE1234F.'
