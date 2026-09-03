@@ -80,6 +80,10 @@ export function readResourceValue(row, key, fallback = '') {
     key.replace(/ID$/, 'Id'),
   ]
 
+  if (['isactive', 'active', 'userisactive', 'status'].includes(String(key).toLowerCase())) {
+    candidates.push('isActive', 'IsActive', 'is_active', 'userIsActive', 'effectiveIsActive', 'status', 'Status')
+  }
+
   if (['phone', 'phoneno', 'phonenumber'].includes(String(key).toLowerCase())) {
     candidates.push('phone', 'phoneNo', 'phoneNumber', 'Phone', 'PhoneNo', 'PhoneNumber')
   }
