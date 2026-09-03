@@ -306,7 +306,7 @@ export function sanitizeApiError(message, status = 0) {
     return 'Unable to connect to the server.'
   }
 
-  if (/stack trace|exception|system\.|microsoft\.|sql|database|unknown column|unknown table|mysql|syntax near|nullable object|object reference/i.test(rawMessage)) {
+  if (rawMessage.length > 250 && /stack trace|exception|system\.|microsoft\.|sql|database|unknown column|unknown table|mysql|syntax near/i.test(rawMessage)) {
     return 'We are having trouble completing this request right now.'
   }
 
