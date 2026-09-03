@@ -117,7 +117,7 @@ export default function InputField({
             aria-invalid={Boolean(error)}
             aria-describedby={describedBy}
             autoComplete="off"
-            autoCapitalize={isAutoCapField ? 'words' : 'off'}
+            autoCapitalize={isAutoCapField && hasValue ? 'words' : 'off'}
             style={isAutoCapField && hasValue ? { textTransform: 'capitalize', ...props.style } : props.style}
             {...props}
           />
@@ -133,7 +133,7 @@ export default function InputField({
             aria-invalid={Boolean(error)}
             aria-describedby={describedBy}
             autoComplete="off"
-            autoCapitalize={isAutoCapField ? 'words' : 'off'}
+            autoCapitalize={isAutoCapField && hasValue ? 'words' : 'off'}
             style={isAutoCapField && hasValue ? { textTransform: 'capitalize', ...props.style } : props.style}
             {...props}
           />

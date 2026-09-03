@@ -429,12 +429,15 @@ button.dashboard-status:active {
 }
 
 .dashboard-panel {
+  position: relative;
   min-width: 0;
   padding: 20px;
   width: 100%;
   height: auto;
   min-height: 0;
   align-self: flex-start;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .dashboard-panel__header {
@@ -554,7 +557,8 @@ button.dashboard-status:active {
   flex-direction: column;
   gap: 8px;
   overflow-y: auto;
-  padding-right: 4px;
+  margin-right: -20px;
+  padding-right: 14px;
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
@@ -718,9 +722,43 @@ button.dashboard-status:active {
   flex-direction: column;
   gap: 8px;
   overflow-y: auto;
-  padding-right: 4px;
+  margin-right: -20px;
+  padding-right: 14px;
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
+}
+
+.low-stock-widget__list::-webkit-scrollbar,
+.compact-list__items::-webkit-scrollbar,
+.insights-list::-webkit-scrollbar,
+.top-products-list::-webkit-scrollbar,
+.activity-timeline::-webkit-scrollbar {
+  width: 6px;
+}
+
+.low-stock-widget__list::-webkit-scrollbar-track,
+.compact-list__items::-webkit-scrollbar-track,
+.insights-list::-webkit-scrollbar-track,
+.top-products-list::-webkit-scrollbar-track,
+.activity-timeline::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.low-stock-widget__list::-webkit-scrollbar-thumb,
+.compact-list__items::-webkit-scrollbar-thumb,
+.insights-list::-webkit-scrollbar-thumb,
+.top-products-list::-webkit-scrollbar-thumb,
+.activity-timeline::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.low-stock-widget__list::-webkit-scrollbar-thumb:hover,
+.compact-list__items::-webkit-scrollbar-thumb:hover,
+.insights-list::-webkit-scrollbar-thumb:hover,
+.top-products-list::-webkit-scrollbar-thumb:hover,
+.activity-timeline::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .low-stock-row,
@@ -749,7 +787,7 @@ button.dashboard-status:active {
   min-width: 0;
   min-height: 52px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   border: 1px solid rgba(226, 232, 240, 0.78);
   border-radius: 14px;
@@ -793,6 +831,7 @@ button.dashboard-status:active {
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
+  align-self: center;
 }
 
 .low-stock-row__icon {

@@ -58,6 +58,7 @@ const createRequiredFields = [
   'categoryId',
   'brandId',
   'sku',
+  'description',
 ]
 
 const defaultCategories = [
@@ -323,9 +324,51 @@ function getProductNameError(value) {
   return ''
 }
 
+function getProductDescriptionError(value) {
+  const text = String(value ?? '').trim()
+
+  if (!text) {
+    return 'Description is required.'
+  }
+
+  if (text.length < 10) {
+    return 'Description must be at least 10 characters long.'
+  }
+
+  if (text.length > 500) {
+    return 'Description cannot exceed 500 characters.'
+  }
+
+  const letterMatches = text.match(/[a-zA-Z]/g)
+  if (!letterMatches || letterMatches.length < 5) {
+    return 'Description must contain valid text with words, not just special characters or numbers.'
+  }
+
+  if (/(.)\1{3,}/i.test(text)) {
+    return 'Please enter a valid, meaningful product description.'
+  }
+
+  const cleanLetters = text.replace(/[^a-zA-Z]/g, '').toLowerCase()
+  if (cleanLetters.length >= 10) {
+    const vowelMatches = cleanLetters.match(/[aeiouy]/g)
+    const vowelCount = vowelMatches ? vowelMatches.length : 0
+    const vowelRatio = vowelCount / cleanLetters.length
+
+    if (vowelRatio < 0.15 || /[bcdfghjklmnpqrstvwxyz]{7,}/i.test(cleanLetters)) {
+      return 'Please enter a valid, meaningful product description.'
+    }
+  }
+
+  return ''
+}
+
 function getFieldError(name, value, mode, options = {}) {
   if (name === 'name') {
     return getProductNameError(value)
+  }
+
+  if (name === 'description') {
+    return getProductDescriptionError(value)
   }
 
   if (name === 'categoryId') {
@@ -654,8 +697,8 @@ export default function ProductForm({
     const fieldsToValidate = Array.from(
       new Set(
         isEdit
-          ? [...changedFields, 'categoryId', 'subCategoryId', 'brandId', 'sku']
-          : [...createRequiredFields, 'categoryId', 'subCategoryId', 'brandId', 'sku'],
+          ? [...changedFields, 'categoryId', 'subCategoryId', 'brandId', 'sku', 'description']
+          : [...createRequiredFields, 'categoryId', 'subCategoryId', 'brandId', 'sku', 'description'],
       ),
     )
 
@@ -1293,7 +1336,7 @@ export default function ProductForm({
           <InputField
             id="variantColor"
             name="variantColor"
-            label="Color / Finish"
+            label="Attribute"
             value={formData.variantColor || ''}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -1309,7 +1352,8 @@ export default function ProductForm({
             value={formData.description || ''}
             onChange={handleChange}
             onBlur={handleBlur}
-            placeholder="Add a short product description"
+            placeholder="Add a detailed product description (minimum 10 characters)"
+            error={shouldShowError('description') ? errors.description : ''}
           />
           <label className="product-form__switch field--full">
             <input

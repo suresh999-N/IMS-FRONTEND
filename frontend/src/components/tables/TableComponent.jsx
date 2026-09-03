@@ -15,6 +15,7 @@ import Pagination from '../erp/Pagination'
 import SearchBar from '../erp/SearchBar'
 import TableToolbar from '../erp/TableToolbar'
 import TruncatedCellTooltip from './TruncatedCellTooltip'
+import { validateSearchQuery } from '../../utils/searchValidationUtils'
 import './TableComponent.css'
 
 function getValueFromColumn(column, row) {
@@ -769,13 +770,29 @@ export default function TableComponent({
           </div>
         </div>
       ) : paginatedRows.length === 0 ? (
-        <StateBlock
-          type="empty"
-          title={emptyMessage}
-          message="Try adjusting filters or create a new record when you are ready."
-          compact
-          className="table-component__empty"
-        />
+        (() => {
+          if (searchTerm.trim()) {
+            return (
+              <StateBlock
+                type="warning"
+                title="Invalid search term"
+                message="Please enter a valid search term (e.g., action, user, module, date)."
+                compact
+                className="table-component__empty table-component__empty--invalid"
+              />
+            )
+          }
+
+          return (
+            <StateBlock
+              type="empty"
+              title={emptyMessage}
+              message="No records available at this time."
+              compact
+              className="table-component__empty"
+            />
+          )
+        })()
       ) : (
         <>
           <div className="table-container" ref={tableContainerRef} onScroll={handleTableScroll}>

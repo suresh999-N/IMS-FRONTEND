@@ -34,11 +34,9 @@ import {
   sanitizePhoneInput,
 } from "../../validators/phoneValidator";
 import { getPasswordError } from "../../validators/passwordValidator";
-import { useAuth } from "../../hooks/useAuth";
-import { getAuthErrorMessage } from "./authCopy";
 import "./Auth.css";
 
-export function getConfirmPasswordError(password, confirmPassword) {
+function getConfirmPasswordError(password, confirmPassword) {
   if (!confirmPassword) return "Confirm password is required.";
   if (password !== confirmPassword) return "Passwords do not match.";
   return "";
@@ -46,7 +44,6 @@ export function getConfirmPasswordError(password, confirmPassword) {
 
 export default function Register() {
   const navigate = useNavigate();
-  const { login } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -64,6 +61,7 @@ export default function Register() {
   const [serverFieldErrors, setServerFieldErrors] = useState({});
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [wasSubmitted, setWasSubmitted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -113,6 +111,7 @@ export default function Register() {
     event.preventDefault();
     if (loading) return;
     setError("");
+    setWasSubmitted(true);
 
     setTouched({
       name: true,
@@ -138,6 +137,18 @@ export default function Register() {
           ? `Please fix ${clientErrors[0].field}: ${clientErrors[0].error}`
           : `Please check the highlighted fields: ${fieldNames.join(", ")}.`
       );
+
+      const firstKey = clientErrors[0]?.key;
+      const inputIdMap = {
+        name: 'register-name',
+        email: 'register-email',
+        phoneNumber: 'register-phone',
+        password: 'register-password',
+        confirmPassword: 'register-confirm-password',
+      };
+      if (firstKey && inputIdMap[firstKey]) {
+        document.getElementById(inputIdMap[firstKey])?.focus();
+      }
       return;
     }
 
@@ -224,7 +235,9 @@ export default function Register() {
       const userEmail = sanitizeEmailInput(formData.email);
       try {
         localStorage.removeItem("ims-email-verification-completed");
-      } catch {}
+      } catch {
+        // Ignore localStorage cleanup failures in private browsing mode
+      }
 
       navigate(
         `/verify-email?email=${encodeURIComponent(userEmail)}`,
@@ -242,11 +255,16 @@ export default function Register() {
     }
   }
 
-  const nameDisplayError = serverFieldErrors.name || (touched.name && nameError);
-  const emailDisplayError = serverFieldErrors.email || (touched.email && emailError);
-  const phoneDisplayError = serverFieldErrors.phoneNumber || (touched.phoneNumber && phoneError);
-  const passwordDisplayError = serverFieldErrors.password || (touched.password && passwordError);
-  const confirmPasswordDisplayError = touched.confirmPassword && confirmPasswordError;
+  const hasInvalidPhoneStart =
+    formData.phoneNumber.length > 0 && !/^[6-9]/.test(formData.phoneNumber);
+  const phoneDisplayError =
+    serverFieldErrors.phoneNumber ||
+    ((touched.phoneNumber || hasInvalidPhoneStart || formData.phoneNumber.length >= 10 || wasSubmitted) &&
+      phoneError);
+  const nameDisplayError = serverFieldErrors.name || ((touched.name || wasSubmitted) && nameError);
+  const emailDisplayError = serverFieldErrors.email || ((touched.email || wasSubmitted) && emailError);
+  const passwordDisplayError = serverFieldErrors.password || ((touched.password || wasSubmitted) && passwordError);
+  const confirmPasswordDisplayError = (touched.confirmPassword || wasSubmitted) && confirmPasswordError;
 
   return (
     <div
@@ -294,7 +312,7 @@ export default function Register() {
           <p className="sub">Create your IMS workspace account</p>
 
           {error && (
-            <div className="error-box auth-register-error" role="alert">
+            <div className="error-box auth-register-error is-visible" role="alert">
               {error}
             </div>
           )}
@@ -460,7 +478,7 @@ export default function Register() {
               <Link to="/login">Login</Link>
             </div>
 
-            <button type="submit" disabled={loading || !isFormValid}>
+            <button type="submit" disabled={loading}>
               <UserPlus size={18} />
               {loading ? "Creating..." : "Create account"}
             </button>

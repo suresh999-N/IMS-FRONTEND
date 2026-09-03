@@ -103,6 +103,15 @@
   min-width: 0;
 }
 
+.searchable-select__search--invalid {
+  border-color: #ef4444 !important;
+}
+
+.searchable-select__empty--invalid {
+  color: #dc2626;
+  font-weight: 550;
+}
+
 .searchable-select__search input {
   border: 0;
   width: 100%;

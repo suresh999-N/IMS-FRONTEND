@@ -88,6 +88,12 @@ textarea::-webkit-input-placeholder,
 input::-moz-placeholder,
 textarea::-moz-placeholder {
   text-transform: none !important;
+  font-variant: normal !important;
+  text-align: left !important;
+}
+
+input:placeholder-shown {
+  text-align: left !important;
 }
 
 /* Disable Edge, IE, Chrome, and WebKit native password reveal/clear buttons to prevent duplicate/inverted eye icons */
@@ -2128,4 +2134,34 @@ button.redm-btn--primary:has(.lucide-plus):focus-visible {
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear {
   display: none !important;
+}
+
+/* Standardize search bar width & alignment across the entire application */
+.global-search,
+.global-search .app-header__search,
+.app-header__search,
+.search-input-container,
+.erp-search-bar,
+.table-component__toolbar :where(.erp-search-bar, .search-input-container),
+.resource-center__inventory-table :where(.erp-search-bar, .search-input-container),
+[class*='resource-center'] :where(.erp-search-bar, .search-input-container),
+[class*='-page'] :where(.erp-search-bar, .search-input-container) {
+  flex: 0 1 420px !important;
+  width: min(100%, 420px) !important;
+  max-width: 100% !important;
+}
+
+@media (max-width: 640px) {
+  .global-search,
+  .global-search .app-header__search,
+  .app-header__search,
+  .search-input-container,
+  .erp-search-bar,
+  .table-component__toolbar :where(.erp-search-bar, .search-input-container),
+  .resource-center__inventory-table :where(.erp-search-bar, .search-input-container),
+  [class*='resource-center'] :where(.erp-search-bar, .search-input-container),
+  [class*='-page'] :where(.erp-search-bar, .search-input-container) {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+  }
 }

@@ -2,6 +2,7 @@ import { Check, ChevronDown, Search } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { getSelectedOption, normalizeSelectOptions } from './searchableSelectUtils'
+import { validateSearchQuery } from '../utils/searchValidationUtils'
 import './SearchableSelect.css'
 
 const SELECT_PORTAL_Z_INDEX = 2147483647
@@ -280,7 +281,7 @@ export default function SearchableSelect(props) {
       style={menuStyle ?? undefined}
     >
       {showSearch ? (
-        <div className="searchable-select__search">
+        <div className={`searchable-select__search ${validateSearchQuery(searchTerm, !hasNoMatches).isInvalid ? 'searchable-select__search--invalid' : ''}`.trim()}>
           <Search size={16} />
           <input
             ref={searchRef}
@@ -295,7 +296,9 @@ export default function SearchableSelect(props) {
 
       <div className="searchable-select__options" role="listbox">
         {hasNoMatches ? (
-          <div className="searchable-select__empty">No matches found.</div>
+          <div className="searchable-select__empty searchable-select__empty--invalid">
+            Please enter a valid search term.
+          </div>
         ) : (
           menuOptions.map((option, index) => (
             <div

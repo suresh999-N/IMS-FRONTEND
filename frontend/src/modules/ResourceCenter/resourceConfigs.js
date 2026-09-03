@@ -1246,19 +1246,19 @@ export const RESOURCE_CONFIGS = {
       },
       { key: 'name', label: 'Name', sortable: true },
       { key: 'email', label: 'Email', sortable: true },
-      { key: 'phoneNumber', label: 'Phone No', sortable: true },
+      { key: 'phoneNumber', label: 'Phone No', sortable: false },
       {
         key: 'role',
         label: 'Role',
-        sortable: true,
+        sortable: false,
         className: 'resource-center__cell-role',
         render: (row) => {
           const roleValue = readResourceValue(row, 'role')
           return String(roleValue).toLowerCase() === 'user' ? 'New Employee' : roleValue
         },
       },
-      { key: 'emailVerificationStatus', label: 'Verification', format: 'status', sortable: true },
-      { key: 'isActive', label: 'Status', format: 'boolean', sortable: true },
+      { key: 'emailVerificationStatus', label: 'Verification', format: 'status', sortable: false },
+      { key: 'isActive', label: 'Status', format: 'boolean', sortable: false },
     ],
     rowActions: [
       {
@@ -1303,7 +1303,7 @@ export const RESOURCE_CONFIGS = {
       {
         key: 'description',
         label: 'Description',
-        sortable: true,
+        sortable: false,
         render: (row) => {
           const desc = readResourceValue(row, 'description', readResourceValue(row, 'roleDescription', '')) || 'Not set'
           return React.createElement('span', { className: 'resource-center__role-description', title: desc }, desc)

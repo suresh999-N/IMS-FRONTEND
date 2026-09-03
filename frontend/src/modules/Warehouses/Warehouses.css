@@ -728,15 +728,19 @@
 .warehouses-action-button[data-tooltip]::after {
   content: attr(data-tooltip);
   position: absolute;
-  left: 50%;
-  bottom: calc(100% + 8px);
+  top: 50%;
+  right: calc(100% + 6px);
+  transform: translateY(-50%) translateX(-4px);
   z-index: 20;
-  transform: translateX(-50%) translateY(2px);
   padding: 4px 7px;
   border-radius: 6px;
-  background: #0f172a;
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
   font-size: 11px;
+  font-weight: 600;
   line-height: 1.2;
   white-space: nowrap;
   opacity: 0;
@@ -744,10 +748,10 @@
   transition: opacity var(--transition), transform var(--transition);
 }
 
-.warehouses-action-button:hover::after,
-.warehouses-action-button:focus-visible::after {
+.warehouses-action-button[data-tooltip]:hover::after,
+.warehouses-action-button[data-tooltip]:focus-visible::after {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  transform: translateY(-50%) translateX(0);
 }
 
 .warehouses-status-menu {

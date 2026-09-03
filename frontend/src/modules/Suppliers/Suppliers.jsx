@@ -127,13 +127,37 @@ function useDebouncedValue(value, delay = 300) {
 function buildSupplierProfile(supplier) {
   const id = String(supplier.id || supplier.supplierId || '')
 
+  const gstNumber =
+    supplier.gstNumber ||
+    supplier.GstNumber ||
+    supplier.gstin ||
+    supplier.GSTIN ||
+    supplier.gst ||
+    supplier.GST ||
+    supplier.taxNumber ||
+    supplier.taxId ||
+    supplier.tax ||
+    ''
+
+  const panNumber =
+    supplier.panNumber ||
+    supplier.PanNumber ||
+    supplier.pan ||
+    supplier.PAN ||
+    supplier.panNo ||
+    supplier.PanNo ||
+    ''
+
   return {
     ...supplier,
     id,
     supplierCode: supplier.supplierCode || supplier.code || '',
     companyName: supplier.companyName || supplier.company || '',
-    gstNumber: supplier.gstNumber || supplier.gst || '',
-    panNumber: supplier.panNumber || supplier.pan || '',
+    gstNumber,
+    panNumber,
+    gstin: gstNumber,
+    gst: gstNumber,
+    pan: panNumber,
     category: supplier.category || '',
     status: normalizeStatusValue(supplier.status),
     totalPurchaseAmount: supplier.totalPurchaseAmount ?? supplier.totalPurchases ?? supplier.totalPurchase ?? supplier.totalAmount ?? supplier.purchases ?? supplier.purchaseAmount ?? null,
@@ -850,12 +874,16 @@ export default function Suppliers({
       sortable: false,
       style: { width: '140px', minWidth: '140px' },
       headerStyle: { width: '140px', minWidth: '140px' },
-      render: (supplier) => (
-        <div className="suppliers-page__table-stack supplier-tax-stack">
-          <span className={supplier.gstNumber ? '' : 'is-empty'}>{formatTaxValue(supplier.gstNumber, 'GST')}</span>
-          <span className={supplier.panNumber ? '' : 'is-empty'}>{formatTaxValue(supplier.panNumber, 'PAN')}</span>
-        </div>
-      ),
+      render: (supplier) => {
+        const gst = supplier.gstNumber || supplier.gstin || supplier.gst || ''
+        const pan = supplier.panNumber || supplier.pan || ''
+        return (
+          <div className="suppliers-page__table-stack supplier-tax-stack">
+            <span className={gst ? '' : 'is-empty'}>{formatTaxValue(gst, 'GST')}</span>
+            <span className={pan ? '' : 'is-empty'}>{formatTaxValue(pan, 'PAN')}</span>
+          </div>
+        )
+      },
     },
     {
       key: 'totalPurchaseAmount',

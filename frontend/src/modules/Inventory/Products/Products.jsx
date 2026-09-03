@@ -41,7 +41,16 @@ function ProductsHeader({ canCreate, summary, activeStatusFilter, onFilterStatus
       value: formatCompactCount(summary.total),
       tone: 'success',
       isActive: activeStatusFilter === 'all',
-      title: 'Show all products',
+      title: 'Show active products',
+    },
+    {
+      key: 'inStock',
+      filterValue: 'In Stock',
+      label: 'In Stock',
+      value: formatCompactCount(summary.inStock),
+      tone: 'info',
+      isActive: activeStatusFilter === 'In Stock',
+      title: 'Filter in-stock inventory products',
     },
     {
       key: 'lowStock',
@@ -62,13 +71,13 @@ function ProductsHeader({ canCreate, summary, activeStatusFilter, onFilterStatus
       title: 'Filter out-of-stock products',
     },
     {
-      key: 'inStock',
-      filterValue: 'In Stock',
-      label: 'In Stock',
-      value: formatCompactCount(summary.inStock),
-      tone: 'info',
-      isActive: activeStatusFilter === 'In Stock',
-      title: 'Filter in-stock inventory products',
+      key: 'archived',
+      filterValue: 'Archived',
+      label: 'Archived',
+      value: formatCompactCount(summary.archived),
+      tone: 'neutral',
+      isActive: activeStatusFilter === 'Archived',
+      title: 'Filter archived products',
     },
   ]
 
@@ -300,7 +309,12 @@ function isProductOutOfStock(product) {
 }
 
 function isProductArchived(product) {
-  return Boolean(product?.isArchived ?? product?.IsArchived ?? product?.is_archived)
+  if (!product) return false
+  if (product.isArchived === true || product.IsArchived === true || product.is_archived === true) return true
+  if (product.isArchived === 1 || product.IsArchived === 1 || product.is_archived === 1) return true
+  if (String(product.isArchived).toLowerCase() === 'true' || String(product.IsArchived).toLowerCase() === 'true') return true
+  const rawStatus = String(product?.rawStatus ?? product?.sourceStatus ?? product?.status ?? '').trim().toLowerCase()
+  return rawStatus === 'archived' || rawStatus === 'discontinued'
 }
 
 function getOptionList(records, key) {
@@ -992,11 +1006,19 @@ export default function Products({
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
+      const isArchived = isProductArchived(p)
+
+      if (filters.status === 'Archived') {
+        if (!isArchived) return false
+      } else {
+        if (isArchived) return false
+      }
+
       const displayStatus = getProductDisplayStatus(p)
       if (filters.category !== 'all' && normalizeFilterValue(p.category) !== filters.category) return false
       if (filters.brand !== 'all' && normalizeFilterValue(p.brand) !== filters.brand) return false
       
-      if (filters.status !== 'all') {
+      if (filters.status !== 'all' && filters.status !== 'Archived') {
         if (filters.status === 'Low Stock') {
           if (!isProductLowStock(p)) return false
         } else if (filters.status === 'Out Of Stock') {
@@ -1047,13 +1069,15 @@ export default function Products({
 
   const productSummary = useMemo(() => {
     const activeInventoryProducts = products.filter((product) => !isProductArchived(product))
+    const archivedProducts = products.filter(isProductArchived)
     const value = activeInventoryProducts.reduce(
       (total, product) => total + getProductStock(product) * getProductCost(product),
       0,
     )
 
     return {
-      total: products.length,
+      total: activeInventoryProducts.length,
+      archived: archivedProducts.length,
       lowStock: activeInventoryProducts.filter(isProductLowStock).length,
       outOfStock: activeInventoryProducts.filter(isProductOutOfStock).length,
       inStock: activeInventoryProducts.filter((product) => getProductDisplayStatus(product) === 'In Stock').length,
@@ -1149,6 +1173,13 @@ export default function Products({
           bodyClassName="product-modal__body product-modal__body--details"
         >
           <div className="product-details-view">
+            {isProductArchived(viewTarget) ? (
+              <div className="product-details-archived-banner" role="status">
+                <Archive size={16} />
+                <span>This product is marked as Archived/Discontinued and is excluded from active inventory operations.</span>
+              </div>
+            ) : null}
+
             {/* Hero Banner Header Card */}
             <div className="product-details-hero">
               <div className="product-details-hero__image-wrap">
@@ -1190,7 +1221,15 @@ export default function Products({
 
               <div className="product-details-stat-card">
                 <div className="product-details-stat-card__label">Current Stock</div>
-                <div className="product-details-stat-card__value">{getProductStock(viewTarget)} {viewTarget.unit || 'Units'}</div>
+                <div className="product-details-stat-card__value">
+                  {isProductArchived(viewTarget) ? (
+                    <span className="product-details-stock-archived" title="Archived products do not participate in active inventory">
+                      — (Archived)
+                    </span>
+                  ) : (
+                    `${getProductStock(viewTarget)} ${viewTarget.unit || 'Units'}`
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1227,7 +1266,7 @@ export default function Products({
                   <span className="product-details-item__value">{viewTarget.variantSize || 'Standard'}</span>
                 </div>
                 <div className="product-details-item">
-                  <span className="product-details-item__label">Variant Color / Finish</span>
+                  <span className="product-details-item__label">Variant Attribute</span>
                   <span className="product-details-item__value">{viewTarget.variantColor || 'Standard'}</span>
                 </div>
                 <div className="product-details-item">

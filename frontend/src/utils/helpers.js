@@ -591,10 +591,16 @@ export function createTransactionInvoice(record, invoiceType) {
 }
 
 export function isActiveInventoryProduct(item) {
-  const status = String(item?.rawStatus ?? item?.sourceStatus ?? item?.status ?? 'active').trim().toLowerCase()
+  if (!item) return false
+  const rawStatus = String(item?.rawStatus ?? item?.sourceStatus ?? item?.status ?? '').trim().toLowerCase()
+  const isArchived = Boolean(
+    (item?.isArchived ?? item?.IsArchived ?? item?.is_archived) ||
+    rawStatus === 'archived' ||
+    rawStatus === 'discontinued'
+  )
   const isDeleted = Boolean(item?.isDeleted ?? item?.IsDeleted)
 
-  return !isDeleted && status === 'active'
+  return !isDeleted && !isArchived && rawStatus !== 'archived' && rawStatus !== 'discontinued' && rawStatus !== 'inactive'
 }
 
 export function isLowStockProduct(item) {

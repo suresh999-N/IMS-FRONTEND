@@ -190,7 +190,7 @@ function toNumber(value) {
   return Number.isNaN(num) ? 0 : num
 }
 
-function toApiId(value, type) {
+function toApiId(value, _type) {
   const num = parseInt(value, 10)
   return Number.isNaN(num) ? null : num
 }
@@ -258,15 +258,20 @@ function InvoiceForm({
       const taxAmount = taxable * (taxPercent / 100)
       const rowAmount = taxable + taxAmount
 
-      subTotal += gross
-      totalDiscount += discAmount
-      totalTax += taxAmount
-
       return {
         ...item,
+        gross,
+        discAmount,
+        taxAmount,
         rowAmount,
       }
     })
+
+    for (const item of mappedItems) {
+      subTotal += item.gross
+      totalDiscount += item.discAmount
+      totalTax += item.taxAmount
+    }
 
     const grandTotal = subTotal - totalDiscount + totalTax
 
@@ -1051,7 +1056,12 @@ export default function CreateInvoiceScreen({ customers = [], products = [], war
   const productOptions = useMemo(
     () =>
       products
-        .filter((p) => p && (p.id ?? p.productId) && p.name)
+        .filter((p) => {
+          if (!p || !(p.id ?? p.productId) || !p.name) return false
+          if (p.isArchived === true || p.IsArchived === true || p.is_archived === true) return false
+          const status = String(p.rawStatus ?? p.sourceStatus ?? p.status ?? '').trim().toLowerCase()
+          return status !== 'archived' && status !== 'discontinued'
+        })
         .map((product) => ({
           ...product,
           id: String(product.id ?? product.productId),

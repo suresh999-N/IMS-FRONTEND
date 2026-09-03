@@ -21,31 +21,31 @@ export function getPhoneDigits(value) {
   return sanitizePhoneInput(value)
 }
 
-export function getPhoneError(value, label = 'Phone') {
+export function getPhoneError(value, label = 'Mobile number') {
   const phone = sanitizePhoneInput(value)
 
   if (!phone) {
     return `${label} is required.`
   }
 
-  if (phone.length !== PHONE_MAX_LENGTH) {
-    return 'Phone number must contain exactly 10 digits.'
-  }
-
   // Indian mobile numbers must start with 6, 7, 8, or 9
   if (!/^[6-9]/.test(phone)) {
-    return 'Mobile number must start with 6, 7, 8, or 9.'
+    return `${label} must start with 6, 7, 8, or 9 and be exactly 10 digits.`
   }
 
-  // Reject all-same-digit numbers (e.g. 9999999999)
+  if (phone.length !== PHONE_MAX_LENGTH) {
+    return `${label} must contain exactly ${PHONE_MAX_LENGTH} digits.`
+  }
+
+  // Reject all-same-digit numbers (e.g. 0000000000, 9999999999, 1111111111)
   if (/^(\d)\1{9}$/.test(phone)) {
-    return 'Please enter a valid mobile number.'
+    return `Please enter a valid ${label.toLowerCase()}.`
   }
 
-  // Reject sequential patterns (e.g. 6789012345, 9876543210)
-  const SEQUENTIAL_PATTERNS = ['0123456789', '9876543210']
+  // Reject sequential patterns (e.g. 0123456789, 9876543210, 1234567890)
+  const SEQUENTIAL_PATTERNS = ['0123456789', '9876543210', '1234567890']
   if (SEQUENTIAL_PATTERNS.some((seq) => seq.includes(phone.slice(0, 6)))) {
-    return 'Please enter a valid mobile number.'
+    return `Please enter a valid ${label.toLowerCase()}.`
   }
 
   return ''
@@ -66,6 +66,18 @@ export function blockInvalidPhoneKey(event) {
 
   if (!/^\d$/.test(event.key)) {
     event.preventDefault()
+    return
+  }
+
+  // Prevent entering invalid leading digit (Indian mobile numbers must start with 6, 7, 8, or 9)
+  const target = event.target
+  if (target) {
+    const isFirstChar =
+      (target.selectionStart === 0 && target.value.length === 0) ||
+      (target.selectionStart === 0 && target.selectionEnd === target.value.length)
+    if (isFirstChar && !/^[6-9]$/.test(event.key)) {
+      event.preventDefault()
+    }
   }
 }
 
