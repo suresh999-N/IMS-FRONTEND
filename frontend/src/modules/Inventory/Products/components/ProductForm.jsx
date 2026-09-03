@@ -713,10 +713,15 @@ export default function ProductForm({
     }, {})
   }, [changedFields, categories, subCategories, brands, formData, isEdit, mode])
 
-  const hasChanges = isEdit ? changedFields.length > 0 || variantsChanged : true
+  const hasChanges = isEdit
+    ? changedFields.length > 0 || variantsChanged || selectedImageFile !== null || imageRemoved
+    : true
   const isFormValid = Object.keys(errors).length === 0
   const canSave = canSubmit && hasChanges && isFormValid && !isSaving
-  const changedCount = changedFields.length + (variantsChanged ? 1 : 0)
+  const changedCount =
+    changedFields.length +
+    (variantsChanged ? 1 : 0) +
+    (selectedImageFile !== null || imageRemoved ? 1 : 0)
 
   async function handleAddCategory(draft) {
     const label = normalizeString(draft?.name)
@@ -1488,7 +1493,13 @@ export default function ProductForm({
               />
               <label className="product-form__image-preview" htmlFor="image-upload" title={imagePreview ? "Click to change image" : "Click to upload image"}>
                 {imagePreview ? (
-                  <img src={resolveApiAssetUrl(imagePreview)} alt="Product preview" />
+                  <img
+                    src={resolveApiAssetUrl(imagePreview)}
+                    alt="Product preview"
+                    onError={() => {
+                      setImagePreview('')
+                    }}
+                  />
                 ) : (
                   <div className="product-form__image-empty">
                     <ImagePlus size={32} className="product-form__image-empty-icon" />
