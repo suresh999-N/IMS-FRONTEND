@@ -23,6 +23,7 @@ import { getStockRegister } from '../../../api/stockApi'
 import { RESOURCE_CONFIGS } from '../../ResourceCenter/resourceConfigs'
 import FormModal from '../../../layouts/FormModal'
 import StateBlock from '../../../components/common/StateBlock'
+import RecordDetailsView from '../../../components/common/RecordDetailsView'
 import InputField from '../../../components/InputField'
 import SearchableSelect from '../../../components/SearchableSelect'
 import { ActionMenu, DataTable, FilterBar, StatusBadge } from '../../../components/erp'
@@ -503,9 +504,9 @@ export default function ProductVariants() {
         key: 'actions',
         label: 'Actions',
         className: 'variants-col-actions',
-        tableWidth: 80,
-        style: { width: 80, minWidth: 80 },
-        headerStyle: { width: 80, minWidth: 80 },
+        tableWidth: 130,
+        style: { width: 130, minWidth: 130 },
+        headerStyle: { width: 130, minWidth: 130 },
         render: (item) => {
           const menuItems = [
             {
@@ -978,62 +979,23 @@ export default function ProductVariants() {
 
       {/* View Details Modal */}
       {viewingItem && (
-        <FormModal
-          title={`Product Variant: ${viewingItem.variantName || viewingItem.name}`}
-          subtitle={`Product: ${viewingItem.productName}`}
-          onClose={() => setViewingItem(null)}
-          actions={[
+        <RecordDetailsView
+          modalTitle="Product Variant Details"
+          heroTitle={viewingItem.variantName || viewingItem.name}
+          heroSubtitle={`Product: ${viewingItem.productName} • SKU: ${viewingItem.sku}`}
+          icon={GitBranch}
+          status={viewingItem.status || 'Active'}
+          fields={[
+            { label: 'Product Name', value: viewingItem.productName },
+            { label: 'Variant Name', value: viewingItem.variantName },
+            { label: 'SKU', render: () => <code>{viewingItem.sku}</code> },
+            { label: 'Selling Price', value: formatCurrency(viewingItem.price) },
+            { label: 'Purchase Price', value: formatCurrency(viewingItem.costPrice) },
+            { label: 'Status', render: () => <StatusBadge status={viewingItem.status || 'Active'}>{viewingItem.status || 'Active'}</StatusBadge> },
             {
-              label: 'Close',
-              variant: 'secondary',
-              onClick: () => setViewingItem(null),
-            },
-          ]}
-        >
-          <div className="admin-details-view">
-            <div className="admin-details-hero">
-              <div className="admin-details-hero-avatar">
-                <GitBranch size={28} />
-              </div>
-              <div className="admin-details-hero-text">
-                <h3>{viewingItem.variantName || viewingItem.name}</h3>
-                <p>{viewingItem.productName} &bull; SKU: {viewingItem.sku}</p>
-              </div>
-              <StatusBadge type={String(viewingItem.status).toLowerCase() === 'inactive' ? 'critical' : 'active'}>
-                {String(viewingItem.status || 'Active').charAt(0).toUpperCase() + String(viewingItem.status || 'Active').slice(1).toLowerCase()}
-              </StatusBadge>
-            </div>
-
-            <div className="admin-details-grid">
-              <div className="admin-details-item">
-                <span className="admin-details-label">Product Name</span>
-                <span className="admin-details-value">{viewingItem.productName}</span>
-              </div>
-              <div className="admin-details-item">
-                <span className="admin-details-label">Variant Name</span>
-                <span className="admin-details-value">{viewingItem.variantName}</span>
-              </div>
-              <div className="admin-details-item">
-                <span className="admin-details-label">SKU</span>
-                <span className="admin-details-value font-mono">{viewingItem.sku}</span>
-              </div>
-              <div className="admin-details-item">
-                <span className="admin-details-label">Selling Price</span>
-                <span className="admin-details-value">{formatCurrency(viewingItem.price)}</span>
-              </div>
-              <div className="admin-details-item">
-                <span className="admin-details-label">Purchase Price</span>
-                <span className="admin-details-value">{formatCurrency(viewingItem.costPrice)}</span>
-              </div>
-              <div className="admin-details-item">
-                <span className="admin-details-label">Status</span>
-                <span className="admin-details-value">
-                  {String(viewingItem.status || 'Active').charAt(0).toUpperCase() + String(viewingItem.status || 'Active').slice(1).toLowerCase()}
-                </span>
-              </div>
-              <div className="admin-details-item" style={{ gridColumn: '1 / -1' }}>
-                <span className="admin-details-label">Attributes</span>
-                <div className="variants-table__attributes-list" style={{ marginTop: '4px' }}>
+              label: 'Attributes',
+              render: () => (
+                <div className="variants-table__attributes-list">
                   {viewingItem.mappedAttributes && viewingItem.mappedAttributes.length > 0 ? (
                     viewingItem.mappedAttributes.map((attr, idx) => (
                       <span key={idx} className="variants-table__attribute-badge">
@@ -1044,10 +1006,12 @@ export default function ProductVariants() {
                     <span className="text-muted text-xs">No attributes</span>
                   )}
                 </div>
-              </div>
-            </div>
-          </div>
-        </FormModal>
+              ),
+              fullWidth: true,
+            },
+          ]}
+          onClose={() => setViewingItem(null)}
+        />
       )}
     </div>
   )

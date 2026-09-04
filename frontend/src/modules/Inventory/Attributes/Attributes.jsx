@@ -5,6 +5,7 @@ import {
   Plus,
   RefreshCw,
   Save,
+  SlidersHorizontal,
   Trash2,
 } from 'lucide-react'
 import {
@@ -17,6 +18,7 @@ import { getAttributeValues } from '../../../api/productApi'
 import { RESOURCE_CONFIGS } from '../../ResourceCenter/resourceConfigs'
 import FormModal from '../../../layouts/FormModal'
 import StateBlock from '../../../components/common/StateBlock'
+import RecordDetailsView from '../../../components/common/RecordDetailsView'
 import InputField from '../../../components/InputField'
 import { ActionMenu, DataTable, FilterBar } from '../../../components/erp'
 import { showToast } from '../../../components/common/toast'
@@ -658,42 +660,24 @@ export default function Attributes() {
 
       {/* View Attribute Modal */}
       {viewingAttribute ? (
-        <FormModal
-          title="Attribute Details"
+        <RecordDetailsView
+          modalTitle="Attribute Details"
+          heroTitle={viewingAttribute.name || 'Attribute'}
+          heroSubtitle={`Attribute ID: ${viewingAttribute.attributeId || viewingAttribute.id || '—'}`}
+          icon={SlidersHorizontal}
+          fields={[
+            { label: 'Attribute ID', value: `ID ${viewingAttribute.attributeId || viewingAttribute.id || '—'}` },
+            { label: 'Attribute Name', value: viewingAttribute.name || '—' },
+            {
+              label: 'Associated Values',
+              value: viewingAttribute.values && viewingAttribute.values.length > 0
+                ? viewingAttribute.values.join(', ')
+                : 'No associated values',
+              fullWidth: true,
+            },
+          ]}
           onClose={() => setViewingAttribute(null)}
-        >
-          <div className="catalog-form">
-            <div className="catalog-form__section">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                <div>
-                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>ID</span>
-                  <span style={{ fontWeight: 500, color: '#0f172a' }}>ID {viewingAttribute.attributeId || viewingAttribute.id || '—'}</span>
-                </div>
-                <div>
-                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Attribute Name</span>
-                  <span style={{ fontWeight: 500, color: '#0f172a' }}>{viewingAttribute.name || '—'}</span>
-                </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Associated Values</span>
-                  <span style={{ fontWeight: 500, color: '#0f172a' }}>
-                    {viewingAttribute.values && viewingAttribute.values.length > 0
-                      ? viewingAttribute.values.join(', ')
-                      : 'No associated values'}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="button-row catalog-form__footer" style={{ marginTop: '1.5rem', justifyContent: 'flex-end' }}>
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => setViewingAttribute(null)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </FormModal>
+        />
       ) : null}
     </div>
   )

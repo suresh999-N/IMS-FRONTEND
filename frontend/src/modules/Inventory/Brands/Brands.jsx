@@ -24,6 +24,7 @@ import StateBlock from '../../../components/common/StateBlock'
 import { ActionMenu, DataTable, FilterBar } from '../../../components/erp'
 import { showToast } from '../../../components/common/toast'
 import FormModal from '../../../layouts/FormModal'
+import RecordDetailsView from '../../../components/common/RecordDetailsView'
 import { useAuth } from '../../../hooks/useAuth'
 import './Brands.css'
 
@@ -651,38 +652,18 @@ export default function Brands() {
 
         {/* View Brand Modal */}
         {viewingBrand ? (
-          <FormModal
-            title="Brand Details"
+          <RecordDetailsView
+            modalTitle="Brand Details"
+            heroTitle={viewingBrand.name || 'Brand'}
+            heroSubtitle={`Brand Record ID: ${viewingBrand.id || '—'}`}
+            icon={Package}
+            fields={[
+              { label: 'Brand ID', value: `ID ${viewingBrand.id || '—'}` },
+              { label: 'Brand Name', value: viewingBrand.name || '—' },
+              { label: 'Description', value: viewingBrand.description || 'No description available', fullWidth: true },
+            ]}
             onClose={() => setViewingBrand(null)}
-          >
-            <div className="catalog-form">
-              <div className="catalog-form__section">
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                  <div>
-                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>ID</span>
-                    <span style={{ fontWeight: 500, color: '#0f172a' }}>ID {viewingBrand.id || '—'}</span>
-                  </div>
-                  <div>
-                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Brand Name</span>
-                    <span style={{ fontWeight: 500, color: '#0f172a' }}>{viewingBrand.name || '—'}</span>
-                  </div>
-                  <div style={{ gridColumn: '1 / -1' }}>
-                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Description</span>
-                    <span style={{ fontWeight: 500, color: '#0f172a' }}>{viewingBrand.description || 'No description available'}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="button-row catalog-form__footer" style={{ marginTop: '1.5rem', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => setViewingBrand(null)}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </FormModal>
+          />
         ) : null}
       </div>
     </div>

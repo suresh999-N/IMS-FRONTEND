@@ -29,6 +29,7 @@ import {
 } from '../../../api/productApi'
 import FormModal from '../../../layouts/FormModal'
 import StateBlock from '../../../components/common/StateBlock'
+import RecordDetailsView from '../../../components/common/RecordDetailsView'
 import InputField from '../../../components/InputField'
 import SearchableSelect from '../../../components/SearchableSelect'
 import { ActionMenu, DataTable, FilterBar, StatusBadge } from '../../../components/erp'
@@ -1302,8 +1303,7 @@ export default function Categories() {
   )
 
   return (
-    <div className="page resource-center">
-    <div className="resource-center__page resource-center__page--categories">
+    <div className="page resource-center resource-center__page resource-center__page--categories">
       <CategoriesHeader
         canCreate={canCreate}
         summary={summary}
@@ -1521,7 +1521,7 @@ export default function Categories() {
               </div>
             ) : (
               <div className="catalog-subcategories-drawer__empty">
-                No subcategories created under {subcategoriesViewTarget.name} yet.
+                No subcategories created under {subcategoriesViewTarget?.name || 'Category'} yet.
               </div>
             )}
           </div>
@@ -1530,54 +1530,27 @@ export default function Categories() {
 
       {/* View Category Modal */}
       {viewingCategory ? (
-        <FormModal
-          title="Category Details"
+        <RecordDetailsView
+          modalTitle="Category Details"
+          heroTitle={viewingCategory.name || 'Category'}
+          heroSubtitle={`${getCategoryChildCount(viewingCategory, categories)} Subcategories`}
+          icon={FolderTree}
+          status={viewingCategory.status || 'Active'}
+          fields={[
+            { label: 'Category ID', value: `ID ${categoryIdOf(viewingCategory) || '—'}` },
+            { label: 'Category Name', value: viewingCategory.name || '—' },
+            { label: 'Subcategories Count', value: getCategoryChildCount(viewingCategory, categories) },
+            { label: 'Status', render: () => (
+              <StatusBadge status={viewingCategory.status || 'Active'}>
+                {viewingCategory.status || 'Active'}
+              </StatusBadge>
+            ) },
+            { label: 'Last Updated', value: formatDate(viewingCategory.updatedAt || viewingCategory.createdAt) },
+            { label: 'Description', value: viewingCategory.description || 'No description available', fullWidth: true },
+          ]}
           onClose={() => setViewingCategory(null)}
-        >
-          <div className="catalog-form">
-            <div className="catalog-form__section">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                <div>
-                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>ID</span>
-                  <span style={{ fontWeight: 500, color: '#0f172a' }}>ID {categoryIdOf(viewingCategory) || '—'}</span>
-                </div>
-                <div>
-                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Category Name</span>
-                  <span style={{ fontWeight: 500, color: '#0f172a' }}>{viewingCategory.name || '—'}</span>
-                </div>
-                <div>
-                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Subcategories Count</span>
-                  <span style={{ fontWeight: 500, color: '#0f172a' }}>{getCategoryChildCount(viewingCategory, categories)}</span>
-                </div>
-                <div>
-                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Status</span>
-                  <StatusBadge status={viewingCategory.status || 'Active'}>
-                    {viewingCategory.status || 'Active'}
-                  </StatusBadge>
-                </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Description</span>
-                  <span style={{ fontWeight: 500, color: '#0f172a' }}>{viewingCategory.description || 'No description available'}</span>
-                </div>
-                <div>
-                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Last Updated</span>
-                  <span style={{ fontWeight: 500, color: '#0f172a' }}>{formatDate(viewingCategory.updatedAt || viewingCategory.createdAt)}</span>
-                </div>
-              </div>
-            </div>
-            <div className="button-row catalog-form__footer" style={{ marginTop: '1.5rem', justifyContent: 'flex-end' }}>
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => setViewingCategory(null)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </FormModal>
+        />
       ) : null}
-    </div>
     </div>
   )
 }

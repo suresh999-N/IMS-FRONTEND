@@ -3,6 +3,7 @@ import {
   Check,
   Download,
   Eye,
+  Layers,
   LoaderCircle,
   Pencil,
   Plus,
@@ -24,6 +25,7 @@ import {
 import InputField from '../../../components/InputField'
 import SearchableSelect from '../../../components/SearchableSelect'
 import StateBlock from '../../../components/common/StateBlock'
+import RecordDetailsView from '../../../components/common/RecordDetailsView'
 import { ActionMenu, DataTable, FilterBar, StatusBadge } from '../../../components/erp'
 import { showToast } from '../../../components/common/toast'
 import FormModal from '../../../layouts/FormModal'
@@ -1296,56 +1298,26 @@ export default function SubCategories() {
 
         {/* View SubCategory modal */}
         {viewingSubCategory ? (
-          <FormModal
-            title="SubCategory Details"
+          <RecordDetailsView
+            modalTitle="SubCategory Details"
+            heroTitle={readResourceValue(viewingSubCategory, 'name', 'SubCategory')}
+            heroSubtitle={`Category: ${readResourceValue(viewingSubCategory, 'categoryName', readResourceValue(viewingSubCategory, 'category', 'Not set'))}`}
+            icon={Layers}
+            status={readResourceValue(viewingSubCategory, 'status', 'Active')}
+            fields={[
+              { label: 'SubCategory ID', value: `ID ${readResourceValue(viewingSubCategory, 'id', '—')}` },
+              { label: 'SubCategory Name', value: readResourceValue(viewingSubCategory, 'name', '—') },
+              { label: 'Parent Category', value: readResourceValue(viewingSubCategory, 'categoryName', readResourceValue(viewingSubCategory, 'category', '—')) },
+              { label: 'Status', render: () => (
+                <StatusBadge status={readResourceValue(viewingSubCategory, 'status', 'Active')}>
+                  {formatStatusLabel(readResourceValue(viewingSubCategory, 'status', 'Active'))}
+                </StatusBadge>
+              ) },
+              { label: 'Created Date', value: readResourceValue(viewingSubCategory, 'createdAt') ? formatDate(readResourceValue(viewingSubCategory, 'createdAt')) : 'Not set' },
+              { label: 'Description', value: readResourceValue(viewingSubCategory, 'description') || 'No description available', fullWidth: true },
+            ]}
             onClose={() => setViewingSubCategory(null)}
-          >
-            <div className="catalog-form">
-              <div className="catalog-form__section">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                  <div>
-                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>ID</span>
-                    <span style={{ fontWeight: 500, color: '#0f172a' }}>ID {readResourceValue(viewingSubCategory, 'id', '—')}</span>
-                  </div>
-                  <div>
-                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>SubCategory Name</span>
-                    <span style={{ fontWeight: 500, color: '#0f172a' }}>{readResourceValue(viewingSubCategory, 'name', '—')}</span>
-                  </div>
-                  <div>
-                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Category</span>
-                    <span style={{ fontWeight: 500, color: '#0f172a' }}>{readResourceValue(viewingSubCategory, 'categoryName', readResourceValue(viewingSubCategory, 'category', '—'))}</span>
-                  </div>
-                  <div>
-                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Status</span>
-                    <StatusBadge status={readResourceValue(viewingSubCategory, 'status', 'Active')}>
-                      {formatStatusLabel(readResourceValue(viewingSubCategory, 'status', 'Active'))}
-                    </StatusBadge>
-                  </div>
-                  <div style={{ gridColumn: '1 / -1' }}>
-                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Description</span>
-                    <span style={{ fontWeight: 500, color: '#0f172a' }}>{readResourceValue(viewingSubCategory, 'description') || 'No description available'}</span>
-                  </div>
-                  <div>
-                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Created Date</span>
-                    <span style={{ fontWeight: 500, color: '#0f172a' }}>
-                      {readResourceValue(viewingSubCategory, 'createdAt')
-                        ? formatDate(readResourceValue(viewingSubCategory, 'createdAt'))
-                        : 'Not set'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="button-row catalog-form__footer" style={{ marginTop: '1.5rem', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => setViewingSubCategory(null)}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </FormModal>
+          />
         ) : null}
       </div>
     </div>

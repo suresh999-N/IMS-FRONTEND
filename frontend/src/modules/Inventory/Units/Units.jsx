@@ -5,6 +5,7 @@ import {
   Pencil,
   Plus,
   RefreshCw,
+  Ruler,
   Save,
   Trash2,
 } from 'lucide-react'
@@ -19,6 +20,7 @@ import {
 } from '../../../api/productApi'
 import FormModal from '../../../layouts/FormModal'
 import StateBlock from '../../../components/common/StateBlock'
+import RecordDetailsView from '../../../components/common/RecordDetailsView'
 import InputField from '../../../components/InputField'
 import { ActionMenu, DataTable, FilterBar, StatusBadge } from '../../../components/erp'
 import { showToast } from '../../../components/common/toast'
@@ -492,42 +494,20 @@ export default function Units() {
 
       {/* View Unit Modal */}
       {viewingUnit && (
-        <FormModal
-          title="Unit Details"
+        <RecordDetailsView
+          modalTitle="Unit Details"
+          heroTitle={viewingUnit.name || 'Unit'}
+          heroSubtitle={`Abbreviation: ${viewingUnit.shortName || '—'}`}
+          icon={Ruler}
+          status="Active"
+          fields={[
+            { label: 'Unit ID', value: `ID ${viewingUnit.id || '—'}` },
+            { label: 'Unit Name', value: viewingUnit.name || '—' },
+            { label: 'Abbreviation / Symbol', render: () => <code>{viewingUnit.shortName || '—'}</code> },
+            { label: 'Status', render: () => <StatusBadge status="Active">Active</StatusBadge> },
+          ]}
           onClose={() => setViewingUnit(null)}
-        >
-          <div className="catalog-form">
-            <div className="catalog-form__section">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                <div>
-                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>ID</span>
-                  <span style={{ fontWeight: 500, color: '#0f172a' }}>ID {viewingUnit.id || '—'}</span>
-                </div>
-                <div>
-                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Unit Name</span>
-                  <span style={{ fontWeight: 500, color: '#0f172a' }}>{viewingUnit.name || '—'}</span>
-                </div>
-                <div>
-                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Abbreviation / Symbol</span>
-                  <span style={{ fontWeight: 500, color: '#0f172a' }}><code>{viewingUnit.shortName || '—'}</code></span>
-                </div>
-                <div>
-                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Status</span>
-                  <StatusBadge type="active">Active</StatusBadge>
-                </div>
-              </div>
-            </div>
-            <div className="button-row catalog-form__footer" style={{ marginTop: '1.5rem', justifyContent: 'flex-end' }}>
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => setViewingUnit(null)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </FormModal>
+        />
       )}
     </div>
   )
