@@ -298,9 +298,10 @@ function getProductDisplayStatus(product) {
 function isProductLowStock(product) {
   if (!product || isProductArchived(product)) return false
   const stock = getProductStock(product)
+  if (stock <= 0) return false
   const reorder = toSafeNumber(product?.reorderLevel)
   const rawStatus = String(product?.status ?? '').trim()
-  return stock <= reorder || /low/i.test(rawStatus) || stock <= 0
+  return stock <= reorder || /low/i.test(rawStatus)
 }
 
 function isProductOutOfStock(product) {
