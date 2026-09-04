@@ -379,68 +379,77 @@ export default function Units() {
       </div>
 
       {/* Add / Edit Form Modal */}
-      {isCreateOpen && (
-        <FormModal
-          title={editingItem ? 'Edit Unit' : 'Add Unit'}
-          subtitle={editingItem ? 'Modify existing unit abbreviation or title.' : undefined}
-          className="form-modal--units"
-          onClose={handleCloseModal}
-        >
-          <form className="catalog-form" onSubmit={handleSave}>
-            <div className="form-modal__body--units">
-              <div className="resource-form__section">
-                <div className="resource-form__grid-2">
-                  <InputField
-                    id="unitName"
-                    name="name"
-                    label="Unit Name *"
-                    value={formValues.name}
-                    onChange={(e) => {
-                      const val = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
-                      setFormValues((prev) => ({ ...prev, name: val }))
-                      if (serverErrors.name) setServerErrors((prev) => ({ ...prev, name: '' }))
-                    }}
-                    onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
-                    placeholder="e.g. Kilogram"
-                    error={(touched.name || wasSubmitted) ? (serverErrors.name || validateUnitName(formValues.name, units, editingItem?.id)) : ''}
-                    disabled={isSaving}
-                  />
+      {isCreateOpen && (() => {
+        const nameError = (touched.name || wasSubmitted)
+          ? (serverErrors.name || validateUnitName(formValues.name, units, editingItem?.id))
+          : ''
+        const shortNameError = (touched.shortName || wasSubmitted)
+          ? (serverErrors.shortName || validateUnitShortName(formValues.shortName, units, editingItem?.id))
+          : ''
 
-                  <InputField
-                    id="unitAbbreviation"
-                    name="shortName"
-                    label="Abbreviation / Symbol *"
-                    value={formValues.shortName}
-                    onChange={(e) => {
-                      const val = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
-                      setFormValues((prev) => ({ ...prev, shortName: val }))
-                      if (serverErrors.shortName) setServerErrors((prev) => ({ ...prev, shortName: '' }))
-                    }}
-                    onBlur={() => setTouched((prev) => ({ ...prev, shortName: true }))}
-                    placeholder="e.g. kg"
-                    error={(touched.shortName || wasSubmitted) ? (serverErrors.shortName || validateUnitShortName(formValues.shortName, units, editingItem?.id)) : ''}
-                    disabled={isSaving}
-                  />
+        return (
+          <FormModal
+            title={editingItem ? 'Edit Unit' : 'Add Unit'}
+            subtitle={editingItem ? 'Modify existing unit abbreviation or title.' : undefined}
+            className="form-modal--units"
+            onClose={handleCloseModal}
+          >
+            <form className="catalog-form" onSubmit={handleSave} noValidate>
+              <div className="form-modal__body--units">
+                <div className="resource-form__section">
+                  <div className="resource-form__grid-2">
+                    <InputField
+                      id="unitName"
+                      name="name"
+                      label="Unit Name *"
+                      value={formValues.name}
+                      onChange={(e) => {
+                        const val = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
+                        setFormValues((prev) => ({ ...prev, name: val }))
+                        if (serverErrors.name) setServerErrors((prev) => ({ ...prev, name: '' }))
+                      }}
+                      onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
+                      placeholder="e.g. Kilogram"
+                      error={nameError}
+                      disabled={isSaving}
+                    />
+
+                    <InputField
+                      id="unitAbbreviation"
+                      name="shortName"
+                      label="Abbreviation / Symbol *"
+                      value={formValues.shortName}
+                      onChange={(e) => {
+                        const val = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
+                        setFormValues((prev) => ({ ...prev, shortName: val }))
+                        if (serverErrors.shortName) setServerErrors((prev) => ({ ...prev, shortName: '' }))
+                      }}
+                      onBlur={() => setTouched((prev) => ({ ...prev, shortName: true }))}
+                      placeholder="e.g. kg"
+                      error={shortNameError}
+                      disabled={isSaving}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="button-row form-modal__footer">
-              <button type="submit" className="button button-primary" disabled={isSaving}>
-                <Save size={16} />
-                {isSaving ? 'Saving...' : 'Save Unit'}
-              </button>
-              <button className="button button-cancel button-secondary"
-                type="button"
-                onClick={handleCloseModal}
-                disabled={isSaving}
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </FormModal>
-      )}
+              <div className="button-row form-modal__footer">
+                <button type="submit" className="button button-primary" disabled={isSaving}>
+                  <Save size={16} />
+                  {isSaving ? 'Saving...' : 'Save Unit'}
+                </button>
+                <button className="button button-cancel button-secondary"
+                  type="button"
+                  onClick={handleCloseModal}
+                  disabled={isSaving}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </FormModal>
+        )
+      })()}
 
       {/* Delete Confirmation Modal */}
       {deleteTarget && (
