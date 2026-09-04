@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ClipboardList,
+  Eye,
   Pencil,
   Plus,
   RefreshCw,
@@ -39,6 +40,7 @@ export default function Units() {
   // Modals state
   const [isCreateOpen, setCreateOpen] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
+  const [viewingUnit, setViewingUnit] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
 
   // Filters state
@@ -269,6 +271,12 @@ export default function Units() {
         headerStyle: { width: '15%', minWidth: 80 },
         render: (item) => {
           const menuItems = [
+            {
+              key: 'view',
+              label: 'View',
+              icon: Eye,
+              onClick: () => setViewingUnit(item),
+            },
             canEdit
               ? {
                   key: 'edit',
@@ -379,77 +387,68 @@ export default function Units() {
       </div>
 
       {/* Add / Edit Form Modal */}
-      {isCreateOpen && (() => {
-        const nameError = (touched.name || wasSubmitted)
-          ? (serverErrors.name || validateUnitName(formValues.name, units, editingItem?.id))
-          : ''
-        const shortNameError = (touched.shortName || wasSubmitted)
-          ? (serverErrors.shortName || validateUnitShortName(formValues.shortName, units, editingItem?.id))
-          : ''
+      {isCreateOpen && (
+        <FormModal
+          title={editingItem ? 'Edit Unit' : 'Add Unit'}
+          subtitle={editingItem ? 'Modify existing unit abbreviation or title.' : undefined}
+          className="form-modal--units"
+          onClose={handleCloseModal}
+        >
+          <form className="catalog-form" onSubmit={handleSave}>
+            <div className="form-modal__body--units">
+              <div className="resource-form__section">
+                <div className="resource-form__grid-2">
+                  <InputField
+                    id="unitName"
+                    name="name"
+                    label="Unit Name *"
+                    value={formValues.name}
+                    onChange={(e) => {
+                      const val = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
+                      setFormValues((prev) => ({ ...prev, name: val }))
+                      if (serverErrors.name) setServerErrors((prev) => ({ ...prev, name: '' }))
+                    }}
+                    onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
+                    placeholder="e.g. Kilogram"
+                    error={(touched.name || wasSubmitted) ? (serverErrors.name || validateUnitName(formValues.name, units, editingItem?.id)) : ''}
+                    disabled={isSaving}
+                  />
 
-        return (
-          <FormModal
-            title={editingItem ? 'Edit Unit' : 'Add Unit'}
-            subtitle={editingItem ? 'Modify existing unit abbreviation or title.' : undefined}
-            className="form-modal--units"
-            onClose={handleCloseModal}
-          >
-            <form className="catalog-form" onSubmit={handleSave} noValidate>
-              <div className="form-modal__body--units">
-                <div className="resource-form__section">
-                  <div className="resource-form__grid-2">
-                    <InputField
-                      id="unitName"
-                      name="name"
-                      label="Unit Name *"
-                      value={formValues.name}
-                      onChange={(e) => {
-                        const val = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
-                        setFormValues((prev) => ({ ...prev, name: val }))
-                        if (serverErrors.name) setServerErrors((prev) => ({ ...prev, name: '' }))
-                      }}
-                      onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
-                      placeholder="e.g. Kilogram"
-                      error={nameError}
-                      disabled={isSaving}
-                    />
-
-                    <InputField
-                      id="unitAbbreviation"
-                      name="shortName"
-                      label="Abbreviation / Symbol *"
-                      value={formValues.shortName}
-                      onChange={(e) => {
-                        const val = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
-                        setFormValues((prev) => ({ ...prev, shortName: val }))
-                        if (serverErrors.shortName) setServerErrors((prev) => ({ ...prev, shortName: '' }))
-                      }}
-                      onBlur={() => setTouched((prev) => ({ ...prev, shortName: true }))}
-                      placeholder="e.g. kg"
-                      error={shortNameError}
-                      disabled={isSaving}
-                    />
-                  </div>
+                  <InputField
+                    id="unitAbbreviation"
+                    name="shortName"
+                    label="Abbreviation / Symbol *"
+                    value={formValues.shortName}
+                    onChange={(e) => {
+                      const val = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
+                      setFormValues((prev) => ({ ...prev, shortName: val }))
+                      if (serverErrors.shortName) setServerErrors((prev) => ({ ...prev, shortName: '' }))
+                    }}
+                    onBlur={() => setTouched((prev) => ({ ...prev, shortName: true }))}
+                    placeholder="e.g. kg"
+                    error={(touched.shortName || wasSubmitted) ? (serverErrors.shortName || validateUnitShortName(formValues.shortName, units, editingItem?.id)) : ''}
+                    disabled={isSaving}
+                  />
                 </div>
               </div>
+            </div>
 
-              <div className="button-row form-modal__footer">
-                <button type="submit" className="button button-primary" disabled={isSaving}>
-                  <Save size={16} />
-                  {isSaving ? 'Saving...' : 'Save Unit'}
-                </button>
-                <button className="button button-cancel button-secondary"
-                  type="button"
-                  onClick={handleCloseModal}
-                  disabled={isSaving}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </FormModal>
-        )
-      })()}
+            <div className="button-row form-modal__footer">
+              <button type="submit" className="button button-primary" disabled={isSaving}>
+                <Save size={16} />
+                {isSaving ? 'Saving...' : 'Save Unit'}
+              </button>
+              <button className="button button-cancel button-secondary"
+                type="button"
+                onClick={handleCloseModal}
+                disabled={isSaving}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </FormModal>
+      )}
 
       {/* Delete Confirmation Modal */}
       {deleteTarget && (
@@ -485,6 +484,46 @@ export default function Units() {
               >
                 <Trash2 size={16} />
                 {isDeleting ? 'Deleting...' : 'Delete Unit'}
+              </button>
+            </div>
+          </div>
+        </FormModal>
+      )}
+
+      {/* View Unit Modal */}
+      {viewingUnit && (
+        <FormModal
+          title="Unit Details"
+          onClose={() => setViewingUnit(null)}
+        >
+          <div className="catalog-form">
+            <div className="catalog-form__section">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                <div>
+                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>ID</span>
+                  <span style={{ fontWeight: 500, color: '#0f172a' }}>ID {viewingUnit.id || '—'}</span>
+                </div>
+                <div>
+                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Unit Name</span>
+                  <span style={{ fontWeight: 500, color: '#0f172a' }}>{viewingUnit.name || '—'}</span>
+                </div>
+                <div>
+                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Abbreviation / Symbol</span>
+                  <span style={{ fontWeight: 500, color: '#0f172a' }}><code>{viewingUnit.shortName || '—'}</code></span>
+                </div>
+                <div>
+                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Status</span>
+                  <StatusBadge type="active">Active</StatusBadge>
+                </div>
+              </div>
+            </div>
+            <div className="button-row catalog-form__footer" style={{ marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => setViewingUnit(null)}
+              >
+                Close
               </button>
             </div>
           </div>

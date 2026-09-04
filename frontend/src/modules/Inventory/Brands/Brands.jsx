@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Check,
   Download,
+  Eye,
   LoaderCircle,
   Package,
   Pencil,
@@ -264,6 +265,7 @@ export default function Brands() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState('')
   const [editingBrand, setEditingBrand] = useState(null)
+  const [viewingBrand, setViewingBrand] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [selectedIds, setSelectedIds] = useState([])
 
@@ -467,6 +469,12 @@ export default function Brands() {
             label={`Actions for ${item.name}`}
             className="brands__row-actions"
             actions={[
+              {
+                key: 'view',
+                label: 'View',
+                icon: Eye,
+                onClick: () => setViewingBrand(item),
+              },
               canEdit
                 ? {
                     key: 'edit',
@@ -635,6 +643,42 @@ export default function Brands() {
                 >
                   <Trash2 size={16} />
                   {isDeleting ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </div>
+          </FormModal>
+        ) : null}
+
+        {/* View Brand Modal */}
+        {viewingBrand ? (
+          <FormModal
+            title="Brand Details"
+            onClose={() => setViewingBrand(null)}
+          >
+            <div className="catalog-form">
+              <div className="catalog-form__section">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>ID</span>
+                    <span style={{ fontWeight: 500, color: '#0f172a' }}>ID {viewingBrand.id || '—'}</span>
+                  </div>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Brand Name</span>
+                    <span style={{ fontWeight: 500, color: '#0f172a' }}>{viewingBrand.name || '—'}</span>
+                  </div>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Description</span>
+                    <span style={{ fontWeight: 500, color: '#0f172a' }}>{viewingBrand.description || 'No description available'}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="button-row catalog-form__footer" style={{ marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => setViewingBrand(null)}
+                >
+                  Close
                 </button>
               </div>
             </div>

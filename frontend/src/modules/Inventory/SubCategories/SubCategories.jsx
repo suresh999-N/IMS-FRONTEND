@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Check,
   Download,
+  Eye,
   LoaderCircle,
   Pencil,
   Plus,
@@ -698,6 +699,7 @@ export default function SubCategories() {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
   const [editingRecord, setEditingRecord] = useState(null)
+  const [viewingSubCategory, setViewingSubCategory] = useState(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -1054,6 +1056,12 @@ export default function SubCategories() {
             label={`Actions for ${readResourceValue(row, 'name', config.entityName)}`}
             className="subcategories__row-actions"
             actions={[
+              {
+                key: 'view',
+                label: 'View',
+                icon: Eye,
+                onClick: () => setViewingSubCategory(row),
+              },
               canUpdate
                 ? {
                   key: 'edit',
@@ -1280,6 +1288,60 @@ export default function SubCategories() {
                 >
                   <Trash2 size={16} />
                   {isDeleting ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </div>
+          </FormModal>
+        ) : null}
+
+        {/* View SubCategory modal */}
+        {viewingSubCategory ? (
+          <FormModal
+            title="SubCategory Details"
+            onClose={() => setViewingSubCategory(null)}
+          >
+            <div className="catalog-form">
+              <div className="catalog-form__section">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>ID</span>
+                    <span style={{ fontWeight: 500, color: '#0f172a' }}>ID {readResourceValue(viewingSubCategory, 'id', '—')}</span>
+                  </div>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>SubCategory Name</span>
+                    <span style={{ fontWeight: 500, color: '#0f172a' }}>{readResourceValue(viewingSubCategory, 'name', '—')}</span>
+                  </div>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Category</span>
+                    <span style={{ fontWeight: 500, color: '#0f172a' }}>{readResourceValue(viewingSubCategory, 'categoryName', readResourceValue(viewingSubCategory, 'category', '—'))}</span>
+                  </div>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Status</span>
+                    <StatusBadge status={readResourceValue(viewingSubCategory, 'status', 'Active')}>
+                      {formatStatusLabel(readResourceValue(viewingSubCategory, 'status', 'Active'))}
+                    </StatusBadge>
+                  </div>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Description</span>
+                    <span style={{ fontWeight: 500, color: '#0f172a' }}>{readResourceValue(viewingSubCategory, 'description') || 'No description available'}</span>
+                  </div>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Created Date</span>
+                    <span style={{ fontWeight: 500, color: '#0f172a' }}>
+                      {readResourceValue(viewingSubCategory, 'createdAt')
+                        ? formatDate(readResourceValue(viewingSubCategory, 'createdAt'))
+                        : 'Not set'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="button-row catalog-form__footer" style={{ marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => setViewingSubCategory(null)}
+                >
+                  Close
                 </button>
               </div>
             </div>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
+  Eye,
   Pencil,
   Plus,
   RefreshCw,
@@ -83,6 +84,7 @@ export default function Attributes() {
   const [error, setError] = useState('')
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
+  const [viewingAttribute, setViewingAttribute] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [bulkDeleteTarget, setBulkDeleteTarget] = useState(null)
 
@@ -376,6 +378,12 @@ export default function Attributes() {
         headerStyle: { width: 80, minWidth: 80 },
         render: (item) => {
           const menuItems = [
+            {
+              key: 'view',
+              label: 'View',
+              icon: Eye,
+              onClick: () => setViewingAttribute(item),
+            },
             canEdit
               ? {
                   key: 'edit',
@@ -642,6 +650,46 @@ export default function Attributes() {
               >
                 <Trash2 size={16} />
                 {isBulkDeleting ? 'Deleting...' : 'Delete Selected Attributes'}
+              </button>
+            </div>
+          </div>
+        </FormModal>
+      ) : null}
+
+      {/* View Attribute Modal */}
+      {viewingAttribute ? (
+        <FormModal
+          title="Attribute Details"
+          onClose={() => setViewingAttribute(null)}
+        >
+          <div className="catalog-form">
+            <div className="catalog-form__section">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                <div>
+                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>ID</span>
+                  <span style={{ fontWeight: 500, color: '#0f172a' }}>ID {viewingAttribute.attributeId || viewingAttribute.id || '—'}</span>
+                </div>
+                <div>
+                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Attribute Name</span>
+                  <span style={{ fontWeight: 500, color: '#0f172a' }}>{viewingAttribute.name || '—'}</span>
+                </div>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Associated Values</span>
+                  <span style={{ fontWeight: 500, color: '#0f172a' }}>
+                    {viewingAttribute.values && viewingAttribute.values.length > 0
+                      ? viewingAttribute.values.join(', ')
+                      : 'No associated values'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="button-row catalog-form__footer" style={{ marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => setViewingAttribute(null)}
+              >
+                Close
               </button>
             </div>
           </div>

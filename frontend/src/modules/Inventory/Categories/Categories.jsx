@@ -6,6 +6,7 @@ import {
   ChevronRight,
   ClipboardList,
   Download,
+  Eye,
   FileText,
   FolderTree,
   Layers,
@@ -644,6 +645,7 @@ export default function Categories() {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
   const [formState, setFormState] = useState(null)
+  const [viewingCategory, setViewingCategory] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [subcategoriesViewTarget, setSubcategoriesViewTarget] = useState(null)
   const [selectedCategoryIds, setSelectedCategoryIds] = useState([])
@@ -1110,12 +1112,18 @@ export default function Categories() {
       hideable: false,
       render: (category) => (
         <div className="catalog-page__row-actions">
-          {canEdit || canDelete || (category.childCount > 0) ? (
+          {true ? (
             <ActionMenu
               iconOnly
               className="inventory-row-action-menu"
               label={`Actions for ${category.name}`}
               actions={[
+                {
+                  key: 'view',
+                  label: 'View',
+                  icon: Eye,
+                  onClick: () => setViewingCategory(category),
+                },
                 category.childCount > 0 ? {
                   key: 'view-subcategories',
                   label: 'View Subcategories',
@@ -1516,6 +1524,56 @@ export default function Categories() {
                 No subcategories created under {subcategoriesViewTarget.name} yet.
               </div>
             )}
+          </div>
+        </FormModal>
+      ) : null}
+
+      {/* View Category Modal */}
+      {viewingCategory ? (
+        <FormModal
+          title="Category Details"
+          onClose={() => setViewingCategory(null)}
+        >
+          <div className="catalog-form">
+            <div className="catalog-form__section">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                <div>
+                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>ID</span>
+                  <span style={{ fontWeight: 500, color: '#0f172a' }}>ID {categoryIdOf(viewingCategory) || '—'}</span>
+                </div>
+                <div>
+                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Category Name</span>
+                  <span style={{ fontWeight: 500, color: '#0f172a' }}>{viewingCategory.name || '—'}</span>
+                </div>
+                <div>
+                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Subcategories Count</span>
+                  <span style={{ fontWeight: 500, color: '#0f172a' }}>{getCategoryChildCount(viewingCategory, categories)}</span>
+                </div>
+                <div>
+                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Status</span>
+                  <StatusBadge status={viewingCategory.status || 'Active'}>
+                    {viewingCategory.status || 'Active'}
+                  </StatusBadge>
+                </div>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Description</span>
+                  <span style={{ fontWeight: 500, color: '#0f172a' }}>{viewingCategory.description || 'No description available'}</span>
+                </div>
+                <div>
+                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Last Updated</span>
+                  <span style={{ fontWeight: 500, color: '#0f172a' }}>{formatDate(viewingCategory.updatedAt || viewingCategory.createdAt)}</span>
+                </div>
+              </div>
+            </div>
+            <div className="button-row catalog-form__footer" style={{ marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => setViewingCategory(null)}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </FormModal>
       ) : null}
