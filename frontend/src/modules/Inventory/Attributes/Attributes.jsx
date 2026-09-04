@@ -373,9 +373,9 @@ export default function Attributes() {
         key: 'actions',
         label: 'Actions',
         className: 'attributes-col-actions',
-        tableWidth: 80,
-        style: { width: 80, minWidth: 80 },
-        headerStyle: { width: 80, minWidth: 80 },
+        tableWidth: 130,
+        style: { width: 130, minWidth: 130 },
+        headerStyle: { width: 130, minWidth: 130 },
         render: (item) => {
           const menuItems = [
             {
