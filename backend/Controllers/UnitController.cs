@@ -251,17 +251,48 @@ namespace IMSBackend.Controllers
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                return "Unit name is required.";
+                return "Unit Name is required.";
             }
 
-            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-z0-9\s.,&'/\-°%()]+$"))
+            if (name.Length < 2)
             {
-                return "Name contains invalid characters.";
+                return "Unit Name must be at least 2 characters.";
+            }
+
+            if (name.Length > 30)
+            {
+                return "Unit Name cannot exceed 30 characters.";
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-z0-9\s.,&'/\-°%().]+$"))
+            {
+                return "Unit Name contains invalid characters.";
+            }
+
+            var words = name.Split(new[] { ' ', '-', '/' }, StringSplitOptions.RemoveEmptyEntries);
+            if (words.Any(w => w.Length > 15))
+            {
+                return "Unit Name contains invalid or excessive long words.";
             }
 
             if (string.IsNullOrWhiteSpace(shortName))
             {
-                return "Unit abbreviation is required.";
+                return "Abbreviation / Symbol is required.";
+            }
+
+            if (shortName.Length > 10)
+            {
+                return "Abbreviation cannot exceed 10 characters.";
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(shortName, @"^[A-Za-z0-9\s.,&'/\-°%().]+$"))
+            {
+                return "Abbreviation contains invalid characters.";
+            }
+
+            if (shortName.Length > 8 && !System.Text.RegularExpressions.Regex.IsMatch(shortName, @"[\s\-/.]"))
+            {
+                return "Abbreviation / Symbol is invalid or too long.";
             }
 
             var nameStem = GetCanonicalUnitStem(name);
@@ -278,7 +309,7 @@ namespace IMSBackend.Controllers
 
             if (duplicateNameExists)
             {
-                return "Unit name already exists.";
+                return "Unit Name already exists.";
             }
 
             var duplicateShortNameExists = activeUnits.Any(item =>
@@ -286,7 +317,7 @@ namespace IMSBackend.Controllers
                 item.ShortName.Equals(shortName, StringComparison.OrdinalIgnoreCase));
 
             return duplicateShortNameExists
-                ? "Unit abbreviation already exists."
+                ? "Unit Abbreviation already exists."
                 : null;
         }
 

@@ -19,6 +19,7 @@ import DropdownWithAdd from "../../../../components/DropdownWithAdd";
 import InputField from "../../../../components/InputField";
 import QuantityInput from "../../../../components/QuantityInput";
 import SearchableSelect from "../../../../components/SearchableSelect";
+import { validateUnitName } from "../../../../validators/unitValidator";
 import { getResponseData, getResponseList, resolveApiAssetUrl } from "../../../../api/apiClient";
 import {
   createBrand,
@@ -850,12 +851,14 @@ export default function ProductForm({
 
   async function handleAddUnit(draft) {
     const label = normalizeString(draft?.name)
-    if (!label) {
+    const err = validateUnitName(label, options.units)
+    if (err) {
+      showToast(err, 'error')
       return null
     }
 
     try {
-      const response = await createUnit({ name: label })
+      const response = await createUnit({ name: label, shortName: label })
 
       if (!response.success) {
         throw new Error(response.error || 'Failed to create unit')
