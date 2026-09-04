@@ -14,6 +14,7 @@ public class Supplier
     public string? Name { get; set; }
 
     [Column("company_name")]
+    [MaxLength(150)]
     public string? CompanyName { get; set; }
 
     public string? Category { get; set; }
@@ -28,6 +29,7 @@ public class Supplier
 
     public string? Email { get; set; }
 
+    [MaxLength(150)]
     public string? Website { get; set; }
 
     [Column("status", TypeName = "varchar(20)")]

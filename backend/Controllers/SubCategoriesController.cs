@@ -168,10 +168,11 @@ namespace IMSBackend.Controllers
 
             model.CreatedAt = DateTime.Now;
             model.IsDeleted = false;
-            if (string.IsNullOrWhiteSpace(model.Status))
-            {
-                model.Status = "Active";
-            }
+            model.Status = string.IsNullOrWhiteSpace(model.Status)
+                ? "Active"
+                : model.Status.Trim().Equals("inactive", StringComparison.OrdinalIgnoreCase)
+                    ? "Inactive"
+                    : "Active";
 
             _context.SubCategories.Add(model);
 
@@ -241,8 +242,11 @@ namespace IMSBackend.Controllers
             subCategory.Description =
                 model.Description;
 
-            subCategory.Status =
-                model.Status;
+            subCategory.Status = string.IsNullOrWhiteSpace(model.Status)
+                ? "Active"
+                : model.Status.Trim().Equals("inactive", StringComparison.OrdinalIgnoreCase)
+                    ? "Inactive"
+                    : "Active";
 
             await _context.SaveChangesAsync();
 

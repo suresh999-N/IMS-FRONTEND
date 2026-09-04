@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -7,47 +6,24 @@ namespace IMS.Backend.Helpers
 {
     public static class EmailValidationHelper
     {
-        public const int EmailMaxLength = 254;
+        public const int EmailMaxLength = 150;
 
         private static readonly HashSet<string> ValidTlds = new(StringComparer.OrdinalIgnoreCase)
         {
-            "com", "in", "org", "net", "edu", "gov", "io", "co", "info", "biz", "tech",
-            "app", "dev", "store", "online", "me", "site", "ca", "uk", "au", "us", "de",
-            "fr", "jp", "sg", "ae", "cn", "ru", "br", "nl", "se", "no", "fi", "dk", "pl",
-            "it", "es", "mx", "za", "nz", "ch", "at", "be", "ph", "id", "my", "th", "vn",
-            "live", "cloud", "digital", "global", "systems", "solutions", "agency", "group",
-            "services", "co.in", "net.in", "org.in", "edu.in", "gov.in", "ac.in", "co.uk",
-            "com.au", "co.jp", "or.jp", "ne.jp", "ac.uk", "gov.uk", "co.za"
-        };
-
-        private static readonly HashSet<string> TypoTlds = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "cm", "c", "coom", "comm", "commm", "ccommmm", "con", "cmm", "gma", "gmai", "gamil"
-        };
-
-        private static readonly Dictionary<string, string> CommonDomainTypos = new(StringComparer.OrdinalIgnoreCase)
-        {
-            { "gmail.cm", "gmail.com" },
-            { "gmail.co", "gmail.com" },
-            { "gmail.commm", "gmail.com" },
-            { "gmail.comm", "gmail.com" },
-            { "gmail.coom", "gmail.com" },
-            { "gmai.com", "gmail.com" },
-            { "gmai.co", "gmail.com" },
-            { "gamil.com", "gmail.com" },
-            { "gamil.co", "gmail.com" },
-            { "gmial.com", "gmail.com" },
-            { "gmial.co", "gmail.com" },
-            { "gmaill.com", "gmail.com" },
-            { "yahoo.cm", "yahoo.com" },
-            { "yahoo.co", "yahoo.com" },
-            { "yaho.com", "yahoo.com" },
-            { "hotmail.cm", "hotmail.com" },
-            { "hotmail.co", "hotmail.com" },
-            { "hotmial.com", "hotmail.com" },
-            { "outlook.cm", "outlook.com" },
-            { "outlook.co", "outlook.com" },
-            { "outlok.com", "outlook.com" }
+            "com", "org", "net", "edu", "gov", "mil", "int", "info", "biz", "co", "in", "io", "ai",
+            "app", "dev", "tech", "store", "online", "site", "xyz", "me", "tv", "cc", "mobi", "asia",
+            "name", "pro", "tel", "travel", "museum", "uk", "us", "ca", "de", "fr", "jp", "cn", "nl",
+            "se", "no", "fi", "es", "it", "ru", "mx", "br", "za", "sg", "hk", "tw", "kr", "nz", "ch",
+            "at", "be", "dk", "pl", "pt", "cz", "ro", "gr", "hu", "ie", "il", "my", "ph", "th", "vn",
+            "id", "ae", "sa", "cl", "ar", "pe", "cloud", "digital", "email", "group", "help", "global",
+            "life", "live", "link", "media", "news", "space", "today", "world", "works", "zone",
+            "design", "studio", "agency", "solutions", "services", "systems", "network", "company",
+            "management", "center", "directory", "shop", "blog", "club", "fun", "icu", "one", "top",
+            "vip", "work", "fit", "art", "law", "pub", "bar", "ink", "win", "bid", "cam", "run", "red",
+            "ren", "kim", "mom", "men", "dad", "day", "fan", "foo", "gop", "how", "moe", "new", "now",
+            "ooo", "owl", "rip", "sky", "tax", "tea", "uno", "wtf", "zip", "berlin", "london", "nyc",
+            "tokyo", "paris", "amsterdam", "software", "technology", "systems", "academy", "education",
+            "foundation", "institute", "international", "organization"
         };
 
         public static bool IsValidEmail(string? value)
@@ -86,39 +62,18 @@ namespace IMS.Backend.Helpers
                 {
                     return false;
                 }
-            }
 
-            var lowerDomain = domainPart.ToLowerInvariant();
-            if (CommonDomainTypos.ContainsKey(lowerDomain))
-            {
-                return false;
+                // Reject 4 or more repeated identical characters in any domain label
+                if (Regex.IsMatch(label, @"([a-zA-Z0-9])\1{3,}"))
+                {
+                    return false;
+                }
             }
 
             var tld = domainLabels[^1].ToLowerInvariant();
-            if (string.IsNullOrWhiteSpace(tld) || !Regex.IsMatch(tld, @"^[a-z]+$") || tld.Length < 2 || tld.Length > 24)
+            if (string.IsNullOrWhiteSpace(tld) || !Regex.IsMatch(tld, @"^[a-z]+$") || tld.Length < 2)
             {
                 return false;
-            }
-
-            if (TypoTlds.Contains(tld))
-            {
-                return false;
-            }
-
-            if (domainLabels.Length >= 3)
-            {
-                var lastTwo = $"{domainLabels[^2].ToLowerInvariant()}.{tld}";
-                if (Regex.IsMatch(lastTwo, @"^[a-z]{2,4}\.[a-z]{2,4}$"))
-                {
-                    if (!ValidTlds.Contains(lastTwo) && !ValidTlds.Contains(tld))
-                    {
-                        return false;
-                    }
-                    if (Regex.IsMatch(lastTwo, @"^[a-z]{2}\.[a-z]{2}$") && !ValidTlds.Contains(lastTwo))
-                    {
-                        return false;
-                    }
-                }
             }
 
             if (!ValidTlds.Contains(tld))

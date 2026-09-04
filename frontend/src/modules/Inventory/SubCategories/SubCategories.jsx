@@ -563,6 +563,32 @@ function SubCategoryForm({
       )
     }
 
+    if (field.type === 'select') {
+      const options = field.options ?? []
+      return (
+        <div key={field.name} className={`field ${error ? 'field--error' : ''} resource-form__field--${field.name}`}>
+          <label htmlFor={`subcategory-form-${field.name}`}>{field.label}</label>
+          <select
+            id={`subcategory-form-${field.name}`}
+            name={field.name}
+            value={formData[field.name] ?? field.defaultValue ?? 'Active'}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            disabled={field.readOnly}
+            className="form-control"
+            aria-invalid={Boolean(error)}
+          >
+            {options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          {error ? <span className="field-error">{error}</span> : null}
+        </div>
+      )
+    }
+
     const isFullWidth = ['name', 'description'].includes(field.name)
     return (
       <InputField
@@ -632,8 +658,8 @@ function SubCategoryForm({
 function getSubCategoryStatus(row) {
   const rawStatus = readResourceValue(row, 'status', '')
   const norm = String(rawStatus ?? '').trim().toLowerCase()
-  if (!norm || norm === 'active') return 'active'
-  return norm
+  if (norm === 'inactive') return 'inactive'
+  return 'active'
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1154,7 +1180,6 @@ export default function SubCategories() {
           <option value="all">All Statuses</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
-          <option value="draft">Draft</option>
         </select>
       </label>
     </FilterBar>

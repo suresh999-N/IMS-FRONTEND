@@ -147,7 +147,6 @@ export const RESOURCE_CONFIGS = {
         options: [
           { value: 'Active', label: 'Active' },
           { value: 'Inactive', label: 'Inactive' },
-          { value: 'Draft', label: 'Draft' },
         ],
       },
     ],

@@ -14,11 +14,11 @@ namespace IMSBackend.DTOs
         public string Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email address is required.")]
-        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
         [MaxLength(254, ErrorMessage = "Email address cannot exceed 254 characters.")]
         [RegularExpression(
             @"^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+(?<!\.)@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,24}$",
-            ErrorMessage = "Enter a valid email address."
+            ErrorMessage = "Please enter a valid email address."
         )]
         public string Email { get; set; } = string.Empty;
 

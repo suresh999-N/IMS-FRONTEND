@@ -135,10 +135,10 @@ namespace IMSBackend.Controllers
                 if (!EmailValidationHelper.IsValidEmail(email))
                 {
                     return BadRequest(ApiResponse<object>.Fail(
-                        "Enter a valid email address.",
+                        "Please enter a valid email address.",
                         new Dictionary<string, string[]>
                         {
-                            { "Email", new[] { "Enter a valid email address." } }
+                            { "Email", new[] { "Please enter a valid email address." } }
                         },
                         traceId: HttpContext.TraceIdentifier));
                 }
@@ -700,6 +700,17 @@ namespace IMSBackend.Controllers
         {
 
             var email = dto.Email.Trim().ToLowerInvariant();
+
+            if (!EmailValidationHelper.IsValidEmail(email))
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    "Please enter a valid email address.",
+                    new Dictionary<string, string[]>
+                    {
+                        { "Email", new[] { "Please enter a valid email address." } }
+                    },
+                    traceId: HttpContext.TraceIdentifier));
+            }
 
             var user = await _context.Users
 
@@ -1344,12 +1355,18 @@ namespace IMSBackend.Controllers
             ResendVerificationDto dto,
             CancellationToken cancellationToken)
         {
-            if (dto == null || string.IsNullOrWhiteSpace(dto.Email))
-            {
-                return BadRequest(ApiResponse<object>.Fail("Email is required.", traceId: HttpContext.TraceIdentifier));
-            }
-
             var email = dto.Email.Trim().ToLowerInvariant();
+
+            if (!EmailValidationHelper.IsValidEmail(email))
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    "Please enter a valid email address.",
+                    new Dictionary<string, string[]>
+                    {
+                        { "Email", new[] { "Please enter a valid email address." } }
+                    },
+                    traceId: HttpContext.TraceIdentifier));
+            }
 
             var pendingUser = await _context.PendingUsers
                 .FirstOrDefaultAsync(

@@ -9,7 +9,7 @@ import {
   ShieldCheck,
   ShoppingCart,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { resendLoginOtp, verifyOtp } from '../../api/authApi'
 import loginLeftPanel from '../../assets/auth/login-left-panel.png'

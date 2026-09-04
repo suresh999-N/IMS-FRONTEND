@@ -743,8 +743,8 @@ function sanitizeBasicValue(name, value) {
   if (name === 'gstNumber') return normalizeCode(value, INPUT_LIMITS.gst)
   if (name === 'panNumber') return normalizeCode(value, INPUT_LIMITS.pan)
   if (name === 'name') return normalizeBusinessText(value).slice(0, INPUT_LIMITS.supplierName)
-  if (name === 'companyName') return normalizeBusinessText(value, { allowAmpersand: true }).slice(0, INPUT_LIMITS.companyName)
-  if (name === 'website') return cleanString(value).slice(0, INPUT_LIMITS.website)
+  if (name === 'companyName') return normalizeBusinessText(value, { allowAmpersand: true })
+  if (name === 'website') return cleanString(value)
   return value
 }
 

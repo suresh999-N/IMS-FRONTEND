@@ -1,44 +1,21 @@
-export const EMAIL_MAX_LENGTH = 254
+export const EMAIL_MAX_LENGTH = 150
 
 const VALID_TLDS = new Set([
-  'com', 'in', 'org', 'net', 'edu', 'gov', 'io', 'co', 'info', 'biz', 'tech',
-  'app', 'dev', 'store', 'online', 'me', 'site', 'ca', 'uk', 'au', 'us', 'de',
-  'fr', 'jp', 'sg', 'ae', 'cn', 'ru', 'br', 'nl', 'se', 'no', 'fi', 'dk', 'pl',
-  'it', 'es', 'mx', 'za', 'nz', 'ch', 'at', 'be', 'ph', 'id', 'my', 'th', 'vn',
-  'live', 'cloud', 'digital', 'global', 'systems', 'solutions', 'agency', 'group',
-  'services', 'co.in', 'net.in', 'org.in', 'edu.in', 'gov.in', 'ac.in', 'co.uk',
-  'com.au', 'co.jp', 'or.jp', 'ne.jp', 'ac.uk', 'gov.uk'
+  'com', 'org', 'net', 'edu', 'gov', 'mil', 'int', 'info', 'biz', 'co', 'in', 'io', 'ai',
+  'app', 'dev', 'tech', 'store', 'online', 'site', 'xyz', 'me', 'tv', 'cc', 'mobi', 'asia',
+  'name', 'pro', 'tel', 'travel', 'museum', 'uk', 'us', 'ca', 'de', 'fr', 'jp', 'cn', 'nl',
+  'se', 'no', 'fi', 'es', 'it', 'ru', 'mx', 'br', 'za', 'sg', 'hk', 'tw', 'kr', 'nz', 'ch',
+  'at', 'be', 'dk', 'pl', 'pt', 'cz', 'ro', 'gr', 'hu', 'ie', 'il', 'my', 'ph', 'th', 'vn',
+  'id', 'ae', 'sa', 'cl', 'ar', 'pe', 'cloud', 'digital', 'email', 'group', 'help', 'global',
+  'life', 'live', 'link', 'media', 'news', 'space', 'today', 'world', 'works', 'zone',
+  'design', 'studio', 'agency', 'solutions', 'services', 'systems', 'network', 'company',
+  'management', 'center', 'directory', 'shop', 'blog', 'club', 'fun', 'icu', 'one', 'top',
+  'vip', 'work', 'fit', 'art', 'law', 'pub', 'bar', 'ink', 'win', 'bid', 'cam', 'run', 'red',
+  'ren', 'kim', 'mom', 'men', 'dad', 'day', 'fan', 'foo', 'gop', 'how', 'moe', 'new', 'now',
+  'ooo', 'owl', 'rip', 'sky', 'tax', 'tea', 'uno', 'wtf', 'zip', 'berlin', 'london', 'nyc',
+  'tokyo', 'paris', 'amsterdam', 'software', 'technology', 'systems', 'academy', 'education',
+  'foundation', 'institute', 'international', 'organization'
 ])
-
-const COMMON_DOMAIN_TYPOS = {
-  'gmail.cm': 'gmail.com',
-  'gmail.co': 'gmail.com',
-  'gmail.commm': 'gmail.com',
-  'gmail.comm': 'gmail.com',
-  'gmail.coom': 'gmail.com',
-  'gmai.com': 'gmail.com',
-  'gmai.co': 'gmail.com',
-  'gamil.com': 'gmail.com',
-  'gamil.co': 'gmail.com',
-  'gmial.com': 'gmail.com',
-  'gmial.co': 'gmail.com',
-  'gmaill.com': 'gmail.com',
-  'yahoo.cm': 'yahoo.com',
-  'yahoo.co': 'yahoo.com',
-  'yaho.com': 'yahoo.com',
-  'hotmail.cm': 'hotmail.com',
-  'hotmail.co': 'hotmail.com',
-  'hotmial.com': 'hotmail.com',
-  'outlook.cm': 'outlook.com',
-  'outlook.co': 'outlook.com',
-  'outlok.com': 'outlook.com',
-}
-
-const PUBLIC_PROVIDERS = new Set([
-  'gmail', 'yahoo', 'hotmail', 'outlook', 'icloud', 'rediffmail', 'live', 'aol', 'msn', 'ymail', 'protonmail', 'zoho'
-])
-
-const TYPO_TLDS = new Set(['cm', 'c', 'coom', 'comm', 'commm', 'ccommmm', 'con', 'cmm', 'gma', 'gmai', 'gamil'])
 
 function stripUnsafeText(value) {
   return Array.from(String(value ?? '')).filter((character) => {
@@ -63,7 +40,7 @@ export function sanitizeEmailInput(value) {
 
 export function getEmailError(value, options = {}) {
   const opts = typeof options === 'string' ? { label: options } : options
-  const { required = true, label = 'Email address' } = opts
+  const { required = true, label = 'Email' } = opts
   const raw = String(value ?? '')
   const trimmed = raw.trim()
 
@@ -71,81 +48,64 @@ export function getEmailError(value, options = {}) {
     return required ? `${label} is required.` : ''
   }
 
+  const INVALID_MSG = 'Please enter a valid email address.'
+
   if (/\s/.test(trimmed) || trimmed.length > EMAIL_MAX_LENGTH) {
-    return 'Enter a valid email address.'
+    return INVALID_MSG
   }
 
   if (trimmed.includes('..')) {
-    return 'Enter a valid email address.'
+    return INVALID_MSG
   }
 
   const parts = trimmed.split('@')
   if (parts.length !== 2) {
-    return 'Enter a valid email address.'
+    return INVALID_MSG
   }
 
   const [localPart, domainPart] = parts
   if (!localPart || !domainPart) {
-    return 'Enter a valid email address.'
+    return INVALID_MSG
   }
 
   if (localPart.length < 1 || localPart.length > 64) {
-    return 'Enter a valid email address.'
+    return INVALID_MSG
   }
 
   if (localPart.startsWith('.') || localPart.endsWith('.')) {
-    return 'Enter a valid email address.'
+    return INVALID_MSG
   }
 
   if (!/^[a-z0-9._%+-]+$/i.test(localPart)) {
-    return 'Enter a valid email address.'
+    return INVALID_MSG
   }
 
   if (domainPart.startsWith('.') || domainPart.endsWith('.') || domainPart.startsWith('-') || domainPart.endsWith('-')) {
-    return 'Enter a valid email address.'
+    return INVALID_MSG
   }
 
   const domainParts = domainPart.split('.')
   if (domainParts.length < 2) {
-    return 'Enter a valid email address.'
+    return INVALID_MSG
   }
 
   for (const part of domainParts) {
     if (!part || part.startsWith('-') || part.endsWith('-') || !/^[a-z0-9-]+$/i.test(part) || part.length > 63) {
-      return 'Enter a valid email address.'
+      return INVALID_MSG
     }
-  }
-
-  const lowerDomain = domainPart.toLowerCase()
-  if (COMMON_DOMAIN_TYPOS[lowerDomain]) {
-    return `Enter a valid email address (did you mean ${COMMON_DOMAIN_TYPOS[lowerDomain]}?).`
+    // Reject 4 or more repeated identical characters in any domain label (e.g. gmailllllll, commmmmmmmmm)
+    if (/([a-z0-9])\1{3,}/i.test(part)) {
+      return INVALID_MSG
+    }
   }
 
   const tld = domainParts[domainParts.length - 1].toLowerCase()
-  if (!tld || !/^[a-z]+$/i.test(tld) || tld.length < 2 || tld.length > 24) {
-    return 'Enter a valid email address.'
-  }
-
-  if (TYPO_TLDS.has(tld)) {
-    return 'Enter a valid email address.'
-  }
-
-  // Check multi-part TLD if domain has 3 or more components (e.g. abc.as.co or company.co.in)
-  if (domainParts.length >= 3) {
-    const lastTwo = `${domainParts[domainParts.length - 2].toLowerCase()}.${tld}`
-    // If last two parts look like a double TLD extension (e.g. as.co, co.in)
-    if (/^[a-z]{2,4}\.[a-z]{2,4}$/i.test(lastTwo)) {
-      if (!VALID_TLDS.has(lastTwo) && !VALID_TLDS.has(tld)) {
-        return 'Enter a valid email address.'
-      }
-      if (/^[a-z]{2}\.[a-z]{2}$/i.test(lastTwo) && !VALID_TLDS.has(lastTwo)) {
-        return 'Enter a valid email address.'
-      }
-    }
+  if (!tld || !/^[a-z]+$/i.test(tld) || tld.length < 2) {
+    return INVALID_MSG
   }
 
   if (!VALID_TLDS.has(tld)) {
-    return 'Enter a valid email address.'
+    return INVALID_MSG
   }
 
   return ''

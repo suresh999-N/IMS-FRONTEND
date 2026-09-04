@@ -119,6 +119,19 @@ namespace IMSBackend.DTOs
                     [nameof(Email)]);
             }
 
+            if (Contacts != null)
+            {
+                foreach (var contact in Contacts)
+                {
+                    if (!string.IsNullOrWhiteSpace(contact.Email) && !IsValidEmail(contact.Email.Trim()))
+                    {
+                        yield return new ValidationResult(
+                            "Please enter a valid email address.",
+                            [nameof(Email)]);
+                    }
+                }
+            }
+
             if (!string.IsNullOrWhiteSpace(phone))
             {
                 if (!Regex.IsMatch(phone, @"^\+?\d+$"))
