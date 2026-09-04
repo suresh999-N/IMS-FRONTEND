@@ -1035,10 +1035,13 @@ export default function SupplierForm({
     const { name, value } = event.target
     const nextValue = sanitizeBasicValue(name, value)
 
-    setSupplier((currentValue) => ({
-      ...currentValue,
-      [name]: nextValue,
-    }))
+    setSupplier((currentValue) => {
+      const nextSupplier = {
+        ...currentValue,
+        [name]: nextValue,
+      }
+      return syncFirstContact(nextSupplier, currentValue, contactDirtyFields)
+    })
   }
 
   function handleBlur(event) {
@@ -1153,9 +1156,8 @@ export default function SupplierForm({
         }))
       }
 
-      setSupplier((currentValue) => ({
-        ...currentValue,
-        [collectionName]: currentValue[collectionName].map((item, itemIndex) => {
+      setSupplier((currentValue) => {
+        const nextItems = currentValue[collectionName].map((item, itemIndex) => {
           const nextValue = sanitizeCollectionValue(collectionName, item, name, value)
           const nextItem = { ...item, [name]: type === 'checkbox' ? checked : nextValue }
 
@@ -1207,8 +1209,23 @@ export default function SupplierForm({
                 : collectionName === 'bankAccounts' && name === 'isPrimary' && checked
                     ? { ...item, isPrimary: false }
                     : item
-        }),
-      }))
+        })
+
+        const updatedSupplier = {
+          ...currentValue,
+          [collectionName]: nextItems,
+        }
+
+        if (collectionName === 'contacts' && index === 0) {
+          const primaryContact = nextItems[0]
+          if (primaryContact) {
+            if (name === 'phone') updatedSupplier.phone = primaryContact.phone || ''
+            if (name === 'email') updatedSupplier.email = primaryContact.email || ''
+          }
+        }
+
+        return updatedSupplier
+      })
     }
   }
 
@@ -1312,6 +1329,10 @@ export default function SupplierForm({
     markRequiredTouched()
 
     if (!isValid || readOnly || isSubmitting) {
+      const firstErrorTab = tabs.find((tab) => tabErrors[tab.id])?.id
+      if (firstErrorTab && firstErrorTab !== activeTab) {
+        handleTabChange(firstErrorTab)
+      }
       scrollToFirstError()
       return
     }
@@ -1460,6 +1481,7 @@ export default function SupplierForm({
           </button>
           {!readOnly ? (
             <button
+              type="submit"
               className={`button button-primary ${!isValid ? 'is-validation-pending' : ''}`.trim()}
               disabled={!canSubmit || isSubmitting || !isDirty}
               title={!isDirty ? 'No supplier changes to save.' : !isValid ? 'Review highlighted supplier fields before saving.' : 'Save supplier'}

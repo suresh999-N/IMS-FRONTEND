@@ -42,9 +42,9 @@ export function getPhoneError(value, label = 'Mobile number') {
     return `Please enter a valid ${label.toLowerCase()}.`
   }
 
-  // Reject sequential patterns (e.g. 0123456789, 9876543210, 1234567890)
-  const SEQUENTIAL_PATTERNS = ['0123456789', '9876543210', '1234567890']
-  if (SEQUENTIAL_PATTERNS.some((seq) => seq.includes(phone.slice(0, 6)))) {
+  // Reject sequential patterns (e.g. 0123456789, 1234567890)
+  const SEQUENTIAL_PATTERNS = ['0123456789', '1234567890']
+  if (SEQUENTIAL_PATTERNS.some((seq) => seq === phone)) {
     return `Please enter a valid ${label.toLowerCase()}.`
   }
 

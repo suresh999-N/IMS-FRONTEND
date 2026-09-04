@@ -1462,11 +1462,20 @@ namespace IMSBackend.Controllers
                 var primaryContactDto = incomingContacts.FirstOrDefault(c => c.IsPrimary) ?? incomingContacts.FirstOrDefault();
                 if (primaryContactDto != null)
                 {
-                    if (!string.IsNullOrWhiteSpace(primaryContactDto.Phone))
+                    if (!string.IsNullOrWhiteSpace(dto.Phone))
+                    {
+                        supplier.Phone = dto.Phone;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(primaryContactDto.Phone))
                     {
                         supplier.Phone = primaryContactDto.Phone;
                     }
-                    if (!string.IsNullOrWhiteSpace(primaryContactDto.Email))
+
+                    if (!string.IsNullOrWhiteSpace(dto.Email))
+                    {
+                        supplier.Email = dto.Email;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(primaryContactDto.Email))
                     {
                         supplier.Email = primaryContactDto.Email;
                     }
