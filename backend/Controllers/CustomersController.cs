@@ -7,6 +7,7 @@ using IMSBackend.Services;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using IMS.Backend.Helpers;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Data;
 
@@ -737,7 +738,7 @@ namespace IMSBackend.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateCustomer(CustomerDto dto)
         {
-            if (!string.IsNullOrWhiteSpace(dto.Name) && !System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+            if (!string.IsNullOrWhiteSpace(dto.Name) && !EmailValidationHelper.IsValidName(dto.Name))
             {
                 return ValidationError(new Dictionary<string, string[]>
                 {
@@ -921,7 +922,7 @@ namespace IMSBackend.Controllers
             int id,
             CustomerDto dto)
         {
-            if (!string.IsNullOrWhiteSpace(dto.Name) && !System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z\s]+$"))
+            if (!string.IsNullOrWhiteSpace(dto.Name) && !EmailValidationHelper.IsValidName(dto.Name))
             {
                 return ValidationError(new Dictionary<string, string[]>
                 {

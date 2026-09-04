@@ -180,6 +180,13 @@
   box-sizing: border-box !important;
 }
 
+.product-form .select-add__trigger {
+  border: 1px solid #a7f3d0 !important;
+  background: #ecfdf5 !important;
+  background-color: #ecfdf5 !important;
+  color: #047857 !important;
+}
+
 .product-form .button-row {
   display: flex;
   justify-content: flex-end;

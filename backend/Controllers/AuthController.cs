@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using IMSBackend.Services;
 using IMSBackend.Interfaces;
 using IMSBackend.Services.Authentication;
+using IMS.Backend.Helpers;
 namespace IMSBackend.Controllers
 {
     [ApiController]
@@ -107,7 +108,7 @@ namespace IMSBackend.Controllers
                         traceId: HttpContext.TraceIdentifier));
                 }
 
-                if (!System.Text.RegularExpressions.Regex.IsMatch(nameTrimmed, @"^[a-zA-Z\p{L}]+(?:\s[a-zA-Z\p{L}]+)*$"))
+                if (!EmailValidationHelper.IsValidName(nameTrimmed))
                 {
                     return BadRequest(ApiResponse<object>.Fail(
                         "Full name must contain only letters and spaces.",
@@ -131,7 +132,7 @@ namespace IMSBackend.Controllers
                 }
 
                 var email = rawEmail.ToLowerInvariant();
-                if (email.Contains("..") || !System.Text.RegularExpressions.Regex.IsMatch(email, @"^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+(?<!\.)@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,24}$"))
+                if (!EmailValidationHelper.IsValidEmail(email))
                 {
                     return BadRequest(ApiResponse<object>.Fail(
                         "Enter a valid email address.",

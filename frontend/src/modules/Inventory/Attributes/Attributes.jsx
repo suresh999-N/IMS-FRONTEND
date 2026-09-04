@@ -538,22 +538,20 @@ export default function Attributes() {
         >
           <form onSubmit={handleFormSubmit} className="resource-form" noValidate>
             <div className="resource-form__section">
-              <div className="field">
-                <InputField
-                  label="Attribute Name *"
-                  name="name"
-                  value={formValues.name}
-                  onChange={(e) => {
-                    setFormValues({ name: e.target.value })
-                    setServerErrors({})
-                  }}
-                  onBlur={() => setTouched({ name: true })}
-                  error={displayError}
-                  required
-                  placeholder="e.g. size, color, material"
-                  disabled={isSaving}
-                />
-              </div>
+              <InputField
+                label="Attribute Name *"
+                name="name"
+                value={formValues.name}
+                onChange={(e) => {
+                  setFormValues({ name: e.target.value })
+                  setServerErrors({})
+                }}
+                onBlur={() => setTouched({ name: true })}
+                error={displayError}
+                required
+                placeholder="e.g. size, color, material"
+                disabled={isSaving}
+              />
             </div>
 
             <div className="resource-form__footer">

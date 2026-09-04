@@ -344,24 +344,24 @@
   width: min(440px, calc(100vw - 32px)) !important;
   height: auto !important;
   max-height: calc(100dvh - 40px) !important;
-  border-radius: 14px;
+  border-radius: 12px !important;
 }
 
 .form-modal--attributes .form-modal__header,
 .form-modal__dialog--attributes .form-modal__header {
-  padding: 10px 20px !important;
+  padding: 12px 20px !important;
 }
 
 .form-modal__body--attributes {
   flex: 0 1 auto !important;
-  padding: 8px 16px 14px !important;
+  padding: 12px 20px 12px !important;
   overflow: visible !important;
 }
 
 .form-modal__body--attributes .resource-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
 }
@@ -369,7 +369,7 @@
 .form-modal__body--attributes .resource-form__section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   margin: 0 !important;
   padding: 0 !important;
 }
@@ -377,7 +377,7 @@
 .form-modal__body--attributes .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px !important;
   margin: 0 !important;
 }
 
@@ -388,7 +388,8 @@
   color: #374151;
   font-size: 13px;
   font-weight: 650;
-  margin-bottom: 2px;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .form-modal__body--attributes .resource-form__footer {
@@ -398,8 +399,8 @@
   justify-content: flex-end !important;
   gap: 10px !important;
   margin: 0 !important;
-  margin-top: 16px !important;
-  padding: 16px 0 0 0 !important;
+  margin-top: 8px !important;
+  padding: 8px 0 0 0 !important;
   border-top: 1px solid #e2e8f0 !important;
   background: transparent !important;
 }

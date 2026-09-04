@@ -6,6 +6,7 @@ using IMSBackend.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
+using IMS.Backend.Helpers;
 
 
 namespace IMSBackend.Controllers
@@ -60,23 +61,7 @@ namespace IMSBackend.Controllers
 
         private static bool IsValidEmailAddress(string? email)
         {
-            if (string.IsNullOrWhiteSpace(email)) return false;
-            var trimmed = email.Trim();
-            if (trimmed.Contains("..") || trimmed.Contains(" ") || trimmed.StartsWith(".") || trimmed.EndsWith(".")) return false;
-            var parts = trimmed.Split('@');
-            if (parts.Length != 2) return false;
-            var local = parts[0];
-            var domain = parts[1];
-            if (string.IsNullOrWhiteSpace(local) || string.IsNullOrWhiteSpace(domain)) return false;
-            var domainParts = domain.Split('.');
-            if (domainParts.Length < 2) return false;
-            foreach (var part in domainParts)
-            {
-                if (string.IsNullOrWhiteSpace(part) || part.StartsWith("-") || part.EndsWith("-")) return false;
-            }
-            var tld = domainParts[^1];
-            if (tld.Length < 2 || !System.Text.RegularExpressions.Regex.IsMatch(tld, @"^[A-Za-z]+$")) return false;
-            return new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(trimmed);
+            return EmailValidationHelper.IsValidEmail(email);
         }
 
         private static string? ValidateCompanyName(string? value)

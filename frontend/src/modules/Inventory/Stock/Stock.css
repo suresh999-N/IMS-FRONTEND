@@ -7524,28 +7524,33 @@
 
 /* Custom layout rules for Attributes form container to make it compact and well-aligned */
 .form-modal__body--attributes {
-  padding: 8px 16px 0 !important;
+  padding: 12px 20px 12px !important;
+}
+
+.form-modal__body--attributes .resource-form {
+  gap: 0 !important;
 }
 
 .form-modal__body--attributes .resource-form__section {
-  gap: 8px;
+  gap: 4px;
 }
 
 .form-modal__body--attributes .form-grid>.field {
   grid-column: 1 / -1;
-  /* Make the single Attribute field take the full width to align nicely */
 }
 
 .form-modal__body--attributes .field {
-  gap: 3px;
-  /* Reduced gap from 4px to 3px for compact look */
+  gap: 4px !important;
+}
+
+.form-modal__body--attributes .field label {
+  margin: 0 !important;
 }
 
 .form-modal__body--attributes .resource-form__footer {
-  padding-top: 4px;
-  padding-bottom: 8px;
-  /* Reduced bottom padding from 20px to 8px */
-  margin-top: 8px;
+  padding-top: 8px !important;
+  padding-bottom: 0;
+  margin-top: 8px !important;
 }
 
 @media (max-width: 640px) {

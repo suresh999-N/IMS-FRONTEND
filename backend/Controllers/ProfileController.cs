@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using IMS.Backend.Helpers;
 
 namespace IMSBackend.Controllers
 {
@@ -114,15 +115,16 @@ namespace IMSBackend.Controllers
             }
 
             // Manual Name Regex Validation
-            if (!System.Text.RegularExpressions.Regex.IsMatch(
-                dto.Name.Trim(),
-                @"^[A-Za-z\s]+$"))
+            if (!EmailValidationHelper.IsValidName(dto.Name))
             {
-                return BadRequest(
-                    "Name can contain only letters and spaces.");
+                return BadRequest("Name can contain only letters and spaces.");
             }
 
             var email = dto.Email.Trim().ToLowerInvariant();
+            if (!EmailValidationHelper.IsValidEmail(email))
+            {
+                return BadRequest("Enter a valid email address.");
+            }
             var phone = dto.PhoneNumber?.Trim();
 
             // Duplicate Email Check

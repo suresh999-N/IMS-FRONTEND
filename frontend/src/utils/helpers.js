@@ -5,6 +5,10 @@ import {
   sanitizeEmailInput,
 } from '../validators/emailValidator'
 import {
+  getNameError as getSharedNameError,
+  sanitizeNameInput,
+} from '../validators/nameValidator'
+import {
   compareDateOnly,
   formatDateForDisplay,
   formatDateTimeForDisplay,
@@ -308,17 +312,7 @@ export function normalizeEmail(value) {
 }
 
 export function getNameError(value, label = 'Name') {
-  const cleanValue = value.trim()
-
-  if (!cleanValue) {
-    return `${label} is required.`
-  }
-
-  if (cleanValue.length < 3) {
-    return `${label} must be at least 3 characters.`
-  }
-
-  return ''
+  return getSharedNameError(value, { label, required: true })
 }
 
 export function getEmailError(value) {

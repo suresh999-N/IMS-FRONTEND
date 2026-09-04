@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { getNameError, sanitizeNameInput } from "../../validators/nameValidator";
+import { getEmailError } from "../../validators/emailValidator";
 import "./EditProfile.css";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '').replace(/\/api$/, '');
@@ -865,10 +866,9 @@ function EditProfile({ adminProfile, settingsData, onClose, onSaveProfile }) {
       newErrors.fullName = fullNameError;
     }
 
-    if (!formData.email.trim()) {
-      newErrors.email = e.emailRequired;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = e.emailInvalid;
+    const emailErr = getEmailError(formData.email, { required: true, label: e.email });
+    if (emailErr) {
+      newErrors.email = emailErr;
     }
 
     if (!formData.phone.trim()) {

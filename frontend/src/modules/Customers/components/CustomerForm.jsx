@@ -30,6 +30,10 @@ import {
   sanitizeEmailInput,
 } from '../../../validators/emailValidator'
 import {
+  getNameError as getSharedNameError,
+  sanitizeNameInput,
+} from '../../../validators/nameValidator'
+import {
   getPhoneError,
   phoneInputProps,
   sanitizePhoneInput,
@@ -428,14 +432,7 @@ function getServerFieldError(errors, fieldName) {
 }
 
 function getNameError(value, label, { required = true, min = 3 } = {}) {
-  const cleanValue = collapseSpaces(value)
-  if (!cleanValue) return required ? `${label} is required.` : ''
-  if (cleanValue.length < min) return `${label} must be at least ${min} characters.`
-  if (!/[A-Za-z]/.test(cleanValue) || /^\d+$/.test(cleanValue)) {
-    return `${label} must contain alphabetic characters and cannot contain only numbers.`
-  }
-  if (!/^[A-Za-z0-9 .'-]+$/.test(cleanValue)) return `${label} contains invalid characters.`
-  return ''
+  return getSharedNameError(value, { label, required, min, allowAmpersand: true, allowNumbers: true })
 }
 
 function getPlaceNameError(value, label) {

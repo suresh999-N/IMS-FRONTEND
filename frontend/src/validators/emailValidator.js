@@ -38,7 +38,7 @@ const PUBLIC_PROVIDERS = new Set([
   'gmail', 'yahoo', 'hotmail', 'outlook', 'icloud', 'rediffmail', 'live', 'aol', 'msn', 'ymail', 'protonmail', 'zoho'
 ])
 
-const TYPO_TLDS = new Set(['co', 'cm', 'c', 'coom', 'comm', 'commm', 'con', 'cmm', 'gma', 'gmai'])
+const TYPO_TLDS = new Set(['cm', 'c', 'coom', 'comm', 'commm', 'ccommmm', 'con', 'cmm', 'gma', 'gmai', 'gamil'])
 
 function stripUnsafeText(value) {
   return Array.from(String(value ?? '')).filter((character) => {
@@ -102,7 +102,7 @@ export function getEmailError(value, options = {}) {
   }
 
   if (domainPart.startsWith('.') || domainPart.endsWith('.') || domainPart.startsWith('-') || domainPart.endsWith('-')) {
-    return 'Please enter a valid email address.'
+    return 'Enter a valid email address.'
   }
 
   const domainParts = domainPart.split('.')
@@ -126,7 +126,25 @@ export function getEmailError(value, options = {}) {
     return 'Enter a valid email address.'
   }
 
-  if (TYPO_TLDS.has(tld) && !lowerDomain.endsWith('.co.in') && !lowerDomain.endsWith('.co.uk') && !lowerDomain.endsWith('.co.jp') && !lowerDomain.endsWith('.co.za')) {
+  if (TYPO_TLDS.has(tld)) {
+    return 'Enter a valid email address.'
+  }
+
+  // Check multi-part TLD if domain has 3 or more components (e.g. abc.as.co or company.co.in)
+  if (domainParts.length >= 3) {
+    const lastTwo = `${domainParts[domainParts.length - 2].toLowerCase()}.${tld}`
+    // If last two parts look like a double TLD extension (e.g. as.co, co.in)
+    if (/^[a-z]{2,4}\.[a-z]{2,4}$/i.test(lastTwo)) {
+      if (!VALID_TLDS.has(lastTwo) && !VALID_TLDS.has(tld)) {
+        return 'Enter a valid email address.'
+      }
+      if (/^[a-z]{2}\.[a-z]{2}$/i.test(lastTwo) && !VALID_TLDS.has(lastTwo)) {
+        return 'Enter a valid email address.'
+      }
+    }
+  }
+
+  if (!VALID_TLDS.has(tld)) {
     return 'Enter a valid email address.'
   }
 

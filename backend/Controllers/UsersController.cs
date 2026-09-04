@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using IMSBackend.DTOs;
 using IMSBackend.Services;
 using System.Security.Claims;
+using IMS.Backend.Helpers;
 
 namespace IMSBackend.Controllers
 {
@@ -173,9 +174,14 @@ namespace IMSBackend.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUser(CreateUserDto dto)
         {
-            if (!string.IsNullOrWhiteSpace(dto.Name) && !System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z0-9\s.,&'/\-()]+$"))
+            if (!string.IsNullOrWhiteSpace(dto.Name) && !EmailValidationHelper.IsValidName(dto.Name))
             {
-                return BadRequest(new { message = "Name contains invalid characters." });
+                return BadRequest(new { message = "Full name must contain only letters and spaces." });
+            }
+            var email = dto.Email.Trim().ToLowerInvariant();
+            if (!EmailValidationHelper.IsValidEmail(email))
+            {
+                return BadRequest(new { message = "Enter a valid email address." });
             }
             var currentUserRole = GetCurrentUserRole();
 
@@ -200,7 +206,6 @@ namespace IMSBackend.Controllers
                 });
             }
 
-            var email = dto.Email.Trim().ToLowerInvariant();
             var phone = dto.PhoneNumber.Trim();
 
             var emailExists = await _context.Users
@@ -324,12 +329,16 @@ namespace IMSBackend.Controllers
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(dto.Name) && !System.Text.RegularExpressions.Regex.IsMatch(dto.Name.Trim(), @"^[A-Za-z0-9\s.,&'/\-()]+$"))
+            if (!string.IsNullOrWhiteSpace(dto.Name) && !EmailValidationHelper.IsValidName(dto.Name))
             {
-                return BadRequest(new { message = "Name contains invalid characters." });
+                return BadRequest(new { message = "Full name must contain only letters and spaces." });
             }
 
             var email = dto.Email.Trim().ToLowerInvariant();
+            if (!EmailValidationHelper.IsValidEmail(email))
+            {
+                return BadRequest(new { message = "Enter a valid email address." });
+            }
             var phone = dto.PhoneNumber.Trim();
 
             var emailExists = await _context.Users

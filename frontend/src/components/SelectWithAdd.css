@@ -30,7 +30,14 @@
   padding: 0 10px !important;
 }
 
-.select-add__trigger {
+#root .select-add__trigger,
+.select-add__trigger,
+button.select-add__trigger,
+.button.select-add__trigger,
+.button-secondary.select-add__trigger,
+.product-form .select-add__trigger,
+.form-modal .select-add__trigger,
+.resource-center .select-add__trigger {
   min-width: 92px;
   max-width: 100%;
   padding: 0 14px !important;
@@ -44,22 +51,33 @@
   transition: all 160ms ease-in-out;
 }
 
+#root .select-add__trigger:hover:not(:disabled),
 .select-add__trigger:hover:not(:disabled),
-.select-add__trigger:focus-visible {
+.select-add__trigger:focus-visible,
+.product-form .select-add__trigger:hover:not(:disabled),
+.form-modal .select-add__trigger:hover:not(:disabled),
+.resource-center .select-add__trigger:hover:not(:disabled) {
   border-color: #6ee7b7 !important;
   background: #d1fae5 !important;
   background-color: #d1fae5 !important;
   color: #065f46 !important;
 }
 
-.select-add__trigger.is-active {
+#root .select-add__trigger.is-active,
+.select-add__trigger.is-active,
+.product-form .select-add__trigger.is-active,
+.form-modal .select-add__trigger.is-active,
+.resource-center .select-add__trigger.is-active {
   border-color: #0284c7 !important;
   background: #e0f2fe !important;
   background-color: #e0f2fe !important;
   color: #0369a1 !important;
 }
 
-.select-add__trigger:disabled {
+#root .select-add__trigger:disabled,
+.select-add__trigger:disabled,
+.product-form .select-add__trigger:disabled,
+.form-modal .select-add__trigger:disabled {
   border-color: #e2e8f0 !important;
   background: #f8fafc !important;
   background-color: #f8fafc !important;
