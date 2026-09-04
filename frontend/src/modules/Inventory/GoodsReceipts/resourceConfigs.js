@@ -160,7 +160,7 @@ export const RESOURCE_CONFIGS = {
         optionValue: ['categoryId', 'id'],
         optionLabel: ['name', 'categoryName', 'title'],
         placeholder: 'Select category',
-        searchPlaceholder: 'Search categories...',
+        searchPlaceholder: 'Search categories',
       },
       { name: 'status', label: 'Status', type: 'select', options: activeStatusOptions, defaultValue: 'active' },
       { name: 'name', label: 'SubCategory Name', required: true, minLength: 2 },
@@ -467,7 +467,7 @@ export const RESOURCE_CONFIGS = {
         optionValue: ['warehouseId', 'id'],
         optionLabel: ['name', 'warehouseName', 'title'],
         placeholder: 'Select warehouse',
-        searchPlaceholder: 'Search warehouses...',
+        searchPlaceholder: 'Search warehouses',
       },
       {
         name: 'adjustmentType',
@@ -546,7 +546,7 @@ export const RESOURCE_CONFIGS = {
           return `SA-${String(id).padStart(6, '0')}`;
         },
         placeholder: 'Select adjustment',
-        searchPlaceholder: 'Search adjustments...',
+        searchPlaceholder: 'Search adjustments',
       },
       {
         name: 'productId',
@@ -559,7 +559,7 @@ export const RESOURCE_CONFIGS = {
         optionValue: ['productId', 'id'],
         optionLabel: ['name', 'productName', 'title'],
         placeholder: 'Select product',
-        searchPlaceholder: 'Search products...',
+        searchPlaceholder: 'Search products',
       },
       {
         name: 'variantId',
@@ -570,7 +570,7 @@ export const RESOURCE_CONFIGS = {
         optionValue: ['variantId', 'id'],
         optionLabel: (item) => item.variantName ? `${item.variantName} (${item.sku || ''})` : item.sku || 'Default',
         placeholder: 'Select variant',
-        searchPlaceholder: 'Search variants...',
+        searchPlaceholder: 'Search variants',
       },
       { name: 'quantity', label: 'Quantity *', type: 'number', required: true, min: 0.01 },
     ],
@@ -642,7 +642,7 @@ export const RESOURCE_CONFIGS = {
         optionValue: ['fromWarehouseId', 'id', 'warehouseId'],
         optionLabel: ['name', 'warehouseName', 'title'],
         placeholder: 'Select warehouse',
-        searchPlaceholder: 'Search warehouses...',
+        searchPlaceholder: 'Search warehouses',
       },
       {
         name: 'toWarehouseId',
@@ -655,7 +655,7 @@ export const RESOURCE_CONFIGS = {
         optionValue: ['toWarehouseId', 'id', 'warehouseId'],
         optionLabel: ['name', 'warehouseName', 'title'],
         placeholder: 'Select warehouse',
-        searchPlaceholder: 'Search warehouses...',
+        searchPlaceholder: 'Search warehouses',
       },
       {
         name: 'productId',
@@ -668,7 +668,7 @@ export const RESOURCE_CONFIGS = {
         optionValue: ['productId', 'id'],
         optionLabel: ['name', 'productName', 'title'],
         placeholder: 'Select product',
-        searchPlaceholder: 'Search products...',
+        searchPlaceholder: 'Search products',
       },
       {
         name: 'quantity',
@@ -755,7 +755,7 @@ export const RESOURCE_CONFIGS = {
           return `TR-${String(id).padStart(6, '0')}`;
         },
         placeholder: 'Select transfer',
-        searchPlaceholder: 'Search transfers...',
+        searchPlaceholder: 'Search transfers',
       },
       {
         name: 'productId',
@@ -768,7 +768,7 @@ export const RESOURCE_CONFIGS = {
         optionValue: ['productId', 'id'],
         optionLabel: ['name', 'productName', 'title'],
         placeholder: 'Select product',
-        searchPlaceholder: 'Search products...',
+        searchPlaceholder: 'Search products',
       },
       {
         name: 'variantId',
@@ -779,7 +779,7 @@ export const RESOURCE_CONFIGS = {
         optionValue: ['variantId', 'id'],
         optionLabel: (item) => item.variantName ? `${item.variantName} (${item.sku || ''})` : item.sku || 'Default',
         placeholder: 'Select variant',
-        searchPlaceholder: 'Search variants...',
+        searchPlaceholder: 'Search variants',
       },
       { name: 'quantity', label: 'Quantity *', type: 'number', required: true, min: 0.01 },
     ],
@@ -899,7 +899,7 @@ export const RESOURCE_CONFIGS = {
         optionValue: ['auditId', 'id'],
         optionLabel: (item) => item.auditNumber || item.auditNo || (item.auditId ? `AUD-${String(item.auditId).padStart(6, '0')}` : `Audit #${item.auditId || item.id}`),
         placeholder: 'Select Audit No',
-        searchPlaceholder: 'Search audit numbers...',
+        searchPlaceholder: 'Search audit numbers',
       },
       {
         name: 'productId',
@@ -912,7 +912,7 @@ export const RESOURCE_CONFIGS = {
         optionValue: ['productId', 'id'],
         optionLabel: ['name', 'productName', 'title'],
         placeholder: 'Select product',
-        searchPlaceholder: 'Search products...',
+        searchPlaceholder: 'Search products',
       },
       {
         name: 'variantId',
@@ -923,7 +923,7 @@ export const RESOURCE_CONFIGS = {
         optionValue: ['variantId', 'id'],
         optionLabel: (item) => item.variantName ? `${item.variantName} (${item.sku || ''})` : (item.sku || `Variant #${item.variantId || item.id}`),
         placeholder: 'Select variant',
-        searchPlaceholder: 'Search variants...',
+        searchPlaceholder: 'Search variants',
       },
       {
         name: 'binId',
@@ -936,7 +936,7 @@ export const RESOURCE_CONFIGS = {
         optionValue: ['binId', 'id'],
         optionLabel: ['binCode', 'code', 'name', 'binName'],
         placeholder: 'Select bin code',
-        searchPlaceholder: 'Search bin codes...',
+        searchPlaceholder: 'Search bin codes',
       },
       { name: 'systemQuantity', label: 'System Quantity *', type: 'number', required: true, min: 0 },
       { name: 'physicalQuantity', label: 'Physical Quantity *', type: 'number', required: true, min: 0 },

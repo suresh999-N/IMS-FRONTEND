@@ -1847,7 +1847,7 @@ export default function Warehouses({
                     columns={rackColumns}
                     keyField="rackId"
                     defaultPageSize={8}
-                    searchPlaceholder="Search racks..."
+                    searchPlaceholder="Search racks"
                     emptyMessage="No racks configured."
                   />
                 )}
@@ -1896,7 +1896,7 @@ export default function Warehouses({
                     keyField="binId"
                     defaultPageSize={8}
                     searchKeys={['binCode', 'rackCode', 'status']}
-                    searchPlaceholder="Search bins..."
+                    searchPlaceholder="Search bins"
                     emptyMessage="No bins configured."
                   />
                 )}
@@ -1940,7 +1940,7 @@ export default function Warehouses({
                   keyField="id"
                   defaultPageSize={8}
                   searchKeys={['productName', 'rackCode', 'binCode']}
-                  searchPlaceholder="Search product, rack, or bin..."
+                  searchPlaceholder="Search product, rack, or bin"
                   emptyMessage="No bin stock found for this warehouse."
                   toolbarContent={(
                     <FilterBar className="warehouses-page__stock-filters">

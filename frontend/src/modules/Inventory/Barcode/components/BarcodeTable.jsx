@@ -192,7 +192,7 @@ export default function BarcodeTable({ barcodes }) {
         columns={columns}
         defaultPageSize={8}
         splitToolbar
-        searchPlaceholder="Search product or code..."
+        searchPlaceholder="Search product or code"
         emptyMessage="No barcode or QR records available."
       />
     </div>

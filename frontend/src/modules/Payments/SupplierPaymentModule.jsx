@@ -1883,7 +1883,7 @@ function PaymentForm({
                 onBlur={handleBlur}
                 options={invoiceOptions}
                 placeholder="Select invoice"
-                searchPlaceholder="Search invoices..."
+                searchPlaceholder="Search invoices"
                 error={errors.invoiceId}
                 showError={touched.invoiceId}
               />

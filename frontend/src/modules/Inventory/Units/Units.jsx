@@ -380,7 +380,7 @@ export default function Units() {
           columns={columns}
           rows={filteredUnits}
           keyField="id"
-          searchPlaceholder="Search by name or symbol..."
+          searchPlaceholder="Search by name or symbol"
           loading={isLoading}
           showSearch={true}
           splitToolbar

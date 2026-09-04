@@ -1130,7 +1130,7 @@ function AuditLogsMobileFeed({ rows, isLoading }) {
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Action, module, table, user, record..."
+          placeholder="Action, module, table, user, record"
         />
       </label>
 
@@ -1647,7 +1647,7 @@ function ResourceForm({
                 ? `Loading ${fieldNoun}s...`
                 : field.placeholder || `Select ${getFieldLabel(field).toLowerCase()}`
             }
-            searchPlaceholder={field.searchPlaceholder || `Search ${fieldNoun}s...`}
+            searchPlaceholder={field.searchPlaceholder || `Search ${fieldNoun}s`}
             error={fieldError}
             showError={Boolean(fieldError)}
             disabled={field.readOnly || isReferenceLoading || Boolean(referenceError) || options.length === 0}
@@ -3326,7 +3326,7 @@ function ResourcePage({ config, navigationContent = null }) {
           loading={isLoading}
           defaultPageSize={isProductStylePage || isSubCategoriesPage || isInventoryCompactPage || isNotificationsPage || isInvoicesPage ? 20 : 8}
           showSearch={isSubCategoriesPage ? !hasSelectedSubCategories : isProductStylePage ? !hasSelectedProductStyleRows : true}
-          searchPlaceholder={`Search ${config.title.toLowerCase()}...`}
+          searchPlaceholder={`Search ${config.title.toLowerCase()}`}
           emptyMessage={`No ${config.title.toLowerCase()} records found.`}
           splitToolbar={isProductStylePage || isSubCategoriesPage || isInventoryCompactPage || isNotificationsPage || isInvoicesPage}
           showColumnControls={!(isProductStylePage && hasSelectedProductStyleRows)}

@@ -2038,7 +2038,7 @@ export default function CustomerForm({
                     onChange={handlePaymentChange}
                     options={paymentMethodOptions}
                     placeholder="Select payment method"
-                    searchPlaceholder="Search payment method..."
+                    searchPlaceholder="Search payment method"
                     error={paymentErrors.paymentMode}
                     showError={submitAttempted}
                     className="customer-payment-field customer-payment-select"

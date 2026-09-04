@@ -189,7 +189,7 @@ export default function PurchasesTable({
         columnStorageKey="ims.purchases.visibleColumns.compact.v2"
         defaultVisibleColumnKeys={['poNumber', 'supplier', 'orderDate', 'quantity', 'totalAmount', 'status', 'actions']}
         fitExplicitColumnsToContainer
-        searchPlaceholder="Search purchase orders by supplier, PO number, or status..."
+        searchPlaceholder="Search purchase orders by supplier, PO number, or status"
         emptyMessage="No purchase orders found."
       />
     </div>

@@ -29,7 +29,7 @@ export default function LowStockTable({ products }) {
         rows={products}
         columns={columns}
         defaultPageSize={8}
-        searchPlaceholder="Search product or SKU..."
+        searchPlaceholder="Search product or SKU"
         emptyMessage="Stock levels are healthy."
       />
     </div>

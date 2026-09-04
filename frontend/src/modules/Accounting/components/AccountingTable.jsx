@@ -43,7 +43,7 @@ export default function AccountingTable({ invoices }) {
         rows={invoices}
         columns={columns}
         defaultPageSize={8}
-        searchPlaceholder="Search invoices by number or party..."
+        searchPlaceholder="Search invoices by number or party"
         emptyMessage="No invoices available."
       />
     </div>

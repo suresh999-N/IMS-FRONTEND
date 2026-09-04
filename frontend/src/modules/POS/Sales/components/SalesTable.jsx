@@ -65,7 +65,7 @@ export default function SalesTable({ sales, canDelete, onDelete }) {
         rows={sales}
         columns={columns}
         defaultPageSize={8}
-        searchPlaceholder="Search sales by customer, product, warehouse, or status..."
+        searchPlaceholder="Search sales by customer, product, warehouse, or status"
         emptyMessage="No sales available."
       />
     </div>

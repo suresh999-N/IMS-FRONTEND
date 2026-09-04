@@ -509,7 +509,7 @@ export default function Attributes() {
             columns={columns}
             rows={filteredAttributes}
             keyField="attributeId"
-            searchPlaceholder="Search attributes by name..."
+            searchPlaceholder="Search attributes by name"
             loading={isLoading}
             showSearch={true}
             searchTerm={searchTerm}

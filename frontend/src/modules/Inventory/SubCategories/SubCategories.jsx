@@ -538,7 +538,7 @@ function SubCategoryForm({
                 : field.placeholder || `Select ${getFieldLabel(field).toLowerCase()}`
             }
             searchPlaceholder={
-              field.searchPlaceholder || `Search ${getFieldLabel(field).toLowerCase()}...`
+              field.searchPlaceholder || `Search ${getFieldLabel(field).toLowerCase()}`
             }
             error={fieldError}
             showError={Boolean(fieldError)}
@@ -1199,7 +1199,7 @@ export default function SubCategories() {
             defaultPageSize={20}
             defaultSortKey=""
             showSearch={!hasSelectedSubCategories}
-            searchPlaceholder="Search subcategories by name, category, or status..."
+            searchPlaceholder="Search subcategories by name, category, or status"
             emptyMessage="No subcategories found."
             splitToolbar
             filterContent={filterContent}

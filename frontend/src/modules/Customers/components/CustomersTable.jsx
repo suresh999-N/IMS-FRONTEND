@@ -515,7 +515,7 @@ export default function CustomersTable({
           'gstNumber',
           'taxNumber',
         ]}
-        searchPlaceholder="Search customers by name..."
+        searchPlaceholder="Search customers by name"
         emptyMessage="No customers found."
         defaultPageSize={20}
         defaultSortKey=""

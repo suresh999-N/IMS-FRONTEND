@@ -371,7 +371,7 @@ export default function SalesReturns() {
           columnStorageKey="ims.sales-returns.visibleColumns.v1"
           defaultVisibleColumnKeys={['returnNumber', 'invoiceNumber', 'customerName', 'returnDate', 'totalAmount', 'reason', 'actions']}
           fitExplicitColumnsToContainer={false}
-          searchPlaceholder="Search by Return ID, Invoice #, Customer, or Reason..."
+          searchPlaceholder="Search by Return ID, Invoice #, Customer, or Reason"
           emptyMessage="No sales returns found."
         />
       </div>

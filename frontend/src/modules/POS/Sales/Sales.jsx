@@ -635,7 +635,7 @@ export default function Sales({ customers = [] }) {
           defaultSortDirection="desc"
           splitToolbar
           showSearch={selectedInvoices.length === 0}
-          searchPlaceholder="Search sales by invoice, customer, or status..."
+          searchPlaceholder="Search sales by invoice, customer, or status"
           toolbarContent={selectedInvoices.length === 0 ? (
             <FilterBar className="sales-page__toolbar-actions">
               <button

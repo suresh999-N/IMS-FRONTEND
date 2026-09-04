@@ -21,7 +21,7 @@ export default function LowStockTable({ lowStockProducts }) {
         rows={lowStockProducts}
         columns={columns}
         defaultPageSize={8}
-        searchPlaceholder="Search low stock by product or warehouse..."
+        searchPlaceholder="Search low stock by product or warehouse"
         emptyMessage="Stock levels are healthy."
       />
     </div>

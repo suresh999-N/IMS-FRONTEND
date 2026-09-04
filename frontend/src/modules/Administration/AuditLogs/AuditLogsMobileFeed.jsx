@@ -137,7 +137,7 @@ export default function AuditLogsMobileFeed({ rows, isLoading }) {
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search by action, module, user, or date..."
+          placeholder="Search by action, module, user, or date"
         />
       </label>
 

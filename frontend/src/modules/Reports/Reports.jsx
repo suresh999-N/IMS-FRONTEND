@@ -1971,7 +1971,7 @@ export default function Reports({ data = {} }) {
           minVisibleColumnCount={Math.min(3, activeColumns.length)}
           columnStorageKey={`ims.reports.visibleColumns.v11.${activeReport}`}
           splitToolbar
-          searchPlaceholder={`Search ${activeTab?.label.toLowerCase() ?? 'report'}...`}
+          searchPlaceholder={`Search ${activeTab?.label.toLowerCase() ?? 'report'}`}
           emptyMessage="No report records match the current filters."
         />
       </div>

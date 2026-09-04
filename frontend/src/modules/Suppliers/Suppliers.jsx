@@ -1178,7 +1178,7 @@ export default function Suppliers({
             defaultPageSize={20}
             defaultSortKey=""
             showSearch={!hasSelectedSuppliers}
-            searchPlaceholder="Search suppliers by name, code..."
+            searchPlaceholder="Search suppliers by name, code"
             emptyMessage={isLoading ? 'Loading suppliers...' : 'No suppliers match the current filters.'}
             enableRowSelection
             selectedRowKeys={selectedSupplierIds}

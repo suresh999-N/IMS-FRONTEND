@@ -35,7 +35,7 @@ export default function SupplierPurchaseHistoryTab({ purchases }) {
         columns={columns}
         defaultPageSize={5}
         emptyMessage="No purchase orders found for this supplier."
-        searchPlaceholder="Search purchase orders..."
+        searchPlaceholder="Search purchase orders"
         splitToolbar
       />
     </SupplierSection>

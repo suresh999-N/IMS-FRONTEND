@@ -580,7 +580,7 @@ export default function WarehousesTable({
         columns={columns}
         loading={loading}
         searchKeys={['name', 'warehouseCode', 'location', 'managerName', 'phone', 'email', 'status']}
-        searchPlaceholder="Search warehouses..."
+        searchPlaceholder="Search warehouses"
         emptyMessage={emptyMessage}
         defaultPageSize={20}
         defaultSortKey=""

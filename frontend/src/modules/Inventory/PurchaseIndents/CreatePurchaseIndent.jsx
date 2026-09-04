@@ -920,7 +920,7 @@ function PurchaseIndentForm({
                 label: getUserDisplayName(user),
               }))}
               placeholder="Select approver"
-              searchPlaceholder="Search approver..."
+              searchPlaceholder="Search approver"
               hideLabel
               disabled={isSubmitting}
               menuPlacement="bottom"

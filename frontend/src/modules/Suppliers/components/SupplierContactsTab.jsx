@@ -195,7 +195,7 @@ export default function SupplierContactsTab({
                     onBlur={(event) => handleContactBlur(index, event)}
                     options={getDesignationOptions(contact.department)}
                     placeholder="Select designation"
-                    searchPlaceholder="Search or create designation..."
+                    searchPlaceholder="Search or create designation"
                     createLabel="Create designation"
                     onCreateOption={(value) => onCreateMasterOption?.('designations', value)}
                     error={getVisibleError({ error: contactErrors.designation, blurred: designationBlurred, focused: designationFocused, submitted: showErrors })}
@@ -212,7 +212,7 @@ export default function SupplierContactsTab({
                     onBlur={(event) => handleContactBlur(index, event)}
                     options={departmentOptions}
                     placeholder="Select department"
-                    searchPlaceholder="Search or create department..."
+                    searchPlaceholder="Search or create department"
                     createLabel="Create department"
                     onCreateOption={(value) => onCreateMasterOption?.('departments', value)}
                     error={getVisibleError({ error: contactErrors.department, blurred: departmentBlurred, focused: departmentFocused, submitted: showErrors })}

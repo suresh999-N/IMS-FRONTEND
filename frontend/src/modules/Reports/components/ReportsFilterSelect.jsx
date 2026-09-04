@@ -106,7 +106,7 @@ export default function ReportsFilterSelect({
               <input
                 type="text"
                 className="reports-custom-select-search-input"
-                placeholder="Search options..."
+                placeholder="Search options"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 autoFocus

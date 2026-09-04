@@ -529,7 +529,7 @@ export default function PurchaseReturns() {
 
           <input
             type="text"
-            placeholder="Search by Return ID, Supplier, GRN or Reason..."
+            placeholder="Search by Return ID, Supplier, GRN or Reason"
             value={searchQuery}
             onChange={(event) =>
               setSearchQuery(

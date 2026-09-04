@@ -403,7 +403,7 @@ export default function PurchaseIndentsTable({
         columnStorageKey="ims.purchase-indents.visibleColumns.compact.v6"
         defaultVisibleColumnKeys={['indentNumber', 'productName', 'priority', 'indentDate', 'quantity', 'status', 'requestedByDisplay', 'actions']}
         fitExplicitColumnsToContainer={false}
-        searchPlaceholder="Search indents by number or status..."
+        searchPlaceholder="Search indents by number or status"
         emptyMessage="No purchase indents found."
       />
     </div>

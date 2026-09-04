@@ -621,7 +621,7 @@ function ManagePermissions({ settingsData, onClose }) {
               <div className="permissions-search">
                 <input
                   type="text"
-                  placeholder="Search module..."
+                  placeholder="Search module"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />

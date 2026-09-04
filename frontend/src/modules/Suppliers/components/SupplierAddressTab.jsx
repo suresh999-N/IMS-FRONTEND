@@ -142,7 +142,7 @@ function AddressCountryStateFields({
           onBlur={(event) => onAddressBlur(index, event)}
           options={COUNTRY_FIELD_OPTIONS}
           placeholder="Select country"
-          searchPlaceholder="Search country..."
+          searchPlaceholder="Search country"
           error={getVisibleError({ error: countryError, blurred: countryBlurred, focused: countryFocused, submitted: showErrors })}
           showError={showErrors || countryBlurred}
           className={`supplier-address-field supplier-address-select ${getCompleteClass({ value: addressCountry, error: countryError, blurred: countryBlurred && !countryFocused })}`.trim()}
@@ -161,7 +161,7 @@ function AddressCountryStateFields({
           onBlur={(event) => onAddressBlur(index, event)}
           options={INDIA_STATE_OPTIONS}
           placeholder="Select state"
-          searchPlaceholder="Search state..."
+          searchPlaceholder="Search state"
           error={getVisibleError({ error: stateError, blurred: stateBlurred, focused: stateFocused, submitted: showErrors })}
           showError={showErrors || stateBlurred}
           className={`supplier-address-field supplier-address-select ${getCompleteClass({ value: addressState, error: stateError, blurred: stateBlurred && !stateFocused })}`.trim()}
@@ -392,7 +392,7 @@ export default function SupplierAddressTab({
                   onBlur={(event) => handleAddressBlur(index, event)}
                   options={ADDRESS_TYPES}
                   placeholder="Select address type"
-                  searchPlaceholder="Search address type..."
+                  searchPlaceholder="Search address type"
                   error={getVisibleError({ error: addressErrors.type, blurred: typeBlurred, focused: typeFocused, submitted: showErrors })}
                   showError={showErrors || typeBlurred}
                   className={`supplier-address-field supplier-address-select ${getCompleteClass({ value: address.type, error: addressErrors.type, blurred: typeBlurred && !typeFocused })}`.trim()}

@@ -166,7 +166,7 @@ export default function NotificationsTable({
         columns={columns}
         loading={loading}
         searchKeys={["title", "type", "message"]}
-        searchPlaceholder="Search notifications..."
+        searchPlaceholder="Search notifications"
         emptyMessage="No notifications found."
         defaultPageSize={20}
         defaultSortKey="createdAt"

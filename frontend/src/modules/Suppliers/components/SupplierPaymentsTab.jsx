@@ -23,7 +23,7 @@ export default function SupplierPaymentsTab({ payments }) {
         columns={columns}
         defaultPageSize={5}
         emptyMessage="No supplier payments recorded."
-        searchPlaceholder="Search payments..."
+        searchPlaceholder="Search payments"
         splitToolbar
       />
     </SupplierSection>
