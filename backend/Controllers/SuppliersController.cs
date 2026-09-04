@@ -975,6 +975,8 @@ namespace IMSBackend.Controllers
                     CreatedAt = DateTime.UtcNow
                 };
 
+                await _context.Suppliers.AddAsync(supplier);
+
                 try
                 {
                     await _context.SaveChangesAsync();
