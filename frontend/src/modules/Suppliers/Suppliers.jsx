@@ -17,7 +17,7 @@ import { showToast } from '../../components/common/toast'
 import StateBlock from '../../components/common/StateBlock'
 import FormModal from '../../layouts/FormModal'
 import { ActionMenu, DataTable, FilterBar, StatusBadge } from '../../components/erp'
-import { formatCurrency, formatDate } from '../../utils/helpers'
+import { formatCurrency } from '../../utils/helpers'
 import {
   cleanupSupplierTempDocuments,
   createSupplier,
@@ -37,7 +37,6 @@ import SupplierForm from './components/SupplierForm'
 import {
   formatCategory,
   formatEmpty,
-  formatLastPurchase,
   formatNullableCurrency,
   formatStatus,
   formatTaxValue,
@@ -393,13 +392,12 @@ export default function Suppliers({
         message: error instanceof Error ? error.message : 'Suppliers could not be loaded from the IMS API.',
       }
       setMessage(nextMessage)
-      notify(nextMessage)
     } finally {
       if (requestId === listRequestRef.current) {
         setIsLoading(false)
       }
     }
-  }, [notify])
+  }, [])
 
   const loadSupplierCategories = useCallback(async () => {
     const response = await getCategories()
@@ -693,7 +691,6 @@ export default function Suppliers({
           }
         : { success: false, message: getSupplierApiError(response, 'Supplier save failed.') }
 
-      setMessage(result)
       notify(result)
 
       if (response.success) {
@@ -706,7 +703,6 @@ export default function Suppliers({
         success: false,
         message: error instanceof Error ? error.message : 'Supplier save failed.',
       }
-      setMessage(result)
       notify(result)
     } finally {
       setIsSaving(false)
@@ -734,7 +730,6 @@ export default function Suppliers({
           }
         : { success: false, message: getSupplierDeleteApiError(response) }
 
-      setMessage(nextMessage)
       notify(nextMessage)
 
       if (response.success) {
@@ -755,7 +750,6 @@ export default function Suppliers({
         success: false,
         message: getSupplierDeleteError(error instanceof Error ? error.message : ''),
       }
-      setMessage(nextMessage)
       notify(nextMessage)
     } finally {
       setIsDeleting(false)
@@ -797,7 +791,6 @@ export default function Suppliers({
         success: true,
         message: `${suppliersToArchive.length} supplier${suppliersToArchive.length === 1 ? '' : 's'} archived successfully.`,
       }
-      setMessage(nextMessage)
       notify(nextMessage)
       bulkArchiveTarget.onComplete?.()
       setBulkArchiveTarget(null)
@@ -823,7 +816,6 @@ export default function Suppliers({
         success: false,
         message: getSupplierDeleteError(error instanceof Error ? error.message : ''),
       }
-      setMessage(nextMessage)
       notify(nextMessage)
     } finally {
       setIsDeleting(false)
@@ -841,7 +833,6 @@ export default function Suppliers({
         ? { success: true, message: 'Supplier restored successfully.' }
         : { success: false, message: getSupplierDeleteApiError(response) }
 
-      setMessage(nextMessage)
       notify(nextMessage)
 
       if (response.success) {
@@ -852,7 +843,6 @@ export default function Suppliers({
         success: false,
         message: getSupplierDeleteError(error instanceof Error ? error.message : 'Supplier restore failed.'),
       }
-      setMessage(nextMessage)
       notify(nextMessage)
     }
   }
@@ -1015,7 +1005,6 @@ export default function Suppliers({
 
   function renderSupplierMobileCard(supplier) {
     const isArchived = Boolean(supplier.isDeleted)
-    const initials = getSupplierInitials(supplier)
     const category = formatCategory(supplier.category)
     const displayStatus = isArchived ? 'archived' : supplier.status
     const statusType = getStatusBadgeType(displayStatus)

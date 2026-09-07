@@ -26,8 +26,8 @@ const STATUS_TYPE_MAP = {
   unpaid: 'pending',
   draft: 'draft',
   reversed: 'draft',
-  archived: 'draft',
-  discontinued: 'draft',
+  archived: 'archived',
+  discontinued: 'archived',
 }
 
 function normalizeStatusKey(value) {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Eye, EyeOff, X } from "lucide-react";
+import { isPasswordReused, recordPasswordHistory } from "../../validators/passwordValidator";
 import "./ChangePassword.css";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '').replace(/\/api$/, '');
@@ -326,6 +327,12 @@ function ChangePassword({ settingsData, onClose }) {
       newErrors.newPassword = p.number;
     } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(passwordData.newPassword)) {
       newErrors.newPassword = p.special;
+    } else if (
+      isPasswordReused(passwordData.newPassword, {
+        currentPassword: passwordData.currentPassword,
+      })
+    ) {
+      newErrors.newPassword = "New password cannot be the same as the old password.";
     }
 
     if (!passwordData.confirmPassword) {

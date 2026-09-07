@@ -242,3 +242,75 @@ export function getBankNameForIfscPrefix(ifscCode) {
   const prefix = String(ifscCode ?? '').trim().toUpperCase().slice(0, 4)
   return BANK_PREFIXES[prefix] || ''
 }
+
+export const FOREIGN_STATES_AND_COUNTRIES = [
+  'California', 'Texas', 'Florida', 'New York', 'Washington', 'Illinois', 'Pennsylvania', 'Ohio',
+  'Georgia', 'North Carolina', 'Michigan', 'New Jersey', 'Virginia', 'Massachusetts', 'Arizona',
+  'Tennessee', 'Indiana', 'Maryland', 'Missouri', 'Wisconsin', 'Colorado', 'Minnesota', 'South Carolina',
+  'Alabama', 'Louisiana', 'Kentucky', 'Oregon', 'Oklahoma', 'Connecticut', 'Utah', 'Nevada',
+  'London', 'Ontario', 'Quebec', 'Tokyo', 'Paris', 'Dubai', 'Sydney', 'Melbourne', 'Toronto', 'Vancouver',
+]
+
+export const MAJOR_CITIES_BY_STATE = {
+  'Andhra Pradesh': ['Visakhapatnam', 'Vijayawada', 'Guntur', 'Nellore', 'Kurnool', 'Kakinada', 'Rajahmundry', 'Rajamahendravaram', 'Tirupati', 'Anantapur', 'Kadapa', 'Eluru', 'Vizianagaram', 'Machilipatnam', 'Tenali', 'Ongole', 'Nandyal', 'Chittoor', 'Devanakonda'],
+  Telangana: ['Hyderabad', 'Warangal', 'Nizamabad', 'Khammam', 'Karimnagar', 'Ramagundam', 'Mahbubnagar', 'Nalgonda', 'Adilabad', 'Secunderabad', 'Gachibowli', 'Madhapur', 'Begumpet', 'Kukatpally'],
+  Karnataka: ['Bengaluru', 'Bangalore', 'Mysore', 'Mysuru', 'Hubballi', 'Dharwad', 'Mangaluru', 'Mangalore', 'Belagavi', 'Belgaum', 'Davanagere', 'Ballari', 'Bellary', 'Tumakuru', 'Shivamogga', 'Koramangala', 'Whitefield', 'Indiranagar', 'Jayanagar', 'Rajajinagar'],
+  Maharashtra: ['Mumbai', 'Pune', 'Nagpur', 'Thane', 'Pimpri Chinchwad', 'Nashik', 'Kalyan', 'Dombivli', 'Vasai', 'Virar', 'Aurangabad', 'Navi Mumbai', 'Solapur', 'Mira Bhayandar', 'Bhiwandi', 'Amravati', 'Nanded', 'Kolhapur', 'Sangli', 'Andheri', 'Bandra', 'Powai', 'Lower Parel'],
+  'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Trichy', 'Salem', 'Tiruppur', 'Erode', 'Vellore', 'Tirunelveli', 'Thoothukudi', 'Adyar', 'Mylapore', 'Nungambakkam', 'Velachery', 'Anna Nagar'],
+  Delhi: ['New Delhi', 'Delhi', 'Central Delhi', 'East Delhi', 'North Delhi', 'South Delhi', 'West Delhi', 'Connaught Place', 'Karol Bagh', 'Janakpuri', 'Nehru Place'],
+  Gujarat: ['Ahmedabad', 'Surat', 'Vadodara', 'Baroda', 'Rajkot', 'Bhavnagar', 'Jamnagar', 'Junagadh', 'Gandhinagar', 'Vastrapur', 'Alkapuri', 'Ashram Road'],
+  'West Bengal': ['Kolkata', 'Calcutta', 'Asansol', 'Siliguri', 'Durgapur', 'Bardhaman', 'Malda', 'Baharampur', 'Kharagpur', 'Salt Lake'],
+  'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Ghaziabad', 'Agra', 'Meerut', 'Varanasi', 'Prayagraj', 'Allahabad', 'Bareilly', 'Aligarh', 'Moradabad', 'Saharanpur', 'Gorakhpur', 'Noida', 'Greater Noida', 'Hazratganj'],
+  Rajasthan: ['Jaipur', 'Jodhpur', 'Kota', 'Bikaner', 'Ajmer', 'Udaipur', 'Bhilwara', 'Alwar'],
+  Punjab: ['Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala', 'Bathinda', 'Mohali'],
+  Haryana: ['Gurugram', 'Gurgaon', 'Faridabad', 'Panipat', 'Ambala', 'Yamunanagar', 'Rohtak', 'Hisar', 'Karnal', 'Cyber City'],
+  Kerala: ['Thiruvananthapuram', 'Kochi', 'Cochin', 'Kozhikode', 'Calicut', 'Kollam', 'Thrissur', 'Kannur', 'Alappuzha'],
+  'Madhya Pradesh': ['Indore', 'Bhopal', 'Jabalpur', 'Gwalior', 'Ujjain', 'Sagar'],
+  Bihar: ['Patna', 'Gaya', 'Bhagalpur', 'Muzaffarpur', 'Purnia', 'Darbhanga'],
+  Assam: ['Guwahati', 'Silchar', 'Dibrugarh', 'Jorhat', 'Nagaon', 'Tinsukia'],
+  Odisha: ['Bhubaneswar', 'Cuttack', 'Rourkela', 'Berhampur', 'Sambalpur'],
+  Goa: ['Panaji', 'Margao', 'Vasco da Gama', 'Mapusa'],
+  Puducherry: ['Puducherry', 'Pondicherry', 'Karaikal'],
+  Chandigarh: ['Chandigarh'],
+  'Himachal Pradesh': ['Shimla', 'Dharamshala', 'Mandi', 'Solan'],
+  'Jammu And Kashmir': ['Srinagar', 'Jammu', 'Anantnag'],
+  Jharkhand: ['Ranchi', 'Jamshedpur', 'Dhanbad', 'Bokaro'],
+  Chhattisgarh: ['Raipur', 'Bhilai', 'Bilaspur', 'Korba'],
+  Uttarakhand: ['Dehradun', 'Haridwar', 'Roorkee', 'Haldwani'],
+}
+
+export const CITY_TO_STATE_MAP = {}
+Object.entries(MAJOR_CITIES_BY_STATE).forEach(([state, cities]) => {
+  cities.forEach((city) => {
+    CITY_TO_STATE_MAP[city.toLowerCase()] = state
+  })
+})
+
+export function getCityStateError(city, state, country = 'India') {
+  const cleanCity = String(city ?? '').trim()
+  const cleanState = String(state ?? '').trim()
+
+  if (!cleanCity || !cleanState) return ''
+
+  const lowerCity = cleanCity.toLowerCase()
+  const lowerState = cleanState.toLowerCase()
+
+  const matchedIndianState = INDIA_STATES.find((s) => s.toLowerCase() === lowerCity)
+  if (matchedIndianState) {
+    if (matchedIndianState.toLowerCase() !== lowerState) {
+      return `'${cleanCity}' is a state name, not a city in ${cleanState}.`
+    }
+  }
+
+  const matchedForeignState = FOREIGN_STATES_AND_COUNTRIES.find((s) => s.toLowerCase() === lowerCity)
+  if (matchedForeignState) {
+    return `'${cleanCity}' is not a valid city in ${cleanState}.`
+  }
+
+  const registeredState = CITY_TO_STATE_MAP[lowerCity]
+  if (registeredState && registeredState.toLowerCase() !== lowerState) {
+    return `${cleanCity} belongs to ${registeredState}, not ${cleanState}.`
+  }
+
+  return ''
+}

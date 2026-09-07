@@ -121,10 +121,17 @@ const statusSelectStyles = {
   }),
 }
 
+function getFieldDisplayError(name, value, error, touched) {
+  if (!error) return ''
+  if (touched?.[name] || touched?.collections) return error
+  if (value && String(value).trim()) return error
+  return ''
+}
+
 export default function SupplierBasicInfoTab({
   formData,
   errors,
-  touched,
+  touched = {},
   onChange,
   onBlur,
   readOnly,
@@ -146,7 +153,7 @@ export default function SupplierBasicInfoTab({
           value={formData.name}
           onChange={onChange}
           onBlur={onBlur}
-          error={touched.name ? errors.name : ''}
+          error={getFieldDisplayError('name', formData.name, errors.name, touched)}
           placeholder="Enter registered supplier name"
           helperText="Spaces, initials, periods, apostrophes, and hyphens are preserved."
           className={formData.name && !errors.name ? 'field--success' : ''}
@@ -161,10 +168,10 @@ export default function SupplierBasicInfoTab({
           onChange={onChange}
           onBlur={onBlur}
           placeholder="Enter supplier code"
-          error={touched.supplierCode ? errors.supplierCode : ''}
-          helperText="Unique internal vendor code."
+          error={getFieldDisplayError('supplierCode', formData.supplierCode, errors.supplierCode, touched)}
+          helperText="Unique internal vendor code (max 20 characters)."
           className={formData.supplierCode && !errors.supplierCode ? 'field--success' : ''}
-          maxLength={40}
+          maxLength={20}
           disabled={readOnly}
         />
         <InputField
@@ -175,7 +182,7 @@ export default function SupplierBasicInfoTab({
           onChange={onChange}
           onBlur={onBlur}
           placeholder="Legal entity name"
-          error={touched.companyName ? errors.companyName : ''}
+          error={getFieldDisplayError('companyName', formData.companyName, errors.companyName, touched)}
           helperText="Business suffixes, periods, hyphens, and ampersands are supported."
           className={formData.companyName && !errors.companyName ? 'field--success' : ''}
           maxLength={150}
@@ -191,7 +198,7 @@ export default function SupplierBasicInfoTab({
           options={categoryOptions}
           placeholder={categoryOptions.length ? 'Select category' : 'No categories available'}
           error={errors.category}
-          showError={touched.category}
+          showError={touched.category || Boolean(formData.category)}
           className={formData.category && !errors.category ? 'field--success' : ''}
           disabled={readOnly || categoryOptions.length === 0}
         />
@@ -203,7 +210,7 @@ export default function SupplierBasicInfoTab({
           onChange={onChange}
           onBlur={onBlur}
           placeholder="Enter GSTIN"
-          error={touched.gstNumber ? errors.gstNumber : ''}
+          error={getFieldDisplayError('gstNumber', formData.gstNumber, errors.gstNumber, touched)}
           helperText="Example: 22AAAAA0000A1Z5"
           className={formData.gstNumber && !errors.gstNumber ? 'field--success' : ''}
           maxLength={15}
@@ -218,7 +225,7 @@ export default function SupplierBasicInfoTab({
           onChange={onChange}
           onBlur={onBlur}
           placeholder="Enter PAN"
-          error={touched.panNumber ? errors.panNumber : ''}
+          error={getFieldDisplayError('panNumber', formData.panNumber, errors.panNumber, touched)}
           helperText="Example: ABCDE1234F."
           className={formData.panNumber && !errors.panNumber ? 'field--success' : ''}
           maxLength={10}
@@ -233,7 +240,7 @@ export default function SupplierBasicInfoTab({
           value={formData.phone}
           onChange={onChange}
           onBlur={onBlur}
-          error={touched.phone ? errors.phone : ''}
+          error={getFieldDisplayError('phone', formData.phone, errors.phone, touched)}
           placeholder="9876543210"
           helperText="10 digits only."
           className={formData.phone && !errors.phone ? 'field--success' : ''}
@@ -247,7 +254,7 @@ export default function SupplierBasicInfoTab({
           value={formData.email}
           onChange={onChange}
           onBlur={onBlur}
-          error={touched.email ? errors.email : ''}
+          error={getFieldDisplayError('email', formData.email, errors.email, touched)}
           placeholder="Enter supplier email"
           helperText="Email is normalized to lowercase."
           className={formData.email && !errors.email ? 'field--success' : ''}
@@ -261,13 +268,13 @@ export default function SupplierBasicInfoTab({
           onChange={onChange}
           onBlur={onBlur}
           placeholder="Enter website URL"
-          error={touched.website ? errors.website : ''}
+          error={getFieldDisplayError('website', formData.website, errors.website, touched)}
           helperText="Domain-only entries are normalized to https://."
           className={formData.website && !errors.website ? 'field--success' : ''}
           maxLength={150}
           disabled={readOnly}
         />
-        <div className={`field supplier-basic-status-select ${touched.status && errors.status ? 'field--error' : ''} ${formData.status && !errors.status ? 'field--success' : ''}`.trim()}>
+        <div className={`field supplier-basic-status-select ${getFieldDisplayError('status', formData.status, errors.status, touched) ? 'field--error' : ''} ${formData.status && !errors.status ? 'field--success' : ''}`.trim()}>
           <label htmlFor="supplier-status">Status *</label>
           <ReactSelect
             inputId="supplier-status"
@@ -287,9 +294,11 @@ export default function SupplierBasicInfoTab({
             menuShouldScrollIntoView={false}
             styles={statusSelectStyles}
             classNamePrefix="supplier-react-select"
-            aria-invalid={Boolean(touched.status && errors.status)}
+            aria-invalid={Boolean(getFieldDisplayError('status', formData.status, errors.status, touched))}
           />
-          {touched.status && errors.status ? <span className="field-error">{errors.status}</span> : null}
+          {getFieldDisplayError('status', formData.status, errors.status, touched) ? (
+            <span className="field-error">{errors.status}</span>
+          ) : null}
         </div>
       </div>
     </SupplierSection>

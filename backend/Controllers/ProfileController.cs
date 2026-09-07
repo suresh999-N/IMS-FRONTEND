@@ -61,12 +61,12 @@ namespace IMSBackend.Controllers
         [HttpGet("me")]
         public async Task<IActionResult> GetMyProfile()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            var userIdClaim = User.FindFirst("UserId")
+                ?? User.FindFirst(ClaimTypes.NameIdentifier)
+                ?? User.FindFirst("sub");
 
-            if (userIdClaim == null)
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
                 return Unauthorized();
-
-            int userId = int.Parse(userIdClaim.Value);
 
             var user = await _context.Users
                 .Where(x => x.Id == userId)

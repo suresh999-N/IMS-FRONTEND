@@ -25,7 +25,7 @@ const SELECT_PORTAL_Z_INDEX = 2147483647
 const ADDRESS_SELECT_MAX_MENU_HEIGHT = 300
 
 const emptyAddress = {
-  type: 'Billing',
+  type: '',
   addressLine1: '',
   addressLine2: '',
   city: '',
@@ -110,6 +110,40 @@ function AddressCountryStateFields({
 }) {
   return (
     <>
+      {isIndia ? (
+        <SearchableSelect
+          key={`address-${index}-state-select-${country}`}
+          id={`supplier-address-state-${index}`}
+          name="state"
+          label="State *"
+          value={state}
+          onChange={(event) => onAddressChange(index, event)}
+          onBlur={(event) => onAddressBlur(index, event)}
+          options={INDIA_STATE_OPTIONS}
+          placeholder="Select state"
+          searchPlaceholder="Search state"
+          error={getVisibleError({ error: stateError, blurred: stateBlurred, focused: stateFocused, submitted: showErrors })}
+          showError={showErrors || stateBlurred}
+          className={`supplier-address-field supplier-address-select ${getCompleteClass({ value: addressState, error: stateError, blurred: stateBlurred && !stateFocused })}`.trim()}
+          disabled={readOnly}
+        />
+      ) : (
+        <InputField
+          key={`address-${index}-state-input-${country}`}
+          id={`supplier-address-state-${index}`}
+          name="state"
+          label="State / Province *"
+          value={state}
+          placeholder="Enter state/province"
+          onFocus={(event) => onAddressFocus(index, event)}
+          onChange={(event) => onAddressChange(index, event)}
+          onBlur={(event) => onAddressBlur(index, event)}
+          error={stateError}
+          className={`supplier-address-field ${getCompleteClass({ value: addressState, error: stateError, blurred: stateBlurred && !stateFocused })}`.trim()}
+          disabled={readOnly}
+        />
+      )}
+
       {isManualCountry ? (
         <InputField
           key={`address-${index}-country-input`}
@@ -146,40 +180,6 @@ function AddressCountryStateFields({
           error={getVisibleError({ error: countryError, blurred: countryBlurred, focused: countryFocused, submitted: showErrors })}
           showError={showErrors || countryBlurred}
           className={`supplier-address-field supplier-address-select ${getCompleteClass({ value: addressCountry, error: countryError, blurred: countryBlurred && !countryFocused })}`.trim()}
-          disabled={readOnly}
-        />
-      )}
-
-      {isIndia ? (
-        <SearchableSelect
-          key={`address-${index}-state-select-${country}`}
-          id={`supplier-address-state-${index}`}
-          name="state"
-          label="State *"
-          value={state}
-          onChange={(event) => onAddressChange(index, event)}
-          onBlur={(event) => onAddressBlur(index, event)}
-          options={INDIA_STATE_OPTIONS}
-          placeholder="Select state"
-          searchPlaceholder="Search state"
-          error={getVisibleError({ error: stateError, blurred: stateBlurred, focused: stateFocused, submitted: showErrors })}
-          showError={showErrors || stateBlurred}
-          className={`supplier-address-field supplier-address-select ${getCompleteClass({ value: addressState, error: stateError, blurred: stateBlurred && !stateFocused })}`.trim()}
-          disabled={readOnly}
-        />
-      ) : (
-        <InputField
-          key={`address-${index}-state-input-${country}`}
-          id={`supplier-address-state-${index}`}
-          name="state"
-          label="State / Province *"
-          value={state}
-          placeholder="Enter state/province"
-          onFocus={(event) => onAddressFocus(index, event)}
-          onChange={(event) => onAddressChange(index, event)}
-          onBlur={(event) => onAddressBlur(index, event)}
-          error={stateError}
-          className={`supplier-address-field ${getCompleteClass({ value: addressState, error: stateError, blurred: stateBlurred && !stateFocused })}`.trim()}
           disabled={readOnly}
         />
       )}
@@ -364,6 +364,9 @@ export default function SupplierAddressTab({
             const line2Error = addressErrors.addressLine2 && (showErrors || line2Blurred || (address.addressLine2 && address.addressLine2.trim().length >= 3))
               ? addressErrors.addressLine2
               : getVisibleError({ error: addressErrors.addressLine2, blurred: line2Blurred, focused: line2Focused, submitted: showErrors })
+            const cityError = addressErrors.city && (showErrors || cityBlurred || (address.city && (addressErrors.city.includes('not a valid city') || addressErrors.city.includes('belongs to') || addressErrors.city.includes('state name'))))
+              ? addressErrors.city
+              : getVisibleError({ error: addressErrors.city, blurred: cityBlurred, focused: cityFocused, submitted: showErrors })
             const countryError = countrySuppressed
               ? ''
               : getVisibleError({ error: addressErrors.country, blurred: countryBlurred, focused: countryFocused, submitted: showErrors })
@@ -389,7 +392,7 @@ export default function SupplierAddressTab({
                 <SearchableSelect
                   id={`supplier-address-type-${index}`}
                   name="type"
-                  label="Address Type"
+                  label="Address Type *"
                   value={address.type}
                   onChange={(event) => handleAddressChange(index, event)}
                   onBlur={(event) => handleAddressBlur(index, event)}
@@ -411,7 +414,7 @@ export default function SupplierAddressTab({
                   onChange={(event) => handleAddressChange(index, event)}
                   onBlur={(event) => handleAddressBlur(index, event)}
                   error={line1Error}
-                  className={`supplier-address-field ${getCompleteClass({ value: address.addressLine1, error: addressErrors.addressLine1, blurred: line1Blurred && !line1Focused })}`.trim()}
+                  className={`supplier-address-field supplier-address-field--full ${getCompleteClass({ value: address.addressLine1, error: addressErrors.addressLine1, blurred: line1Blurred && !line1Focused })}`.trim()}
                   disabled={readOnly}
                 />
                 <InputField
@@ -424,7 +427,7 @@ export default function SupplierAddressTab({
                   onChange={(event) => handleAddressChange(index, event)}
                   onBlur={(event) => handleAddressBlur(index, event)}
                   error={line2Error}
-                  className={`supplier-address-field ${getCompleteClass({ value: address.addressLine2, error: addressErrors.addressLine2, blurred: line2Blurred && !line2Focused })}`.trim()}
+                  className={`supplier-address-field supplier-address-field--full ${getCompleteClass({ value: address.addressLine2, error: addressErrors.addressLine2, blurred: line2Blurred && !line2Focused })}`.trim()}
                   disabled={readOnly}
                 />
                 <InputField
@@ -436,7 +439,7 @@ export default function SupplierAddressTab({
                   onFocus={(event) => handleAddressFocus(index, event)}
                   onChange={(event) => handleAddressChange(index, event)}
                   onBlur={(event) => handleAddressBlur(index, event)}
-                  error={getVisibleError({ error: addressErrors.city, blurred: cityBlurred, focused: cityFocused, submitted: showErrors })}
+                  error={cityError}
                   className={`supplier-address-field ${getCompleteClass({ value: address.city, error: addressErrors.city, blurred: cityBlurred && !cityFocused })}`.trim()}
                   disabled={readOnly}
                 />

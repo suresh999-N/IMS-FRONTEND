@@ -827,16 +827,21 @@ export default function Categories() {
     setSelectedCategoryIds((currentValue) => currentValue.filter((id) => validIdSet.has(String(id))))
   }, [allFlattenedRows])
 
+  const mainCategories = useMemo(() => {
+    return categories.filter((item) => {
+      if (item.sourceType === 'subcategory') return false
+      const pId = parentIdOf(item)
+      return !pId || pId === '0' || pId === 'null' || pId === 'undefined'
+    })
+  }, [categories])
+
   const summary = useMemo(() => {
-    const total = Number.isFinite(metrics.totalCategories)
-      ? metrics.totalCategories
-      : categories.length
     return {
-      total,
-      active: categories.filter((category) => comparable(category.status || 'active') !== 'inactive').length,
-      inactive: categories.filter((category) => comparable(category.status) === 'inactive').length,
+      total: mainCategories.length,
+      active: mainCategories.filter((category) => comparable(category.status || 'active') !== 'inactive').length,
+      inactive: mainCategories.filter((category) => comparable(category.status) === 'inactive').length,
     }
-  }, [categories, metrics])
+  }, [mainCategories])
 
   function toggleCategory(category) {
     const id = categoryIdOf(category)

@@ -1201,10 +1201,25 @@ button.status-badge:disabled,
 
 .status-pending,
 .status-draft,
+.status-archived,
 .status-unpaid {
   color: #475569;
-  background: var(--color-neutral-50);
-  border-color: var(--color-neutral-200);
+  background: var(--color-neutral-100, #f1f5f9);
+  border-color: var(--color-neutral-300, #cbd5e1);
+}
+
+.resource-center__inventory-metric--neutral,
+.resource-center__inventory-metric--archived {
+  border-color: var(--color-neutral-300, #cbd5e1);
+  background: var(--color-neutral-100, #f1f5f9);
+  color: #475569;
+}
+
+.resource-center__inventory-metric--neutral.is-active,
+.resource-center__inventory-metric--archived.is-active {
+  border-color: var(--color-neutral-600, #475569);
+  background: var(--color-neutral-200, #e2e8f0);
+  color: #1e293b;
 }
 
 .status-action {
