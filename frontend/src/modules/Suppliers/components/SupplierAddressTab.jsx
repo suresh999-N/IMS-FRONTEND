@@ -284,6 +284,9 @@ export default function SupplierAddressTab({
       }
     } else {
       clearSuppression(index, event.target.name)
+      if (event.target.name === 'state') {
+        clearSuppression(index, 'pincode')
+      }
     }
 
     onChange(index, event)

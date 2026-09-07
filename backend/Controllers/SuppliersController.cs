@@ -103,43 +103,61 @@ namespace IMSBackend.Controllers
             return null;
         }
 
+        private static readonly HashSet<string> ValidIndian2DigitPrefixes = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "11", "12", "13", "14", "15", "16", "17", "18", "19",
+            "20", "21", "22", "23", "24", "25", "26", "27", "28",
+            "30", "31", "32", "33", "34", "36", "37", "38", "39",
+            "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
+            "50", "51", "52", "53", "56", "57", "58", "59",
+            "60", "61", "62", "63", "64", "67", "68", "69",
+            "70", "71", "72", "73", "74", "75", "76", "77", "78", "79",
+            "80", "81", "82", "83", "84", "85"
+        };
+
+        private static readonly HashSet<string> InvalidDummyPatterns = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "012345", "123456", "234567", "345678", "456789",
+            "543210", "654321", "765432", "876543", "987654"
+        };
+
         private static readonly Dictionary<string, string[]> StatePincodePrefixes = new(StringComparer.OrdinalIgnoreCase)
         {
             { "Andaman And Nicobar Islands", new[] { "744" } },
-            { "Andhra Pradesh", new[] { "51", "52", "53" } },
+            { "Andhra Pradesh", new[] { "515", "516", "517", "518", "520", "521", "522", "523", "524", "530", "531", "532", "533", "534", "535" } },
             { "Arunachal Pradesh", new[] { "790", "791", "792" } },
             { "Assam", new[] { "78" } },
-            { "Bihar", new[] { "80", "81", "82", "83", "84", "85" } },
+            { "Bihar", new[] { "800", "801", "802", "803", "804", "805", "811", "812", "813", "821", "841", "842", "843", "844", "845", "846", "847", "848", "851", "852", "853", "854", "855" } },
             { "Chandigarh", new[] { "160" } },
             { "Chhattisgarh", new[] { "49" } },
             { "Dadra And Nagar Haveli And Daman And Diu", new[] { "396" } },
             { "Delhi", new[] { "11" } },
             { "Goa", new[] { "403" } },
-            { "Gujarat", new[] { "36", "37", "38", "39" } },
+            { "Gujarat", new[] { "36", "37", "38", "390", "391", "392", "393", "394", "395" } },
             { "Haryana", new[] { "12", "13" } },
             { "Himachal Pradesh", new[] { "17" } },
-            { "Jammu And Kashmir", new[] { "18", "19" } },
-            { "Jharkhand", new[] { "81", "82", "83" } },
+            { "Jammu And Kashmir", new[] { "18", "190", "191", "192", "193" } },
+            { "Jharkhand", new[] { "814", "815", "816", "822", "823", "825", "826", "827", "828", "829", "831", "832", "833", "834", "835" } },
             { "Karnataka", new[] { "56", "57", "58", "59" } },
-            { "Kerala", new[] { "67", "68", "69" } },
+            { "Kerala", new[] { "67", "680", "681", "683", "684", "685", "686", "687", "688", "689", "69" } },
             { "Ladakh", new[] { "194" } },
             { "Lakshadweep", new[] { "682" } },
             { "Madhya Pradesh", new[] { "45", "46", "47", "48" } },
-            { "Maharashtra", new[] { "40", "41", "42", "43", "44" } },
+            { "Maharashtra", new[] { "400", "401", "402", "404", "405", "41", "42", "43", "44" } },
             { "Manipur", new[] { "795" } },
             { "Meghalaya", new[] { "793", "794" } },
             { "Mizoram", new[] { "796" } },
             { "Nagaland", new[] { "797", "798" } },
             { "Odisha", new[] { "75", "76", "77" } },
             { "Puducherry", new[] { "605" } },
-            { "Punjab", new[] { "14", "15", "16" } },
+            { "Punjab", new[] { "14", "15", "161", "162", "163" } },
             { "Rajasthan", new[] { "30", "31", "32", "33", "34" } },
             { "Sikkim", new[] { "737" } },
-            { "Tamil Nadu", new[] { "60", "61", "62", "63", "64" } },
-            { "Telangana", new[] { "50" } },
+            { "Tamil Nadu", new[] { "600", "601", "602", "603", "604", "606", "607", "608", "609", "61", "62", "63", "64" } },
+            { "Telangana", new[] { "500", "501", "502", "503", "504", "505", "506", "507", "508", "509" } },
             { "Tripura", new[] { "799" } },
-            { "Uttar Pradesh", new[] { "20", "21", "22", "23", "24", "25", "26", "27", "28" } },
-            { "Uttarakhand", new[] { "24", "25", "26" } },
+            { "Uttar Pradesh", new[] { "20", "21", "22", "23", "241", "242", "243", "244", "245", "247", "25", "261", "262", "27", "28" } },
+            { "Uttarakhand", new[] { "246", "248", "249", "263" } },
             { "West Bengal", new[] { "70", "71", "72", "73", "74" } }
         };
 
@@ -203,6 +221,10 @@ namespace IMSBackend.Controllers
 
             if (!isIndia)
             {
+                if (!string.IsNullOrWhiteSpace(pincode) && !System.Text.RegularExpressions.Regex.IsMatch(pincode, @"^[A-Za-z0-9 -]{3,12}$"))
+                {
+                    return "Postal code must be 3 to 12 characters.";
+                }
                 return null;
             }
 
@@ -211,9 +233,28 @@ namespace IMSBackend.Controllers
                 return null;
             }
 
-            if (!System.Text.RegularExpressions.Regex.IsMatch(pincode, @"^\d{6}$"))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(pincode, @"^[1-9]\d{5}$"))
             {
                 return "Enter a valid 6-digit pincode.";
+            }
+
+            if (System.Text.RegularExpressions.Regex.IsMatch(pincode, @"^(\d)\1{5}$") || InvalidDummyPatterns.Contains(pincode))
+            {
+                return "Enter a valid 6-digit pincode.";
+            }
+
+            var circlePrefix = pincode.Substring(0, 2);
+            if (!ValidIndian2DigitPrefixes.Contains(circlePrefix))
+            {
+                return "Enter a valid 6-digit pincode.";
+            }
+
+            if (pincode.StartsWith("500") && int.TryParse(pincode.Substring(3), out var deliveryOffice))
+            {
+                if (deliveryOffice == 0 || deliveryOffice > 118)
+                {
+                    return "Enter a valid 6-digit pincode.";
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(state) && StatePincodePrefixes.TryGetValue(state, out var prefixes))

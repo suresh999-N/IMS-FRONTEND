@@ -10,6 +10,12 @@ import {
   getPhoneError as getSharedPhoneError,
   sanitizePhoneInput,
 } from '../../../validators/phoneValidator'
+import {
+  getPincodeError,
+  getPincodeStateError as getSharedPincodeStateError,
+  getStateForPincode,
+  sanitizePincodeInput,
+} from '../../../validators/pincodeValidator'
 import SupplierAddressTab from './SupplierAddressTab'
 import SupplierBankAccountsTab from './SupplierBankAccountsTab'
 import SupplierBasicInfoTab from './SupplierBasicInfoTab'
@@ -158,28 +164,7 @@ function isIndiaCountry(value) {
 }
 
 export function getPincodeStateError(pincode, state, country = 'India') {
-  const cleanPincode = cleanString(pincode)
-  const cleanState = cleanString(getSelectValue(state))
-  const cleanCountry = normalizeCountry(country)
-
-  if (!isIndiaCountry(cleanCountry) || !/^[0-9]{6}$/.test(cleanPincode) || !cleanState) {
-    return ''
-  }
-
-  const matchingStateKey = Object.keys(STATE_PINCODE_PREFIXES).find(
-    (key) => key.toLowerCase() === cleanState.toLowerCase()
-  )
-
-  if (!matchingStateKey) {
-    return ''
-  }
-
-  const prefixes = STATE_PINCODE_PREFIXES[matchingStateKey] || []
-  if (prefixes.length > 0 && !prefixes.some((prefix) => cleanPincode.startsWith(prefix))) {
-    return 'Pincode does not belong to the selected state.'
-  }
-
-  return ''
+  return getSharedPincodeStateError(cleanString(pincode), getSelectValue(state), country)
 }
 
 function normalizeAddress(address = {}) {
@@ -769,9 +754,7 @@ function sanitizeCollectionValue(collectionName, item, name, value) {
   }
 
   if (collectionName === 'addresses' && name === 'pincode') {
-    return isIndiaCountry(item.country)
-      ? onlyDigits(value, 6)
-      : cleanString(value).toUpperCase().replace(/[^A-Z0-9 -]/g, '').slice(0, 12)
+    return sanitizePincodeInput(value, item.country)
   }
 
   if (collectionName === 'addresses' && name === 'state') {
@@ -963,13 +946,7 @@ export default function SupplierForm({
               (INDIA_STATES.includes(state) ? '' : 'Select a valid Indian state or union territory.')
             : getPlaceNameError(state, 'State'),
         country: getRequiredError(country, 'Country'),
-        pincode:
-          !cleanString(address.pincode)
-            ? ''
-            : isIndiaCountry(country)
-              ? (getPatternError(address.pincode, /^[0-9]{6}$/, 'Enter a valid 6-digit pincode.') ||
-                 getPincodeStateError(address.pincode, state, country))
-              : getPatternError(address.pincode, /^[A-Za-z0-9 -]{3,12}$/, 'Postal code must be 3 to 12 characters.'),
+        pincode: getPincodeError(address.pincode, state, country, { required: false }),
       }
     })
   }, [supplier.addresses])
@@ -1171,6 +1148,15 @@ export default function SupplierForm({
 
             if (isIndiaCountry(nextValue) && !INDIA_STATES.includes(cleanString(item.state))) {
               nextItem.state = ''
+            }
+          }
+
+          if (collectionName === 'addresses' && name === 'pincode') {
+            if (isIndiaCountry(item.country) && !item.state && nextValue && nextValue.length === 6) {
+              const detectedState = getStateForPincode(nextValue)
+              if (detectedState) {
+                nextItem.state = detectedState
+              }
             }
           }
 

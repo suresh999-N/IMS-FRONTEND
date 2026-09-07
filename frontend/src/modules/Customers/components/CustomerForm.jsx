@@ -38,6 +38,9 @@ import {
   phoneInputProps,
   sanitizePhoneInput,
 } from '../../../validators/phoneValidator'
+import {
+  getPincodeError,
+} from '../../../validators/pincodeValidator'
 import SupplierAddressTab from '../../Suppliers/components/SupplierAddressTab'
 import SupplierBankAccountsTab from '../../Suppliers/components/SupplierBankAccountsTab'
 import SupplierContactsTab from '../../Suppliers/components/SupplierContactsTab'
@@ -620,19 +623,7 @@ function getAddressErrors(address) {
       ? (!state ? 'State is required.' : INDIA_STATES.includes(state) ? '' : 'Select a valid Indian state or union territory.')
       : getPlaceNameError(state, 'State'),
     country: country ? '' : 'Country is required.',
-    pincode:
-      !collapseSpaces(address.pincode)
-        ? ''
-        : isIndiaCountry(country)
-          ? (!PINCODE_PATTERN.test(address.pincode)
-              ? 'Enter a valid 6-digit pincode.'
-              : (() => {
-                  const prefixes = STATE_PINCODE_PREFIXES[state] || []
-                  return (prefixes.length > 0 && !prefixes.some((prefix) => address.pincode.startsWith(prefix)))
-                    ? 'Pincode does not belong to the selected state.'
-                    : ''
-                })())
-          : (/^[A-Za-z0-9 -]{3,12}$/.test(address.pincode) ? '' : 'Postal code must be 3 to 12 characters.'),
+    pincode: getPincodeError(address.pincode, state, country, { required: false }),
   }
 }
 
