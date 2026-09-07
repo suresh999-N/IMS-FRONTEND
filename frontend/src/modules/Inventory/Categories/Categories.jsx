@@ -761,16 +761,71 @@ export default function Categories() {
     )
   }, [statusFilter, visibleRows])
 
+  const allFlattenedRows = useMemo(() => {
+    const allParentIds = new Set(categories.map((cat) => categoryIdOf(cat)).filter(Boolean))
+    return buildVisibleRows(categories, allParentIds, 'tree')
+  }, [categories])
+
+  const handleSelectionChange = useCallback((newKeys) => {
+    const newKeySet = new Set(newKeys.map(String))
+    const prevKeySet = new Set(selectedCategoryIds.map(String))
+
+    const parentToChildrenMap = new Map()
+    const childToParentMap = new Map()
+
+    allFlattenedRows.forEach((row) => {
+      if (row.rowType === 'subcategory' && row.parentCategoryId) {
+        const pId = String(row.parentCategoryId)
+        const cId = String(row.id)
+        if (!parentToChildrenMap.has(pId)) {
+          parentToChildrenMap.set(pId, [])
+        }
+        parentToChildrenMap.get(pId).push(cId)
+        childToParentMap.set(cId, pId)
+      }
+    })
+
+    const addedKeys = newKeys.filter((k) => !prevKeySet.has(String(k)))
+    const removedKeys = selectedCategoryIds.filter((k) => !newKeySet.has(String(k)))
+
+    const finalSet = new Set(newKeys.map(String))
+
+    addedKeys.forEach((key) => {
+      const kStr = String(key)
+      if (parentToChildrenMap.has(kStr)) {
+        parentToChildrenMap.get(kStr).forEach((childId) => finalSet.add(childId))
+      }
+    })
+
+    removedKeys.forEach((key) => {
+      const kStr = String(key)
+      if (parentToChildrenMap.has(kStr)) {
+        parentToChildrenMap.get(kStr).forEach((childId) => finalSet.delete(childId))
+      }
+      if (childToParentMap.has(kStr)) {
+        finalSet.delete(childToParentMap.get(kStr))
+      }
+    })
+
+    parentToChildrenMap.forEach((children, parentId) => {
+      if (children.length > 0 && children.every((childId) => finalSet.has(childId))) {
+        finalSet.add(parentId)
+      }
+    })
+
+    setSelectedCategoryIds(Array.from(finalSet))
+  }, [allFlattenedRows, selectedCategoryIds])
+
   const selectedCategories = useMemo(() => {
     const selectedIdSet = new Set(selectedCategoryIds.map(String))
-    return filteredRows.filter((category) => selectedIdSet.has(String(category.id || '')))
-  }, [filteredRows, selectedCategoryIds])
+    return allFlattenedRows.filter((category) => selectedIdSet.has(String(category.id || '')))
+  }, [allFlattenedRows, selectedCategoryIds])
   const hasSelectedCategories = selectedCategories.length > 0
 
   useEffect(() => {
-    const visibleIdSet = new Set(filteredRows.map((category) => String(category.id || '')))
-    setSelectedCategoryIds((currentValue) => currentValue.filter((id) => visibleIdSet.has(String(id))))
-  }, [filteredRows])
+    const validIdSet = new Set(allFlattenedRows.map((category) => String(category.id || '')))
+    setSelectedCategoryIds((currentValue) => currentValue.filter((id) => validIdSet.has(String(id))))
+  }, [allFlattenedRows])
 
   const summary = useMemo(() => {
     const total = Number.isFinite(metrics.totalCategories)
@@ -1378,7 +1433,7 @@ export default function Categories() {
           renderMobileCard={renderCategoryMobileCard}
           enableRowSelection
           selectedRowKeys={selectedCategoryIds}
-          onSelectionChange={setSelectedCategoryIds}
+          onSelectionChange={handleSelectionChange}
           keyField="id"
         />
       </div>
