@@ -21,6 +21,7 @@ import {
   IFSC_PATTERN,
   INDIA_STATES,
   STATE_PINCODE_PREFIXES,
+  getCityStateError,
   getDesignationOptionsForDepartment,
   mergeMasterOptions,
 } from '../supplierMasterData'
@@ -85,7 +86,7 @@ const emptyBankAccount = {
 }
 
 const emptyAddress = {
-  type: 'Billing',
+  type: '',
   addressLine1: '',
   addressLine2: '',
   city: '',
@@ -106,7 +107,7 @@ const tabs = [
 const INPUT_LIMITS = {
   supplierName: 120,
   companyName: 150,
-  supplierCode: 40,
+  supplierCode: 20,
   gst: 15,
   pan: 10,
   email: 254,
@@ -187,7 +188,7 @@ function normalizeAddress(address = {}) {
   const state = cleanString(getSelectValue(address.state))
 
   return {
-    type: address.type || 'Billing',
+    type: address.type ?? '',
     addressLine1: address.addressLine1 || '',
     addressLine2: address.addressLine2 || '',
     city: address.city || '',
@@ -326,9 +327,12 @@ function getContactNameError(value) {
   if (nextValue.length > INPUT_LIMITS.contactName) return `Contact name cannot exceed ${INPUT_LIMITS.contactName} characters.`
   if (!/[A-Za-z]/.test(nextValue) || /^\d+$/.test(nextValue)) return 'Contact name must contain alphabetic characters and cannot contain only numbers.'
   if (/\s{2,}/.test(nextValue)) return 'Contact name cannot contain repeated spaces.'
-  return /^[A-Za-z0-9 .&'/\-()]+$/.test(nextValue)
-    ? ''
-    : 'Contact name can contain letters, numbers, spaces, and common punctuation only.'
+  if (!/^[A-Za-z0-9 .&'/\-()]+$/.test(nextValue)) {
+    return 'Contact name can contain letters, numbers, spaces, and common punctuation only.'
+  }
+  if (/([A-Za-z0-9])\1{3,}/.test(nextValue)) return 'Enter a valid contact name.'
+  if (/([^aeiouyAEIOUY0-9\s.&'/\-()]){6,}/i.test(nextValue)) return 'Enter a valid contact name.'
+  return ''
 }
 
 function getBusinessNameError(value, label, { required = true, min = 3, max = 150 } = {}) {
@@ -342,6 +346,8 @@ function getBusinessNameError(value, label, { required = true, min = 3, max = 15
   if (!allowedPattern.test(nextValue)) {
     return `${label} contains invalid characters.`
   }
+  if (/([A-Za-z0-9])\1{3,}/.test(nextValue)) return `Enter a valid ${label.toLowerCase()}.`
+  if (/([^aeiouyAEIOUY0-9\s.,&'/\-()]){6,}/i.test(nextValue)) return `Enter a valid ${label.toLowerCase()}.`
   return ''
 }
 
@@ -351,19 +357,41 @@ function getBankNameError(value) {
   if (nextValue.length < 2) return 'Bank name must be at least 2 characters.'
   if (nextValue.length > 100) return 'Bank name cannot exceed 100 characters.'
   if (!/[A-Za-z]/.test(nextValue)) return 'Bank name must contain letters.'
-  return /^[A-Za-z0-9 .&'-]+$/.test(nextValue)
-    ? ''
-    : 'Bank name contains invalid characters.'
+  if (!/^[A-Za-z0-9 .&'-]+$/.test(nextValue)) return 'Bank name contains invalid characters.'
+  if (/([A-Za-z0-9])\1{3,}/.test(nextValue)) return 'Enter a valid bank name.'
+  if (/([^aeiouyAEIOUY0-9\s.&'-]){6,}/i.test(nextValue)) return 'Enter a valid bank name.'
+  return ''
 }
 
-function getBusinessTitleError(value, label) {
+export function getBusinessTitleError(value, label = 'Field') {
   const nextValue = cleanString(value)
+  const lowerLabel = label.toLowerCase()
   if (!nextValue) return ''
-  if (nextValue.length > 100) return `${label} cannot exceed 100 characters.`
+  if (nextValue.length < 2) return `${label} must be at least 2 characters.`
+  if (nextValue.length > 50) return `${label} cannot exceed 50 characters.`
   if (!/[A-Za-z]/.test(nextValue)) return `${label} must contain letters.`
-  return /^[A-Za-z0-9 .,&/'-]+$/.test(nextValue)
-    ? ''
-    : `${label} contains invalid characters.`
+  if (/\d/.test(nextValue)) return `${label} cannot contain numbers.`
+  if (!/^[A-Za-z\s.,&'/\-]+$/.test(nextValue)) return `${label} contains invalid characters.`
+  if (/\s{2,}/.test(nextValue)) return `${label} cannot contain repeated spaces.`
+  if (/([A-Za-z])\1{3,}/i.test(nextValue)) return `Enter a valid ${lowerLabel}.`
+
+  const words = nextValue.split(/[\s/\-]+/).filter(Boolean)
+  for (const word of words) {
+    if (word.length > 15) return `Enter a valid ${lowerLabel}.`
+    if (/[^aeiouyAEIOUY]{4,}/i.test(word)) return `Enter a valid ${lowerLabel}.`
+    if (/[aeiouyAEIOUY]{3,}/i.test(word)) return `Enter a valid ${lowerLabel}.`
+    if (/([a-zA-Z]{3,}).*?\1/i.test(word)) return `Enter a valid ${lowerLabel}.`
+    if (word.length >= 4 && (!/[aeiouyAEIOUY]/i.test(word) || !/[bcdfghjklmnpqrstvwxzBCDFGHJKLMNPQRSTVWXZ]/i.test(word))) {
+      return `Enter a valid ${lowerLabel}.`
+    }
+    if (word.length >= 6) {
+      const vowels = (word.match(/[aeiouyAEIOUY]/g) || []).length
+      const ratio = vowels / word.length
+      if (ratio < 0.20 || ratio > 0.70) return `Enter a valid ${lowerLabel}.`
+    }
+  }
+
+  return ''
 }
 
 function getAddressLineError(value, label, required = false) {
@@ -373,16 +401,57 @@ function getAddressLineError(value, label, required = false) {
   if (INPUT_LIMITS?.addressLine && nextValue.length > INPUT_LIMITS.addressLine) {
     return `${label} cannot exceed ${INPUT_LIMITS.addressLine} characters.`
   }
-  if (!/[A-Za-z]/.test(nextValue)) {
-    return 'Address must contain meaningful text.'
+  if (!/[A-Za-z]/.test(nextValue) || /^\d+$/.test(nextValue)) {
+    return `${label} must contain letters and meaningful text.`
   }
-  return /^[A-Za-z0-9 .,/#'()\--]+$/.test(nextValue)
-    ? ''
-    : 'Enter a valid address using letters, numbers, spaces and common address punctuation.'
+  if (!/^[A-Za-z0-9 .,/#'()\-]+$/.test(nextValue)) {
+    return `Enter a valid ${label.toLowerCase()} using letters, numbers, spaces, and common address punctuation.`
+  }
+  if (/\s{2,}/.test(nextValue)) {
+    return `${label} cannot contain repeated spaces.`
+  }
+  if (/([.,/#'()\-]){2,}/.test(nextValue)) {
+    return `${label} contains repeated punctuation.`
+  }
+  if (/([A-Za-z0-9])\1{3,}/i.test(nextValue)) {
+    return `Enter a valid ${label.toLowerCase()}.`
+  }
+
+  const words = nextValue.split(/[\s,./#'()\-]+/).filter(Boolean)
+  for (const word of words) {
+    const lettersOnly = word.replace(/[^A-Za-z]/g, '')
+    if (!lettersOnly) continue
+
+    if (lettersOnly.length > 18) {
+      return `Enter a valid ${label.toLowerCase()}.`
+    }
+    if (/[^aeiouyAEIOUY]{5,}/i.test(lettersOnly)) {
+      return `Enter a valid ${label.toLowerCase()}.`
+    }
+    if (/[aeiouyAEIOUY]{4,}/i.test(lettersOnly)) {
+      return `Enter a valid ${label.toLowerCase()}.`
+    }
+    if (
+      lettersOnly.length >= 4 &&
+      !/^[A-Z]{2,6}$/.test(lettersOnly) &&
+      (!/[aeiouyAEIOUY]/i.test(lettersOnly) || !/[bcdfghjklmnpqrstvwxzBCDFGHJKLMNPQRSTVWXZ]/i.test(lettersOnly))
+    ) {
+      return `Enter a valid ${label.toLowerCase()}.`
+    }
+    if (lettersOnly.length >= 6 && !/^[A-Z]{6}$/.test(lettersOnly)) {
+      const vowels = (lettersOnly.match(/[aeiouyAEIOUY]/g) || []).length
+      const ratio = vowels / lettersOnly.length
+      if (ratio < 0.15 || ratio > 0.75) {
+        return `Enter a valid ${label.toLowerCase()}.`
+      }
+    }
+  }
+
+  return ''
 }
 
-function getEmailError(value) {
-  return getSharedEmailError(value)
+function getEmailError(value, label = 'Email') {
+  return getSharedEmailError(value, { required: true, label })
 }
 
 function getGstNumberError(value) {
@@ -489,6 +558,8 @@ function getCompanyNameError(value) {
 function getSupplierCodeError(value, existingCodes = []) {
   const code = cleanString(value)
   if (!code) return 'Supplier code is required.'
+  if (code.length < 2) return 'Supplier code must be at least 2 characters.'
+  if (code.length > INPUT_LIMITS.supplierCode) return `Supplier code cannot exceed ${INPUT_LIMITS.supplierCode} characters.`
   if (!/^[A-Z0-9-]+$/.test(code)) return 'Supplier code can contain uppercase letters, numbers, and hyphen only.'
   return existingCodes.includes(code) ? 'Supplier code already exists.' : ''
 }
@@ -497,7 +568,9 @@ function getPhoneError(value, label = 'Phone') {
   return getSharedPhoneError(value, label)
 }
 
-const getOptionalEmailError = getEmailError
+function getOptionalEmailError(value, label = 'Contact email') {
+  return getSharedEmailError(value, { required: false, label })
+}
 
 function getWebsiteError(value) {
   const raw = String(value ?? '')
@@ -631,7 +704,7 @@ function getInitialAddresses(initialValues) {
   }
 
   return [normalizeAddress({
-    type: 'Billing',
+    type: initialValues?.type || '',
     addressLine1: initialValues.addressLine1 || '',
     addressLine2: initialValues.addressLine2 || '',
     city: initialValues.city || '',
@@ -956,7 +1029,7 @@ export default function SupplierForm({
           (hasDuplicate(addressTypes, cleanString(address.type).toLowerCase()) ? `${address.type} address already exists.` : ''),
         addressLine1: getAddressLineError(address.addressLine1, 'Address line 1', true),
         addressLine2: getAddressLineError(address.addressLine2, 'Address line 2'),
-        city: getPlaceNameError(address.city, 'City'),
+        city: getPlaceNameError(address.city, 'City') || getCityStateError(address.city, state, country),
         state:
           isIndiaCountry(country)
             ? getRequiredError(state, 'State') ||
@@ -1000,6 +1073,8 @@ export default function SupplierForm({
         bankName: getBankNameError(account.bankName),
         ifscCode: getIfscError(account.ifscCode),
         branch: getBranchError(account.branch),
+        bankCity: account.bankCity ? (getPlaceNameError(account.bankCity, 'Bank city') || getCityStateError(account.bankCity, account.bankState)) : '',
+        bankState: account.bankState ? getPlaceNameError(account.bankState, 'Bank state') : '',
         upiId: getUpiError(account.upiId),
       }
     })
@@ -1062,7 +1137,8 @@ export default function SupplierForm({
 
   function handleCreateMasterOption(type, value) {
     const cleanValue = normalizeBusinessText(value)
-    if (!cleanValue) return
+    const label = type === 'departments' ? 'Department' : 'Designation'
+    if (!cleanValue || getBusinessTitleError(cleanValue, label)) return
 
     setCustomMasterOptions((currentValue) => ({
       ...currentValue,
@@ -1482,8 +1558,9 @@ export default function SupplierForm({
           {!readOnly ? (
             <button
               type="submit"
-              className={`button button-primary ${!isValid ? 'is-validation-pending' : ''}`.trim()}
-              disabled={!canSubmit || isSubmitting || !isDirty}
+              className={`button button-primary ${!isValid ? 'is-validation-pending' : ''} ${isSubmitting ? 'is-submitting' : ''}`.trim()}
+              disabled={!canSubmit || isSubmitting || !isDirty || !isValid}
+              aria-busy={isSubmitting}
               title={!isDirty ? 'No supplier changes to save.' : !isValid ? 'Review highlighted supplier fields before saving.' : 'Save supplier'}
             >
               {isSubmitting ? <LoaderCircle size={16} className="animate-spin" /> : <Save size={16} />}

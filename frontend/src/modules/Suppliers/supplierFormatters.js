@@ -32,12 +32,14 @@ export function formatCategory(value) {
 }
 
 export function formatStatus(value) {
-  if (normalizeStatusValue(value) === 'archived') return 'Archived'
-  return toTitleCase(value || 'active')
+  const normalized = normalizeStatusValue(value)
+  if (normalized === 'archived') return 'Archived'
+  if (!normalized || normalized === 'not set' || normalized === 'not_set') return 'Not set'
+  return toTitleCase(normalized)
 }
 
 export function normalizeStatusValue(value) {
-  return String(value || 'active').trim().toLowerCase()
+  return String(value ?? '').trim().toLowerCase()
 }
 
 export function formatPaymentMethod(value) {
@@ -69,6 +71,7 @@ export function getStatusBadgeType(status) {
   if (normalized === 'archived') return 'pending'
   if (normalized === 'blocked') return 'cancelled'
   if (normalized === 'inactive') return 'inactive'
+  if (!normalized || normalized === 'not set' || normalized === 'not_set') return 'draft'
   if (['paid', 'received', 'reconciled', 'active'].includes(normalized)) return 'received'
   return 'ordered'
 }

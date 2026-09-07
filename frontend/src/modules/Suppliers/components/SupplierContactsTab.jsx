@@ -5,6 +5,7 @@ import InputField from '../../../components/InputField'
 import { emailInputProps } from '../../../validators/emailValidator'
 import { phoneInputProps, sanitizePhoneInput } from '../../../validators/phoneValidator'
 import { SupplierSection } from './SupplierFormSections'
+import { getBusinessTitleError } from './SupplierForm'
 
 const emptyContact = {
   name: '',
@@ -15,11 +16,12 @@ const emptyContact = {
   isPrimary: false,
 }
 
-function getVisibleError({ error, blurred, focused = false, submitted = false }) {
+function getVisibleError({ error, blurred, focused = false, submitted = false, value = '' }) {
   if (!error) return ''
-  if (focused) return ''
+  if (focused && !error.includes('already exists') && !error.includes('invalid') && !error.includes('repetitive')) return ''
   if (submitted) return error
   if (blurred) return error
+  if (value && String(value).trim()) return error
   return ''
 }
 
@@ -198,8 +200,9 @@ export default function SupplierContactsTab({
                     searchPlaceholder="Search or create designation"
                     createLabel="Create designation"
                     onCreateOption={(value) => onCreateMasterOption?.('designations', value)}
-                    error={getVisibleError({ error: contactErrors.designation, blurred: designationBlurred, focused: designationFocused, submitted: showErrors })}
-                    showError={showErrors || designationBlurred}
+                    isValidOption={(val) => !getBusinessTitleError(val, 'Designation')}
+                    error={getVisibleError({ error: contactErrors.designation, blurred: designationBlurred, focused: designationFocused, submitted: showErrors, value: contact.designation })}
+                    showError={showErrors || designationBlurred || Boolean(contact.designation && contactErrors.designation)}
                     className={`supplier-contact-field supplier-contact-select ${getCompleteClass({ value: contact.designation, error: contactErrors.designation, blurred: designationBlurred && !designationFocused })}`.trim()}
                     disabled={readOnly}
                   />
@@ -215,8 +218,9 @@ export default function SupplierContactsTab({
                     searchPlaceholder="Search or create department"
                     createLabel="Create department"
                     onCreateOption={(value) => onCreateMasterOption?.('departments', value)}
-                    error={getVisibleError({ error: contactErrors.department, blurred: departmentBlurred, focused: departmentFocused, submitted: showErrors })}
-                    showError={showErrors || departmentBlurred}
+                    isValidOption={(val) => !getBusinessTitleError(val, 'Department')}
+                    error={getVisibleError({ error: contactErrors.department, blurred: departmentBlurred, focused: departmentFocused, submitted: showErrors, value: contact.department })}
+                    showError={showErrors || departmentBlurred || Boolean(contact.department && contactErrors.department)}
                     className={`supplier-contact-field supplier-contact-select ${getCompleteClass({ value: contact.department, error: contactErrors.department, blurred: departmentBlurred && !departmentFocused })}`.trim()}
                     disabled={readOnly}
                   />
@@ -230,7 +234,7 @@ export default function SupplierContactsTab({
                     onFocus={(event) => handleContactFocus(index, event)}
                     onChange={(event) => handleContactChange(index, event)}
                     onBlur={(event) => handleContactBlur(index, event)}
-                    error={getVisibleError({ error: contactErrors.phone, blurred: phoneBlurred, focused: phoneFocused, submitted: showErrors })}
+                    error={getVisibleError({ error: contactErrors.phone, blurred: phoneBlurred, focused: phoneFocused, submitted: showErrors, value: contact.phone })}
                     className={`supplier-contact-field ${getCompleteClass({ value: contact.phone, error: contactErrors.phone, blurred: phoneBlurred && !phoneFocused })}`.trim()}
                     disabled={readOnly}
                   />
@@ -244,7 +248,7 @@ export default function SupplierContactsTab({
                     onFocus={(event) => handleContactFocus(index, event)}
                     onChange={(event) => handleContactChange(index, event)}
                     onBlur={(event) => handleContactBlur(index, event)}
-                    error={getVisibleError({ error: contactErrors.email, blurred: emailBlurred, focused: emailFocused, submitted: showErrors })}
+                    error={getVisibleError({ error: contactErrors.email, blurred: emailBlurred, focused: emailFocused, submitted: showErrors, value: contact.email })}
                     className={`supplier-contact-field ${getCompleteClass({ value: contact.email, error: contactErrors.email, blurred: emailBlurred && !emailFocused })}`.trim()}
                     disabled={readOnly}
                   />

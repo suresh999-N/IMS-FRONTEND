@@ -82,6 +82,13 @@
   color: #c2410c;
 }
 
+.resource-center__page--suppliers .resource-center__inventory-metric--neutral,
+.resource-center__page--suppliers .resource-center__inventory-metric--archived {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  color: #475569;
+}
+
 .resource-center__page--suppliers .resource-center__inventory-header-actions .button {
   min-height: 38px;
   height: 38px;
@@ -3923,6 +3930,11 @@
 }
 
 .supplier-form__action-buttons .button-primary:disabled {
+  cursor: not-allowed;
+}
+
+.supplier-form__action-buttons .button-primary.is-submitting:disabled,
+.supplier-form__action-buttons .button-primary[aria-busy="true"]:disabled {
   cursor: wait;
 }
 
@@ -8098,4 +8110,176 @@ border-color: #bbf7d0; /* Changed from #d1fae5 */
 .supplier-basic-status-select .supplier-react-select__indicators-container {
   min-height: 34px !important;
   height: 34px !important;
+}
+
+/* ==========================================
+   Supplier Form Field & Layout Alignments
+   ========================================== */
+
+/* 1. Error Message Alignment */
+.supplier-form .field-error,
+.supplier-contact-card .field-error,
+.supplier-address-card .field-error,
+.supplier-bank-card .field-error {
+  display: block !important;
+  width: 100% !important;
+  text-align: left !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  color: #dc2626 !important;
+  line-height: 1.3 !important;
+  margin-top: 4px !important;
+  padding-left: 2px !important;
+  box-sizing: border-box !important;
+  clear: both !important;
+}
+
+/* 2. Department & Contact Field Grid Alignment */
+.supplier-contact-card .supplier-form__grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px 14px !important;
+  padding: 12px !important;
+  align-items: start !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.supplier-contact-card .field,
+.supplier-contact-card .searchable-select {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.supplier-contact-card .field label,
+.supplier-contact-card .searchable-select > label {
+  display: flex !important;
+  align-items: center !important;
+  height: 18px !important;
+  min-height: 18px !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: #4a596d !important;
+  line-height: 1.2 !important;
+  margin: 0 0 2px 0 !important;
+  padding: 0 !important;
+}
+
+.supplier-contact-card .input-with-icon,
+.supplier-contact-card .searchable-select__trigger {
+  display: flex !important;
+  align-items: center !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  border-color: #dfe6f0 !important;
+  border-radius: 8px !important;
+  background: #fcfdff !important;
+  padding: 0 10px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+/* 3. Address Field Row Alignment */
+.supplier-address-card .supplier-form__grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px 14px !important;
+  padding: 12px !important;
+  align-items: start !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.supplier-address-field--full {
+  grid-column: 1 / -1 !important;
+}
+
+.supplier-address-card .field,
+.supplier-address-card .searchable-select {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.supplier-address-card .field label,
+.supplier-address-card .searchable-select > label {
+  display: flex !important;
+  align-items: center !important;
+  height: 18px !important;
+  min-height: 18px !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: #4a596d !important;
+  line-height: 1.2 !important;
+  margin: 0 0 2px 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+}
+
+.supplier-address-card .input-with-icon,
+.supplier-address-card .searchable-select__trigger {
+  display: flex !important;
+  align-items: center !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  border-color: #dfe6f0 !important;
+  border-radius: 8px !important;
+  background: #fcfdff !important;
+  padding: 0 10px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+/* 4. Action Bar & Save Supplier Button Alignment */
+.supplier-form__actions,
+.supplier-form--enterprise .supplier-form__actions {
+  grid-column: 1 / -1 !important;
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 30 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  min-height: 54px !important;
+  height: 54px !important;
+  padding: 10px 20px !important;
+  margin-top: 16px !important;
+  background: #f8fafc !important;
+  border-top: 1px solid #e2e8f0 !important;
+  box-shadow: 0 -2px 8px rgba(15, 23, 42, 0.04) !important;
+  box-sizing: border-box !important;
+}
+
+.supplier-form__action-buttons {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 12px !important;
+  margin-left: auto !important;
+}
+
+.supplier-form__action-buttons .button-primary {
+  min-width: 130px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  border-radius: 8px !important;
 }

@@ -40,6 +40,7 @@ export default function CreatableSearchableSelect({
   className = '',
   createLabel = 'Create',
   onCreateOption,
+  isValidOption = () => true,
 }) {
   const rootRef = useRef(null)
   const searchRef = useRef(null)
@@ -52,7 +53,10 @@ export default function CreatableSearchableSelect({
   const filteredOptions = normalizedOptions.filter((option) =>
     option.label.toLowerCase().includes(cleanTerm.toLowerCase()),
   )
-  const canCreate = Boolean(cleanTerm) && !normalizedOptions.some((option) => option.label.toLowerCase() === cleanTerm.toLowerCase())
+  const canCreate =
+    Boolean(cleanTerm) &&
+    isValidOption(cleanTerm) &&
+    !normalizedOptions.some((option) => option.label.toLowerCase() === cleanTerm.toLowerCase())
 
   useEffect(() => {
     function handleGlobalDropdownOpened(event) {

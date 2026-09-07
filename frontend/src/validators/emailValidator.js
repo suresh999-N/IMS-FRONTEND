@@ -38,6 +38,13 @@ export function sanitizeEmailInput(value) {
     .slice(0, EMAIL_MAX_LENGTH)
 }
 
+const COMMON_DOMAIN_TYPOS = new Set([
+  'gmai', 'gamil', 'gmaill', 'gnail', 'gmaiil',
+  'yaho', 'yahooo', 'yahoos',
+  'hotmai', 'hotmial', 'hotmailll',
+  'outlok', 'outloo', 'inboxx'
+])
+
 export function getEmailError(value, options = {}) {
   const opts = typeof options === 'string' ? { label: options } : options
   const { required = true, label = 'Email' } = opts
@@ -80,6 +87,32 @@ export function getEmailError(value, options = {}) {
     return INVALID_MSG
   }
 
+  // Reject 3 or more identical repeated characters in local part (e.g. aaa@, 111@)
+  if (/([a-z0-9])\1{2,}/i.test(localPart)) {
+    return INVALID_MSG
+  }
+
+  // Reject 5 or more consecutive digits anywhere in local part (e.g., nisha1233455454667555)
+  if (/\d{5,}/.test(localPart)) {
+    return INVALID_MSG
+  }
+
+  // Reject 6 or more total digits in local part
+  const totalDigitsInLocal = (localPart.match(/\d/g) || []).length
+  if (totalDigitsInLocal >= 6) {
+    return INVALID_MSG
+  }
+
+  // Reject 5 or more consecutive consonants (excluding vowels & digits & symbols)
+  if (/[bcdfghjklmnpqrstvwxyz]{5,}/i.test(localPart)) {
+    return INVALID_MSG
+  }
+
+  // Reject 4 or more consecutive vowels
+  if (/[aeiou]{4,}/i.test(localPart)) {
+    return INVALID_MSG
+  }
+
   if (domainPart.startsWith('.') || domainPart.endsWith('.') || domainPart.startsWith('-') || domainPart.endsWith('-')) {
     return INVALID_MSG
   }
@@ -93,10 +126,36 @@ export function getEmailError(value, options = {}) {
     if (!part || part.startsWith('-') || part.endsWith('-') || !/^[a-z0-9-]+$/i.test(part) || part.length > 63) {
       return INVALID_MSG
     }
-    // Reject 4 or more repeated identical characters in any domain label (e.g. gmailllllll, commmmmmmmmm)
-    if (/([a-z0-9])\1{3,}/i.test(part)) {
+
+    // Reject 3 or more repeated identical characters in any domain label (e.g. gmaill.com)
+    if (/([a-z0-9])\1{2,}/i.test(part)) {
       return INVALID_MSG
     }
+
+    // Reject digits-only domain labels (e.g. @12345.com)
+    if (/^\d+$/.test(part)) {
+      return INVALID_MSG
+    }
+
+    // Reject 4 or more consecutive digits in any domain label (e.g. @domain1234.com)
+    if (/\d{4,}/.test(part)) {
+      return INVALID_MSG
+    }
+
+    // Reject 5 or more consecutive consonants in domain label
+    if (/[bcdfghjklmnpqrstvwxyz]{5,}/i.test(part)) {
+      return INVALID_MSG
+    }
+
+    // Reject 4 or more consecutive vowels in domain label
+    if (/[aeiou]{4,}/i.test(part)) {
+      return INVALID_MSG
+    }
+  }
+
+  const secondLevelDomain = domainParts[domainParts.length - 2].toLowerCase()
+  if (COMMON_DOMAIN_TYPOS.has(secondLevelDomain)) {
+    return INVALID_MSG
   }
 
   const tld = domainParts[domainParts.length - 1].toLowerCase()
