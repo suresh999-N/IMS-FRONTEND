@@ -54,6 +54,14 @@ namespace IMS.Backend.Helpers
             "outlook.cm", "outlook.co", "outlok.com"
         };
 
+        private static readonly HashSet<string> CommonLabelTypos = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "gmai", "gamil", "gmaill", "gnail", "gmaiil",
+            "yaho", "yahooo", "yahoos",
+            "hotmai", "hotmial", "hotmailll",
+            "outlok", "outloo", "inboxx"
+        };
+
         public static bool IsValidEmail(string? value)
         {
             if (string.IsNullOrWhiteSpace(value)) return false;
@@ -97,6 +105,9 @@ namespace IMS.Backend.Helpers
                     return false;
                 }
             }
+
+            var secondLevelDomain = domainLabels[^2].ToLowerInvariant();
+            if (CommonLabelTypos.Contains(secondLevelDomain)) return false;
 
             var mainDomain = domainLabels[0];
             if (mainDomain.Length < 2) return false;

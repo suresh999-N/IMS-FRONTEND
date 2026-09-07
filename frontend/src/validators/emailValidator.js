@@ -76,7 +76,7 @@ export function sanitizeEmailInput(value) {
     .slice(0, EMAIL_MAX_LENGTH)
 }
 
-const COMMON_DOMAIN_TYPOS = new Set([
+const COMMON_LABEL_TYPOS = new Set([
   'gmai', 'gamil', 'gmaill', 'gnail', 'gmaiil',
   'yaho', 'yahooo', 'yahoos',
   'hotmai', 'hotmial', 'hotmailll',
@@ -192,7 +192,7 @@ export function getEmailError(value, options = {}) {
   }
 
   const secondLevelDomain = domainParts[domainParts.length - 2].toLowerCase()
-  if (COMMON_DOMAIN_TYPOS.has(secondLevelDomain)) {
+  if (COMMON_LABEL_TYPOS.has(secondLevelDomain)) {
     return INVALID_MSG
   }
 
