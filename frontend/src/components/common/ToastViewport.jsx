@@ -18,7 +18,12 @@ export default function ToastViewport() {
     function handleToast(event) {
       const nextToast = event.detail
 
-      setToasts((currentValue) => [nextToast, ...currentValue].slice(0, 5))
+      setToasts((currentValue) => {
+        if (currentValue.some((item) => item.type === nextToast.type && item.message === nextToast.message)) {
+          return currentValue
+        }
+        return [nextToast, ...currentValue].slice(0, 5)
+      })
 
       window.setTimeout(() => {
         setToasts((currentValue) =>

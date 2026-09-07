@@ -339,7 +339,7 @@ export default function Register() {
                 />
               </div>
               {nameDisplayError && (
-                <span id="fullName-error" className="field-error-text" role="alert">{nameDisplayError}</span>
+                <span id="fullName-error" className="field-error-text field-error" role="alert">{nameDisplayError}</span>
               )}
             </div>
 
@@ -362,7 +362,7 @@ export default function Register() {
                 />
               </div>
               {emailDisplayError && (
-                <span id="email-error" className="field-error-text" role="alert">{emailDisplayError}</span>
+                <span id="email-error" className="field-error-text field-error" role="alert">{emailDisplayError}</span>
               )}
             </div>
 
@@ -386,7 +386,7 @@ export default function Register() {
                 />
               </div>
               {phoneDisplayError && (
-                <span id="phoneNumber-error" className="field-error-text" role="alert">{phoneDisplayError}</span>
+                <span id="phoneNumber-error" className="field-error-text field-error" role="alert">{phoneDisplayError}</span>
               )}
             </div>
 
@@ -425,7 +425,7 @@ export default function Register() {
                 ) : null}
               </div>
               {passwordDisplayError && (
-                <span id="password-error" className="field-error-text" role="alert">{passwordDisplayError}</span>
+                <span id="password-error" className="field-error-text field-error" role="alert">{passwordDisplayError}</span>
               )}
             </div>
 
@@ -469,7 +469,7 @@ export default function Register() {
                 ) : null}
               </div>
               {confirmPasswordDisplayError && (
-                <span id="confirmPassword-error" className="field-error-text" role="alert">{confirmPasswordDisplayError}</span>
+                <span id="confirmPassword-error" className="field-error-text field-error" role="alert">{confirmPasswordDisplayError}</span>
               )}
             </div>
 

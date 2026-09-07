@@ -196,7 +196,7 @@ export default function Login() {
           ) : null}
           {error ? <div className="error-box">{error}</div> : null}
  
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             <label className="auth-login-label" htmlFor="login-identifier">Email or Phone Number</label>
             <div className={`input-box ${emailDisplayError ? 'input-box--error' : ''}`}>
               {/^[0-9+\s-()]+$/.test(formData.email) ? (
@@ -217,7 +217,7 @@ export default function Login() {
               />
             </div>
             {emailDisplayError && (
-              <span className="field-error-text">{emailDisplayError}</span>
+              <span className="field-error-text field-error">{emailDisplayError}</span>
             )}
 
             <label className="auth-login-label" htmlFor="login-password">Password</label>
@@ -251,7 +251,7 @@ export default function Login() {
               ) : null}
             </div>
             {passwordDisplayError && (
-              <span className="field-error-text">{passwordDisplayError}</span>
+              <span className="field-error-text field-error">{passwordDisplayError}</span>
             )}
 
             <div className="auth-login-options-row">

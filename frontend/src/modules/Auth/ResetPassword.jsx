@@ -162,7 +162,7 @@ export default function ResetPassword() {
               />
             </div>
             {otpDisplayError && (
-              <span className="field-error-text">{otpDisplayError}</span>
+              <span className="field-error-text field-error">{otpDisplayError}</span>
             )}
 
             <label className="auth-login-label" htmlFor="reset-password">New Password</label>
@@ -199,7 +199,7 @@ export default function ResetPassword() {
               </button>
             </div>
             {passwordDisplayError && (
-              <span className="field-error-text">{passwordDisplayError}</span>
+              <span className="field-error-text field-error">{passwordDisplayError}</span>
             )}
 
             <label className="auth-login-label" htmlFor="reset-confirm-password">Confirm Password</label>
@@ -236,7 +236,7 @@ export default function ResetPassword() {
               </button>
             </div>
             {confirmPasswordDisplayError && (
-              <span className="field-error-text">{confirmPasswordDisplayError}</span>
+              <span className="field-error-text field-error">{confirmPasswordDisplayError}</span>
             )}
 
             <div className="links" style={{ marginBottom: '1rem' }}>

@@ -1,21 +1,59 @@
 export const EMAIL_MAX_LENGTH = 150
 
 const VALID_TLDS = new Set([
-  'com', 'org', 'net', 'edu', 'gov', 'mil', 'int', 'info', 'biz', 'co', 'in', 'io', 'ai',
+  'com', 'org', 'net', 'edu', 'gov', 'mil', 'int', 'info', 'biz', 'in', 'io', 'ai',
   'app', 'dev', 'tech', 'store', 'online', 'site', 'xyz', 'me', 'tv', 'cc', 'mobi', 'asia',
   'name', 'pro', 'tel', 'travel', 'museum', 'uk', 'us', 'ca', 'de', 'fr', 'jp', 'cn', 'nl',
   'se', 'no', 'fi', 'es', 'it', 'ru', 'mx', 'br', 'za', 'sg', 'hk', 'tw', 'kr', 'nz', 'ch',
   'at', 'be', 'dk', 'pl', 'pt', 'cz', 'ro', 'gr', 'hu', 'ie', 'il', 'my', 'ph', 'th', 'vn',
-  'id', 'ae', 'sa', 'cl', 'ar', 'pe', 'cloud', 'digital', 'email', 'group', 'help', 'global',
-  'life', 'live', 'link', 'media', 'news', 'space', 'today', 'world', 'works', 'zone',
+  'id', 'ae', 'sa', 'cl', 'ar', 'pe', 'au', 'cloud', 'digital', 'global',
+  'life', 'live', 'media', 'news', 'space', 'today', 'world', 'works', 'zone',
   'design', 'studio', 'agency', 'solutions', 'services', 'systems', 'network', 'company',
-  'management', 'center', 'directory', 'shop', 'blog', 'club', 'fun', 'icu', 'one', 'top',
-  'vip', 'work', 'fit', 'art', 'law', 'pub', 'bar', 'ink', 'win', 'bid', 'cam', 'run', 'red',
-  'ren', 'kim', 'mom', 'men', 'dad', 'day', 'fan', 'foo', 'gop', 'how', 'moe', 'new', 'now',
-  'ooo', 'owl', 'rip', 'sky', 'tax', 'tea', 'uno', 'wtf', 'zip', 'berlin', 'london', 'nyc',
-  'tokyo', 'paris', 'amsterdam', 'software', 'technology', 'systems', 'academy', 'education',
-  'foundation', 'institute', 'international', 'organization'
+  'management', 'center', 'directory', 'shop', 'software', 'technology', 'academy', 'education',
+  'foundation', 'institute', 'international', 'organization', 'ltd', 'corp', 'enterprises'
 ])
+
+const VALID_MULTI_PART_TLDS = new Set([
+  'co.in', 'net.in', 'org.in', 'gen.in', 'ind.in', 'edu.in', 'gov.in', 'ac.in',
+  'co.uk', 'org.uk', 'me.uk', 'ltd.uk', 'plc.uk', 'ac.uk', 'gov.uk',
+  'com.au', 'net.au', 'org.au', 'edu.au', 'gov.au',
+  'co.jp', 'or.jp', 'ne.jp', 'ac.jp', 'go.jp',
+  'co.za', 'org.za', 'net.za', 'ac.za', 'gov.za',
+  'co.nz', 'net.nz', 'org.nz', 'ac.nz', 'govt.nz',
+  'com.sg', 'net.sg', 'org.sg', 'edu.sg', 'gov.sg',
+  'co.id', 'net.id', 'or.id', 'ac.id', 'go.id',
+  'com.my', 'net.my', 'org.my', 'edu.my', 'gov.my',
+  'com.br', 'net.br', 'org.br',
+  'com.mx', 'net.mx', 'org.mx',
+  'com.ar', 'net.ar', 'org.ar',
+  'com.tr', 'net.tr', 'org.tr'
+])
+
+const TYPO_TLDS = new Set(['co', 'cm', 'c', 'coom', 'comm', 'commm', 'ccommmm', 'con', 'cmm', 'gma', 'gmai', 'gamil', 'cmo'])
+
+const COMMON_DOMAIN_TYPOS = {
+  'gmail.cm': 'gmail.com',
+  'gmail.co': 'gmail.com',
+  'gmail.comm': 'gmail.com',
+  'gmail.commm': 'gmail.com',
+  'gmail.coom': 'gmail.com',
+  'gmai.com': 'gmail.com',
+  'gmai.co': 'gmail.com',
+  'gamil.com': 'gmail.com',
+  'gamil.co': 'gmail.com',
+  'gmial.com': 'gmail.com',
+  'gmial.co': 'gmail.com',
+  'gmaill.com': 'gmail.com',
+  'yahoo.cm': 'yahoo.com',
+  'yahoo.co': 'yahoo.com',
+  'yaho.com': 'yahoo.com',
+  'hotmail.cm': 'hotmail.com',
+  'hotmail.co': 'hotmail.com',
+  'hotmial.com': 'hotmail.com',
+  'outlook.cm': 'outlook.com',
+  'outlook.co': 'outlook.com',
+  'outlok.com': 'outlook.com'
+}
 
 function stripUnsafeText(value) {
   return Array.from(String(value ?? '')).filter((character) => {
@@ -158,8 +196,30 @@ export function getEmailError(value, options = {}) {
     return INVALID_MSG
   }
 
+  const mainDomain = domainParts[0].toLowerCase()
+  if (mainDomain.length < 2) {
+    return INVALID_MSG
+  }
+
+  const lowerDomain = domainPart.toLowerCase()
+  if (COMMON_DOMAIN_TYPOS[lowerDomain]) {
+    return INVALID_MSG
+  }
+
   const tld = domainParts[domainParts.length - 1].toLowerCase()
   if (!tld || !/^[a-z]+$/i.test(tld) || tld.length < 2) {
+    return INVALID_MSG
+  }
+
+  // Check multi-part TLD if domain has 3 or more parts (e.g. farmti.co.in, supplier.co.uk)
+  if (domainParts.length >= 3) {
+    const multiTld = domainParts.slice(-2).join('.').toLowerCase()
+    if (VALID_MULTI_PART_TLDS.has(multiTld)) {
+      return ''
+    }
+  }
+
+  if (TYPO_TLDS.has(tld)) {
     return INVALID_MSG
   }
 

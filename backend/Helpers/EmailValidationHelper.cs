@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -10,20 +11,47 @@ namespace IMS.Backend.Helpers
 
         private static readonly HashSet<string> ValidTlds = new(StringComparer.OrdinalIgnoreCase)
         {
-            "com", "org", "net", "edu", "gov", "mil", "int", "info", "biz", "co", "in", "io", "ai",
+            "com", "org", "net", "edu", "gov", "mil", "int", "info", "biz", "in", "io", "ai",
             "app", "dev", "tech", "store", "online", "site", "xyz", "me", "tv", "cc", "mobi", "asia",
             "name", "pro", "tel", "travel", "museum", "uk", "us", "ca", "de", "fr", "jp", "cn", "nl",
             "se", "no", "fi", "es", "it", "ru", "mx", "br", "za", "sg", "hk", "tw", "kr", "nz", "ch",
             "at", "be", "dk", "pl", "pt", "cz", "ro", "gr", "hu", "ie", "il", "my", "ph", "th", "vn",
-            "id", "ae", "sa", "cl", "ar", "pe", "cloud", "digital", "email", "group", "help", "global",
-            "life", "live", "link", "media", "news", "space", "today", "world", "works", "zone",
+            "id", "ae", "sa", "cl", "ar", "pe", "au", "cloud", "digital", "global",
+            "life", "live", "media", "news", "space", "today", "world", "works", "zone",
             "design", "studio", "agency", "solutions", "services", "systems", "network", "company",
-            "management", "center", "directory", "shop", "blog", "club", "fun", "icu", "one", "top",
-            "vip", "work", "fit", "art", "law", "pub", "bar", "ink", "win", "bid", "cam", "run", "red",
-            "ren", "kim", "mom", "men", "dad", "day", "fan", "foo", "gop", "how", "moe", "new", "now",
-            "ooo", "owl", "rip", "sky", "tax", "tea", "uno", "wtf", "zip", "berlin", "london", "nyc",
-            "tokyo", "paris", "amsterdam", "software", "technology", "systems", "academy", "education",
-            "foundation", "institute", "international", "organization"
+            "management", "center", "directory", "shop", "software", "technology", "academy", "education",
+            "foundation", "institute", "international", "organization", "ltd", "corp", "enterprises"
+        };
+
+        private static readonly HashSet<string> ValidMultiPartTlds = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "co.in", "net.in", "org.in", "gen.in", "ind.in", "edu.in", "gov.in", "ac.in",
+            "co.uk", "org.uk", "me.uk", "ltd.uk", "plc.uk", "ac.uk", "gov.uk",
+            "com.au", "net.au", "org.au", "edu.au", "gov.au",
+            "co.jp", "or.jp", "ne.jp", "ac.jp", "go.jp",
+            "co.za", "org.za", "net.za", "ac.za", "gov.za",
+            "co.nz", "net.nz", "org.nz", "ac.nz", "govt.nz",
+            "com.sg", "net.sg", "org.sg", "edu.sg", "gov.sg",
+            "co.id", "net.id", "or.id", "ac.id", "go.id",
+            "com.my", "net.my", "org.my", "edu.my", "gov.my",
+            "com.br", "net.br", "org.br",
+            "com.mx", "net.mx", "org.mx",
+            "com.ar", "net.ar", "org.ar",
+            "com.tr", "net.tr", "org.tr"
+        };
+
+        private static readonly HashSet<string> TypoTlds = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "co", "cm", "c", "coom", "comm", "commm", "ccommmm", "con", "cmm", "gma", "gmai", "gamil", "cmo"
+        };
+
+        private static readonly HashSet<string> CommonDomainTypos = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "gmail.cm", "gmail.co", "gmail.comm", "gmail.commm", "gmail.coom",
+            "gmai.com", "gmai.co", "gamil.com", "gamil.co", "gmial.com", "gmial.co", "gmaill.com",
+            "yahoo.cm", "yahoo.co", "yaho.com",
+            "hotmail.cm", "hotmail.co", "hotmial.com",
+            "outlook.cm", "outlook.co", "outlok.com"
         };
 
         public static bool IsValidEmail(string? value)
@@ -70,8 +98,28 @@ namespace IMS.Backend.Helpers
                 }
             }
 
+            var mainDomain = domainLabels[0];
+            if (mainDomain.Length < 2) return false;
+
+            if (CommonDomainTypos.Contains(domainPart)) return false;
+
             var tld = domainLabels[^1].ToLowerInvariant();
             if (string.IsNullOrWhiteSpace(tld) || !Regex.IsMatch(tld, @"^[a-z]+$") || tld.Length < 2)
+            {
+                return false;
+            }
+
+            // Check multi-part TLD if domain has 3 or more parts (e.g. farmti.co.in, supplier.co.uk)
+            if (domainLabels.Length >= 3)
+            {
+                var multiTld = $"{domainLabels[^2].ToLowerInvariant()}.{tld}";
+                if (ValidMultiPartTlds.Contains(multiTld))
+                {
+                    return true;
+                }
+            }
+
+            if (TypoTlds.Contains(tld))
             {
                 return false;
             }
