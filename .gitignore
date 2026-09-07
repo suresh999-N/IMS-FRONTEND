@@ -8,4 +8,7 @@ obj/
 **/.vs/
 Logs/
 **/Logs/
+New folder/
+/package-lock.json
+
 

@@ -17,6 +17,13 @@ export function getAuthErrorMessage(message, fallback = 'We could not complete t
     return 'Enter a valid email address.'
   }
 
+  if (
+    (normalizedText.includes('same') || normalizedText.includes('reuse') || normalizedText.includes('used') || normalizedText.includes('history') || normalizedText.includes('previous')) &&
+    (normalizedText.includes('old') || normalizedText.includes('previous') || normalizedText.includes('recent') || normalizedText.includes('current') || normalizedText.includes('password'))
+  ) {
+    return 'New password cannot be the same as the old password.'
+  }
+
   // Check credential failures first to avoid matching "invalid" as "valid" under email checks
   if (normalizedText.includes('invalid') && (normalizedText.includes('password') || normalizedText.includes('credential') || normalizedText.includes('user'))) {
     if (normalizedText.includes('remaining') || normalizedText.includes('attempt') || normalizedText.includes('lock')) {

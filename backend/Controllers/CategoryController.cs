@@ -25,21 +25,21 @@ namespace IMSBackend.Controllers
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
             var categories = await _context.Categories
-                .Include(category => category.SubCategories.Where(subCategory => !subCategory.IsDeleted))
+                .Include(category => category.SubCategories)
                 .AsNoTracking()
                 .Where(category => !category.IsDeleted)
                 .OrderBy(category => category.Name)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
             var totalSubCategories = await _context.SubCategories
                 .AsNoTracking()
                 .Where(subCategory => !subCategory.IsDeleted)
-                .CountAsync();
+                .CountAsync(cancellationToken);
 
             var response = new CategoryListResponseDto
             {
                 TotalCategories = categories.Count,
                 TotalSubCategories = totalSubCategories,
-                CategoriesWithChildrenCount = categories.Count(category => category.SubCategories.Any()),
+                CategoriesWithChildrenCount = categories.Count(category => category.SubCategories != null && category.SubCategories.Any(sc => !sc.IsDeleted)),
                 Categories = categories.Select(c => ToCategoryResponse(c, categories)).ToList()
             };
 
@@ -52,7 +52,7 @@ namespace IMSBackend.Controllers
         public async Task<IActionResult> GetMain(CancellationToken cancellationToken)
         {
             var categories = await _context.Categories
-                .Include(category => category.SubCategories.Where(subCategory => !subCategory.IsDeleted))
+                .Include(category => category.SubCategories)
                 .AsNoTracking()
                 .Where(category => category.ParentId == null && !category.IsDeleted)
                 .OrderBy(category => category.Name)
@@ -295,9 +295,9 @@ namespace IMSBackend.Controllers
 
         private static CategoryResponseDto ToCategoryResponse(Category category, List<Category>? allCategories = null)
         {
-            var subCatChildren = category.SubCategories
-                .Where(subCategory => !subCategory.IsDeleted)
-                .OrderBy(subCategory => subCategory.Name)
+            var subCatChildren = (category.SubCategories ?? new List<SubCategory>())
+                .Where(subCategory => subCategory != null && !subCategory.IsDeleted)
+                .OrderBy(subCategory => subCategory.Name ?? string.Empty)
                 .Select(subCategory =>
                 {
                     var child = ToChildSubCategoryResponse(subCategory);
@@ -308,7 +308,7 @@ namespace IMSBackend.Controllers
 
             var categoryChildren = allCategories != null
                 ? allCategories
-                    .Where(c => c.ParentId == category.CategoryId && !c.IsDeleted)
+                    .Where(c => c != null && c.ParentId == category.CategoryId && !c.IsDeleted)
                     .Select(c => new ChildSubCategoryDto
                     {
                         SubCategoryId = c.CategoryId,
@@ -323,7 +323,7 @@ namespace IMSBackend.Controllers
                 : new List<ChildSubCategoryDto>();
 
             var combinedChildren = subCatChildren
-                .Concat(categoryChildren.Where(cc => !subCatChildren.Any(sc => sc.Name.Equals(cc.Name, StringComparison.OrdinalIgnoreCase))))
+                .Concat(categoryChildren.Where(cc => !subCatChildren.Any(sc => (sc.Name ?? string.Empty).Equals(cc.Name ?? string.Empty, StringComparison.OrdinalIgnoreCase))))
                 .ToList();
 
             return new CategoryResponseDto

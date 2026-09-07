@@ -467,9 +467,10 @@
   font-weight: 700;
 }
 
-.resource-center__page--products .products-table__selection-button { min-width: 82px; border-color: #a7f3d0; background: #fff; }
-.resource-center__page--products .products-table__selection-button:hover { border-color: #059669; background: #dffaf0; color: #059669; }
-.resource-center__page--products .products-table__selection-button--danger { border-color: #fecaca; background: #fff7f7; color: #dc2626; }
+.resource-center__page--products .products-table__selection-button { min-width: 82px; border-color: #dbe4ee; background: #fff; color: #334155; }
+.resource-center__page--products .products-table__selection-button:hover { border-color: #059669; background: #ecfdf5; color: #059669; }
+.resource-center__page--products .products-table__selection-button--danger { border-color: #fca5a5; background: #fef2f2; color: #dc2626; }
+.resource-center__page--products .products-table__selection-button--danger:hover { border-color: #dc2626; background: #fee2e2; color: #b91c1c; }
 
 /* ─── Selected row highlight ────────────────────────────────────── */
 

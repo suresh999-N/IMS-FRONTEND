@@ -15,7 +15,7 @@ import { apiRequest } from '../../api/apiClient'
 import { API_ENDPOINTS } from '../../api/endpoints'
 import loginLeftPanel from '../../assets/auth/login-left-panel.png'
 import { getAuthErrorMessage } from './authCopy'
-import { getPasswordError } from '../../validators/passwordValidator'
+import { getPasswordError, isPasswordReused, recordPasswordHistory } from '../../validators/passwordValidator'
 import './Auth.css'
 
 export default function ResetPassword() {
@@ -43,7 +43,14 @@ export default function ResetPassword() {
     otpError = 'Enter the 6-digit code.'
   }
 
-  const passwordError = getPasswordError(password)
+  const passwordError = getPasswordError(password, {
+    email,
+    oldPassword: location.state?.oldPassword,
+    previousPasswords: [
+      location.state?.oldPassword,
+      location.state?.currentPassword,
+    ].filter(Boolean),
+  })
 
   let confirmPasswordError = ''
   if (!confirmPassword) {
@@ -68,6 +75,11 @@ export default function ResetPassword() {
       return
     }
 
+    if (isPasswordReused(password, { email, oldPassword: location.state?.oldPassword })) {
+      setError('New password cannot be the same as the old password.')
+      return
+    }
+
     if (!isFormValid) {
       setError(otpError || passwordError || confirmPasswordError || 'Complete all fields.')
       return
@@ -89,6 +101,7 @@ export default function ResetPassword() {
         return
       }
 
+      recordPasswordHistory(email, password)
       navigate('/login', { replace: true })
     } catch {
       setError('Unable to connect to the server.')

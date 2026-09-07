@@ -1,4 +1,4 @@
-﻿using IMSBackend.Data;
+using IMSBackend.Data;
 using IMSBackend.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -36,7 +36,9 @@ namespace IMSBackend.Controllers
         public async Task<IActionResult> GetUnreadCount()
         {
             var count = await _context.Notifications
-                .CountAsync(x => !x.IsRead);
+                .AsNoTracking()
+                .Where(x => x != null && !x.IsRead)
+                .CountAsync();
 
             return Ok(new
             {

@@ -208,10 +208,11 @@
 }
 
 .resource-center__page--users .users-list-page__status-filter select {
-  width: 150px;
+  width: 165px;
+  min-width: 165px;
   height: 34px;
   min-height: 34px;
-  padding: 0 30px 0 32px;
+  padding: 0 28px 0 32px;
   border: 1px solid #dbe4ee;
   border-radius: 8px;
   background: #fff;
@@ -435,20 +436,27 @@
 
 .resource-center__page--users .resource-center__product-style-selection-button {
   min-width: 82px;
-  border-color: #a7f3d0;
+  border-color: #dbe4ee;
   background: #fff;
+  color: #334155;
 }
 
 .resource-center__page--users .resource-center__product-style-selection-button:hover {
   border-color: #059669;
-  background: #dffaf0;
+  background: #ecfdf5;
   color: #059669;
 }
 
 .resource-center__page--users .resource-center__product-style-selection-button--danger {
-  border-color: #fecaca;
-  background: #fff7f7;
+  border-color: #fca5a5;
+  background: #fef2f2;
   color: #dc2626;
+}
+
+.resource-center__page--users .resource-center__product-style-selection-button--danger:hover {
+  border-color: #dc2626;
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 .form-modal__dialog--users {
