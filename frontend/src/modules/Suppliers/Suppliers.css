@@ -4705,7 +4705,9 @@ border-color: #bbf7d0; /* Changed from #d1fae5 */
   font-size: 0.67rem;
   font-weight: 570;
   line-height: 1.18;
-  margin-top: -1px;
+  margin-top: 3px;
+  padding-left: 2px;
+  text-align: left;
 }
 
 .supplier-address-section {

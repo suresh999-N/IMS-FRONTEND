@@ -16110,7 +16110,9 @@
   font-size: 0.67rem;
   font-weight: 570;
   line-height: 1.18;
-  margin-top: -1px;
+  margin-top: 3px;
+  padding-left: 2px;
+  text-align: left;
 }
 
 @media (max-width: 720px) {
@@ -16401,7 +16403,9 @@
   font-size: 0.67rem;
   font-weight: 570;
   line-height: 1.18;
-  margin-top: -1px;
+  margin-top: 3px;
+  padding-left: 2px;
+  text-align: left;
 }
 
 @media (max-width: 720px) {
