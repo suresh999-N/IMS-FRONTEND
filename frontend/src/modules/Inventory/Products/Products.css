@@ -75,7 +75,15 @@
   transform: translateY(0);
 }
 
-.resource-center__page--products .resource-center__inventory-metric--success  { border-color: #86efac; background: #ecfdf5; color: #047857; }
+.resource-center__page--products .resource-center__inventory-metric--success  { border-color: var(--status-success-border, #a7f3d0); background: var(--status-success-bg, #ecfdf5); color: var(--status-success-color, #047857); }
+
+.resource-center__page--products .status-badge.status-success,
+.resource-center__page--products .status-badge.status-in-stock,
+.resource-center__page--products .status-badge.status-active {
+  border-color: var(--status-success-border, #a7f3d0) !important;
+  background: var(--status-success-bg, #ecfdf5) !important;
+  color: var(--status-success-color, #047857) !important;
+}
 .resource-center__page--products .resource-center__inventory-metric--info     { border-color: #bfdbfe; background: #eff6ff; color: #1e40af; }
 .resource-center__page--products .resource-center__inventory-metric--warning  { border-color: #fed7aa; background: #fff7ed; color: #c2410c; }
 .resource-center__page--products .resource-center__inventory-metric--danger   { border-color: #fecaca; background: #fef2f2; color: #b91c1c; }

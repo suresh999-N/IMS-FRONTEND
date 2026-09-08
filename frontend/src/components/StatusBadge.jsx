@@ -1,4 +1,5 @@
 const STATUS_TYPE_MAP = {
+  action: 'info',
   active: 'success',
   approved: 'success',
   available: 'success',
@@ -57,9 +58,10 @@ export default function StatusBadge({
   ariaLabel,
 }) {
   const content = children ?? label ?? status
+  const normalizedKey = normalizeStatusKey(status ?? content)
   const resolvedType = getStatusType(status ?? content, type)
   const isInteractive = Boolean(onClick || onDoubleClick || onKeyDown)
-  const resolvedClassName = `status-badge status-${resolvedType} ${isInteractive ? 'status-badge--button' : ''} ${className}`.trim()
+  const resolvedClassName = `status-badge status-${resolvedType} ${normalizedKey ? `status-${normalizedKey}` : ''} ${isInteractive ? 'status-badge--button' : ''} ${className}`.trim()
 
   if (isInteractive) {
     return (

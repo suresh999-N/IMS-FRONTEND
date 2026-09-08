@@ -39,7 +39,7 @@ function ProductsHeader({ canCreate, summary, activeStatusFilter, onFilterStatus
       filterValue: 'all',
       label: 'Products',
       value: formatCompactCount(summary.total),
-      tone: 'info',
+      tone: 'neutral',
       isActive: activeStatusFilter === 'all',
       title: 'Show active products',
     },

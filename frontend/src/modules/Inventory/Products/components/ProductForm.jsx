@@ -32,6 +32,10 @@ import {
   getProductAttributes,
   getSubCategoryRecords,
   getUnits,
+  normalizeBrand,
+  normalizeCategory,
+  normalizeSubCategory,
+  normalizeUnit,
 } from "../../../../api/productApi";
 import { getVariantsByProduct } from "../../../../api/productVariantsApi";
 import { createId, getNumberError, getRequiredError, getToday } from "../../../../utils/helpers";
@@ -57,8 +61,12 @@ const trackedProductFields = [
 const createRequiredFields = [
   'name',
   'categoryId',
+  'subCategoryId',
   'brandId',
   'sku',
+  'unitId',
+  'costPrice',
+  'price',
   'description',
 ]
 
@@ -407,6 +415,10 @@ function getFieldError(name, value, mode, options = {}) {
   }
 
   if (name === 'subCategoryId') {
+    if (mode === 'create' && (!value || value === '' || value === '0')) {
+      return 'Subcategory is required.'
+    }
+
     if (value && value !== '' && value !== '0') {
       const subCategoryList = options.subCategories ?? []
       if (subCategoryList.length > 0) {
@@ -441,9 +453,30 @@ function getFieldError(name, value, mode, options = {}) {
     return ''
   }
 
+  if (name === 'unitId') {
+    if (mode === 'create' && (!value || value === '' || value === '0')) {
+      return 'Unit is required.'
+    }
+
+    const unitList = options.units ?? []
+    if (unitList.length > 0 && value && value !== '' && value !== '0') {
+      const isValid = unitList.some((unit) => String(unit.id) === String(value))
+      if (!isValid) {
+        return 'Please select a valid unit.'
+      }
+    }
+
+    return ''
+  }
+
   if (mode === 'create' && createRequiredFields.includes(name)) {
     const label = {
       categoryId: 'Category',
+      subCategoryId: 'Subcategory',
+      brandId: 'Brand',
+      unitId: 'Unit',
+      costPrice: 'Purchase price',
+      price: 'Selling price',
       name: 'Product name',
     }[name] ?? name
     const requiredError = getRequiredError(value, label)
@@ -470,12 +503,18 @@ function getFieldError(name, value, mode, options = {}) {
   }
 
   if (name === 'price') {
+    if (mode === 'create' && (value === '' || value === null || value === undefined)) {
+      return 'Selling Price is required.'
+    }
     return value === ''
       ? ''
       : getNumberError(value, 'Selling Price (MRP)', { allowZero: false })
   }
 
   if (name === 'costPrice') {
+    if (mode === 'create' && (value === '' || value === null || value === undefined)) {
+      return 'Purchase Price is required.'
+    }
     return value === ''
       ? ''
       : getNumberError(value, 'Purchase Price', { min: 0, allowZero: true })
@@ -720,8 +759,8 @@ export default function ProductForm({
     const fieldsToValidate = Array.from(
       new Set(
         isEdit
-          ? [...changedFields, 'categoryId', 'subCategoryId', 'brandId', 'sku', 'description']
-          : [...createRequiredFields, 'categoryId', 'subCategoryId', 'brandId', 'sku', 'description'],
+          ? [...changedFields, 'categoryId', 'subCategoryId', 'brandId', 'sku', 'unitId', 'costPrice', 'price', 'description']
+          : [...createRequiredFields, 'categoryId', 'subCategoryId', 'brandId', 'sku', 'unitId', 'costPrice', 'price', 'description'],
       ),
     )
 
@@ -730,13 +769,14 @@ export default function ProductForm({
         categories,
         subCategories,
         brands,
+        units,
         categoryId: formData.categoryId,
         products,
         currentProductId: getProductEntityId(initialValues),
       })
       return error ? { ...nextErrors, [field]: error } : nextErrors
     }, {})
-  }, [changedFields, categories, subCategories, brands, formData, isEdit, mode, products, initialValues])
+  }, [changedFields, categories, subCategories, brands, units, formData, isEdit, mode, products, initialValues])
 
   const hasChanges = isEdit
     ? changedFields.length > 0 || variantsChanged || selectedImageFile !== null || imageRemoved
@@ -816,11 +856,12 @@ export default function ProductForm({
   async function handleAddBrand(draft) {
     const label = normalizeString(draft?.name)
     if (!label) {
+      showToast('Brand name is required.', 'error')
       return null
     }
 
-    if (!/^[A-Za-z\s]+$/.test(label)) {
-      showToast('Brand name can contain only letters and spaces.', 'error')
+    if (!/^[A-Za-z0-9\s&.-]+$/.test(label)) {
+      showToast('Invalid brand name. Please enter a valid brand name (letters, numbers, spaces, &, ., -).', 'error')
       return null
     }
 
@@ -1210,7 +1251,7 @@ export default function ProductForm({
           <DropdownWithAdd
             id="subCategoryId"
             name="subCategoryId"
-            label="SubCategory"
+            label="SubCategory *"
             value={formData.subCategoryId || ''}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -1219,6 +1260,8 @@ export default function ProductForm({
               formData.categoryId ? 'Select subcategory' : 'Select category first'
             }
             disabled={!formData.categoryId}
+            error={errors.subCategoryId}
+            showError={shouldShowError('subCategoryId')}
             onAddOption={handleAddSubCategory}
             addLabel="+ Add"
             addTitle="Add SubCategory"

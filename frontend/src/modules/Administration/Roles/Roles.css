@@ -6966,9 +6966,9 @@
 }
 
 .resource-center__products-table-card .table-component__table .status-badge.status-success {
-  border-color: rgba(22, 163, 74, 0.18);
-  background: #f0fdf4;
-  color: #15803d;
+  border-color: var(--status-success-border, #a7f3d0);
+  background: var(--status-success-bg, #ecfdf5);
+  color: var(--status-success-color, #047857);
 }
 
 .resource-center__products-table-card .table-component__table .status-badge.status-warning {

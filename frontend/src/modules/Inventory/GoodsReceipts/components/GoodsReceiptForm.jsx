@@ -10,6 +10,7 @@ import { API_ENDPOINTS } from '../../../../api/endpoints'
 import { createId, formatCurrency, getNumberError, getRequiredError } from '../../../../utils/helpers'
 import { getLocalTodayDate, toDateInputValue } from '../../../../utils/dateUtils'
 import { calculateGoodsReceiptTotals, normalizeGoodsReceiptItem } from '../goodsReceiptHelpers'
+import { renderFormLabel } from '../../../../utils/labelUtils'
 import '../../PurchaseIndents/PurchaseIndents.css'
 
 function calculateLineTotal(line) {
@@ -991,7 +992,7 @@ export default function GoodsReceiptForm({
           </div>
 
           <div className="indent-field-group">
-            <label htmlFor="grn-supplier-invoice-no">Supplier Invoice No</label>
+            <label htmlFor="grn-supplier-invoice-no">{renderFormLabel('Supplier Invoice No *')}</label>
             <input
               type="text"
               id="grn-supplier-invoice-no"

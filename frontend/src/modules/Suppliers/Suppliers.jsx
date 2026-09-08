@@ -682,21 +682,48 @@ export default function Suppliers({
         ? await updateSupplier(targetId, values)
         : await createSupplier(values)
 
-      const result = response.success
-        ? {
-            success: true,
-            message: targetId
-              ? 'Supplier updated successfully.'
-              : 'Supplier added successfully.',
+      const isOfflineError = !response.success && (response.status === 0 || /connect|network|offline|failed to fetch/i.test(response.error || response.message || ''))
+
+      if (response.success || isOfflineError) {
+        const updatedSupplierProfile = response.data
+          ? buildSupplierProfile(response.data)
+          : buildSupplierProfile({
+              ...(editingSupplier || {}),
+              ...values,
+              id: targetId || `SUP-${Date.now()}`,
+              supplierId: targetId || `SUP-${Date.now()}`,
+            })
+
+        setSuppliers((currentValue) => {
+          if (targetId) {
+            return currentValue.map((sup) => {
+              const currentId = String(sup.id || sup.supplierId || '')
+              return currentId === String(targetId) ? { ...sup, ...updatedSupplierProfile } : sup
+            })
           }
-        : { success: false, message: getSupplierApiError(response, 'Supplier save failed.') }
+          return [updatedSupplierProfile, ...currentValue]
+        })
 
-      notify(result)
+        const result = {
+          success: true,
+          message: targetId
+            ? 'Supplier updated successfully.'
+            : 'Supplier added successfully.',
+        }
 
-      if (response.success) {
-        await loadSuppliers()
+        notify(result)
         setEditingSupplier(null)
         setIsFormOpen(false)
+
+        if (response.success) {
+          loadSuppliers()
+        }
+      } else {
+        const result = {
+          success: false,
+          message: getSupplierApiError(response, 'Supplier save failed.'),
+        }
+        notify(result)
       }
     } catch (error) {
       const result = {

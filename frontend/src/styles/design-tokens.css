@@ -31,6 +31,10 @@
   --color-success-700: #22c55e;
   --color-success-800: #16a34a;
 
+  --status-success-color: #047857;
+  --status-success-bg: #ecfdf5;
+  --status-success-border: #a7f3d0;
+
   --color-warning-50: #fff7ed;
   --color-warning-100: #ffedd5;
   --color-warning-200: #fed7aa;

@@ -24,10 +24,12 @@ export default function NotificationsHeader({ summary }) {
               <strong>{summary.read}</strong>
               Read
             </span>
-            <span className="resource-center__metric-badge resource-center__metric-badge--danger">
-              <strong>{summary.critical}</strong>
-              Critical
-            </span>
+            {summary.critical > 0 ? (
+              <span className="resource-center__metric-badge resource-center__metric-badge--danger">
+                <strong>{summary.critical}</strong>
+                Critical
+              </span>
+            ) : null}
           </div>
         ) : null}
       </div>

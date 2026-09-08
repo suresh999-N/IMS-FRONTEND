@@ -67,7 +67,7 @@ export default function NotificationsTable({
         if (lower === "critical" || lower === "error") tone = "danger";
         else if (lower === "warning") tone = "warning";
         else if (lower === "success") tone = "success";
-        else if (lower === "info") tone = "info";
+        else if (lower === "info" || lower === "action") tone = "info";
 
         const formattedType = type
           ? type
@@ -132,6 +132,24 @@ export default function NotificationsTable({
     },
   ];
 
+  const availableTypeOptions = useMemo(() => {
+    const rawTypes = (notifications || [])
+      .map((item) => String(item.type || "").trim())
+      .filter(Boolean);
+
+    const defaultTypes = ["Critical", "Warning", "Info", "Action"];
+    const merged = [...new Set([...defaultTypes, ...rawTypes])];
+
+    return merged.map((t) => {
+      const formatted = t
+        .replace(/[_-]+/g, " ")
+        .toLowerCase()
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+
+      return { value: t.toLowerCase(), label: formatted };
+    });
+  }, [notifications]);
+
   const toolbarContent = (
     <FilterBar>
       <div className="notifications-table__toolbar-actions">
@@ -150,9 +168,11 @@ export default function NotificationsTable({
           onChange={(e) => setTypeFilter(e.target.value)}
         >
           <option value="all">All Types</option>
-          <option value="critical">Critical</option>
-          <option value="warning">Warning</option>
-          <option value="info">Info</option>
+          {availableTypeOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
         </select>
       </div>
     </FilterBar>

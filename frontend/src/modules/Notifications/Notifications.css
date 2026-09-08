@@ -208,29 +208,56 @@
   font-weight: 620;
 }
 
-.resource-center__metric-badge--total,
+.resource-center__metric-badge--total {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+}
+
+.resource-center__metric-badge--total strong {
+  color: #0f172a;
+}
+
 .resource-center__metric-badge--success {
-  border-color: rgba(5, 150, 105, 0.18);
+  border-color: #a7f3d0;
   background: #ecfdf5;
   color: #047857;
 }
 
 .resource-center__metric-badge--warning {
-  border-color: rgba(245, 158, 11, 0.24);
-  background: #fffbeb;
-  color: #b45309;
+  border-color: #fed7aa;
+  background: #fff7ed;
+  color: #c2410c;
 }
 
 .resource-center__metric-badge--danger {
-  border-color: rgba(239, 68, 68, 0.22);
+  border-color: #fecaca;
   background: #fef2f2;
   color: #b91c1c;
 }
 
 .resource-center__metric-badge--info {
-  border-color: rgba(14, 165, 183, 0.22);
+  border-color: #a5f3fc;
   background: #ecfeff;
-  color: #0e7490;
+  color: #0891b2;
+}
+
+.notifications-data-table .status-badge.status-action {
+  color: #1d4ed8 !important;
+  background-color: #eff6ff !important;
+  border-color: #bfdbfe !important;
+}
+
+.notifications-data-table .status-badge.status-read {
+  color: #047857 !important;
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+}
+
+.notifications-data-table .status-badge.status-unread {
+  color: #c2410c !important;
+  background-color: #fff7ed !important;
+  border-color: #fed7aa !important;
 }
 
 /* ==========================================================================

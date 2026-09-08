@@ -568,7 +568,7 @@ function CategoryForm({
           <InputField
             id="category-name"
             name="name"
-            label="Category name"
+            label="Category Name *"
             value={formData.name}
             onChange={handleChange}
             onBlur={handleBlur}

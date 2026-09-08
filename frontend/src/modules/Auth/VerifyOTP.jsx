@@ -25,6 +25,8 @@ function cleanSuccessMessage(rawMessage, fallback = 'A verification code has bee
   return text
 }
 
+import { renderFormLabel } from '../../utils/labelUtils'
+
 export default function VerifyOTP() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -226,7 +228,7 @@ export default function VerifyOTP() {
               <input id="verify-email" value={email} readOnly disabled />
             </div>
 
-            <label className="auth-login-label" htmlFor="verify-otp">Verification Code</label>
+            <label className="auth-login-label" htmlFor="verify-otp">{renderFormLabel('Verification Code *')}</label>
             <div className="input-box">
               <ShieldCheck size={16} />
               <input

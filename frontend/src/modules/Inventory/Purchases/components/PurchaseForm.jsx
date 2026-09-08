@@ -6,6 +6,7 @@ import QuantityInput from '../../../../components/QuantityInput'
 import SearchableSelect from '../../../../components/SearchableSelect'
 import { getProductById } from '../../../../api/productApi'
 import { createId, formatCurrency, getNumberError, getRequiredError, getToday } from '../../../../utils/helpers'
+import { renderFormLabel } from '../../../../utils/labelUtils'
 import '../../PurchaseIndents/PurchaseIndents.css'
 
 function createLineItem() {
@@ -358,7 +359,7 @@ export default function PurchaseForm({
 
           {/* Expected Date */}
           <div className={`indent-field-group ${touched.expectedDate && errors.expectedDate ? 'indent-field-group--error' : ''}`}>
-            <label htmlFor="po-expected-date">Expected date</label>
+            <label htmlFor="po-expected-date">{renderFormLabel('Expected Date *')}</label>
             <DatePicker
               id="po-expected-date"
               name="expectedDate"

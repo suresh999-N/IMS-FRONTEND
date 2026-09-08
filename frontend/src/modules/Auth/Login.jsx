@@ -25,7 +25,9 @@ import './Auth.css'
  
 const REMEMBER_ME_STORAGE_KEY = 'ims_remember_me_identifier'
 
-export default function Login() {
+import { renderFormLabel } from '../../utils/labelUtils'
+
+export default function Login({ onLoginSuccess, isSwitchMode = false }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { login } = useAuth()
@@ -197,7 +199,7 @@ export default function Login() {
           {error ? <div className="error-box">{error}</div> : null}
  
           <form onSubmit={handleSubmit} noValidate>
-            <label className="auth-login-label" htmlFor="login-identifier">Email or Phone Number</label>
+            <label className="auth-login-label" htmlFor="login-identifier">{renderFormLabel('Email or Phone Number *')}</label>
             <div className={`input-box ${emailDisplayError ? 'input-box--error' : ''}`}>
               {/^[0-9+\s-()]+$/.test(formData.email) ? (
                 <Phone size={16} />
@@ -220,7 +222,7 @@ export default function Login() {
               <span className="field-error-text field-error">{emailDisplayError}</span>
             )}
 
-            <label className="auth-login-label" htmlFor="login-password">Password</label>
+            <label className="auth-login-label" htmlFor="login-password">{renderFormLabel('Password *')}</label>
             <div className={`input-box ${passwordDisplayError ? 'input-box--error' : ''}`}>
               <LockKeyhole size={16} />
               <input

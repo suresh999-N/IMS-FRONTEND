@@ -167,7 +167,7 @@ function BrandForm({ editingBrand, items, onSubmit, onCancel, isSubmitting }) {
           <InputField
             id="brand-name"
             name="name"
-            label="Brand name"
+            label="Brand Name *"
             value={formData.name}
             onChange={handleChange}
             onBlur={handleBlur}

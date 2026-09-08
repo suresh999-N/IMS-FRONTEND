@@ -1281,9 +1281,9 @@
 
 .payments-page__table-card .status-badge.status-success,
 .payments-page__table-card .status-badge.status-received {
-  border-color: #bbf7d0 !important;
-  background: #ecfdf3 !important;
-  color: #047857 !important;
+  border-color: var(--status-success-border, #a7f3d0) !important;
+  background: var(--status-success-bg, #ecfdf5) !important;
+  color: var(--status-success-color, #047857) !important;
 }
 
 .payments-page__table-card .status-badge.status-pending {

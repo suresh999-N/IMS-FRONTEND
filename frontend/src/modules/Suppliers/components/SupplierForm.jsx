@@ -54,8 +54,8 @@ const emptyBasic = {
 const emptyTerms = {
   creditDays: '30',
   creditLimit: '',
-  preferredPaymentMethod: 'Bank Transfer',
-  currency: 'INR',
+  preferredPaymentMethod: '',
+  currency: '',
   taxType: 'GST Registered',
   notes: '',
 }
@@ -362,18 +362,7 @@ export function getBusinessTitleError(value, label = 'Field') {
 
   const words = nextValue.split(/[\s/\-]+/).filter(Boolean)
   for (const word of words) {
-    if (word.length > 15) return `Enter a valid ${lowerLabel}.`
-    if (/[^aeiouyAEIOUY]{4,}/i.test(word)) return `Enter a valid ${lowerLabel}.`
-    if (/[aeiouyAEIOUY]{3,}/i.test(word)) return `Enter a valid ${lowerLabel}.`
-    if (/([a-zA-Z]{3,}).*?\1/i.test(word)) return `Enter a valid ${lowerLabel}.`
-    if (word.length >= 4 && (!/[aeiouyAEIOUY]/i.test(word) || !/[bcdfghjklmnpqrstvwxzBCDFGHJKLMNPQRSTVWXZ]/i.test(word))) {
-      return `Enter a valid ${lowerLabel}.`
-    }
-    if (word.length >= 6) {
-      const vowels = (word.match(/[aeiouyAEIOUY]/g) || []).length
-      const ratio = vowels / word.length
-      if (ratio < 0.20 || ratio > 0.70) return `Enter a valid ${lowerLabel}.`
-    }
+    if (word.length > 25) return `Enter a valid ${lowerLabel}.`
   }
 
   return ''
@@ -400,36 +389,6 @@ function getAddressLineError(value, label, required = false) {
   }
   if (/([A-Za-z0-9])\1{3,}/i.test(nextValue)) {
     return `Enter a valid ${label.toLowerCase()}.`
-  }
-
-  const words = nextValue.split(/[\s,./#'()\-]+/).filter(Boolean)
-  for (const word of words) {
-    const lettersOnly = word.replace(/[^A-Za-z]/g, '')
-    if (!lettersOnly) continue
-
-    if (lettersOnly.length > 18) {
-      return `Enter a valid ${label.toLowerCase()}.`
-    }
-    if (/[^aeiouyAEIOUY]{5,}/i.test(lettersOnly)) {
-      return `Enter a valid ${label.toLowerCase()}.`
-    }
-    if (/[aeiouyAEIOUY]{4,}/i.test(lettersOnly)) {
-      return `Enter a valid ${label.toLowerCase()}.`
-    }
-    if (
-      lettersOnly.length >= 4 &&
-      !/^[A-Z]{2,6}$/.test(lettersOnly) &&
-      (!/[aeiouyAEIOUY]/i.test(lettersOnly) || !/[bcdfghjklmnpqrstvwxzBCDFGHJKLMNPQRSTVWXZ]/i.test(lettersOnly))
-    ) {
-      return `Enter a valid ${label.toLowerCase()}.`
-    }
-    if (lettersOnly.length >= 6 && !/^[A-Z]{6}$/.test(lettersOnly)) {
-      const vowels = (lettersOnly.match(/[aeiouyAEIOUY]/g) || []).length
-      const ratio = vowels / lettersOnly.length
-      if (ratio < 0.15 || ratio > 0.75) {
-        return `Enter a valid ${label.toLowerCase()}.`
-      }
-    }
   }
 
   return ''
@@ -715,8 +674,8 @@ function getInitialPaymentTerm(initialValues) {
     ...emptyTerms,
     creditDays: initialValues?.creditDays || paymentTerm.creditDays || '30',
     creditLimit: initialValues?.creditLimit || paymentTerm.creditLimit || '',
-    preferredPaymentMethod: paymentTerm.preferredPaymentMethod || 'Bank Transfer',
-    currency: paymentTerm.currency || 'INR',
+    preferredPaymentMethod: paymentTerm.preferredPaymentMethod || '',
+    currency: paymentTerm.currency || '',
     taxType: paymentTerm.taxType || 'GST Registered',
     notes: paymentTerm.notes || '',
   }

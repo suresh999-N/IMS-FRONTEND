@@ -1184,11 +1184,12 @@ button.status-badge:disabled,
 .status-active,
 .status-completed,
 .status-in,
+.status-in-stock,
 .status-received,
 .status-success {
-  color: var(--success);
-  background: var(--color-success-50);
-  border-color: var(--color-success-200);
+  color: var(--status-success-color, #047857) !important;
+  background: var(--status-success-bg, #ecfdf5) !important;
+  border-color: var(--status-success-border, #a7f3d0) !important;
 }
 
 .status-ordered,
@@ -1206,6 +1207,30 @@ button.status-badge:disabled,
   color: #475569;
   background: var(--color-neutral-100, #f1f5f9);
   border-color: var(--color-neutral-300, #cbd5e1);
+}
+
+.status-info {
+  color: #0891b2;
+  background: #ecfeff;
+  border-color: #a5f3fc;
+}
+
+.status-action {
+  color: #1d4ed8 !important;
+  background: #eff6ff !important;
+  border-color: #bfdbfe !important;
+}
+
+.status-read {
+  color: #047857 !important;
+  background: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+}
+
+.status-unread {
+  color: #c2410c !important;
+  background: #fff7ed !important;
+  border-color: #fed7aa !important;
 }
 
 .resource-center__inventory-metric--neutral,

@@ -18,6 +18,8 @@ import { getAuthErrorMessage } from './authCopy'
 import { getPasswordError, isPasswordReused, recordPasswordHistory } from '../../validators/passwordValidator'
 import './Auth.css'
 
+import { renderFormLabel } from '../../utils/labelUtils'
+
 export default function ResetPassword() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -156,7 +158,7 @@ export default function ResetPassword() {
           {error ? <div className="error-box">{error}</div> : null}
 
           <form onSubmit={handleSubmit} autoComplete="off">
-            <label className="auth-login-label" htmlFor="reset-otp">Verification Code</label>
+            <label className="auth-login-label" htmlFor="reset-otp">{renderFormLabel('Verification Code *')}</label>
             <div className={`input-box ${otpDisplayError ? 'input-box--error' : ''}`}>
               <ShieldCheck size={16} />
               <input
@@ -178,7 +180,7 @@ export default function ResetPassword() {
               <span className="field-error-text field-error">{otpDisplayError}</span>
             )}
 
-            <label className="auth-login-label" htmlFor="reset-password">New Password</label>
+            <label className="auth-login-label" htmlFor="reset-password">{renderFormLabel('New Password *')}</label>
             <div className={`input-box ${passwordDisplayError ? 'input-box--error' : ''}`}>
               <LockKeyhole size={16} />
               <input
@@ -215,7 +217,7 @@ export default function ResetPassword() {
               <span className="field-error-text field-error">{passwordDisplayError}</span>
             )}
 
-            <label className="auth-login-label" htmlFor="reset-confirm-password">Confirm Password</label>
+            <label className="auth-login-label" htmlFor="reset-confirm-password">{renderFormLabel('Confirm Password *')}</label>
             <div className={`input-box ${confirmPasswordDisplayError ? 'input-box--error' : ''}`}>
               <LockKeyhole size={16} />
               <input

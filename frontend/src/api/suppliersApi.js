@@ -81,8 +81,8 @@ function normalizePaymentTerm(supplier) {
   return {
     creditDays: readValue(paymentTerm, 'creditDays', 'CreditDays') ?? readValue(supplier, 'creditDays', 'CreditDays') ?? '',
     creditLimit: readValue(paymentTerm, 'creditLimit', 'CreditLimit') ?? readValue(supplier, 'creditLimit', 'CreditLimit') ?? '',
-    preferredPaymentMethod: normalizeTitleValue(readValue(paymentTerm, 'preferredPaymentMethod', 'paymentMethod', 'PaymentMethod') || 'Bank Transfer'),
-    currency: readValue(paymentTerm, 'currency', 'Currency') || 'INR',
+    preferredPaymentMethod: normalizeTitleValue(readValue(paymentTerm, 'preferredPaymentMethod', 'paymentMethod', 'PaymentMethod') || ''),
+    currency: readValue(paymentTerm, 'currency', 'Currency') || '',
     taxType: readValue(paymentTerm, 'taxType', 'TaxType') || 'GST Registered',
     notes: readValue(paymentTerm, 'notes', 'Notes') || '',
   }
@@ -174,6 +174,18 @@ export function toSupplierPayload(data = {}) {
   const gstNumber = cleanCode(rawGst, 15)
   const panNumber = cleanCode(rawPan, 10)
 
+  const contactsList = Array.isArray(data.contacts) ? data.contacts : []
+  const primaryContact = contactsList.find((c) => c?.isPrimary) || contactsList[0] || {}
+
+  const phone = sanitizePhoneInput(data.phone || primaryContact.phone || '')
+  const email = sanitizeEmailInput(data.email || primaryContact.email || '')
+
+  function safeId(value) {
+    if (value === null || value === undefined || value === '') return null
+    const num = Number(value)
+    return Number.isInteger(num) && num > 0 ? num : null
+  }
+
   return {
     supplierCode: cleanString(data.supplierCode).toUpperCase(),
     name: cleanString(data.name),
@@ -183,54 +195,66 @@ export function toSupplierPayload(data = {}) {
     gstin: gstNumber,
     gst: gstNumber,
     pan: panNumber,
-    phone: sanitizePhoneInput(data.phone),
-    email: sanitizeEmailInput(data.email),
+    phone,
+    email,
     website: cleanString(data.website),
     status: toSupplierStatus(data.status),
     category: cleanString(data.category),
-    contacts: Array.isArray(data.contacts)
-      ? data.contacts.map((contact) => ({
-          contactId: contact.contactId || contact.id ? Number(contact.contactId || contact.id) : null,
-          name: cleanString(contact.name),
-          designation: cleanString(contact.designation),
-          department: cleanString(contact.department),
-          phone: sanitizePhoneInput(contact.phone),
-          email: sanitizeEmailInput(contact.email),
-          isPrimary: Boolean(contact.isPrimary),
-        }))
-      : [],
-    addresses: Array.isArray(data.addresses)
-      ? data.addresses.map((address) => ({
-          addressType: cleanString(address.type || address.addressType || 'Billing'),
-          addressLine: cleanString(address.addressLine1 || address.addressLine),
-          city: cleanString(address.city),
-          state: cleanString(address.state),
-          country: cleanString(address.country || 'India'),
-          pincode: cleanString(address.country || 'India').toLowerCase() === 'india'
-            ? cleanDigits(address.pincode, 6)
-            : cleanString(address.pincode).toUpperCase().replace(/[^A-Z0-9 -]/g, '').slice(0, 12),
-        }))
-      : [],
+    contacts: contactsList.map((contact) => {
+      const contactId = safeId(contact.contactId ?? contact.id)
+      return {
+        contactId,
+        id: contactId,
+        name: cleanString(contact.name),
+        designation: cleanString(contact.designation),
+        department: cleanString(contact.department),
+        phone: sanitizePhoneInput(contact.phone),
+        email: sanitizeEmailInput(contact.email),
+        isPrimary: Boolean(contact.isPrimary),
+      }
+    }),
+    addresses: (Array.isArray(data.addresses) ? data.addresses : []).map((address) => {
+      const addressId = safeId(address.addressId ?? address.id)
+      const line1 = cleanString(address.addressLine1 || address.addressLine)
+      const line2 = cleanString(address.addressLine2)
+      return {
+        addressId,
+        id: addressId,
+        addressType: cleanString(address.type || address.addressType || 'Billing'),
+        addressLine1: line1,
+        addressLine2: line2,
+        addressLine: line1,
+        city: cleanString(address.city),
+        state: cleanString(address.state),
+        country: cleanString(address.country || 'India'),
+        pincode: cleanString(address.country || 'India').toLowerCase() === 'india'
+          ? cleanDigits(address.pincode, 6)
+          : cleanString(address.pincode).toUpperCase().replace(/[^A-Z0-9 -]/g, '').slice(0, 12),
+      }
+    }),
     paymentTerm: {
       creditDays: Number(paymentTerm.creditDays || data.creditDays || 0),
       creditLimit: paymentTerm.creditLimit === '' || paymentTerm.creditLimit === null || paymentTerm.creditLimit === undefined
         ? null
         : Number(paymentTerm.creditLimit),
-      paymentMethod: cleanString(paymentTerm.preferredPaymentMethod || paymentTerm.paymentMethod || 'Bank Transfer'),
+      paymentMethod: cleanString(paymentTerm.preferredPaymentMethod || paymentTerm.paymentMethod || ''),
       notes: cleanString(paymentTerm.notes),
     },
-    bankAccounts: Array.isArray(data.bankAccounts)
-      ? data.bankAccounts.map((account) => ({
-          accountName: cleanString(account.accountName),
-          accountNumber: cleanDigits(account.accountNumber),
-          bankName: cleanString(account.bankName),
-          ifscCode: cleanString(account.ifscCode).toUpperCase(),
-          branch: cleanString(account.branch),
-          bankState: cleanString(account.bankState),
-          bankCity: cleanString(account.bankCity),
-          upiId: cleanString(account.upiId),
-        }))
-      : [],
+    bankAccounts: (Array.isArray(data.bankAccounts) ? data.bankAccounts : []).map((account) => {
+      const bankId = safeId(account.bankId ?? account.id)
+      return {
+        bankId,
+        id: bankId,
+        accountName: cleanString(account.accountName),
+        accountNumber: cleanDigits(account.accountNumber),
+        bankName: cleanString(account.bankName),
+        ifscCode: cleanString(account.ifscCode).toUpperCase(),
+        branch: cleanString(account.branch),
+        bankState: cleanString(account.bankState),
+        bankCity: cleanString(account.bankCity),
+        upiId: cleanString(account.upiId),
+      }
+    }),
   }
 }
 

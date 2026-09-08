@@ -1,3 +1,4 @@
+import { renderFormLabel } from '../../utils/labelUtils'
 import './ERPComponents.css'
 
 export default function FormControl({
@@ -18,8 +19,10 @@ export default function FormControl({
     <div className={`erp-form-control ${error ? 'erp-form-control--error' : ''} ${className}`.trim()}>
       {label ? (
         <label className="erp-form-control__label" htmlFor={id}>
-          <span>{label}</span>
-          {required ? <span className="erp-form-control__required" aria-hidden="true">*</span> : null}
+          <span>{renderFormLabel(label)}</span>
+          {required && !String(label).includes('*') ? (
+            <span className="erp-form-control__required" aria-hidden="true">*</span>
+          ) : null}
         </label>
       ) : null}
       <div className="erp-form-control__field">

@@ -22,6 +22,8 @@ import {
 import { getAuthErrorMessage } from './authCopy'
 import './Auth.css'
 
+import { renderFormLabel } from '../../utils/labelUtils'
+
 export default function ForgotPassword() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
@@ -114,7 +116,7 @@ export default function ForgotPassword() {
           {error ? <div className="error-box">{error}</div> : null}
 
           <form onSubmit={handleSubmit}>
-            <label className="auth-login-label" htmlFor="forgot-email">Email Address</label>
+            <label className="auth-login-label" htmlFor="forgot-email">{renderFormLabel('Email Address *')}</label>
             <div className="input-box">
               <Mail size={16} />
               <input
