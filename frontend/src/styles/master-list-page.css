@@ -56,7 +56,7 @@
 }
 
 :is(.catalog-metric-badge, .reference-compact-metric, .products-metric-badge, .suppliers-metric-badge, .customers-metric-badge, .resource-center__inventory-metric) strong {
-  color: inherit;
+  color: #000000;
   font-size: inherit;
 }
 
