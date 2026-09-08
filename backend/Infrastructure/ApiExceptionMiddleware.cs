@@ -29,7 +29,9 @@ public sealed class ApiExceptionMiddleware
         {
             _logger.LogError(
                 exception,
-                "Unhandled API exception. TraceId: {TraceId}",
+                "Unhandled exception while processing {Method} {Path}. TraceId: {TraceId}",
+                context.Request.Method,
+                context.Request.Path,
                 context.TraceIdentifier);
 
             if (context.Response.HasStarted)

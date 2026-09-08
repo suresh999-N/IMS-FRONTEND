@@ -2049,6 +2049,12 @@
   font-size: 12px;
 }
 
+.app-notification-item__time {
+  color: #94a3b8;
+  font-size: 11px;
+  margin-top: 1px;
+}
+
 .app-notification-item>svg {
   flex: 0 0 auto;
   color: #059669;

@@ -1,8 +1,10 @@
-﻿using IMSBackend.Data;
+using IMSBackend.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IMSBackend.Controllers
 {
+    [AllowAnonymous]
     [ApiController]
     [Route("api/health")]
     public class HealthController : ControllerBase
@@ -15,11 +17,11 @@ namespace IMSBackend.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get(CancellationToken cancellationToken)
         {
             try
             {
-                var dbConnected = _context.Database.CanConnect();
+                var dbConnected = await _context.Database.CanConnectAsync(cancellationToken);
 
                 return Ok(new
                 {

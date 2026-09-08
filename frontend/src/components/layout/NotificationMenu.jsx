@@ -7,6 +7,7 @@ import {
   markNotificationRead,
   NOTIFICATIONS_UPDATED_EVENT,
 } from '../../api/notificationsApi'
+import { formatDateTime } from '../../utils/helpers'
 import PortalDropdown from './PortalDropdown'
 
 export default function NotificationMenu() {
@@ -120,6 +121,11 @@ export default function NotificationMenu() {
                   <span className="app-notification-item__copy">
                     <strong>{notification.title}</strong>
                     <small>{notification.message}</small>
+                    {notification.createdAt ? (
+                      <span className="app-notification-item__time">
+                        {formatDateTime(notification.createdAt)}
+                      </span>
+                    ) : null}
                   </span>
                   {!notification.isRead ? <Check size={15} /> : null}
                 </button>

@@ -1,9 +1,9 @@
 import {
   CalendarDays,
   Package,
-  RotateCcw,
   Save,
   ScanLine,
+  X,
 } from 'lucide-react'
 import SelectWithAdd from '../../../../components/SelectWithAdd'
 import SearchableSelect from '../../../../components/SearchableSelect'
@@ -112,7 +112,7 @@ export default function BarcodeForm({
             {isSaving ? 'Generating...' : 'Generate'}
           </button>
           <button type="button" className="button button-cancel" onClick={onCancel}>
-            <RotateCcw size={16} />
+            <X size={16} />
             Cancel
           </button>
         </div>

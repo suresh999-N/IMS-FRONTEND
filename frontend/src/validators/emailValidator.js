@@ -1,7 +1,7 @@
 export const EMAIL_MAX_LENGTH = 150
 
 const VALID_TLDS = new Set([
-  'com', 'org', 'net', 'edu', 'gov', 'mil', 'int', 'info', 'biz', 'in', 'io', 'ai',
+  'com', 'co', 'org', 'net', 'edu', 'gov', 'mil', 'int', 'info', 'biz', 'in', 'io', 'ai',
   'app', 'dev', 'tech', 'store', 'online', 'site', 'xyz', 'me', 'tv', 'cc', 'mobi', 'asia',
   'name', 'pro', 'tel', 'travel', 'museum', 'uk', 'us', 'ca', 'de', 'fr', 'jp', 'cn', 'nl',
   'se', 'no', 'fi', 'es', 'it', 'ru', 'mx', 'br', 'za', 'sg', 'hk', 'tw', 'kr', 'nz', 'ch',
@@ -29,7 +29,7 @@ const VALID_MULTI_PART_TLDS = new Set([
   'com.tr', 'net.tr', 'org.tr'
 ])
 
-const TYPO_TLDS = new Set(['co', 'cm', 'c', 'coom', 'comm', 'commm', 'ccommmm', 'con', 'cmm', 'gma', 'gmai', 'gamil', 'cmo'])
+const TYPO_TLDS = new Set(['cm', 'c', 'coom', 'comm', 'commm', 'ccommmm', 'con', 'cmm', 'gma', 'gmai', 'gamil', 'cmo'])
 
 const COMMON_DOMAIN_TYPOS = {
   'gmail.cm': 'gmail.com',

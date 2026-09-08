@@ -5,7 +5,7 @@ import {
   FilterBar,
   StatusBadge,
 } from "../../../components/erp";
-import { formatDate } from "../../../utils/helpers";
+import { formatDate, formatDateTime } from "../../../utils/helpers";
 
 const NOTIFICATION_COLUMNS_STORAGE_KEY = "ims.notifications.visibleColumns.v1";
 const NOTIFICATION_DEFAULT_COLUMNS = [
@@ -126,7 +126,7 @@ export default function NotificationsTable({
       searchValue: (row) => String(row.createdAt || ""),
       render: (row) => (
         <span className="notifications-table__date">
-          {formatDate(row.createdAt)}
+          {formatDateTime(row.createdAt)}
         </span>
       ),
     },

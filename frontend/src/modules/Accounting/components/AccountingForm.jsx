@@ -1,4 +1,4 @@
-import { Boxes, CalendarDays, DollarSign, RotateCcw, Save, Warehouse } from 'lucide-react'
+import { Boxes, CalendarDays, DollarSign, Save, Warehouse, X } from 'lucide-react'
 import CurrencyInput from '../../../components/CurrencyInput'
 import QuantityInput from '../../../components/QuantityInput'
 import SearchableSelect from '../../../components/SearchableSelect'
@@ -146,7 +146,7 @@ export default function AccountingForm({
             Save Invoice
           </button>
           <button type="button" className="button button-cancel" onClick={onCancel}>
-            <RotateCcw size={16} />
+            <X size={16} />
             Cancel
           </button>
         </div>

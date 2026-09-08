@@ -11,7 +11,7 @@ import {
   MapPin,
   Phone,
   Plus,
-  RotateCcw,
+  Eraser,
   Save,
   ShieldCheck,
   Trash2,
@@ -2161,7 +2161,7 @@ export default function CustomerForm({
             {!isReadOnly ? (
               <>
                 <button type="button" className="button button-secondary" onClick={handleReset} disabled={isBusy || !isDirty}>
-                  <RotateCcw size={16} />
+                  <Eraser size={16} />
                   Reset
                 </button>
                 <button type="submit" className="button button-primary" disabled={disableSubmit} title={!isValid ? 'Review highlighted customer fields before saving.' : undefined}>

@@ -11,7 +11,7 @@ namespace IMS.Backend.Helpers
 
         private static readonly HashSet<string> ValidTlds = new(StringComparer.OrdinalIgnoreCase)
         {
-            "com", "org", "net", "edu", "gov", "mil", "int", "info", "biz", "in", "io", "ai",
+            "com", "co", "org", "net", "edu", "gov", "mil", "int", "info", "biz", "in", "io", "ai",
             "app", "dev", "tech", "store", "online", "site", "xyz", "me", "tv", "cc", "mobi", "asia",
             "name", "pro", "tel", "travel", "museum", "uk", "us", "ca", "de", "fr", "jp", "cn", "nl",
             "se", "no", "fi", "es", "it", "ru", "mx", "br", "za", "sg", "hk", "tw", "kr", "nz", "ch",
@@ -42,7 +42,7 @@ namespace IMS.Backend.Helpers
 
         private static readonly HashSet<string> TypoTlds = new(StringComparer.OrdinalIgnoreCase)
         {
-            "co", "cm", "c", "coom", "comm", "commm", "ccommmm", "con", "cmm", "gma", "gmai", "gamil", "cmo"
+            "cm", "c", "coom", "comm", "commm", "ccommmm", "con", "cmm", "gma", "gmai", "gamil", "cmo"
         };
 
         private static readonly HashSet<string> CommonDomainTypos = new(StringComparer.OrdinalIgnoreCase)

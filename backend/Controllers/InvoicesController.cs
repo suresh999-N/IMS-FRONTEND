@@ -120,9 +120,9 @@ namespace IMSBackend.Controllers
                 ("customer", "desc") => query.OrderByDescending(invoice => invoice.CustomerName),
                 ("amount", "asc") => query.OrderBy(invoice => invoice.TotalAmount),
                 ("amount", "desc") => query.OrderByDescending(invoice => invoice.TotalAmount),
-                ("date", "asc") => query.OrderBy(invoice => invoice.InvoiceDate),
-                ("date", "desc") => query.OrderByDescending(invoice => invoice.InvoiceDate),
-                _ => query.OrderByDescending(invoice => invoice.InvoiceId)
+                ("date", "asc") => query.OrderBy(invoice => invoice.InvoiceDate).ThenBy(invoice => invoice.InvoiceNumber),
+                ("date", "desc") => query.OrderByDescending(invoice => invoice.InvoiceDate).ThenByDescending(invoice => invoice.InvoiceNumber),
+                _ => query.OrderByDescending(invoice => invoice.InvoiceDate).ThenByDescending(invoice => invoice.InvoiceId)
             };
 
             var invoices = await query
@@ -399,7 +399,7 @@ namespace IMSBackend.Controllers
                 var now = DateTime.UtcNow;
                 var balance = total - dto.PaidAmount;
                 var status = ResolveInvoiceStatus(dto.PaidAmount, balance, dto.DueDate);
-                var invoiceNumber = await GenerateInvoiceNumber(cancellationToken);
+                var invoiceNumber = await GenerateInvoiceNumber(invoiceDate, cancellationToken);
                 var outstandingBeforeInvoice = customer.OutstandingBalance;
                 var outstandingAfterInvoiceDebit = outstandingBeforeInvoice + total;
                 var outstandingAfterOpeningPayment = outstandingBeforeInvoice + balance;
@@ -1105,9 +1105,9 @@ namespace IMSBackend.Controllers
         }
 
 
-        private async Task<string> GenerateInvoiceNumber(CancellationToken cancellationToken)
+        private async Task<string> GenerateInvoiceNumber(DateTime invoiceDate, CancellationToken cancellationToken)
         {
-            var prefix = $"INV-{DateTime.UtcNow:yyyyMMdd}-";
+            var prefix = $"INV-{invoiceDate:yyyyMMdd}-";
             var lastInvoiceNumber = await _context.Invoices
                 .AsNoTracking()
                 .Where(invoice =>

@@ -2,10 +2,10 @@ import {
   Boxes,
   FileText,
   Package,
-  RotateCcw,
   Save,
   User,
   Warehouse,
+  X,
 } from 'lucide-react'
 import { useState } from 'react'
 import CurrencyInput from '../../../../components/CurrencyInput'
@@ -149,7 +149,7 @@ export default function SaleForm({
             <Save size={16} /> Save
           </button>
           <button type="button" className="button button-cancel" onClick={onCancel}>
-            <RotateCcw size={16} /> Cancel
+            <X size={16} /> Cancel
           </button>
         </div>
       </form>

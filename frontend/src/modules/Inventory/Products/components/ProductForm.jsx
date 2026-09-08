@@ -3,12 +3,12 @@ import {
   Barcode,
   CheckCircle2,
   ChevronDown,
+  Eraser,
   FileText,
   GitBranch,
   ImagePlus,
   Pencil,
   Plus,
-  RotateCcw,
   Save,
   Trash2,
   X,
@@ -1143,7 +1143,7 @@ export default function ProductForm({
             <CurrencyInput
               id="price"
               name="price"
-              label="Selling Price (MRP)"
+              label="Selling Price (MRP) *"
               style={{ textAlign: 'right' }}
               value={formData.price || ''}
               onChange={handleChange}
@@ -1154,7 +1154,7 @@ export default function ProductForm({
             <CurrencyInput
               id="costPrice"
               name="costPrice"
-              label="Purchase Price"
+              label="Purchase Price *"
               style={{ textAlign: 'right' }}
               value={formData.costPrice || ''}
               onChange={handleChange}
@@ -1188,7 +1188,7 @@ export default function ProductForm({
           <DropdownWithAdd
             id="category"
             name="categoryId"
-            label="Category"
+            label="Category *"
             value={formData.categoryId || ''}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -1233,7 +1233,7 @@ export default function ProductForm({
           <DropdownWithAdd
             id="brand"
             name="brandId"
-            label="Brand"
+            label="Brand *"
             value={formData.brandId || ''}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -1255,7 +1255,7 @@ export default function ProductForm({
           <InputField
             id="name"
             name="name"
-            label="Product Name"
+            label="Product Name *"
             value={formData.name || ''}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -1278,7 +1278,7 @@ export default function ProductForm({
               <InputField
                 id="barcode"
                 name="barcode"
-                label="Barcode"
+                label="Barcode *"
                 value={formData.barcode || ''}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -1305,7 +1305,7 @@ export default function ProductForm({
           <DropdownWithAdd
             id="unit"
             name="unitId"
-            label="Unit"
+            label="Unit *"
             value={formData.unitId || ''}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -1327,7 +1327,7 @@ export default function ProductForm({
           <CurrencyInput
             id="costPrice"
             name="costPrice"
-            label="Purchase Price"
+            label="Purchase Price *"
             style={{ textAlign: 'right' }}
             value={formData.costPrice || ''}
             onChange={handleChange}
@@ -1338,7 +1338,7 @@ export default function ProductForm({
           <CurrencyInput
             id="price"
             name="price"
-            label="Selling Price (MRP)"
+            label="Selling Price (MRP) *"
             style={{ textAlign: 'right' }}
             value={formData.price || ''}
             onChange={handleChange}
@@ -1378,7 +1378,7 @@ export default function ProductForm({
           <InputField
             id="description"
             name="description"
-            label="Description"
+            label="Description *"
             textarea
             rows={2}
             className="field--full product-form__description-field"
@@ -1577,7 +1577,7 @@ export default function ProductForm({
             {actionLabel}
           </button>
           <button type="button" className="button button-secondary button-cancel" onClick={handleCancel} disabled={isSaving}>
-            {isEdit ? <X size={16} /> : <RotateCcw size={16} />}
+            {isEdit ? <X size={16} /> : <Eraser size={16} />}
             {isEdit ? 'Cancel' : 'Clear'}
           </button>
         </div>
