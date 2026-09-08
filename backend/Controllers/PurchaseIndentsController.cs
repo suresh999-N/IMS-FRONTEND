@@ -533,6 +533,16 @@ namespace IMSBackend.Controllers
 
 
 
+            var converted = await query
+            .CountAsync(x => x.Status == "Converted");
+
+
+
+            var rejected = await query
+            .CountAsync(x => x.Status == "Rejected");
+
+
+
             var totalItemsRequested = await query
             .SumAsync(x => (decimal?)x.TotalQuantity) ?? 0;
 
@@ -543,6 +553,8 @@ namespace IMSBackend.Controllers
                 totalIndents,
                 pending,
                 approved,
+                converted,
+                rejected,
                 totalItemsRequested
             });
         }

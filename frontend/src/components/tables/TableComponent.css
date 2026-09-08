@@ -501,17 +501,38 @@
   color: #ffffff !important;
 }
 
+.table-container thead th.is-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
 .table-component__sort-button {
   border: none;
   background: transparent;
   padding: 0;
   min-height: 0;
-  width: auto;
+  width: 100%;
   display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 4px;
   font-weight: 700;
   color: inherit;
+  cursor: pointer;
+}
+
+.table-component__sort-indicator {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.table-component__sort-button.is-active {
+  color: #047857;
+}
+
+.table-component__sort-button.is-active svg {
+  color: #047857;
 }
 
 .table-component__status {

@@ -145,6 +145,7 @@ export default function PurchaseIndentsTable({
       tableWidth: 180,
       style: { width: 180, minWidth: 180 },
       headerStyle: { width: 180, minWidth: 180 },
+      sortValue: (indent) => getIndentNumber(indent),
       searchValue: (indent) =>
         `${getIndentNumber(indent)} ${getIndentProductsText(indent, safeProducts)} ${indent?.requestedByDisplay || ''} ${indent?.supplierDisplay || ''} ${indent?.departmentDisplay || ''} ${indent?.status || DEFAULT_STATUS}`,
       render: (indent) => getIndentNumber(indent),
@@ -156,8 +157,9 @@ export default function PurchaseIndentsTable({
       tableWidth: 320,
       style: { width: 320, minWidth: 320 },
       headerStyle: { width: 320, minWidth: 320 },
+      sortValue: (indent) => indent?.productName || getFirstProductSummary(indent, safeProducts),
       render: (indent) => {
-        const text = getFirstProductSummary(indent, safeProducts)
+        const text = indent?.productName || getFirstProductSummary(indent, safeProducts)
         return (
           <span style={{ whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: '1.4', display: 'inline-block' }}>
             {text}
@@ -173,6 +175,7 @@ export default function PurchaseIndentsTable({
       tableWidth: 120,
       style: { width: 120, minWidth: 120 },
       headerStyle: { width: 120, minWidth: 120 },
+      sortValue: (indent) => indent?.priority || DEFAULT_PRIORITY,
       render: (indent) => (
         <span className={`badge badge--priority-${String(indent?.priority || DEFAULT_PRIORITY).toLowerCase()}`}>
           {indent?.priority || DEFAULT_PRIORITY}
@@ -186,6 +189,7 @@ export default function PurchaseIndentsTable({
       tableWidth: 140,
       style: { width: 140, minWidth: 140 },
       headerStyle: { width: 140, minWidth: 140 },
+      sortValue: (indent) => indent?.indentDate || '',
       render: (indent) => indent?.indentDate ? formatDate(indent.indentDate) : EMPTY_VALUE,
     },
     {
@@ -195,7 +199,8 @@ export default function PurchaseIndentsTable({
       tableWidth: 110,
       style: { width: 110, minWidth: 110 },
       headerStyle: { width: 110, minWidth: 110 },
-      render: (indent) => getIndentQuantity(indent) || EMPTY_VALUE
+      sortValue: (indent) => Number(indent?.quantity ?? getIndentQuantity(indent) ?? 0),
+      render: (indent) => (indent?.quantity !== undefined && indent?.quantity !== null ? indent.quantity : (getIndentQuantity(indent) || EMPTY_VALUE)),
     },
     {
       key: 'status',
@@ -205,6 +210,7 @@ export default function PurchaseIndentsTable({
       tableWidth: 120,
       style: { width: 120, minWidth: 120 },
       headerStyle: { width: 120, minWidth: 120 },
+      sortValue: (indent) => indent?.status || DEFAULT_STATUS,
       render: (indent) => {
         const rawStatus = indent?.status || DEFAULT_STATUS
         const badgeStatus = getBadgeStatus(getStatusKind(rawStatus))
@@ -222,6 +228,7 @@ export default function PurchaseIndentsTable({
       tableWidth: 140,
       style: { width: 140, minWidth: 140 },
       headerStyle: { width: 140, minWidth: 140 },
+      sortValue: (indent) => indent?.requestedByDisplay || NOT_ASSIGNED,
       render: (indent) => indent?.requestedByDisplay || NOT_ASSIGNED,
     },
     {

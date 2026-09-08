@@ -163,25 +163,6 @@ function getDashboardData(data) {
   return data?.data || data || null
 }
 
-function normalizeIndent(indent) {
-  const id = getIndentId(indent)
-
-  return {
-    ...indent,
-    purchaseIndentId: id,
-    indentNumber: indent?.indentNumber || indent?.indentNo || (id ? `PI-${id}` : EMPTY_VALUE),
-    status: indent?.status || DEFAULT_STATUS,
-    priority: indent?.priority || DEFAULT_PRIORITY,
-    items: Array.isArray(indent?.items) ? indent.items : [],
-  }
-}
-
-function normalizeIndentList(data) {
-  return getResponseListData(data)
-    .map(normalizeIndent)
-    .filter((indent) => indent.purchaseIndentId)
-}
-
 function getLineItems(indent) {
   return Array.isArray(indent?.items) && indent.items.length > 0
     ? indent.items
@@ -204,6 +185,43 @@ function getIndentQuantity(indent) {
 
 function getItemProductName(item, fallback = NOT_AVAILABLE) {
   return item?.productName || item?.name || fallback
+}
+
+function getIndentProductSummary(indent) {
+  const items = getLineItems(indent)
+  if (items.length > 0) {
+    const firstProductName = getItemProductName(items[0])
+    return items.length === 1
+      ? firstProductName
+      : `${firstProductName} (+${items.length - 1} more)`
+  }
+  return indent?.productName || indent?.product || NOT_AVAILABLE
+}
+
+function normalizeIndent(indent) {
+  const id = getIndentId(indent)
+  const items = Array.isArray(indent?.items) ? indent.items : []
+  const productSummary = getIndentProductSummary(indent)
+  const qty = getIndentQuantity(indent)
+
+  return {
+    ...indent,
+    purchaseIndentId: id,
+    indentNumber: indent?.indentNumber || indent?.indentNo || (id ? `PI-${id}` : EMPTY_VALUE),
+    status: indent?.status || DEFAULT_STATUS,
+    priority: indent?.priority || DEFAULT_PRIORITY,
+    items,
+    productName: productSummary,
+    product: productSummary,
+    quantity: qty,
+    totalQuantity: qty,
+  }
+}
+
+function normalizeIndentList(data) {
+  return getResponseListData(data)
+    .map(normalizeIndent)
+    .filter((indent) => indent.purchaseIndentId)
 }
 
 function getSupplierId(supplier) {
@@ -407,8 +425,15 @@ function getDepartmentDisplayName(indent) {
 }
 
 function withReadableIndentFields(indent, userMap, supplierMap) {
+  const productSummary = indent?.productName || getIndentProductSummary(indent)
+  const qty = indent?.quantity !== undefined ? indent.quantity : getIndentQuantity(indent)
+
   return {
     ...indent,
+    productName: productSummary,
+    product: productSummary,
+    quantity: qty,
+    totalQuantity: qty,
     requestedByDisplay: getRequestedByName(indent, userMap),
     approvedByDisplay: getApprovedByName(indent, userMap),
     rejectedByDisplay: getRejectedByName(indent, userMap),
@@ -825,17 +850,17 @@ export default function PurchaseIndentsScreen({
   (sum, ind) => sum + getIndentQuantity(ind),
   0,
 )
-    const approved = safeIndents.filter((ind) =>
-      String(ind?.status || '').toLowerCase().includes('approved'),
-    ).length
-    const pending = safeIndents.filter((ind) =>
-      String(ind?.status || '').toLowerCase().includes('pending'),
-    ).length
+    const pending = safeIndents.filter((ind) => getStatusKind(ind?.status) === 'pending').length
+    const approved = safeIndents.filter((ind) => getStatusKind(ind?.status) === 'approved').length
+    const converted = safeIndents.filter((ind) => getStatusKind(ind?.status) === 'converted').length
+    const rejected = safeIndents.filter((ind) => getStatusKind(ind?.status) === 'rejected').length
 
     return {
       total: readDashboardNumber(dashboardData, ['totalIndents', 'total', 'totalCount', 'count'], safeIndents.length),
       pending: readDashboardNumber(dashboardData, ['pendingIndents', 'pending', 'pendingCount'], pending),
       approved: readDashboardNumber(dashboardData, ['approvedIndents', 'approved', 'approvedCount'], approved),
+      converted: readDashboardNumber(dashboardData, ['convertedIndents', 'converted', 'convertedCount'], converted),
+      rejected: readDashboardNumber(dashboardData, ['rejectedIndents', 'rejected', 'rejectedCount'], rejected),
       totalQty: readDashboardNumber(dashboardData, ['totalQuantity', 'totalQty', 'itemsRequested', 'totalItemsRequested', 'totalRequestedQuantity'], totalQty),
     }
   }, [dashboardData, indents])
@@ -1448,6 +1473,14 @@ export default function PurchaseIndentsScreen({
             <span className="purchases-page__metric purchases-page__metric--info">
               {summary.approved} Approved
             </span>
+            <span className="purchases-page__metric purchases-page__metric--converted">
+              {summary.converted} Converted
+            </span>
+            {summary.rejected > 0 ? (
+              <span className="purchases-page__metric purchases-page__metric--danger">
+                {summary.rejected} Rejected
+              </span>
+            ) : null}
             <span className="purchases-page__metric purchases-page__metric--value">
               {summary.totalQty} Items Requested
             </span>

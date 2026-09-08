@@ -1,4 +1,6 @@
 import {
+  ArrowDown,
+  ArrowUp,
   ArrowUpDown,
   Check,
   ChevronLeft,
@@ -18,6 +20,112 @@ import TruncatedCellTooltip from './TruncatedCellTooltip'
 import { validateSearchQuery } from '../../utils/searchValidationUtils'
 import './TableComponent.css'
 
+function extractTextFromReactNode(node) {
+  if (node === null || node === undefined || typeof node === 'boolean') {
+    return ''
+  }
+  if (typeof node === 'string' || typeof node === 'number') {
+    return String(node)
+  }
+  if (Array.isArray(node)) {
+    return node.map(extractTextFromReactNode).join('')
+  }
+  if (node?.props) {
+    if (node.props.label && typeof node.props.label === 'string') {
+      return node.props.label
+    }
+    if (node.props.value !== undefined && node.props.value !== null && typeof node.props.value !== 'object') {
+      return String(node.props.value)
+    }
+    if (node.props.children) {
+      return extractTextFromReactNode(node.props.children)
+    }
+  }
+  return ''
+}
+
+function parseNumeric(val) {
+  if (typeof val === 'number') {
+    return Number.isFinite(val) ? val : null
+  }
+  if (typeof val !== 'string') return null
+  const trimmed = val.trim()
+  if (!trimmed) return null
+
+  // Don't treat dates as numeric (e.g. 03-09-2026 or 2026-09-03)
+  if (/^\d{1,4}[-/]\d{1,2}[-/]\d{1,4}/.test(trimmed)) {
+    return null
+  }
+
+  // Don't treat identifiers with letters like "IND-20260903-001" as numbers
+  if (/[A-Za-z]/.test(trimmed) && !/^[-+]?[$₹€£]?\s*[-+]?\d/.test(trimmed)) {
+    return null
+  }
+
+  // Pure standard number (e.g. "100", "2.5", "-10")
+  const directNum = Number(trimmed)
+  if (!Number.isNaN(directNum) && Number.isFinite(directNum)) {
+    return directNum
+  }
+
+  // Formatted currency, percentage, or number with commas (e.g. "$1,200.50", "₹ 15,000", "(50.00)", "1,000")
+  const currencyMatch = trimmed.match(/^([+-]?)\s*([$₹€£]?)\s*([+-]?)\s*\(?(\d{1,3}(?:,\d{3})*|\d+)(?:\.(\d+))?\)?\s*(%?)$/)
+  if (currencyMatch) {
+    const isNegative = trimmed.includes('-') || trimmed.includes('(')
+    const cleaned = trimmed.replace(/[^0-9.]/g, '')
+    const num = Number(cleaned)
+    if (!Number.isNaN(num) && Number.isFinite(num)) {
+      return isNegative ? -num : num
+    }
+  }
+
+  return null
+}
+
+function parseDateRobust(val) {
+  if (!val) return null
+  if (val instanceof Date) {
+    const t = val.getTime()
+    return Number.isNaN(t) ? null : t
+  }
+  if (typeof val === 'number' && val > 100000000000) {
+    return val
+  }
+  if (typeof val !== 'string') return null
+  const trimmed = val.trim()
+  if (!trimmed || trimmed.length < 8) return null
+
+  // 1. Match DD-MM-YYYY or DD/MM/YYYY with optional time and AM/PM (e.g. "03-09-2026", "19-08-2026 05:15 PM")
+  const ddmmyyyyMatch = trimmed.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*(AM|PM))?)?$/i)
+  if (ddmmyyyyMatch) {
+    const day = parseInt(ddmmyyyyMatch[1], 10)
+    const month = parseInt(ddmmyyyyMatch[2], 10)
+    const year = parseInt(ddmmyyyyMatch[3], 10)
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      let hours = ddmmyyyyMatch[4] ? parseInt(ddmmyyyyMatch[4], 10) : 0
+      const minutes = ddmmyyyyMatch[5] ? parseInt(ddmmyyyyMatch[5], 10) : 0
+      const seconds = ddmmyyyyMatch[6] ? parseInt(ddmmyyyyMatch[6], 10) : 0
+      const ampm = ddmmyyyyMatch[7] ? ddmmyyyyMatch[7].toUpperCase() : null
+      if (ampm === 'PM' && hours < 12) hours += 12
+      if (ampm === 'AM' && hours === 12) hours = 0
+      return new Date(year, month - 1, day, hours, minutes, seconds).getTime()
+    }
+  }
+
+  // 2. Match YYYY-MM-DD or YYYY/MM/DD
+  const yyyymmddMatch = trimmed.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:[T\s](\d{1,2}):(\d{2})(?::(\d{2}))?)?/)
+  if (yyyymmddMatch) {
+    const parsed = Date.parse(trimmed)
+    if (!Number.isNaN(parsed)) return parsed
+  }
+
+  // 3. Fallback to standard Date.parse
+  const parsed = Date.parse(trimmed)
+  if (!Number.isNaN(parsed)) return parsed
+
+  return null
+}
+
 function getValueFromColumn(column, row) {
   if (!column || !row) return ''
 
@@ -33,7 +141,7 @@ function getValueFromColumn(column, row) {
       value = row[column.key]
     }
 
-    if (value !== undefined && value !== null) {
+    if (value !== undefined && value !== null && value !== '') {
       if (typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
         return value.name ?? value.label ?? value.title ?? value.code ?? value.value ?? value.id ?? String(value)
       }
@@ -44,11 +152,26 @@ function getValueFromColumn(column, row) {
   if (typeof column.render === 'function') {
     try {
       const rendered = column.render(row)
-      if (typeof rendered === 'string' || typeof rendered === 'number') {
+      if (typeof rendered === 'string' || typeof rendered === 'number' || rendered instanceof Date) {
         return rendered
+      }
+      if (rendered && typeof rendered === 'object') {
+        const text = extractTextFromReactNode(rendered).trim()
+        if (text) return text
       }
     } catch {
       // Ignore render errors during value extraction
+    }
+  }
+
+  if (typeof column.searchValue === 'function') {
+    try {
+      const searched = column.searchValue(row)
+      if (typeof searched === 'string' || typeof searched === 'number') {
+        return searched
+      }
+    } catch {
+      // Ignore search errors
     }
   }
 
@@ -381,12 +504,17 @@ export default function TableComponent({
     }
 
     const activeColumn = columns.find(
-      (column) => (column.key || column.label) === sortConfig.key || column.key === sortConfig.key,
+      (column) =>
+        column.key === sortConfig.key ||
+        column.label === sortConfig.key ||
+        (column.key || column.label) === sortConfig.key,
     )
 
     if (!activeColumn) {
       return filteredRows
     }
+
+    const mult = sortConfig.direction === 'asc' ? 1 : -1
 
     return [...filteredRows].sort((firstRow, secondRow) => {
       const rawFirst = getValueFromColumn(activeColumn, firstRow)
@@ -399,51 +527,43 @@ export default function TableComponent({
       if (isFirstNil) return 1
       if (isSecondNil) return -1
 
-      const mult = sortConfig.direction === 'asc' ? 1 : -1
-
       // Booleans
       if (typeof rawFirst === 'boolean' || typeof rawSecond === 'boolean') {
-        return (Number(Boolean(rawFirst)) - Number(Boolean(rawSecond))) * mult
-      }
+        const diff = (Number(Boolean(rawFirst)) - Number(Boolean(rawSecond))) * mult
+        if (diff !== 0) return diff
+      } else {
+        // Dates (ISO timestamp, DD-MM-YYYY, Date object)
+        const dateFirst = parseDateRobust(rawFirst)
+        const dateSecond = parseDateRobust(rawSecond)
 
-      // Numbers or Numeric strings (e.g. 10 vs 2, or "10" vs "2")
-      const numFirst = Number(rawFirst)
-      const numSecond = Number(rawSecond)
-      const isFirstNumeric =
-        typeof rawFirst === 'number' ||
-        (typeof rawFirst === 'string' && rawFirst.trim() !== '' && !Number.isNaN(numFirst))
-      const isSecondNumeric =
-        typeof rawSecond === 'number' ||
-        (typeof rawSecond === 'string' && rawSecond.trim() !== '' && !Number.isNaN(numSecond))
+        if (dateFirst !== null && dateSecond !== null) {
+          const diff = (dateFirst - dateSecond) * mult
+          if (diff !== 0) return diff
+        } else {
+          // Numbers or Numeric strings (e.g. 10 vs 2, or currency "$1,200.50", "₹ 15,000", "200")
+          const numFirst = parseNumeric(rawFirst)
+          const numSecond = parseNumeric(rawSecond)
 
-      if (isFirstNumeric && isSecondNumeric) {
-        return (numFirst - numSecond) * mult
-      }
+          if (numFirst !== null && numSecond !== null) {
+            const diff = (numFirst - numSecond) * mult
+            if (diff !== 0) return diff
+          } else {
+            // Natural String comparison with localeCompare
+            const strFirst = String(rawFirst)
+            const strSecond = String(rawSecond)
 
-      // Dates (ISO timestamp or Date object)
-      const parseDate = (val) => {
-        if (val instanceof Date) return val.getTime()
-        if (typeof val === 'string' && val.length >= 8) {
-          const parsed = Date.parse(val)
-          if (!Number.isNaN(parsed)) return parsed
+            const diff = strFirst.localeCompare(strSecond, undefined, { numeric: true, sensitivity: 'base' }) * mult
+            if (diff !== 0) return diff
+          }
         }
-        return null
       }
 
-      const dateFirst = parseDate(rawFirst)
-      const dateSecond = parseDate(rawSecond)
-
-      if (dateFirst !== null && dateSecond !== null) {
-        return (dateFirst - dateSecond) * mult
-      }
-
-      // Natural String comparison with localeCompare
-      const strFirst = String(rawFirst)
-      const strSecond = String(rawSecond)
-
-      return strFirst.localeCompare(strSecond, undefined, { numeric: true, sensitivity: 'base' }) * mult
+      // Stable tie-breaker for deterministic sorting
+      const keyFirst = String(getRowKey(firstRow, keyField, 0))
+      const keySecond = String(getRowKey(secondRow, keyField, 0))
+      return keyFirst.localeCompare(keySecond, undefined, { numeric: true }) * mult
     })
-  }, [columns, filteredRows, sortConfig])
+  }, [columns, filteredRows, keyField, sortConfig])
 
   const totalPages = Math.max(1, Math.ceil(sortedRows.length / pageSize))
   const currentPage = Math.min(page, totalPages)
@@ -829,18 +949,37 @@ export default function TableComponent({
                     <th
                       key={column.key || column.label}
                       scope="col"
-                      data-column={column.key || getColumnLabel(column)}
-                      className={column.headerClassName || column.className || ''}
-                      style={column.headerStyle || column.style}
+                      data-column={column.key || column.label}
+                      className={`${column.headerClassName || column.className || ''} ${column.sortable ? 'is-sortable' : ''}`.trim()}
+                      style={{
+                        ...(column.headerStyle || column.style),
+                        cursor: column.sortable ? 'pointer' : undefined,
+                        userSelect: column.sortable ? 'none' : undefined,
+                      }}
+                      onClick={column.sortable ? () => handleSort(column) : undefined}
                     >
                       {column.sortable ? (
                         <button
                           type="button"
                           className={`table-component__sort-button ${sortConfig.key && (sortConfig.key === column.key || sortConfig.key === column.label) ? 'is-active' : ''}`}
-                          onClick={() => handleSort(column)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleSort(column)
+                          }}
+                          aria-label={`Sort by ${column.label || column.key}`}
                         >
-                          {column.label}
-                          <ArrowUpDown size={14} />
+                          <span>{column.label || column.key}</span>
+                          <span className="table-component__sort-indicator" aria-hidden="true">
+                            {sortConfig.key && (sortConfig.key === column.key || sortConfig.key === column.label) ? (
+                              sortConfig.direction === 'desc' ? (
+                                <ArrowDown size={14} />
+                              ) : (
+                                <ArrowUp size={14} />
+                              )
+                            ) : (
+                              <ArrowUpDown size={14} />
+                            )}
+                          </span>
                         </button>
                       ) : (
                         column.label
