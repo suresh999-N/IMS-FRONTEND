@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Check, LoaderCircle, Plus, Trash2, X } from 'lucide-react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { AlertTriangle, Check, LoaderCircle, Plus, Trash2, X } from 'lucide-react'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import AccessDenied from '../../components/common/AccessDenied'
 import { showToast } from '../../components/common/toast'
 import FormModal from '../../layouts/FormModal'
@@ -22,6 +22,8 @@ import CustomerDetailsPanel from './components/CustomerDetailsPanel'
 import CustomerForm from './components/CustomerForm'
 import CustomersTable from './components/CustomersTable'
 import './Customers.css'
+
+const VALID_CUSTOMER_FORM_TABS = ['basic', 'contacts', 'addresses', 'paymentTerms', 'banking', 'activity']
 
 function getDate(value) {
   if (!value) {
@@ -97,6 +99,7 @@ export default function Customers() {
   const { hasPermission } = useAuth()
   const navigate = useNavigate()
   const { customerId } = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const [customers, setCustomers] = useState([])
   const [summary, setSummary] = useState(null)
@@ -124,7 +127,35 @@ export default function Customers() {
   const [companyFilter, setCompanyFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [balanceFilter, setBalanceFilter] = useState('all')
-  const [, setHasUnsavedCustomerChanges] = useState(false)
+  const [hasUnsavedCustomerChanges, setHasUnsavedCustomerChanges] = useState(false)
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false)
+
+  const currentTabParam = searchParams.get('tab')
+  const activeFormTab = VALID_CUSTOMER_FORM_TABS.includes(currentTabParam) ? currentTabParam : 'basic'
+
+  const handleTabChange = useCallback((nextTab) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (nextTab === 'basic') {
+        next.delete('tab')
+      } else {
+        next.set('tab', nextTab)
+      }
+      return next
+    }, { replace: false })
+  }, [setSearchParams])
+
+  useEffect(() => {
+    if (!hasUnsavedCustomerChanges) return
+
+    function handleBeforeUnload(event) {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [hasUnsavedCustomerChanges])
 
   const canView = hasPermission('customers', 'view')
   const canCreate = hasPermission('customers', 'create')
@@ -337,9 +368,15 @@ export default function Customers() {
     setFormErrors(null)
     setFormMessage('')
     setHasUnsavedCustomerChanges(false)
+    setShowDiscardConfirm(false)
     setIsFormPreloading(false)
     setFormActivity([])
     setIsFormOpen(true)
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.delete('tab')
+      return next
+    }, { replace: true })
   }
 
   async function handleEdit(customer) {
@@ -348,9 +385,15 @@ export default function Customers() {
     setFormErrors(null)
     setFormMessage('')
     setHasUnsavedCustomerChanges(false)
+    setShowDiscardConfirm(false)
     setFormActivity([])
     setIsFormOpen(true)
     setIsFormPreloading(true)
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.delete('tab')
+      return next
+    }, { replace: true })
 
     const [response, historyResponse] = await Promise.all([
       getCustomerById(customer.id),
@@ -383,7 +426,6 @@ export default function Customers() {
       return
     }
 
-
     setEditingCustomer(null)
     setCustomerFormMode('create')
     setIsFormOpen(false)
@@ -392,6 +434,25 @@ export default function Customers() {
     setHasUnsavedCustomerChanges(false)
     setIsFormPreloading(false)
     setFormActivity([])
+    setShowDiscardConfirm(false)
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.delete('tab')
+      return next
+    }, { replace: true })
+  }
+
+  function handleRequestCloseForm() {
+    if (isSaving) {
+      return
+    }
+
+    if (hasUnsavedCustomerChanges) {
+      setShowDiscardConfirm(true)
+      return
+    }
+
+    handleCloseForm()
   }
 
   async function handleSave(values) {
@@ -417,9 +478,12 @@ export default function Customers() {
         success: false,
         message: response.error || 'Customer save failed. Review the form and try again.',
       }
+      const hasFieldErrors = Boolean(response.errors && Object.keys(response.errors).length > 0)
       setFormErrors(response.errors)
-      setFormMessage(nextMessage.message)
-      setMessage(nextMessage)
+      setFormMessage(hasFieldErrors ? '' : nextMessage.message)
+      if (!hasFieldErrors) {
+        setMessage(nextMessage)
+      }
       notify(nextMessage)
       setIsSaving(false)
       return
@@ -451,6 +515,12 @@ export default function Customers() {
     setHasUnsavedCustomerChanges(false)
     setIsFormPreloading(false)
     setFormActivity([])
+    setShowDiscardConfirm(false)
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.delete('tab')
+      return next
+    }, { replace: true })
   }
 
   function handleView(customer) {
@@ -463,9 +533,15 @@ export default function Customers() {
     setFormErrors(null)
     setFormMessage('')
     setHasUnsavedCustomerChanges(false)
+    setShowDiscardConfirm(false)
     setFormActivity([])
     setIsFormOpen(true)
     setIsFormPreloading(true)
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.delete('tab')
+      return next
+    }, { replace: true })
 
     Promise.all([
       getCustomerById(customer.id),
@@ -500,6 +576,7 @@ export default function Customers() {
   }
 
   function handleRequestDelete(customer) {
+    setMessage(null)
     setDeleteTarget(customer)
   }
 
@@ -508,6 +585,7 @@ export default function Customers() {
       return
     }
 
+    setMessage(null)
     setBulkDeleteTarget({ customers: selectedCustomers, onComplete })
   }
 
@@ -586,7 +664,6 @@ export default function Customers() {
         success: false,
         message: getCustomerDeleteError(response.error),
       }
-      setMessage(nextMessage)
       notify(nextMessage)
       setIsDeleting(false)
       return
@@ -596,7 +673,6 @@ export default function Customers() {
       success: true,
       message: response.message || 'Customer deleted successfully.',
     }
-    setMessage(nextMessage)
     notify(nextMessage)
     setCustomers((currentValue) =>
       currentValue.filter((customer) => customer.id !== customerToDelete.id),
@@ -637,7 +713,6 @@ export default function Customers() {
         success: true,
         message: `Deleted ${deletedIds.length} customer${deletedIds.length === 1 ? '' : 's'}.`,
       }
-      setMessage(nextMessage)
       notify(nextMessage)
       setCustomers((currentValue) =>
         currentValue.filter((customer) => !deletedIds.includes(customer.id)),
@@ -655,7 +730,6 @@ export default function Customers() {
         success: false,
         message: getCustomerDeleteError(error instanceof Error ? error.message : error),
       }
-      setMessage(nextMessage)
       notify(nextMessage)
     } finally {
       setIsDeleting(false)
@@ -769,7 +843,8 @@ export default function Customers() {
           className="customer-form-modal"
           dialogClassName="customer-form-modal__dialog"
           bodyClassName="customer-form-modal__body"
-          onClose={handleCloseForm}
+          closeOnBackdropClick={false}
+          onClose={handleRequestCloseForm}
         >
           <CustomerForm
             key={`${customerFormMode}-${editingCustomer?.id ?? 'new-customer'}`}
@@ -782,9 +857,44 @@ export default function Customers() {
             readOnly={customerFormMode === 'view'}
             canSubmit={editingCustomer ? canEdit : canCreate}
             onSubmit={handleSave}
-            onCancel={handleCloseForm}
+            onCancel={handleRequestCloseForm}
             onDirtyChange={setHasUnsavedCustomerChanges}
+            activeTab={activeFormTab}
+            onTabChange={handleTabChange}
           />
+        </FormModal>
+      ) : null}
+
+      {showDiscardConfirm ? (
+        <FormModal
+          title="Discard Unsaved Changes?"
+          onClose={() => setShowDiscardConfirm(false)}
+        >
+          <div className="customer-delete-dialog">
+            <div className="customer-delete-dialog__icon" style={{ background: '#fef3c7', color: '#d97706' }}>
+              <AlertTriangle size={24} />
+            </div>
+            <div>
+              <h3>Discard unsaved changes?</h3>
+              <p>You have unsaved changes in this customer form. If you discard, all changes will be lost.</p>
+            </div>
+            <div className="button-row customer-delete-dialog__actions">
+              <button
+                type="button"
+                className="button button-cancel button-secondary"
+                onClick={() => setShowDiscardConfirm(false)}
+              >
+                Keep Editing
+              </button>
+              <button
+                type="button"
+                className="button button-danger"
+                onClick={handleCloseForm}
+              >
+                Discard Changes
+              </button>
+            </div>
+          </div>
         </FormModal>
       ) : null}
 

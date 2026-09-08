@@ -160,7 +160,7 @@ export default function ActionMenu({
     </div>
   ) : null
 
-  const tooltipText = iconOnly
+  const tooltipText = !isOpen && iconOnly
     ? label && label.startsWith('Actions for')
       ? 'Actions'
       : label || 'Actions'
@@ -180,7 +180,6 @@ export default function ActionMenu({
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-label={label || 'Actions'}
-        title={tooltipText}
         data-tooltip={tooltipText}
         onPointerDown={(event) => {
           event.stopPropagation()

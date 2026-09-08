@@ -20,12 +20,17 @@ function getCurrencyFormatter(currency) {
   })
 }
 
-function getRawValue(value) {
-  return sanitizeNumericInput(value, { allowDecimal: true, allowNegative: false })
+function getRawValue(value, { maxIntegerDigits = 10, maxDecimalDigits = 2 } = {}) {
+  return sanitizeNumericInput(value, {
+    allowDecimal: true,
+    allowNegative: false,
+    maxIntegerDigits,
+    maxDecimalDigits,
+  })
 }
 
-function getFormattedValue(value, currency) {
-  const rawValue = getRawValue(value)
+function getFormattedValue(value, currency, { maxIntegerDigits = 10, maxDecimalDigits = 2 } = {}) {
+  const rawValue = getRawValue(value, { maxIntegerDigits, maxDecimalDigits })
 
   if (!rawValue || rawValue === '.') {
     return ''
@@ -40,8 +45,8 @@ function getFormattedValue(value, currency) {
   return getCurrencyFormatter(currency).format(numericValue)
 }
 
-function normalizeCompletedCurrencyValue(value) {
-  const rawValue = getRawValue(value)
+function normalizeCompletedCurrencyValue(value, { maxIntegerDigits = 10, maxDecimalDigits = 2 } = {}) {
+  const rawValue = getRawValue(value, { maxIntegerDigits, maxDecimalDigits })
   const numericValue = Number(rawValue)
 
   if (!rawValue || !Number.isFinite(numericValue)) {
@@ -62,20 +67,28 @@ export default function CurrencyInput({
   onBlur,
   placeholder,
   error,
+  helperText,
   className = '',
   currency = 'INR',
   onFocus,
+  maxIntegerDigits = 10,
+  maxDecimalDigits = 2,
   ...props
 }) {
   const inputRef = useRef(null)
   const [isFocused, setIsFocused] = useState(false)
-  const [displayValue, setDisplayValue] = useState(() => getFormattedValue(value, currency))
+  const [displayValue, setDisplayValue] = useState(() =>
+    getFormattedValue(value, currency, { maxIntegerDigits, maxDecimalDigits }),
+  )
   const resolvedPrefix = prefix
-  const describedBy = error ? `${id}-error` : undefined
+  const describedBy = [
+    helperText ? `${id}-help` : '',
+    error ? `${id}-error` : '',
+  ].filter(Boolean).join(' ') || undefined
 
   const formattedValue = useMemo(
-    () => getFormattedValue(value, currency),
-    [currency, value],
+    () => getFormattedValue(value, currency, { maxIntegerDigits, maxDecimalDigits }),
+    [currency, maxDecimalDigits, maxIntegerDigits, value],
   )
 
   useEffect(() => {
@@ -96,7 +109,7 @@ export default function CurrencyInput({
   }
 
   function handleFocus(event) {
-    const rawValue = getRawValue(value)
+    const rawValue = getRawValue(value, { maxIntegerDigits, maxDecimalDigits })
     setIsFocused(true)
     setDisplayValue(rawValue)
     onFocus?.(event)
@@ -106,8 +119,8 @@ export default function CurrencyInput({
     const rawInputValue = event.target.value
     const caretPosition = event.target.selectionStart ?? rawInputValue.length
     const beforeCaret = rawInputValue.slice(0, caretPosition)
-    const nextValue = getRawValue(rawInputValue)
-    const nextCaret = getRawValue(beforeCaret).length
+    const nextValue = getRawValue(rawInputValue, { maxIntegerDigits, maxDecimalDigits })
+    const nextCaret = getRawValue(beforeCaret, { maxIntegerDigits, maxDecimalDigits }).length
 
     setDisplayValue(nextValue)
     emitChange(nextValue)
@@ -120,9 +133,12 @@ export default function CurrencyInput({
   }
 
   function handleBlur(event) {
-    const nextValue = normalizeCompletedCurrencyValue(event.target.value)
+    const nextValue = normalizeCompletedCurrencyValue(event.target.value, {
+      maxIntegerDigits,
+      maxDecimalDigits,
+    })
     setIsFocused(false)
-    setDisplayValue(getFormattedValue(nextValue, currency))
+    setDisplayValue(getFormattedValue(nextValue, currency, { maxIntegerDigits, maxDecimalDigits }))
     emitChange(nextValue)
     onBlur?.({
       target: {
@@ -156,6 +172,11 @@ export default function CurrencyInput({
           autoComplete="off"
         />
       </div>
+      {helperText && !error ? (
+        <span id={`${id}-help`} className="field-help">
+          {helperText}
+        </span>
+      ) : null}
       {error ? <span id={`${id}-error`} className="field-error" role="alert">{error}</span> : null}
     </div>
   )

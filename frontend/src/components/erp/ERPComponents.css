@@ -202,16 +202,18 @@ button.erp-action-menu__trigger--icon,
 .erp-action-menu__trigger--icon[data-tooltip]::after {
   content: attr(data-tooltip);
   position: absolute;
-  top: 50%;
-  right: calc(100% + 6px);
-  transform: translateY(-50%) translateX(-4px);
+  top: auto !important;
+  right: auto !important;
+  bottom: calc(100% + 6px) !important;
+  left: 50% !important;
+  transform: translateX(-50%) translateY(4px) !important;
   z-index: 1000;
   display: inline-block;
   width: max-content;
   max-width: 160px;
   padding: 4px 8px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid #cbd5e1;
@@ -231,7 +233,11 @@ button.erp-action-menu__trigger--icon,
 .erp-action-menu__trigger--icon[data-tooltip]:hover::after,
 .erp-action-menu__trigger--icon[data-tooltip]:focus-visible::after {
   opacity: 1;
-  transform: translateY(-50%) translateX(0);
+  transform: translateX(-50%) translateY(0) !important;
+}
+
+.erp-action-menu__trigger--icon[aria-expanded="true"]::after {
+  display: none !important;
 }
 
 .erp-action-menu__trigger--icon:hover,

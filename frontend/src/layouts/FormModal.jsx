@@ -9,6 +9,7 @@ export default function FormModal({
   icon: Icon,
   children,
   onClose,
+  closeOnBackdropClick = true,
   className = '',
   dialogClassName = '',
   bodyClassName = '',
@@ -102,7 +103,7 @@ export default function FormModal({
       aria-modal="true"
       aria-labelledby={title ? titleId : undefined}
       aria-describedby={visibleSubtitle ? subtitleId : undefined}
-      onClick={onClose}
+      onClick={closeOnBackdropClick ? onClose : undefined}
     >
       <div
         className={`form-modal__dialog ${isDestructiveConfirmation ? 'form-modal__dialog--delete-confirmation' : ''} ${dialogClassName}`.trim()}

@@ -286,10 +286,11 @@ function normalizeAddressText(value) {
     .slice(0, INPUT_LIMITS.addressLine)
 }
 
-function normalizeDecimal(value) {
+function normalizeDecimal(value, maxIntegerDigits = 10) {
   const normalizedValue = cleanString(value).replace(/[^0-9.]/g, '')
   const [wholePart, ...decimalParts] = normalizedValue.split('.')
-  return decimalParts.length ? `${wholePart}.${decimalParts.join('').slice(0, 2)}` : wholePart
+  const truncatedWhole = (wholePart || '').slice(0, maxIntegerDigits)
+  return decimalParts.length ? `${truncatedWhole}.${decimalParts.join('').slice(0, 2)}` : truncatedWhole
 }
 
 function getHumanNameError(value, label, { required = true, min = 3, max = 100 } = {}) {
@@ -583,13 +584,17 @@ function getWebsiteError(value) {
   }
 }
 
-function getNonNegativeNumberError(value, label, { max = null, allowDecimal = true } = {}) {
+function getNonNegativeNumberError(value, label, { max = null, min = 0, allowDecimal = true } = {}) {
   const nextValue = cleanString(value)
   if (!nextValue) return ''
   const pattern = allowDecimal ? /^[0-9]+(\.[0-9]{1,2})?$/ : /^[0-9]+$/
   if (!pattern.test(nextValue)) return allowDecimal ? `${label} must be numeric.` : `${label} must be a whole number.`
-  if (Number(nextValue) < 0) return `${label} cannot be negative.`
-  if (max !== null && Number(nextValue) > max) return `${label} cannot exceed ${max}.`
+  const num = Number(nextValue)
+  if (num < min) return `${label} cannot be negative.`
+  if (max !== null && num > max) {
+    const formattedMax = max === 999999999.99 ? '999,999,999.99' : max
+    return `${label} cannot exceed ${formattedMax}.`
+  }
   return ''
 }
 
@@ -1327,6 +1332,20 @@ export default function SupplierForm({
         [name]: nextValue,
       },
     }))
+    setTouched((currentValue) => ({
+      ...currentValue,
+      paymentTerms: true,
+      [`paymentTerm_${name}`]: true,
+    }))
+  }
+
+  function handlePaymentTermsBlur(event) {
+    const { name } = event.target
+    setTouched((currentValue) => ({
+      ...currentValue,
+      paymentTerms: true,
+      [`paymentTerm_${name}`]: true,
+    }))
   }
 
   function markRequiredTouched() {
@@ -1462,8 +1481,10 @@ export default function SupplierForm({
           <SupplierPaymentTermsTab
             terms={supplier.paymentTerm}
             errors={paymentTermErrors}
-            showErrors={touched.collections}
+            showErrors={touched.collections || touched.paymentTerms}
+            touched={touched}
             onChange={handlePaymentTermsChange}
+            onBlur={handlePaymentTermsBlur}
             readOnly={readOnly}
           />
         ) : null}

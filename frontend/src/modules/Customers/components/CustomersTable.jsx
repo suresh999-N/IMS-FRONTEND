@@ -212,7 +212,6 @@ export default function CustomersTable({
       className: 'customers-col-name',
       mobileLabel: 'Name',
       mobilePrimary: true,
-      sortable: true,
       searchValue: (customer) =>
         [
           customer.name,
@@ -243,7 +242,6 @@ export default function CustomersTable({
       key: 'email',
       label: 'Email',
       className: 'customers-col-email',
-      sortable: true,
       render: (customer) => (
         <span className="customers-cell-text" title={customer.email || 'Not provided'}>
           {customer.email || 'Not provided'}
@@ -254,7 +252,6 @@ export default function CustomersTable({
       key: 'phone',
       label: 'Phone',
       className: 'customers-col-phone',
-      sortable: true,
       render: (customer) => (
         <span className="customers-cell-text customers-cell-text--nowrap" title={customer.phone || 'Not provided'}>
           {customer.phone || 'Not provided'}
@@ -265,7 +262,6 @@ export default function CustomersTable({
       key: 'company',
       label: 'Company',
       className: 'customers-col-company',
-      sortable: true,
       render: (customer) => (
         <span className="customers-category-badge" title={customer.company || 'Individual'}>
           {customer.company || 'Individual'}
@@ -277,7 +273,6 @@ export default function CustomersTable({
       label: 'Address',
       className: 'customers-col-address',
       mobileDescription: true,
-      sortable: true,
       render: (customer) => (
         <span className="customers-cell-text customers-cell-text--wrap" title={customer.address || 'Address not set'}>
           {customer.address || 'Address not set'}
@@ -288,7 +283,6 @@ export default function CustomersTable({
       key: 'gstNumber',
       label: 'GST / PAN',
       className: 'customers-col-gst',
-      sortable: true,
       render: (customer) => (
         <div className="customers-tax-stack">
           <span className={customer.gstNumber ? '' : 'is-empty'} title={customer.gstNumber || 'GST pending'}>
@@ -304,40 +298,30 @@ export default function CustomersTable({
       key: 'totalOrders',
       label: 'Orders',
       className: 'is-numeric customers-col-orders',
-      sortable: true,
-      sortValue: (customer) => Number(customer.totalOrders || 0),
       render: (customer) => Number(customer.totalOrders || 0),
     },
     {
       key: 'totalPurchases',
       label: 'Purchases',
       className: 'is-numeric customers-col-purchases',
-      sortable: true,
-      sortValue: (customer) => Number(customer.totalPurchases ?? customer.totalPurchaseAmount ?? customer.purchaseTotal ?? customer.totalAmount ?? 0),
       render: (customer) => formatCurrency(customer.totalPurchases ?? customer.totalPurchaseAmount ?? customer.purchaseTotal ?? customer.totalAmount ?? 0),
     },
     {
       key: 'outstandingBalance',
       label: 'Outstanding',
       className: 'is-numeric customers-col-outstanding',
-      sortable: true,
-      sortValue: (customer) => Number(customer.outstandingBalance || 0),
       render: (customer) => formatCurrency(customer.outstandingBalance || 0),
     },
     {
       key: 'creditLimit',
       label: 'Credit Limit',
       className: 'is-numeric customers-col-credit-limit',
-      sortable: true,
-      sortValue: (customer) => Number(customer.creditLimit || 0),
       render: (customer) => formatCurrency(customer.creditLimit || 0),
     },
     {
       key: 'lastActivity',
       label: 'Last Purchase',
       className: 'customers-col-last-activity',
-      sortable: true,
-      sortValue: (customer) => getDateSortValue(customer.lastActivity || customer.updatedAt || customer.createdAt),
       render: (customer) => {
         const dateText = formatDate(customer.lastActivity || customer.updatedAt || customer.createdAt)
         const displayDate = dateText === '-' ? 'No purchases yet' : dateText
@@ -353,8 +337,6 @@ export default function CustomersTable({
       key: 'createdAt',
       label: 'Created Date',
       className: 'customers-col-created',
-      sortable: true,
-      sortValue: (customer) => getDateSortValue(customer.createdAt),
       render: (customer) => {
         const dateText = formatDate(customer.createdAt)
 
@@ -370,7 +352,6 @@ export default function CustomersTable({
       label: 'Status',
       className: 'customers-col-status',
       mobileStatus: true,
-      sortable: true,
       render: (customer) => {
         const currentStatus = customer.status || 'Active'
 

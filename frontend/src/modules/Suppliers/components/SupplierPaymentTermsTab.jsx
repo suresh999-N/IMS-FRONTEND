@@ -8,7 +8,18 @@ const PAYMENT_METHODS = ['Bank Transfer', 'UPI', 'Cheque', 'Cash', 'Card'].map((
 const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP', 'AED', 'SGD'].map((item) => ({ value: item, label: item }))
 const TAX_TYPES = ['GST Registered', 'Composition', 'Unregistered', 'Import'].map((item) => ({ value: item, label: item }))
 
-export default function SupplierPaymentTermsTab({ terms, errors = {}, showErrors = false, onChange, readOnly }) {
+export default function SupplierPaymentTermsTab({
+  terms,
+  errors = {},
+  showErrors = false,
+  touched = {},
+  onChange,
+  onBlur,
+  readOnly,
+}) {
+  const isCreditDaysTouched = showErrors || touched.creditDays || touched.paymentTerm_creditDays || touched.paymentTerms
+  const isCreditLimitTouched = showErrors || touched.creditLimit || touched.paymentTerm_creditLimit || touched.paymentTerms
+
   return (
     <SupplierSection
       className="supplier-payment-section"
@@ -23,8 +34,9 @@ export default function SupplierPaymentTermsTab({ terms, errors = {}, showErrors
             type="text"
             value={terms.creditDays}
             onChange={onChange}
+            onBlur={onBlur}
             helperText="0 to 365 days."
-            error={showErrors ? errors.creditDays : ''}
+            error={isCreditDaysTouched ? errors.creditDays : ''}
             inputMode="numeric"
             placeholder="Enter credit days"
             maxLength={3}
@@ -37,9 +49,12 @@ export default function SupplierPaymentTermsTab({ terms, errors = {}, showErrors
             label="Credit Limit"
             value={terms.creditLimit}
             onChange={onChange}
-            error={showErrors ? errors.creditLimit : ''}
+            onBlur={onBlur}
+            error={isCreditLimitTouched ? errors.creditLimit : ''}
             currency={terms.currency || 'INR'}
             placeholder="Enter credit limit"
+            maxIntegerDigits={10}
+            helperText="Up to 999,999,999.99"
             className="supplier-payment-field supplier-payment-field--numeric"
             disabled={readOnly}
           />

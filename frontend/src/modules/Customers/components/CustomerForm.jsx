@@ -18,7 +18,7 @@ import {
   User,
   X,
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import InputField from '../../../components/InputField'
 import CurrencyInput from '../../../components/CurrencyInput'
 import SearchableSelect from '../../../components/SearchableSelect'
@@ -306,10 +306,11 @@ function normalizePan(value) {
     .slice(0, 10)
 }
 
-function normalizeDecimal(value) {
+function normalizeDecimal(value, maxIntegerDigits = 10) {
   const cleanValue = String(value ?? '').replace(/[^0-9.]/g, '')
   const [whole, ...decimalParts] = cleanValue.split('.')
-  return decimalParts.length ? `${whole}.${decimalParts.join('').slice(0, 2)}` : whole
+  const truncatedWhole = (whole || '').slice(0, maxIntegerDigits)
+  return decimalParts.length ? `${truncatedWhole}.${decimalParts.join('').slice(0, 2)}` : truncatedWhole
 }
 
 function normalizeDigits(value, maxLength) {
@@ -706,9 +707,19 @@ export default function CustomerForm({
   onSubmit,
   onCancel,
   onDirtyChange,
+  activeTab: controlledActiveTab,
+  onTabChange,
 }) {
   const [formData, setFormData] = useState(() => getInitialForm(initialValues))
-  const [activeTab, setActiveTab] = useState('basic')
+  const [internalActiveTab, setInternalActiveTab] = useState('basic')
+  const activeTab = controlledActiveTab ?? internalActiveTab
+
+  const handleTabSelect = useCallback((nextTab) => {
+    setInternalActiveTab(nextTab)
+    onTabChange?.(nextTab)
+  }, [onTabChange])
+
+  const setActiveTab = handleTabSelect
   const [touched, setTouched] = useState({})
   const [submitAttempted, setSubmitAttempted] = useState(false)
   const [isPrimaryContactSynced, setIsPrimaryContactSynced] = useState(() => {
@@ -718,16 +729,31 @@ export default function CustomerForm({
   })
   const formRef = useRef(null)
   const isEditing = Boolean(initialValues?.id)
+  const lastLoadedIdRef = useRef(initialValues?.id)
+  const isDirtyRef = useRef(false)
 
   useEffect(() => {
-    const initialForm = getInitialForm(initialValues)
-    const primaryContact = initialForm.contacts.find((contact) => contact.isPrimary)
-    setFormData(initialForm)
-    setActiveTab('basic')
-    setTouched({})
-    setSubmitAttempted(false)
-    setIsPrimaryContactSynced(!primaryContact || isSyncedPrimaryContact(primaryContact, initialForm))
-  }, [initialValues])
+    const currentId = initialValues?.id
+    const isNewEntity = currentId !== lastLoadedIdRef.current
+    lastLoadedIdRef.current = currentId
+
+    if (isNewEntity) {
+      const initialForm = getInitialForm(initialValues)
+      const primaryContact = initialForm.contacts.find((contact) => contact.isPrimary)
+      setFormData(initialForm)
+      handleTabSelect('basic')
+      setTouched({})
+      setSubmitAttempted(false)
+      setIsPrimaryContactSynced(!primaryContact || isSyncedPrimaryContact(primaryContact, initialForm))
+    } else if (initialValues && !isDirtyRef.current) {
+      // Async update for the same customer (e.g. getCustomerById loaded details)
+      // Only sync if user hasn't modified the form yet
+      const initialForm = getInitialForm(initialValues)
+      const primaryContact = initialForm.contacts.find((contact) => contact.isPrimary)
+      setFormData(initialForm)
+      setIsPrimaryContactSynced(!primaryContact || isSyncedPrimaryContact(primaryContact, initialForm))
+    }
+  }, [initialValues, handleTabSelect])
 
   useEffect(() => {
     if (initialValues?.customerCode) return
@@ -825,7 +851,9 @@ export default function CustomerForm({
     creditLimit:
       formData.paymentTerms.creditLimit && Number(formData.paymentTerms.creditLimit) < 0
         ? 'Credit limit cannot be negative.'
-        : '',
+        : formData.paymentTerms.creditLimit && Number(formData.paymentTerms.creditLimit) > 999999999.99
+          ? 'Credit limit cannot exceed 999,999,999.99.'
+          : '',
     paymentMode: '',
   }
 
@@ -862,6 +890,24 @@ export default function CustomerForm({
     ...addressErrors.flatMap((item) => Object.values(item)),
     ...bankErrors.flatMap((item) => Object.values(item)),
   ].every((value) => !value)
+  const hasApiErrors = Boolean(apiErrors && Object.keys(apiErrors).length > 0)
+  const isDuplicateFieldMessage = useMemo(() => {
+    if (!apiMessage) return false
+    const cleanMsg = String(apiMessage).trim().toLowerCase()
+    const allFieldMessages = [
+      ...Object.values(errors),
+      ...Object.values(paymentErrors),
+      ...contactErrors.flatMap((item) => Object.values(item)),
+      ...addressErrors.flatMap((item) => Object.values(item)),
+      ...bankErrors.flatMap((item) => Object.values(item)),
+      ...(apiErrors && typeof apiErrors === 'object' ? Object.values(apiErrors).flat() : []),
+    ].filter(Boolean).map((msg) => String(msg).trim().toLowerCase())
+
+    return allFieldMessages.includes(cleanMsg)
+  }, [apiMessage, errors, paymentErrors, contactErrors, addressErrors, bankErrors, apiErrors])
+  const shouldShowTopMessage = Boolean(
+    apiMessage && isValid && !hasApiErrors && !isDuplicateFieldMessage
+  )
   const isReadOnly = Boolean(readOnly)
   const isBusy = isLoadingInitial || isSubmitting
   const disableSubmit = isReadOnly || !canSubmit || !isValid || isBusy || (isEditing && !isDirty)
@@ -938,6 +984,7 @@ export default function CustomerForm({
   }, [activeTab, formData.bankDetails.length, isReadOnly])
 
   useEffect(() => {
+    isDirtyRef.current = !isReadOnly && isDirty
     onDirtyChange?.(!isReadOnly && isDirty)
   }, [isDirty, isReadOnly, onDirtyChange])
 
@@ -1631,7 +1678,7 @@ export default function CustomerForm({
       noValidate
     >
       <div className="customer-master-shell">
-        {apiMessage ? (
+        {shouldShowTopMessage ? (
           <div className="message-box message-box--error customer-form__message page-error-banner" role="alert">
             {apiMessage}
           </div>
@@ -1980,7 +2027,9 @@ export default function CustomerForm({
                 notes: '',
               }}
               showErrors={submitAttempted || touched.paymentTerms}
+              touched={touched}
               onChange={handleSupplierPaymentChange}
+              onBlur={() => setTouched((prev) => ({ ...prev, paymentTerms: true }))}
               readOnly={isReadOnly}
             />
           ) : null}
