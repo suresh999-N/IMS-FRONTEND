@@ -799,7 +799,25 @@ export default function ProductForm({
 
   async function handleAddSubCategory(draft) {
     const label = normalizeString(draft?.name)
-    if (!label || !formData.categoryId) {
+
+    if (!label) {
+      showToast('Subcategory name is required.', 'error')
+      return null
+    }
+
+    if (!formData.categoryId) {
+      showToast('Please select a category before adding a subcategory.', 'error')
+      return null
+    }
+
+    // Validate the subcategory name — reuse the same rules as category names
+    const validationError = validateCategoryName(label, subCategories)
+    if (validationError) {
+      // Rephrase the generic category error message for subcategory context
+      const subCatError = validationError
+        .replace(/category/gi, 'subcategory')
+        .replace(/categories/gi, 'subcategories')
+      showToast(subCatError, 'error')
       return null
     }
 
@@ -825,7 +843,11 @@ export default function ProductForm({
       showToast('Subcategory created successfully.', 'success')
       return toOption(createdSubCat)
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Failed to create subcategory'
+      const rawMsg = error instanceof Error ? error.message : 'Failed to create subcategory'
+      // Sanitize raw JS / network errors — never expose internal error details
+      const msg = /normalizeCategory|normalizeSubCategory|is not defined|referenceerror|typeerror|failed to fetch/i.test(rawMsg)
+        ? 'Invalid subcategory name. Please select from predefined subcategories.'
+        : rawMsg
       showToast(msg, 'error')
       return null
     }
