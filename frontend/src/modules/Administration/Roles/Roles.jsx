@@ -30,7 +30,7 @@ import {
 import { apiRequest, getResponseData, getResponseList } from '../../../api/apiClient'
 import { API_ENDPOINTS } from '../../../api/endpoints'
 import { STOCK_DATA_UPDATED_EVENT } from '../../../api/stockApi'
-import { notifyRolesUpdated } from '../../../api/rolesApi'
+import { ROLES_UPDATED_EVENT, notifyRolesUpdated } from '../../../api/rolesApi'
 import {
   createResource,
   deleteResource,
@@ -719,10 +719,26 @@ function formatCellValue(row, column, referenceData, index, sNo) {
 
   if (column.key === 'isActive' || column.format === 'boolean') {
     const rawVal = readResourceValue(row, 'isActive', value)
-    const isActive = rawVal === true || String(rawVal).toLowerCase() === 'true' || String(rawVal).toLowerCase() === 'active' || rawVal === 1
+    const userIsActive = rawVal === true || String(rawVal).toLowerCase() === 'true' || String(rawVal).toLowerCase() === 'active' || rawVal === 1
+
+    const userRole = String(readResourceValue(row, 'role', readResourceValue(row, 'roleName', ''))).trim().toLowerCase()
+    const rolesList = referenceData?.roles ?? []
+    const matchingRole = rolesList.find((r) => {
+      const rName = String(readResourceValue(r, 'roleName', readResourceValue(r, 'name', readResourceValue(r, 'role', '')))).trim().toLowerCase()
+      return rName && rName === userRole
+    })
+
+    const isRoleInactive = matchingRole && (
+      matchingRole.isActive === false ||
+      String(matchingRole.isActive).toLowerCase() === 'false' ||
+      String(matchingRole.status || '').toLowerCase() === 'inactive'
+    )
+
+    const effectiveActive = userIsActive && !isRoleInactive
+
     return (
-      <StatusBadge type={isActive ? 'success' : 'danger'}>
-        {isActive ? 'Active' : 'Inactive'}
+      <StatusBadge type={effectiveActive ? 'success' : 'danger'}>
+        {effectiveActive ? 'Active' : 'Inactive'}
       </StatusBadge>
     )
   }
@@ -1900,8 +1916,16 @@ function ResourcePage({ config, navigationContent = null }) {
       loadRows({ force: true })
     }
 
+    function handleRolesUpdated() {
+      loadRows({ force: true })
+    }
+
     window.addEventListener(STOCK_DATA_UPDATED_EVENT, handleStockDataUpdated)
-    return () => window.removeEventListener(STOCK_DATA_UPDATED_EVENT, handleStockDataUpdated)
+    window.addEventListener(ROLES_UPDATED_EVENT, handleRolesUpdated)
+    return () => {
+      window.removeEventListener(STOCK_DATA_UPDATED_EVENT, handleStockDataUpdated)
+      window.removeEventListener(ROLES_UPDATED_EVENT, handleRolesUpdated)
+    }
   }, [config.key, loadRows])
 
   useEffect(() => {
@@ -1947,10 +1971,24 @@ function ResourcePage({ config, navigationContent = null }) {
     if (isUsersPage) {
       const activeCount = rows.filter((row) => {
         const rawAct = readResourceValue(row, 'isActive', readResourceValue(row, 'status', readResourceValue(row, 'is_active', undefined)))
-        if (rawAct !== undefined && rawAct !== null && rawAct !== '') {
-          return rawAct === true || String(rawAct).toLowerCase() === 'true' || String(rawAct).toLowerCase() === 'active' || rawAct === 1
-        }
-        return true
+        const userIsActive = (rawAct !== undefined && rawAct !== null && rawAct !== '')
+          ? (rawAct === true || String(rawAct).toLowerCase() === 'true' || String(rawAct).toLowerCase() === 'active' || rawAct === 1)
+          : true
+
+        const userRole = String(readResourceValue(row, 'role', readResourceValue(row, 'roleName', ''))).trim().toLowerCase()
+        const rolesList = referenceData?.roles ?? []
+        const matchingRole = rolesList.find((r) => {
+          const rName = String(readResourceValue(r, 'roleName', readResourceValue(r, 'name', readResourceValue(r, 'role', '')))).trim().toLowerCase()
+          return rName && rName === userRole
+        })
+
+        const isRoleInactive = matchingRole && (
+          matchingRole.isActive === false ||
+          String(matchingRole.isActive).toLowerCase() === 'false' ||
+          String(matchingRole.status || '').toLowerCase() === 'inactive'
+        )
+
+        return userIsActive && !isRoleInactive
       }).length
 
       return {

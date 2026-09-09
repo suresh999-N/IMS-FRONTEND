@@ -344,6 +344,7 @@ export default function TableComponent({
   keyField = 'id',
   searchKeys = [],
   searchPlaceholder = 'Search by name or keyword',
+  invalidSearchMessage = '',
   showSearch = true,
   emptyMessage = 'No records available.',
   loading = false,
@@ -892,13 +893,41 @@ export default function TableComponent({
       ) : paginatedRows.length === 0 ? (
         (() => {
           if (searchTerm.trim()) {
+            const validation = validateSearchQuery(searchTerm)
+            const isInvalidSearch = validation.isInvalid
+
+            if (isInvalidSearch) {
+              const defaultExamples = columns
+                .filter((col) => col.searchable !== false)
+                .map(getColumnLabel)
+                .filter((label) => label && label.toLowerCase() !== 'actions' && label.toLowerCase() !== 'action')
+                .map((label) => label.toLowerCase())
+                .filter((v, i, a) => a.indexOf(v) === i)
+
+              const messageText =
+                invalidSearchMessage ||
+                (defaultExamples.length > 0
+                  ? `Please enter a valid search term (e.g., ${defaultExamples.slice(0, 4).join(', ')}).`
+                  : 'Please enter a valid search term.')
+
+              return (
+                <StateBlock
+                  type="warning"
+                  title="Invalid search term"
+                  message={messageText}
+                  compact
+                  className="table-component__empty table-component__empty--invalid"
+                />
+              )
+            }
+
             return (
               <StateBlock
-                type="warning"
-                title="Invalid search term"
-                message="Please enter a valid search term (e.g., action, user, module, date)."
+                type="empty"
+                title="No matching records found"
+                message={`No records found matching "${searchTerm.trim()}". Try searching with a different keyword or clear the search.`}
                 compact
-                className="table-component__empty table-component__empty--invalid"
+                className="table-component__empty"
               />
             )
           }

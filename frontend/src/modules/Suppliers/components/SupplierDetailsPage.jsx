@@ -132,53 +132,89 @@ export default function SupplierDetailsPage({
   const currentSupplier = supplier || {}
 
   const performance = useMemo(() => {
-    const apiPerf = currentSupplier.performance || {}
+    const apiPerf = currentSupplier.performance || currentSupplier.Performance || {}
     const totalOrdersFromApi = apiPerf.totalOrders ?? apiPerf.TotalOrders
-    if (totalOrdersFromApi != null && totalOrdersFromApi !== '' && Number(totalOrdersFromApi) > 0) {
-      return apiPerf
-    }
 
     const poList = Array.isArray(purchases) ? purchases : []
-    const totalOrders = poList.length
+    const poCount = poList.length
 
-    if (totalOrders === 0) {
-      return apiPerf
+    const hasPurchaseHistorySignal = Boolean(
+      poCount > 0 ||
+      currentSupplier.lastPurchaseDate ||
+      (currentSupplier.totalPurchaseAmount != null && Number(currentSupplier.totalPurchaseAmount) > 0) ||
+      (currentSupplier.purchases != null && Number(currentSupplier.purchases) > 0)
+    )
+
+    if (totalOrdersFromApi != null && totalOrdersFromApi !== '' && Number(totalOrdersFromApi) > 0) {
+      return {
+        totalOrders: Number(totalOrdersFromApi),
+        onTimeDeliveries: Number(apiPerf.onTimeDeliveries ?? apiPerf.OnTimeDeliveries ?? Number(totalOrdersFromApi)),
+        delayedDeliveries: Number(apiPerf.delayedDeliveries ?? apiPerf.DelayedDeliveries ?? 0),
+        vendorRating: apiPerf.vendorRating || apiPerf.VendorRating || apiPerf.rating || '5.0',
+        lastSupplyDate: apiPerf.lastSupplyDate || apiPerf.LastSupplyDate || currentSupplier.lastPurchaseDate || null,
+        returnPercentage: apiPerf.returnPercentage ?? apiPerf.ReturnPercentage ?? 0,
+        ...apiPerf,
+      }
     }
 
-    const completedOrReceived = poList.filter((p) => {
-      const st = String(p?.status || p?.orderStatus || p?.Status || '').toLowerCase()
-      return ['completed', 'received', 'delivered', 'fulfilled', 'closed', 'ordered'].includes(st)
-    }).length
+    if (poCount > 0) {
+      const completedOrReceived = poList.filter((p) => {
+        const st = String(p?.status || p?.orderStatus || p?.Status || '').toLowerCase()
+        return ['completed', 'received', 'delivered', 'fulfilled', 'closed', 'ordered', 'approved'].includes(st)
+      }).length
 
-    const delayedCount = poList.filter((p) => {
-      const st = String(p?.status || p?.orderStatus || p?.Status || '').toLowerCase()
-      return ['delayed', 'overdue', 'cancelled', 'late'].includes(st)
-    }).length
+      const delayedCount = poList.filter((p) => {
+        const st = String(p?.status || p?.orderStatus || p?.Status || '').toLowerCase()
+        return ['delayed', 'overdue', 'cancelled', 'late'].includes(st)
+      }).length
 
-    const onTimeDeliveries = Math.max(0, completedOrReceived - delayedCount)
-    const onTimeRate = totalOrders > 0 ? Math.round((onTimeDeliveries / totalOrders) * 100) : 100
+      const onTimeDeliveries = Math.max(0, completedOrReceived - delayedCount)
+      const onTimeRate = poCount > 0 ? Math.round((onTimeDeliveries / poCount) * 100) : 100
 
-    const sortedDates = poList
-      .map((p) => p?.orderDate || p?.receivedDate || p?.createdAt || p?.createdDate || p?.date)
-      .filter(Boolean)
-      .sort((a, b) => new Date(b) - new Date(a))
+      const sortedDates = poList
+        .map((p) => p?.orderDate || p?.receivedDate || p?.createdAt || p?.createdDate || p?.date)
+        .filter(Boolean)
+        .sort((a, b) => new Date(b) - new Date(a))
 
-    const lastSupplyDate = sortedDates[0] || null
+      const lastSupplyDate = sortedDates[0] || currentSupplier.lastPurchaseDate || null
 
-    let calculatedRating = '5.0'
-    if (onTimeRate < 50) calculatedRating = '2.5'
-    else if (onTimeRate < 75) calculatedRating = '3.5'
-    else if (onTimeRate < 90) calculatedRating = '4.2'
-    else if (onTimeRate < 100) calculatedRating = '4.8'
+      let calculatedRating = '5.0'
+      if (onTimeRate < 50) calculatedRating = '2.5'
+      else if (onTimeRate < 75) calculatedRating = '3.5'
+      else if (onTimeRate < 90) calculatedRating = '4.2'
+      else if (onTimeRate < 100) calculatedRating = '4.8'
+
+      return {
+        totalOrders: poCount,
+        onTimeDeliveries,
+        delayedDeliveries: delayedCount,
+        vendorRating: apiPerf.vendorRating || apiPerf.rating || calculatedRating,
+        lastSupplyDate: apiPerf.lastSupplyDate || lastSupplyDate,
+        returnPercentage: apiPerf.returnPercentage ?? 0,
+        ...apiPerf,
+      }
+    }
+
+    if (hasPurchaseHistorySignal) {
+      return {
+        totalOrders: 1,
+        onTimeDeliveries: 1,
+        delayedDeliveries: 0,
+        vendorRating: apiPerf.vendorRating || apiPerf.rating || '5.0',
+        lastSupplyDate: currentSupplier.lastPurchaseDate || apiPerf.lastSupplyDate || null,
+        returnPercentage: apiPerf.returnPercentage ?? 0,
+        ...apiPerf,
+      }
+    }
 
     return {
+      totalOrders: 0,
+      onTimeDeliveries: 0,
+      delayedDeliveries: 0,
+      vendorRating: apiPerf.vendorRating || apiPerf.rating || '5.0',
+      lastSupplyDate: null,
+      returnPercentage: 0,
       ...apiPerf,
-      totalOrders,
-      onTimeDeliveries,
-      delayedDeliveries: delayedCount,
-      vendorRating: apiPerf.vendorRating || apiPerf.rating || calculatedRating,
-      lastSupplyDate: apiPerf.lastSupplyDate || lastSupplyDate,
-      returnPercentage: apiPerf.returnPercentage || 0,
     }
   }, [currentSupplier, purchases])
 

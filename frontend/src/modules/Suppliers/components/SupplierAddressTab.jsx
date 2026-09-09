@@ -364,7 +364,7 @@ export default function SupplierAddressTab({
             const line2Error = addressErrors.addressLine2 && (showErrors || line2Blurred || (address.addressLine2 && address.addressLine2.trim().length >= 3))
               ? addressErrors.addressLine2
               : getVisibleError({ error: addressErrors.addressLine2, blurred: line2Blurred, focused: line2Focused, submitted: showErrors })
-            const cityError = addressErrors.city && (showErrors || cityBlurred || (address.city && (addressErrors.city.includes('not a valid city') || addressErrors.city.includes('belongs to') || addressErrors.city.includes('state name'))))
+            const cityError = addressErrors.city && (showErrors || cityBlurred || Boolean(address.city))
               ? addressErrors.city
               : getVisibleError({ error: addressErrors.city, blurred: cityBlurred, focused: cityFocused, submitted: showErrors })
             const countryError = countrySuppressed

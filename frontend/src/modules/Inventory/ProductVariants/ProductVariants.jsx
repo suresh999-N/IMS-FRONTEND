@@ -668,6 +668,7 @@ export default function ProductVariants() {
           rows={filteredVariants}
           keyField="variantId"
           searchPlaceholder="Search variants by name, SKU, or attribute"
+          invalidSearchMessage="Please enter a valid search term (e.g., variant SKU, product name, variant name, attribute, price)."
           loading={isLoading}
           showSearch={true}
           splitToolbar

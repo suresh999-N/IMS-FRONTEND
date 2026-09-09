@@ -82,6 +82,7 @@
   color: #c2410c;
 }
 
+.resource-center__page--suppliers .resource-center__inventory-metric--inactive,
 .resource-center__page--suppliers .resource-center__inventory-metric--neutral,
 .resource-center__page--suppliers .resource-center__inventory-metric--archived {
   border-color: #cbd5e1;
@@ -481,6 +482,20 @@
   font-weight: 730;
   line-height: 1.15;
   box-shadow: none;
+}
+
+.supplier-table-card .status-badge.status-inactive,
+.supplier-table-card .status-badge.status-failed.status-inactive,
+.status-badge.status-inactive {
+  border: 1px solid #cbd5e1 !important;
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+}
+
+.supplier-table-card .status-badge.status-blocked {
+  border: 1px solid #fecaca !important;
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
 }
 
 .supplier-table-card .supplier-tax-stack {

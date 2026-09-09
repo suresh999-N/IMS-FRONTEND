@@ -811,6 +811,36 @@ namespace IMSBackend.Controllers
                 });
             }
 
+            var poList = await _context.PurchaseOrders
+                .AsNoTracking()
+                .Where(po => po.SupplierId == id && !po.IsCancelled)
+                .Select(po => new { po.PoId, po.TotalAmount, po.OrderDate, po.Status })
+                .ToListAsync();
+
+            var totalOrders = poList.Count;
+            var delayedCount = poList.Count(po =>
+                po.Status != null && (
+                    po.Status.ToLower() == "delayed" ||
+                    po.Status.ToLower() == "overdue" ||
+                    po.Status.ToLower() == "cancelled" ||
+                    po.Status.ToLower() == "late"
+                ));
+            var onTimeDeliveries = Math.Max(0, totalOrders - delayedCount);
+            var onTimeRate = totalOrders > 0 ? (double)onTimeDeliveries / totalOrders * 100 : 100.0;
+            var calculatedRating = totalOrders > 0
+                ? (onTimeRate < 50 ? "2.5" : onTimeRate < 75 ? "3.5" : onTimeRate < 90 ? "4.2" : onTimeRate < 100 ? "4.8" : "5.0")
+                : "5.0";
+
+            var performance = new
+            {
+                TotalOrders = totalOrders,
+                OnTimeDeliveries = onTimeDeliveries,
+                DelayedDeliveries = delayedCount,
+                VendorRating = calculatedRating,
+                LastSupplyDate = supplier.LastPurchaseDate,
+                ReturnPercentage = 0
+            };
+
             var result = new
             {
                 supplier.SupplierId,
@@ -837,7 +867,9 @@ namespace IMSBackend.Controllers
                 TotalPaid = supplier.PaidAmount,
                 Outstanding = supplier.Purchases - supplier.PaidAmount,
                 OutstandingPayable = supplier.Purchases - supplier.PaidAmount,
-                LastPurchaseDate = supplier.LastPurchaseDate
+                LastPurchaseDate = supplier.LastPurchaseDate,
+                Performance = performance,
+                performance
             };
 
             return Ok(result);
@@ -1613,7 +1645,23 @@ namespace IMSBackend.Controllers
 
                 return Ok(new
                 {
-                    message = "Supplier updated successfully."
+                    message = "Supplier updated successfully.",
+                    data = new
+                    {
+                        supplier.SupplierId,
+                        supplier.SupplierCode,
+                        supplier.Name,
+                        supplier.CompanyName,
+                        supplier.Category,
+                        supplier.GstNumber,
+                        supplier.PanNumber,
+                        supplier.Phone,
+                        supplier.Email,
+                        supplier.Website,
+                        supplier.Status,
+                        supplier.CreatedAt,
+                        supplier.UpdatedAt
+                    }
                 });
             }
             catch (DbUpdateException ex)

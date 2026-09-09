@@ -36,6 +36,7 @@ export default function SupplierPurchaseHistoryTab({ purchases }) {
         defaultPageSize={5}
         emptyMessage="No purchase orders found for this supplier."
         searchPlaceholder="Search purchase orders"
+        invalidSearchMessage="Please enter a valid search term (e.g., PO number, order date, total amount, status, received qty)."
         splitToolbar
       />
     </SupplierSection>

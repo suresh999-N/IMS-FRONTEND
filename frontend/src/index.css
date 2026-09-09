@@ -1168,8 +1168,7 @@ button.status-badge:disabled,
 .status-failed,
 .status-cancelled,
 .status-blocked,
-.status-disabled,
-.status-inactive {
+.status-disabled {
   color: var(--danger);
   background: var(--color-danger-50);
   border-color: var(--color-danger-200);
@@ -1203,10 +1202,11 @@ button.status-badge:disabled,
 .status-pending,
 .status-draft,
 .status-archived,
-.status-unpaid {
-  color: #475569;
-  background: var(--color-neutral-100, #f1f5f9);
-  border-color: var(--color-neutral-300, #cbd5e1);
+.status-unpaid,
+.status-inactive {
+  color: #475569 !important;
+  background: var(--color-neutral-100, #f1f5f9) !important;
+  border-color: var(--color-neutral-300, #cbd5e1) !important;
 }
 
 .status-info {

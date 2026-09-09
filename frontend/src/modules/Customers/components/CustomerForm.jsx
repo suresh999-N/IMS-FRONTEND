@@ -50,6 +50,7 @@ import {
   IFSC_PATTERN,
   INDIA_STATES,
   STATE_PINCODE_PREFIXES,
+  getCityStateError,
   getDesignationOptionsForDepartment,
   mergeMasterOptions,
 } from '../../Suppliers/supplierMasterData'
@@ -364,7 +365,7 @@ function getInitialForm(initialValues) {
     name: normalizeCustomerDisplayName(initialValues?.name ?? '', 100),
     customerCode: initialValues?.customerCode ?? '',
     customerType: normalizeCustomerType(initialValues?.customerType ?? initialValues?.type ?? 'Business'),
-    company: normalizeCustomerName(initialValues?.companyName ?? initialValues?.company ?? '', 150),
+    company: normalizeCustomerName(initialValues?.companyName ?? initialValues?.company ?? '', 50),
     gstNumber: normalizeGst(initialValues?.gstNumber ?? initialValues?.taxNumber ?? ''),
     panNumber: normalizePan(initialValues?.panNumber ?? ''),
     phone: sanitizeCustomerPhone(initialValues?.phone ?? ''),
@@ -516,8 +517,14 @@ function getContactNameError(value) {
 function getCustomerNameError(value) {
   const cleanValue = collapseSpaces(value)
   if (!cleanValue) return 'Customer name is required.'
-  if (cleanValue.length < 2) return 'Customer name must be at least 2 characters.'
-  if (cleanValue.length > 100) return 'Customer name cannot exceed 100 characters.'
+  const sharedError = getSharedNameError(cleanValue, {
+    label: 'Customer name',
+    required: true,
+    min: 2,
+    max: 100,
+  })
+  if (sharedError) return sharedError
+
   if (!/[A-Za-z]/.test(cleanValue) || /^\d+$/.test(cleanValue)) {
     return 'Customer name must contain alphabetic characters and cannot contain only numbers.'
   }
@@ -531,10 +538,13 @@ function getCompanyNameError(value) {
   const cleanValue = collapseSpaces(value)
   if (!cleanValue) return ''
   if (cleanValue.length < 3) return 'Company name must be at least 3 characters.'
-  if (cleanValue.length > 150) return 'Company name cannot exceed 150 characters.'
+  if (cleanValue.length > 50) return 'Company name cannot exceed 50 characters.'
   if (!/[A-Za-z]/.test(cleanValue)) return 'Company name must include letters.'
   if (!/^[A-Za-z0-9 &.'-]+$/.test(cleanValue)) {
     return "Company name can use letters, numbers, spaces, &, -, ., and '."
+  }
+  if (/([A-Za-z0-9])\1{3,}/.test(cleanValue) || /([A-Za-z0-9]{1,2})\1{3,}/i.test(cleanValue)) {
+    return 'Enter a valid company name.'
   }
   return ''
 }
@@ -619,7 +629,7 @@ function getAddressErrors(address) {
     addressType: ['Billing', 'Shipping', 'Warehouse', 'Head Office', 'Branch Office', 'Factory', 'Office', 'Other'].includes(address.addressType || 'Billing') ? '' : 'Select a valid address type.',
     addressLine: getAddressLineError(address.addressLine, 'Address line 1', true),
     addressLine2: getAddressLineError(address.addressLine2, 'Address line 2'),
-    city: getPlaceNameError(address.city, 'City'),
+    city: getPlaceNameError(address.city, 'City') || getCityStateError(address.city, state, country),
     state: isIndiaCountry(country)
       ? (!state ? 'State is required.' : INDIA_STATES.includes(state) ? '' : 'Select a valid Indian state or union territory.')
       : getPlaceNameError(state, 'State'),
@@ -1027,7 +1037,7 @@ export default function CustomerForm({
     }
 
     if (name === 'company') {
-      const companyName = normalizeCustomerName(nextValue, 150)
+      const companyName = normalizeCustomerName(nextValue, 50)
       setFormData((current) => ({
         ...current,
         company: companyName,
@@ -1489,7 +1499,7 @@ export default function CustomerForm({
     creditLimit: formData.paymentTerms.creditLimit,
     preferredPaymentMethod: formData.paymentTerms.paymentMode,
     currency: formData.paymentTerms.currency || 'INR',
-    taxType: formData.paymentTerms.taxType || 'GST Registered',
+    taxType: formData.paymentTerms.taxType || '',
     notes: formData.paymentTerms.notes,
   }), [formData.paymentTerms])
 
@@ -1767,7 +1777,7 @@ export default function CustomerForm({
                     error={shouldShowError('company') ? errors.company : ''}
                     placeholder="Legal entity name"
                     disabled={isBusy || isReadOnly}
-                    maxLength={150}
+                    maxLength={50}
                   />
                   <InputField
                     id="customer-gst"

@@ -83,7 +83,7 @@ function normalizePaymentTerm(supplier) {
     creditLimit: readValue(paymentTerm, 'creditLimit', 'CreditLimit') ?? readValue(supplier, 'creditLimit', 'CreditLimit') ?? '',
     preferredPaymentMethod: normalizeTitleValue(readValue(paymentTerm, 'preferredPaymentMethod', 'paymentMethod', 'PaymentMethod') || ''),
     currency: readValue(paymentTerm, 'currency', 'Currency') || '',
-    taxType: readValue(paymentTerm, 'taxType', 'TaxType') || 'GST Registered',
+    taxType: readValue(paymentTerm, 'taxType', 'TaxType') || '',
     notes: readValue(paymentTerm, 'notes', 'Notes') || '',
   }
 }

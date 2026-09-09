@@ -25,6 +25,7 @@ namespace IMSBackend.DTOs
 
         public string? CustomerCode { get; set; }
 
+        [MaxLength(50, ErrorMessage = "Company name cannot exceed 50 characters.")]
         public string? Company { get; set; }
 
         public string? Phone { get; set; }
@@ -71,9 +72,61 @@ namespace IMSBackend.DTOs
             var phone = NormalizePhone(Phone);
             var phoneDigits = DigitsOnly(phone);
             var status = CollapseSpaces(Status);
+            var company = CollapseSpaces(Company);
+            if (!string.IsNullOrWhiteSpace(company))
+            {
+                if (company.Length < 3)
+                {
+                    yield return new ValidationResult(
+                        "Company name must be at least 3 characters.",
+                        [nameof(Company)]);
+                }
+
+                if (company.Length > 50)
+                {
+                    yield return new ValidationResult(
+                        "Company name cannot exceed 50 characters.",
+                        [nameof(Company)]);
+                }
+
+                if (!Regex.IsMatch(company, @"[A-Za-z]"))
+                {
+                    yield return new ValidationResult(
+                        "Company name must include letters.",
+                        [nameof(Company)]);
+                }
+
+                if (!Regex.IsMatch(company, @"^[A-Za-z0-9 &.'-]+$"))
+                {
+                    yield return new ValidationResult(
+                        "Company name can use letters, numbers, spaces, &, -, ., and '.",
+                        [nameof(Company)]);
+                }
+
+                if (Regex.IsMatch(company, @"([A-Za-z0-9])\1{3,}") || Regex.IsMatch(company, @"([A-Za-z0-9]{1,2})\1{3,}", RegexOptions.IgnoreCase))
+                {
+                    yield return new ValidationResult(
+                        "Enter a valid company name.",
+                        [nameof(Company)]);
+                }
+            }
 
             if (!string.IsNullOrWhiteSpace(name))
             {
+                if (name.Length < 2)
+                {
+                    yield return new ValidationResult(
+                        "Customer name must be at least 2 characters.",
+                        [nameof(Name)]);
+                }
+
+                if (name.Length > 100)
+                {
+                    yield return new ValidationResult(
+                        "Customer name cannot exceed 100 characters.",
+                        [nameof(Name)]);
+                }
+
                 if (!Regex.IsMatch(name, @"[A-Za-z]"))
                 {
                     yield return new ValidationResult(
@@ -85,6 +138,27 @@ namespace IMSBackend.DTOs
                 {
                     yield return new ValidationResult(
                         "Customer name can contain only letters and spaces.",
+                        [nameof(Name)]);
+                }
+
+                if (name.Split(' ', '-').Any(w => w.Length > 15))
+                {
+                    yield return new ValidationResult(
+                        "Customer name cannot contain words longer than 15 characters.",
+                        [nameof(Name)]);
+                }
+
+                if (Regex.IsMatch(name, @"([A-Za-z])\1{3,}") || Regex.IsMatch(name, @"([A-Za-z]{1,2})\1{3,}", RegexOptions.IgnoreCase))
+                {
+                    yield return new ValidationResult(
+                        "Enter a valid customer name.",
+                        [nameof(Name)]);
+                }
+
+                if (Regex.IsMatch(name, @"[bcdfghjklmnpqrstvwxz]{5,}", RegexOptions.IgnoreCase))
+                {
+                    yield return new ValidationResult(
+                        "Enter a valid customer name.",
                         [nameof(Name)]);
                 }
             }

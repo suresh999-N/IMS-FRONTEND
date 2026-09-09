@@ -1,4 +1,5 @@
 import React from 'react'
+import { StatusBadge } from '../../components/erp'
 import {
   Bell,
   Boxes,
@@ -1257,7 +1258,36 @@ export const RESOURCE_CONFIGS = {
         },
       },
       { key: 'emailVerificationStatus', label: 'Verification', format: 'status', sortable: false },
-      { key: 'isActive', label: 'Status', format: 'boolean', sortable: false },
+      {
+        key: 'isActive',
+        label: 'Status',
+        sortable: false,
+        render: (row, referenceData) => {
+          const rawAct = readResourceValue(row, 'isActive', readResourceValue(row, 'status', readResourceValue(row, 'is_active', true)))
+          const userIsActive = rawAct === true || String(rawAct).toLowerCase() === 'true' || String(rawAct).toLowerCase() === 'active' || rawAct === 1
+
+          const userRole = String(readResourceValue(row, 'role', readResourceValue(row, 'roleName', ''))).trim().toLowerCase()
+          const rolesList = referenceData?.roles ?? []
+          const matchingRole = rolesList.find((r) => {
+            const rName = String(readResourceValue(r, 'roleName', readResourceValue(r, 'name', readResourceValue(r, 'role', '')))).trim().toLowerCase()
+            return rName && rName === userRole
+          })
+
+          const isRoleInactive = matchingRole && (
+            matchingRole.isActive === false ||
+            String(matchingRole.isActive).toLowerCase() === 'false' ||
+            String(matchingRole.status || '').toLowerCase() === 'inactive'
+          )
+
+          const effectiveActive = userIsActive && !isRoleInactive
+
+          return React.createElement(
+            StatusBadge,
+            { type: effectiveActive ? 'success' : 'danger' },
+            effectiveActive ? 'Active' : 'Inactive',
+          )
+        },
+      },
     ],
     rowActions: [
       {

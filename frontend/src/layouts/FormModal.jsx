@@ -81,6 +81,14 @@ export default function FormModal({
 
     document.addEventListener('keydown', handleKeyDown)
     window.requestAnimationFrame(() => {
+      if (dialogRef.current?.contains(document.activeElement) && document.activeElement !== dialogRef.current) {
+        return
+      }
+      const autoFocusElement = dialogRef.current?.querySelector('[autofocus], input[autofocus]')
+      if (autoFocusElement) {
+        autoFocusElement.focus()
+        return
+      }
       const focusableElements = getFocusableElements()
       ;(focusableElements[0] || dialogRef.current)?.focus()
     })

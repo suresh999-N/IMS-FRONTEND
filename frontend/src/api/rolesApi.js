@@ -1,6 +1,7 @@
 import { apiRequest, getResponseData, getResponseList } from './apiClient'
 import { API_ENDPOINTS } from './endpoints'
 import { cachedApiRequest, createApiCacheKey, hasApiCache, invalidateApiCache } from './apiCache'
+import { invalidateUsersCache } from './usersApi'
 
 export const ROLES_UPDATED_EVENT = 'ims:roles-updated'
 const ROLES_CACHE_PREFIX = 'roles:'
@@ -42,6 +43,8 @@ function normalizePermissionList(payload) {
 
 export function notifyRolesUpdated() {
   invalidateRolesCache()
+  invalidateUsersCache()
+  invalidateApiCache('resource:')
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(ROLES_UPDATED_EVENT))
   }

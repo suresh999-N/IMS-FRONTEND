@@ -166,7 +166,7 @@ function buildSupplierProfile(supplier) {
     addresses: Array.isArray(supplier.addresses) ? supplier.addresses : [],
     bankAccounts: Array.isArray(supplier.bankAccounts) ? supplier.bankAccounts : [],
     documents: Array.isArray(supplier.documents) ? supplier.documents : [],
-    performance: supplier.performance || null,
+    performance: supplier.performance || supplier.Performance || null,
   }
 }
 
@@ -271,7 +271,7 @@ function SuppliersHeader({ canCreate, summary, onAdd }) {
   const metrics = [
     { key: 'total', label: 'Suppliers', value: summary.total, tone: 'total' },
     { key: 'active', label: 'Active', value: summary.active, tone: 'success' },
-    { key: 'inactive', label: 'Inactive', value: summary.inactive, tone: 'neutral' },
+    { key: 'inactive', label: 'Inactive', value: summary.inactive, tone: 'inactive' },
     { key: 'blocked', label: 'Blocked', value: summary.blocked, tone: 'danger' },
     { key: 'pending', label: 'Pending Payments', value: summary.vendorsWithPendingPayments, tone: 'warning' },
   ]
@@ -360,7 +360,7 @@ export default function Suppliers({
 
     try {
       const [suppliersRes, purchasesRes, paymentsRes] = await Promise.allSettled([
-        getSuppliers(),
+        getSuppliers({}, { force: true }),
         getPurchaseOrders(),
         getSupplierPayments(),
       ])
@@ -492,18 +492,28 @@ export default function Suppliers({
   const selectedPurchases = useMemo(() => {
     if (!selectedSupplier) return []
 
-    const targetId = String(selectedSupplier.id || selectedSupplier.supplierId || '').trim().toLowerCase()
+    const targetId = String(selectedSupplier.id || selectedSupplier.supplierId || selectedSupplier.SupplierId || '').trim().toLowerCase()
     const targetCode = String(selectedSupplier.supplierCode || selectedSupplier.code || '').trim().toLowerCase()
-    const targetName = String(selectedSupplier.name || '').trim().toLowerCase()
-    const targetCompany = String(selectedSupplier.companyName || '').trim().toLowerCase()
+    const targetName = String(selectedSupplier.name || selectedSupplier.companyName || '').trim().toLowerCase()
+    const targetCompany = String(selectedSupplier.companyName || selectedSupplier.name || '').trim().toLowerCase()
 
     const cleanTargetName = targetName.replace(/[^a-z0-9]/g, '')
     const cleanTargetCompany = targetCompany.replace(/[^a-z0-9]/g, '')
 
     return activePurchases.filter((item) => {
-      const itemSupId = String(item.supplierId || item.SupplierId || item.supplier_id || item.supplierID || '').trim().toLowerCase()
+      const itemSupId = String(
+        item.supplierId || item.SupplierId || item.supplier_id || item.supplierID ||
+        (typeof item.supplier === 'object' ? (item.supplier?.id || item.supplier?.supplierId || item.supplier?.SupplierId) : '') || ''
+      ).trim().toLowerCase()
+
       const itemSupCode = String(item.supplierCode || item.SupplierCode || item.code || item.supplier_code || '').trim().toLowerCase()
-      const itemSupName = String(item.supplierName || item.SupplierName || item.supplier || item.partyName || item.companyName || item.vendorName || '').trim().toLowerCase()
+
+      const itemSupName = String(
+        item.supplierName || item.SupplierName ||
+        (typeof item.supplier === 'string' ? item.supplier : (item.supplier?.name || item.supplier?.companyName || '')) ||
+        item.partyName || item.companyName || item.vendorName || ''
+      ).trim().toLowerCase()
+
       const cleanItemSupName = itemSupName.replace(/[^a-z0-9]/g, '')
 
       const matchId = Boolean(targetId && targetId !== '0' && (itemSupId === targetId || itemSupCode === targetId))
@@ -1198,6 +1208,7 @@ export default function Suppliers({
             defaultSortKey=""
             showSearch={!hasSelectedSuppliers}
             searchPlaceholder="Search suppliers by name, code"
+            invalidSearchMessage="Please enter a valid search term (e.g., supplier name, code, phone, email, city)."
             emptyMessage={isLoading ? 'Loading suppliers...' : 'No suppliers match the current filters.'}
             enableRowSelection
             selectedRowKeys={selectedSupplierIds}

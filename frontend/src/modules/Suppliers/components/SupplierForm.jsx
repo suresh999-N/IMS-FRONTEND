@@ -56,7 +56,7 @@ const emptyTerms = {
   creditLimit: '',
   preferredPaymentMethod: '',
   currency: '',
-  taxType: 'GST Registered',
+  taxType: '',
   notes: '',
 }
 
@@ -679,9 +679,9 @@ function getInitialPaymentTerm(initialValues) {
     ...emptyTerms,
     creditDays: initialValues?.creditDays || paymentTerm.creditDays || '30',
     creditLimit: initialValues?.creditLimit || paymentTerm.creditLimit || '',
-    preferredPaymentMethod: paymentTerm.preferredPaymentMethod || '',
-    currency: paymentTerm.currency || '',
-    taxType: paymentTerm.taxType || 'GST Registered',
+    preferredPaymentMethod: paymentTerm.preferredPaymentMethod || paymentTerm.paymentMethod || '',
+    currency: paymentTerm.currency || 'INR',
+    taxType: paymentTerm.taxType || '',
     notes: paymentTerm.notes || '',
   }
 }
@@ -1025,9 +1025,9 @@ export default function SupplierForm({
   const paymentTermErrors = {
     creditDays: getNonNegativeNumberError(supplier.paymentTerm.creditDays, 'Credit days', { max: 365, allowDecimal: false }),
     creditLimit: getNonNegativeNumberError(supplier.paymentTerm.creditLimit, 'Credit limit', { max: 999999999.99 }),
-    preferredPaymentMethod: getRequiredError(supplier.paymentTerm.preferredPaymentMethod, 'Payment method'),
-    currency: getRequiredError(supplier.paymentTerm.currency, 'Currency'),
-    taxType: getRequiredError(supplier.paymentTerm.taxType, 'Tax type'),
+    preferredPaymentMethod: '',
+    currency: '',
+    taxType: '',
     notes: cleanString(supplier.paymentTerm.notes).length > INPUT_LIMITS.notes ? `Notes cannot exceed ${INPUT_LIMITS.notes} characters.` : '',
   }
 

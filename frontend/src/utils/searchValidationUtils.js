@@ -42,12 +42,12 @@ export function validateSearchQuery(term, hasResults = true) {
   // 4. Check for key-smash / random character patterns in single continuous words
   const words = trimmed.split(/\s+/)
   for (const word of words) {
-    // Ignore valid hex hashes, numbers, UUIDs, dates (e.g., 2026-09-03), SKUs (BAR-12345), emails (@)
+    // Only ignore pure digits, valid dates, UUIDs, SKUs containing numbers/hyphens, and emails
     if (
-      /^[a-f0-9-]{8,}$/i.test(word) ||
       /^\d+$/.test(word) ||
-      /^\d{4}-\d{2}-\d{2}$/.test(word) ||
-      /^[A-Z0-9_-]{5,}$/i.test(word) ||
+      /^\d{1,4}[-/]\d{1,2}[-/]\d{1,4}$/.test(word) ||
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(word) ||
+      /^[A-Za-z0-9_-]*\d[A-Za-z0-9_-]*$/.test(word) ||
       word.includes('@')
     ) {
       continue
@@ -55,8 +55,8 @@ export function validateSearchQuery(term, hasResults = true) {
 
     const lowerWord = word.toLowerCase()
 
-    // Word >= 6 chars with 0 vowels (a, e, i, o, u, y) -> key-smash
-    if (lowerWord.length >= 6 && !/[aeiouy]/.test(lowerWord)) {
+    // Single alphabetic word >= 20 chars without numbers/spaces -> key-smash
+    if (lowerWord.length >= 20) {
       return {
         isValid: false,
         isInvalid: true,
@@ -64,9 +64,27 @@ export function validateSearchQuery(term, hasResults = true) {
       }
     }
 
-    // Word >= 8 chars with low vowel ratio (< 28%) or unusual consonant density -> gibberish like "gghhkuhujkuj"
+    // Word >= 5 chars with 0 vowels (a, e, i, o, u, y) -> key-smash
+    if (lowerWord.length >= 5 && !/[aeiouy]/.test(lowerWord)) {
+      return {
+        isValid: false,
+        isInvalid: true,
+        errorMessage: 'Please enter a valid search term.',
+      }
+    }
+
+    // Repeated 2-4 character pattern blocks (e.g. "vbvbvb", "dfdfdf", "gfgfgf", "ababab")
+    if (/(.{2,4})\1{2,}/i.test(lowerWord)) {
+      return {
+        isValid: false,
+        isInvalid: true,
+        errorMessage: 'Please enter a valid search term.',
+      }
+    }
+
+    // Word >= 7 chars with low vowel ratio (< 28%)
     const vowelMatches = lowerWord.match(/[aeiouy]/g) || []
-    if (lowerWord.length >= 8 && vowelMatches.length / lowerWord.length < 0.28) {
+    if (lowerWord.length >= 7 && vowelMatches.length / lowerWord.length < 0.28) {
       return {
         isValid: false,
         isInvalid: true,
@@ -74,9 +92,9 @@ export function validateSearchQuery(term, hasResults = true) {
       }
     }
 
-    // Repeated keyboard home-row or sequence patterns (e.g. "asdf", "sdfg", "dfgh", "fghj", "ghjk", "hjkl", "kuj", "jkuj")
+    // Repeated keyboard home-row or sequence patterns (e.g. "asdf", "sdfg", "dfgh", "fghj", "ghjk", "hjkl", "qwer", "cvbn")
     if (
-      /(asdf|sdfg|dfgh|fghj|ghjk|hjkl|qwer|wert|erty|rtyu|tyui|yuio|uiop|zxcv|xcvb|cvbn|vbnm|hjk|kuj|jkuj|ujk|hhu|uhj){2,}/i.test(
+      /(asdf|sdfg|dfgh|fghj|ghjk|hjkl|qwer|wert|erty|rtyu|tyui|yuio|uiop|zxcv|xcvb|cvbn|vbnm|hjk|kuj|jkuj|ujk|hhu|uhj|vnb|cvb|bvb|vcb|bvn|dfd|gfg|fgf){2,}/i.test(
         lowerWord
       ) ||
       /(hkuh|hujk|kuj|ujkuj|gghh|hhku)/i.test(lowerWord)

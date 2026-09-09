@@ -24,6 +24,7 @@ export default function SupplierPaymentsTab({ payments }) {
         defaultPageSize={5}
         emptyMessage="No supplier payments recorded."
         searchPlaceholder="Search payments"
+        invalidSearchMessage="Please enter a valid search term (e.g., payment number, payment method, amount, date, reference number)."
         splitToolbar
       />
     </SupplierSection>

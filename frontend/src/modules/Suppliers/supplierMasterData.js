@@ -244,7 +244,8 @@ export function getBankNameForIfscPrefix(ifscCode) {
 }
 
 export const FOREIGN_STATES_AND_COUNTRIES = [
-  'California', 'Texas', 'Florida', 'New York', 'Washington', 'Illinois', 'Pennsylvania', 'Ohio',
+  'California', 'Texas', 'Florida', 'New York', 'Newyork', 'Dallas', 'Houston', 'Chicago', 'Los Angeles',
+  'San Francisco', 'Miami', 'Seattle', 'Boston', 'Austin', 'Washington', 'Illinois', 'Pennsylvania', 'Ohio',
   'Georgia', 'North Carolina', 'Michigan', 'New Jersey', 'Virginia', 'Massachusetts', 'Arizona',
   'Tennessee', 'Indiana', 'Maryland', 'Missouri', 'Wisconsin', 'Colorado', 'Minnesota', 'South Carolina',
   'Alabama', 'Louisiana', 'Kentucky', 'Oregon', 'Oklahoma', 'Connecticut', 'Utah', 'Nevada',
@@ -282,7 +283,8 @@ export const MAJOR_CITIES_BY_STATE = {
 export const CITY_TO_STATE_MAP = {}
 Object.entries(MAJOR_CITIES_BY_STATE).forEach(([state, cities]) => {
   cities.forEach((city) => {
-    CITY_TO_STATE_MAP[city.toLowerCase()] = state
+    const key = city.replace(/[\s\-_]/g, '').toLowerCase()
+    CITY_TO_STATE_MAP[key] = state
   })
 })
 
@@ -292,23 +294,24 @@ export function getCityStateError(city, state, country = 'India') {
 
   if (!cleanCity || !cleanState) return ''
 
-  const lowerCity = cleanCity.toLowerCase()
-  const lowerState = cleanState.toLowerCase()
+  const normalizeKey = (str) => String(str ?? '').replace(/[\s\-_]/g, '').toLowerCase()
+  const keyCity = normalizeKey(cleanCity)
+  const keyState = normalizeKey(cleanState)
 
-  const matchedIndianState = INDIA_STATES.find((s) => s.toLowerCase() === lowerCity)
+  const matchedIndianState = INDIA_STATES.find((s) => normalizeKey(s) === keyCity)
   if (matchedIndianState) {
-    if (matchedIndianState.toLowerCase() !== lowerState) {
+    if (normalizeKey(matchedIndianState) !== keyState) {
       return `'${cleanCity}' is a state name, not a city in ${cleanState}.`
     }
   }
 
-  const matchedForeignState = FOREIGN_STATES_AND_COUNTRIES.find((s) => s.toLowerCase() === lowerCity)
+  const matchedForeignState = FOREIGN_STATES_AND_COUNTRIES.find((s) => normalizeKey(s) === keyCity)
   if (matchedForeignState) {
     return `'${cleanCity}' is not a valid city in ${cleanState}.`
   }
 
-  const registeredState = CITY_TO_STATE_MAP[lowerCity]
-  if (registeredState && registeredState.toLowerCase() !== lowerState) {
+  const registeredState = CITY_TO_STATE_MAP[keyCity]
+  if (registeredState && normalizeKey(registeredState) !== keyState) {
     return `${cleanCity} belongs to ${registeredState}, not ${cleanState}.`
   }
 
