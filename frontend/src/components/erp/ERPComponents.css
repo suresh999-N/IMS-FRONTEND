@@ -32,7 +32,10 @@
 }
 
 .erp-table-toolbar {
-  display: contents;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .erp-search-bar {

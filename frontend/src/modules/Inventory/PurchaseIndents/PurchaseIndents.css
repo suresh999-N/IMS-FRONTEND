@@ -855,12 +855,40 @@
   border-bottom: 1px solid #dbe4ee;
 }
 
-.purchases-page .purchases-page__table .table-component__toolbar {
+.purchases-page .purchases-page__table .table-component__toolbar,
+.purchases-page__table-card .table-component__toolbar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
+  gap: 10px !important;
+  width: 100% !important;
   min-height: 50px;
   margin: 0;
   padding: 8px 10px;
   border: 0;
   border-radius: 0;
+  box-sizing: border-box !important;
+}
+
+.purchases-page .purchases-page__table .table-component__toolbar-left,
+.purchases-page__table-card .table-component__toolbar-left {
+  display: flex !important;
+  align-items: center !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  gap: 8px !important;
+}
+
+.purchases-page .purchases-page__table .table-component__toolbar-right,
+.purchases-page__table-card .table-component__toolbar-right,
+.purchases-page .purchases-page__table .purchases-page__table-actions,
+.purchases-page__table-card .purchases-page__table-actions {
+  display: flex !important;
+  align-items: center !important;
+  flex: 0 0 auto !important;
+  margin-left: auto !important;
+  gap: 8px !important;
 }
 
 .purchases-page .purchases-page__table .search-input-container {

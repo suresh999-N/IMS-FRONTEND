@@ -263,6 +263,7 @@
 
 .table-component__toolbar--split {
   justify-content: space-between;
+  width: 100%;
 }
 
 .table-component__toolbar-left,
@@ -280,6 +281,7 @@
 .table-component__toolbar-right {
   flex: 0 0 auto;
   justify-content: flex-end;
+  margin-left: auto;
 }
 
 .table-component__toolbar-row {

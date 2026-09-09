@@ -119,8 +119,29 @@
 }
 
 .purchases-page__table .table-component__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
   padding: 7px 10px;
   border-bottom: 1px solid #e2e8f0;
+}
+
+.purchases-page__table .table-component__toolbar-left {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 8px;
+}
+
+.purchases-page__table .table-component__toolbar-right,
+.purchases-page__table .purchases-page__table-actions {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  margin-left: auto;
+  gap: 8px;
 }
 
 .purchases-page__table .table-component__scroll {
