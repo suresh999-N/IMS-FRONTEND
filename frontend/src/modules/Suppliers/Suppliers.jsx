@@ -271,6 +271,7 @@ function SuppliersHeader({ canCreate, summary, onAdd }) {
   const metrics = [
     { key: 'total', label: 'Suppliers', value: summary.total, tone: 'total' },
     { key: 'active', label: 'Active', value: summary.active, tone: 'success' },
+    { key: 'inactive', label: 'Inactive', value: summary.inactive, tone: 'neutral' },
     { key: 'blocked', label: 'Blocked', value: summary.blocked, tone: 'danger' },
     { key: 'pending', label: 'Pending Payments', value: summary.vendorsWithPendingPayments, tone: 'warning' },
   ]
@@ -474,12 +475,14 @@ export default function Suppliers({
   const summary = useMemo(() => {
     const currentSuppliers = supplierProfiles.filter((supplier) => !supplier.isDeleted)
     const active = currentSuppliers.filter((supplier) => normalizeStatusValue(supplier.status) === 'active').length
+    const inactive = currentSuppliers.filter((supplier) => normalizeStatusValue(supplier.status) === 'inactive').length
     const blocked = currentSuppliers.filter((supplier) => normalizeStatusValue(supplier.status) === 'blocked').length
     const vendorsWithPendingPayments = currentSuppliers.filter((supplier) => Number(supplier.outstandingPayable || 0) > 0).length
 
     return {
       total: currentSuppliers.length,
       active,
+      inactive,
       blocked,
       vendorsWithPendingPayments,
     }

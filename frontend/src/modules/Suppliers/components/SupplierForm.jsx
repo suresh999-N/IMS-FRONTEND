@@ -712,6 +712,7 @@ function getInitialSupplier(initialValues) {
     supplierCode: supplier.supplierCode || supplier.code || '',
     companyName: supplier.companyName || supplier.company || '',
     category: supplier.category || '',
+    status: cleanString(supplier.status || 'active').toLowerCase(),
     gstNumber,
     panNumber,
     website: supplier.website || '',

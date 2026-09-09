@@ -1381,6 +1381,8 @@ namespace IMSBackend.Controllers
                 supplier.Phone = dto.Phone;
                 supplier.Email = dto.Email;
                 supplier.Website = string.IsNullOrWhiteSpace(dto.Website) ? null : dto.Website.Trim();
+                supplier.Status = normalizedStatus;
+                supplier.UpdatedAt = DateTime.UtcNow;
                 try
                 {
                     await _context.SaveChangesAsync();
