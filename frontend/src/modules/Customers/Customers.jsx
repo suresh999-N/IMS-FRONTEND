@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, Check, LoaderCircle, Plus, Trash2, X } from 'lucide-react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import AccessDenied from '../../components/common/AccessDenied'
 import { showToast } from '../../components/common/toast'
 import FormModal from '../../layouts/FormModal'
@@ -97,6 +97,7 @@ function getCustomerDeleteError(error) {
 
 export default function Customers() {
   const { hasPermission } = useAuth()
+  const location = useLocation()
   const navigate = useNavigate()
   const { customerId } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -129,6 +130,27 @@ export default function Customers() {
   const [balanceFilter, setBalanceFilter] = useState('all')
   const [hasUnsavedCustomerChanges, setHasUnsavedCustomerChanges] = useState(false)
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false)
+
+  // Auto-dismiss acknowledgement message after 4 seconds (within 3-5 seconds requirement)
+  useEffect(() => {
+    if (!message) return
+
+    const timer = window.setTimeout(() => {
+      setMessage(null)
+    }, 4000)
+
+    return () => window.clearTimeout(timer)
+  }, [message])
+
+  // Clear acknowledgement message when navigating or switching customer view
+  useEffect(() => {
+    setMessage(null)
+  }, [location.pathname, location.search, customerId])
+
+  // Clear acknowledgement message when changing table filters
+  useEffect(() => {
+    setMessage(null)
+  }, [companyFilter, statusFilter, balanceFilter])
 
   const currentTabParam = searchParams.get('tab')
   const activeFormTab = VALID_CUSTOMER_FORM_TABS.includes(currentTabParam) ? currentTabParam : 'basic'
@@ -163,10 +185,13 @@ export default function Customers() {
   const canDelete = hasPermission('customers', 'delete')
 
   const notify = useCallback((result) => {
+    if (result) {
+      setMessage(result)
+    }
     showToast({
-      type: result.success ? 'success' : 'error',
+      type: result?.success ? 'success' : 'error',
       title: 'Customers',
-      message: result.message,
+      message: result?.message,
     })
   }, [])
 
@@ -363,6 +388,7 @@ export default function Customers() {
   }, [balanceFilter, companyFilter, customers, statusFilter])
 
   function handleOpenCreate() {
+    setMessage(null)
     setEditingCustomer(null)
     setCustomerFormMode('create')
     setFormErrors(null)
@@ -380,6 +406,7 @@ export default function Customers() {
   }
 
   async function handleEdit(customer) {
+    setMessage(null)
     setEditingCustomer(customer)
     setCustomerFormMode('edit')
     setFormErrors(null)
@@ -528,6 +555,7 @@ export default function Customers() {
       return
     }
 
+    setMessage(null)
     setEditingCustomer(customer)
     setCustomerFormMode('view')
     setFormErrors(null)
@@ -572,6 +600,7 @@ export default function Customers() {
   }
 
   function handleBackToDirectory() {
+    setMessage(null)
     navigate('/people/customers')
   }
 
@@ -665,6 +694,7 @@ export default function Customers() {
         message: getCustomerDeleteError(response.error),
       }
       notify(nextMessage)
+      setDeleteTarget(null)
       setIsDeleting(false)
       return
     }
@@ -731,6 +761,7 @@ export default function Customers() {
         message: getCustomerDeleteError(error instanceof Error ? error.message : error),
       }
       notify(nextMessage)
+      setBulkDeleteTarget(null)
     } finally {
       setIsDeleting(false)
     }
@@ -778,8 +809,27 @@ export default function Customers() {
           className={`message-box ${message.success ? 'message-box--success' : 'message-box--error page-error-banner'
             }`}
           role={message.success ? 'status' : 'alert'}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}
         >
-          {message.message}
+          <span>{message.message}</span>
+          <button
+            type="button"
+            onClick={() => setMessage(null)}
+            aria-label="Dismiss message"
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '4px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              color: 'inherit',
+              opacity: 0.8,
+              flexShrink: 0,
+            }}
+          >
+            <X size={16} />
+          </button>
         </div>
       ) : null}
 
@@ -905,6 +955,7 @@ export default function Customers() {
           onCancel={() => {
             if (!isDeleting) {
               setDeleteTarget(null)
+              setMessage(null)
             }
           }}
           onConfirm={handleConfirmDelete}
@@ -917,6 +968,7 @@ export default function Customers() {
           onClose={() => {
             if (!isDeleting) {
               setBulkDeleteTarget(null)
+              setMessage(null)
             }
           }}
         >
@@ -943,7 +995,10 @@ export default function Customers() {
             <div className="button-row customer-delete-dialog__actions">
               <button className="button button-cancel button-secondary"
                 type="button"
-                onClick={() => setBulkDeleteTarget(null)}
+                onClick={() => {
+                  setBulkDeleteTarget(null)
+                  setMessage(null)
+                }}
                 disabled={isDeleting}
               >
                 Cancel
