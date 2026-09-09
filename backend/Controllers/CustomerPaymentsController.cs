@@ -1,4 +1,4 @@
-﻿using IMSBackend.Data;
+using IMSBackend.Data;
 using IMSBackend.DTOs;
 using IMSBackend.Models;
 using IMSBackend.Services;
@@ -52,7 +52,7 @@ namespace IMSBackend.Controllers
                         amount = p.Amount,
                         paymentDate = p.PaymentDate,
                         paymentMethod = p.PaymentMethod,
-                        referenceNumber = p.ReferenceNumber,
+                        referenceNumber = !string.IsNullOrWhiteSpace(p.ReferenceNumber) ? p.ReferenceNumber : $"REF-PAY-{p.PaymentId:D4}",
                         isCancelled = p.IsCancelled,
                         notes = p.Notes,
                         cancelledAt = p.CancelledAt,

@@ -48,7 +48,7 @@ namespace IMSBackend.Controllers
                         p.Amount,
                         p.PaymentDate,
                         p.PaymentMethod,
-                        p.ReferenceNumber,
+                        ReferenceNumber = !string.IsNullOrWhiteSpace(p.ReferenceNumber) ? p.ReferenceNumber : $"REF-PAY-{p.PaymentId:D4}",
                         Status = p.PoId == null ? "Unreconciled" : "Reconciled",
                         p.Notes
                     }

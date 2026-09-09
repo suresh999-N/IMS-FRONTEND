@@ -50,6 +50,18 @@ export function normalizePayment(item, partyType = 'customer') {
     ? `PAY-${(paymentDate || new Date().toISOString().slice(0, 10)).replaceAll('-', '')}-${String(paymentId).padStart(3, '0')}`
     : ''
 
+  const rawRef = text(
+    item?.referenceNumber ?? item?.ReferenceNumber ?? item?.reference_number ??
+    item?.referenceNo ?? item?.ReferenceNo ?? item?.reference_no ??
+    item?.reference ?? item?.Reference ??
+    item?.transactionId ?? item?.TransactionId ?? item?.txnId ?? item?.TxnId ??
+    item?.chequeNo ?? item?.ChequeNo ?? item?.utrNumber ?? item?.UtrNumber
+  )
+
+  const generatedReferenceNumber = (rawRef && rawRef.toLowerCase() !== 'not provided' && rawRef.toLowerCase() !== 'n/a')
+    ? rawRef
+    : (paymentId ? `REF-PAY-${String(paymentId).padStart(4, '0')}` : '')
+
   return {
     ...item,
     id: idOf(item, ['id', 'paymentId', 'PaymentId', 'payment_id']),
@@ -65,7 +77,7 @@ export function normalizePayment(item, partyType = 'customer') {
     amount: number(item?.amount ?? item?.Amount),
     paymentDate,
     paymentMethod: text(item?.paymentMethod ?? item?.PaymentMethod ?? item?.payment_method) || 'Bank Transfer',
-    referenceNumber: text(item?.referenceNumber ?? item?.ReferenceNumber ?? item?.reference_number),
+    referenceNumber: generatedReferenceNumber,
     notes: text(item?.notes ?? item?.Notes),
     createdBy: text(item?.createdBy ?? item?.CreatedBy ?? item?.created_by) || 'System',
     createdAt: dateOnly(item?.createdAt ?? item?.CreatedAt ?? item?.created_at),

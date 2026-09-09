@@ -1388,7 +1388,7 @@ function LegacyPaymentDetailsDrawer({ payment, invoice, onClose, onPrint, onExpo
           <dl className="payment-drawer__definition-list">
             <DetailItem label="Method" value={payment.paymentMethod} />
             <DetailItem label="Payment Status" value={getPaymentStatusMeta(status).label} />
-            <DetailItem label="Reference" value={payment.referenceNumber || 'Not provided'} />
+            <DetailItem label="Reference" value={payment.referenceNumber || (payment.id || payment.paymentId ? `REF-PAY-${String(payment.id || payment.paymentId).padStart(4, '0')}` : 'Not provided')} />
             <DetailItem label="Created By" value={payment.createdBy || 'System'} />
             <DetailItem label="Created Date" value={formatDate(payment.createdAt || payment.paymentDate)} />
           </dl>
@@ -2563,7 +2563,7 @@ export default function CustomerPaymentModule({
       label: 'Reference Number',
       className: 'payments-col-reference',
       sortable: true,
-      render: (payment) => payment.referenceNumber || 'Not provided',
+      render: (payment) => payment.referenceNumber || (payment.id || payment.paymentId ? `REF-PAY-${String(payment.id || payment.paymentId).padStart(4, '0')}` : 'Not provided'),
     },
     {
       key: 'status',
