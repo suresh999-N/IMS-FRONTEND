@@ -106,6 +106,72 @@ function getFirstProductSummary(indent, products = []) {
   return getIndentProductsText(indent, products)
 }
 
+function getIndentDateValue(indent) {
+  return (
+    indent?.indentDate ??
+    indent?.IndentDate ??
+    indent?.requestDate ??
+    indent?.RequestDate ??
+    indent?.requestedDate ??
+    indent?.RequestedDate ??
+    indent?.createdAt ??
+    indent?.CreatedAt ??
+    indent?.createdDate ??
+    null
+  )
+}
+
+function getIndentDateTimestamp(indent) {
+  const rawDate = getIndentDateValue(indent)
+  if (!rawDate) return null
+
+  if (rawDate instanceof Date) {
+    const t = rawDate.getTime()
+    return Number.isNaN(t) ? null : t
+  }
+
+  if (typeof rawDate === 'number' && Number.isFinite(rawDate) && rawDate > 0) {
+    return rawDate
+  }
+
+  const str = String(rawDate).trim()
+  if (!str) return null
+
+  // DD-MM-YYYY or DD/MM/YYYY with optional time
+  const ddmmyyyy = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*(AM|PM))?)?$/i)
+  if (ddmmyyyy) {
+    const day = parseInt(ddmmyyyy[1], 10)
+    const month = parseInt(ddmmyyyy[2], 10)
+    const year = parseInt(ddmmyyyy[3], 10)
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      let hours = ddmmyyyy[4] ? parseInt(ddmmyyyy[4], 10) : 0
+      const mins = ddmmyyyy[5] ? parseInt(ddmmyyyy[5], 10) : 0
+      const secs = ddmmyyyy[6] ? parseInt(ddmmyyyy[6], 10) : 0
+      const ampm = ddmmyyyy[7] ? ddmmyyyy[7].toUpperCase() : null
+      if (ampm === 'PM' && hours < 12) hours += 12
+      if (ampm === 'AM' && hours === 12) hours = 0
+      return new Date(year, month - 1, day, hours, mins, secs).getTime()
+    }
+  }
+
+  // YYYY-MM-DD or YYYY/MM/DD with optional time
+  const ymd = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:[T\s](\d{1,2}):(\d{2})(?::(\d{2}))?)?/)
+  if (ymd) {
+    const year = parseInt(ymd[1], 10)
+    const month = parseInt(ymd[2], 10)
+    const day = parseInt(ymd[3], 10)
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      let hours = ymd[4] ? parseInt(ymd[4], 10) : 0
+      const mins = ymd[5] ? parseInt(ymd[5], 10) : 0
+      const secs = ymd[6] ? parseInt(ymd[6], 10) : 0
+      return new Date(year, month - 1, day, hours, mins, secs).getTime()
+    }
+  }
+
+  const parsed = Date.parse(str)
+  return Number.isNaN(parsed) ? null : parsed
+}
+
 export default function PurchaseIndentsTable({
   indents,
   products,
@@ -192,9 +258,15 @@ export default function PurchaseIndentsTable({
       tableWidth: 140,
       style: { width: 140, minWidth: 140 },
       headerStyle: { width: 140, minWidth: 140 },
-      sortValue: (indent) => indent?.indentDate || '',
-      searchValue: (indent) => `${indent?.indentDate || ''} ${indent?.indentDate ? formatDate(indent.indentDate) : ''}`,
-      render: (indent) => indent?.indentDate ? formatDate(indent.indentDate) : EMPTY_VALUE,
+      sortValue: (indent) => getIndentDateTimestamp(indent),
+      searchValue: (indent) => {
+        const rawDate = getIndentDateValue(indent)
+        return `${rawDate || ''} ${rawDate ? formatDate(rawDate) : ''}`
+      },
+      render: (indent) => {
+        const rawDate = getIndentDateValue(indent)
+        return rawDate ? formatDate(rawDate) : EMPTY_VALUE
+      },
     },
     {
       key: 'quantity',

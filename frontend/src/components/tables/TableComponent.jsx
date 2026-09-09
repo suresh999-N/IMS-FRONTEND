@@ -120,6 +120,15 @@ function parseDateRobust(val) {
   // 2. Match YYYY-MM-DD or YYYY/MM/DD
   const yyyymmddMatch = trimmed.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:[T\s](\d{1,2}):(\d{2})(?::(\d{2}))?)?/)
   if (yyyymmddMatch) {
+    const year = parseInt(yyyymmddMatch[1], 10)
+    const month = parseInt(yyyymmddMatch[2], 10)
+    const day = parseInt(yyyymmddMatch[3], 10)
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      let hours = yyyymmddMatch[4] ? parseInt(yyyymmddMatch[4], 10) : 0
+      const minutes = yyyymmddMatch[5] ? parseInt(yyyymmddMatch[5], 10) : 0
+      const seconds = yyyymmddMatch[6] ? parseInt(yyyymmddMatch[6], 10) : 0
+      return new Date(year, month - 1, day, hours, minutes, seconds).getTime()
+    }
     const parsed = Date.parse(trimmed)
     if (!Number.isNaN(parsed)) return parsed
   }
