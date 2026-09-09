@@ -2186,7 +2186,7 @@ namespace IMSBackend.Controllers
                         document.FileSizeInBytes,
                         document.Status,
                         document.IsTemporary,
-                        document.UploadedAt
+                        UploadedAt = new DateTimeOffset(document.UploadedAt, TimeSpan.Zero)
                     }
                 });
             }
@@ -2294,7 +2294,7 @@ namespace IMSBackend.Controllers
                     FileSizeInBytes = x.FileSizeInBytes,
                     Status = x.Status,
                     IsTemporary = x.IsTemporary,
-                    UploadedAt = x.UploadedAt
+                    UploadedAt = new DateTimeOffset(x.UploadedAt, TimeSpan.Zero)
                 })
                 .ToListAsync();
 

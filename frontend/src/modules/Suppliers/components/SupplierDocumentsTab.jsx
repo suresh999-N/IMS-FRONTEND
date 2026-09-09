@@ -69,7 +69,16 @@ function formatFileSize(size) {
 function formatUploadedAt(value) {
   if (!value) return 'Time unavailable'
 
-  const date = new Date(value)
+  // Ensure the string is treated as UTC.
+  // The backend stores DateTime.UtcNow; if the Z/offset is missing from the
+  // serialized string, browsers interpret it as local time — which causes the
+  // displayed timestamp to be off by the UTC offset (e.g. 5h 30m for IST).
+  let rawValue = String(value)
+  if (!/Z$|[+-]\d{2}:\d{2}$/.test(rawValue)) {
+    rawValue = `${rawValue}Z`
+  }
+
+  const date = new Date(rawValue)
 
   if (Number.isNaN(date.getTime())) {
     return String(value)

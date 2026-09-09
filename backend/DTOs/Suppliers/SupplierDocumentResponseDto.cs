@@ -1,4 +1,4 @@
-﻿namespace IMSBackend.DTOs.Suppliers;
+namespace IMSBackend.DTOs.Suppliers;
 
 public class SupplierDocumentResponseDto
 {
@@ -22,5 +22,5 @@ public class SupplierDocumentResponseDto
 
     public bool IsTemporary { get; set; }
 
-    public DateTime UploadedAt { get; set; }
+    public DateTimeOffset UploadedAt { get; set; }
 }
