@@ -821,9 +821,33 @@ export default function SubCategories() {
       setRows([])
       setError(response.error || 'Unable to load SubCategories.')
     } else {
-      setRows(
-        (response.data ?? []).map((row) => normalizeResourceRow(row, config)),
-      )
+      const rawRows = (response.data ?? []).map((row) => normalizeResourceRow(row, config))
+      const sorted = [...rawRows].sort((a, b) => {
+        const idA = Number(readResourceValue(a, 'id', readResourceValue(a, 'subCategoryId', 0))) || 0
+        const idB = Number(readResourceValue(b, 'id', readResourceValue(b, 'subCategoryId', 0))) || 0
+        if (idA && idB) return idA - idB
+        const dateA = new Date(readResourceValue(a, 'createdAt', 0)).getTime() || 0
+        const dateB = new Date(readResourceValue(b, 'createdAt', 0)).getTime() || 0
+        return dateA - dateB
+      })
+      const idToDisplayMap = new Map()
+      sorted.forEach((item, idx) => {
+        const rawId = String(readResourceValue(item, 'id', readResourceValue(item, 'subCategoryId', '')))
+        if (rawId) {
+          idToDisplayMap.set(rawId, idx + 1)
+        }
+      })
+
+      const mappedRows = sorted.map((row, idx) => {
+        const rawId = String(readResourceValue(row, 'id', readResourceValue(row, 'subCategoryId', '')))
+        const displayId = idToDisplayMap.get(rawId) ?? (idx + 1)
+        return {
+          ...row,
+          displayId,
+        }
+      })
+
+      setRows(mappedRows)
     }
 
     if (categoriesResponse.success) {
@@ -904,9 +928,13 @@ export default function SubCategories() {
       return
     }
 
-    setRows((current) =>
-      current.filter((row) => String(row.id) !== String(deleteTarget.id)),
-    )
+    setRows((current) => {
+      const remaining = current.filter((row) => String(row.id) !== String(deleteTarget.id))
+      return remaining.map((row, idx) => ({
+        ...row,
+        displayId: idx + 1,
+      }))
+    })
     setDeleteTarget(null)
     showToast({
       type: 'success',
@@ -984,10 +1012,11 @@ export default function SubCategories() {
         tableWidth: 80,
         style: { width: 80, minWidth: 80 },
         headerStyle: { width: 80, minWidth: 80 },
-        sortValue: (row) => Number(readResourceValue(row, 'id', readResourceValue(row, 'subCategoryId', 0))) || 0,
-        render: (row) => (
+        sortValue: (row) => Number(row.displayId ?? readResourceValue(row, 'id', readResourceValue(row, 'subCategoryId', 0))) || 0,
+        searchValue: (row) => `ID ${row.displayId ?? readResourceValue(row, 'id', '')} ${row.displayId ?? readResourceValue(row, 'id', '')}`,
+        render: (row, index, sNo) => (
           <span className="subcategories__cell-id">
-            ID {readResourceValue(row, 'id', readResourceValue(row, 'subCategoryId', '—'))}
+            ID {row?.displayId ?? (sNo ?? (index != null ? index + 1 : readResourceValue(row, 'id', '—')))}
           </span>
         ),
       },
@@ -1330,7 +1359,7 @@ export default function SubCategories() {
             icon={Layers}
             status={readResourceValue(viewingSubCategory, 'status', 'Active')}
             fields={[
-              { label: 'SubCategory ID', value: `ID ${readResourceValue(viewingSubCategory, 'id', '—')}` },
+              { label: 'SubCategory ID', value: `ID ${viewingSubCategory.displayId ?? readResourceValue(viewingSubCategory, 'id', '—')}` },
               { label: 'SubCategory Name', value: readResourceValue(viewingSubCategory, 'name', '—') },
               { label: 'Parent Category', value: readResourceValue(viewingSubCategory, 'categoryName', readResourceValue(viewingSubCategory, 'category', '—')) },
               { label: 'Status', render: () => (
