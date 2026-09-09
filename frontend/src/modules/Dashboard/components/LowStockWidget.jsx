@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import SkeletonCard from './SkeletonCard'
 
@@ -41,8 +41,8 @@ export default function LowStockWidget({ items = [], isLoading }) {
                 to={`/inventory/products/${item.productId || item.ProductId || item.id}`}
                 title={item.name}
               >
-                <span className="low-stock-row__icon" aria-hidden="true">
-                  <AlertTriangle size={16} />
+                <span className={`low-stock-row__icon ${isZeroStock ? 'is-critical' : ''}`} aria-hidden="true">
+                  {isZeroStock ? <XCircle size={16} /> : <AlertTriangle size={16} />}
                 </span>
                 <div>
                   <strong title={item.name}>{item.name}</strong>
