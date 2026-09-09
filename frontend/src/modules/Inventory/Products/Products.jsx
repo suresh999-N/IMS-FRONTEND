@@ -1,6 +1,6 @@
 // Products.jsx
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Archive, Package, Pencil, Plus, RotateCcw, Trash2 } from 'lucide-react'
 import { useAuth } from '../../../hooks/useAuth'
 import FormModal from '../../../layouts/FormModal'
@@ -8,6 +8,7 @@ import { showToast } from '../../../components/common/toast'
 import ProductIdentity from '../../../components/ProductIdentity'
 import { apiRequest, getResponseData, getResponseList } from '../../../api/apiClient'
 import { API_ENDPOINTS } from '../../../api/endpoints'
+import { getTopProducts } from '../../../api/businessApi'
 import {
   createFullProduct,
   deleteProduct,
@@ -32,7 +33,7 @@ import './Products.css'
 
 const PRODUCT_CATALOG_UPDATED_EVENT = 'ims:product-catalog-updated'
 
-function ProductsHeader({ canCreate, summary, activeStatusFilter, onFilterStatus, onAdd }) {
+function ProductsHeader({ canCreate, summary, activeStatusFilter, isTopSellingView, onFilterStatus, onAdd }) {
   const metrics = [
     {
       key: 'total',
@@ -40,16 +41,25 @@ function ProductsHeader({ canCreate, summary, activeStatusFilter, onFilterStatus
       label: 'Products',
       value: formatCompactCount(summary.total),
       tone: 'neutral',
-      isActive: activeStatusFilter === 'all',
+      isActive: !isTopSellingView && activeStatusFilter === 'all',
       title: 'Show active products',
     },
+    ...(isTopSellingView || summary.topSelling > 0 ? [{
+      key: 'topSelling',
+      filterValue: 'top-selling',
+      label: 'Top Selling',
+      value: formatCompactCount(summary.topSelling || (isTopSellingView ? summary.total : 0)),
+      tone: 'success',
+      isActive: isTopSellingView,
+      title: 'Filter top-selling products',
+    }] : []),
     {
       key: 'inStock',
       filterValue: 'In Stock',
       label: 'In Stock',
       value: formatCompactCount(summary.inStock),
       tone: 'success',
-      isActive: activeStatusFilter === 'In Stock',
+      isActive: !isTopSellingView && activeStatusFilter === 'In Stock',
       title: 'Filter in-stock inventory products',
     },
     {
@@ -58,7 +68,7 @@ function ProductsHeader({ canCreate, summary, activeStatusFilter, onFilterStatus
       label: 'Low Stock',
       value: formatCompactCount(summary.lowStock),
       tone: 'warning',
-      isActive: activeStatusFilter === 'Low Stock',
+      isActive: !isTopSellingView && activeStatusFilter === 'Low Stock',
       title: 'Filter low-stock products',
     },
     {
@@ -67,7 +77,7 @@ function ProductsHeader({ canCreate, summary, activeStatusFilter, onFilterStatus
       label: 'Out Of Stock',
       value: formatCompactCount(summary.outOfStock),
       tone: 'danger',
-      isActive: activeStatusFilter === 'Out Of Stock',
+      isActive: !isTopSellingView && activeStatusFilter === 'Out Of Stock',
       title: 'Filter out-of-stock products',
     },
     {
@@ -76,7 +86,7 @@ function ProductsHeader({ canCreate, summary, activeStatusFilter, onFilterStatus
       label: 'Archived',
       value: formatCompactCount(summary.archived),
       tone: 'neutral',
-      isActive: activeStatusFilter === 'Archived',
+      isActive: !isTopSellingView && activeStatusFilter === 'Archived',
       title: 'Filter archived products',
     },
   ]
@@ -318,6 +328,32 @@ function isProductArchived(product) {
   return rawStatus === 'archived' || rawStatus === 'discontinued'
 }
 
+function cleanSku(s) {
+  return String(s || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
+}
+
+function isMatchingTopProduct(product, topItem) {
+  if (!product || !topItem) return false
+  const pId = String(getEntityId(product) || product.productId || product.id || product._id || '').trim().toLowerCase()
+  const tId = String(topItem.productId || topItem.id || '').trim().toLowerCase()
+  if (pId && tId && pId === tId) return true
+
+  const pSku = cleanSku(product.sku)
+  const tSku = cleanSku(topItem.sku)
+  if (pSku && tSku && pSku === tSku) return true
+
+  const pName = String(product.name ?? '').trim().toLowerCase()
+  const tName = String(topItem.name ?? '').trim().toLowerCase()
+  if (pName && tName) {
+    if (pName === tName || pName.startsWith(tName) || tName.startsWith(pName)) return true
+    if (pName.length >= 10 && tName.length >= 10) {
+      if (pName.slice(0, 15) === tName.slice(0, 15)) return true
+    }
+  }
+
+  return false
+}
+
 function getOptionList(records, key) {
   return uniqueValues(records.map((record) => normalizeFilterValue(record?.[key])))
     .sort((first, second) => first.localeCompare(second))
@@ -467,6 +503,7 @@ export default function Products({
 }) {
   const { hasPermission } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const { productId } = useParams()
   const [searchParams] = useSearchParams()
 
@@ -500,6 +537,33 @@ export default function Products({
   const canDelete = hasPermission('products', 'delete')
   const filterParam = searchParams.get('filter') || searchParams.get('status')
   const isLowStockView = Boolean(filterParam && /low[-_]?stock/i.test(filterParam))
+  const isTopSellingView = Boolean(filterParam && /top[-_]?(selling|products)?/i.test(filterParam))
+
+  const [topProducts, setTopProducts] = useState(() => (Array.isArray(location.state?.topProducts) ? location.state.topProducts : []))
+
+  useEffect(() => {
+    if (Array.isArray(location.state?.topProducts) && location.state.topProducts.length > 0) {
+      setTopProducts(location.state.topProducts)
+    }
+  }, [location.state?.topProducts])
+
+  useEffect(() => {
+    if (!isTopSellingView) return
+    if (topProducts.length > 0) return
+
+    let isMounted = true
+    getTopProducts()
+      .then((res) => {
+        if (isMounted && res?.success && Array.isArray(res?.data) && res.data.length > 0) {
+          setTopProducts(res.data)
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      isMounted = false
+    }
+  }, [isTopSellingView, topProducts.length])
 
   useEffect(() => {
     if (!filterParam) return
@@ -513,6 +577,8 @@ export default function Products({
       setFilters((current) => ({ ...current, status: 'Active' }))
     } else if (normalized === 'archived') {
       setFilters((current) => ({ ...current, status: 'Archived' }))
+    } else if (normalized === 'topselling' || normalized === 'topproducts') {
+      setFilters((current) => ({ ...current, status: 'all' }))
     }
   }, [filterParam])
 
@@ -1006,6 +1072,64 @@ export default function Products({
   }
 
   const filteredProducts = useMemo(() => {
+    if (isTopSellingView) {
+      if (topProducts.length === 0) {
+        return []
+      }
+
+      const matched = []
+      const matchedKeys = new Set()
+
+      topProducts.forEach((topItem) => {
+        const found = products.find((p) => isMatchingTopProduct(p, topItem))
+        if (found) {
+          const key = String(getEntityId(found) || found.productId || found.id || found.sku || found.name)
+          if (!matchedKeys.has(key)) {
+            matchedKeys.add(key)
+            matched.push(found)
+          }
+        } else if (!isLoading && products.length > 0) {
+          const key = String(topItem.productId || topItem.id || topItem.sku || topItem.name)
+          if (!matchedKeys.has(key)) {
+            matchedKeys.add(key)
+            matched.push({
+              id: topItem.productId || topItem.id,
+              productId: topItem.productId || topItem.id,
+              name: topItem.name,
+              sku: topItem.sku,
+              category: 'Garden Tools',
+              stock: 0,
+              price: topItem.revenue && topItem.totalSold ? Math.round((topItem.revenue / topItem.totalSold) * 100) / 100 : 0,
+              costPrice: 0,
+              status: 'Active',
+            })
+          }
+        }
+      })
+
+      return matched.filter((p) => {
+        if (filters.category !== 'all' && normalizeFilterValue(p.category) !== filters.category) return false
+        if (filters.brand !== 'all' && normalizeFilterValue(p.brand) !== filters.brand) return false
+        if (filters.status !== 'all') {
+          const isArchived = isProductArchived(p)
+          if (filters.status === 'Archived') {
+            if (!isArchived) return false
+          } else {
+            if (isArchived) return false
+            const displayStatus = getProductDisplayStatus(p)
+            if (filters.status === 'Low Stock') {
+              if (!isProductLowStock(p)) return false
+            } else if (filters.status === 'Out Of Stock') {
+              if (!isProductOutOfStock(p)) return false
+            } else if (displayStatus !== filters.status) {
+              return false
+            }
+          }
+        }
+        return true
+      })
+    }
+
     return products.filter((p) => {
       const isArchived = isProductArchived(p)
 
@@ -1033,7 +1157,7 @@ export default function Products({
 
       return true
     })
-  }, [products, filters, isLowStockView])
+  }, [products, filters, isLowStockView, isTopSellingView, topProducts, isLoading])
 
   const filterOptions = useMemo(() => ({
     categories: getOptionList(categories, 'name'),
@@ -1051,6 +1175,19 @@ export default function Products({
   function handleMetricFilterClick(targetStatus) {
     if (searchParams.get('filter')) {
       navigate('/inventory/products', { replace: true })
+    }
+
+    if (targetStatus === 'top-selling') {
+      if (isTopSellingView) {
+        navigate('/inventory/products', { replace: true })
+      } else {
+        navigate('/inventory/products?filter=top-selling', { replace: true })
+      }
+      setFilters((currentValue) => ({
+        ...currentValue,
+        status: 'all',
+      }))
+      return
     }
 
     if (targetStatus === 'all') {
@@ -1082,10 +1219,11 @@ export default function Products({
       lowStock: activeInventoryProducts.filter(isProductLowStock).length,
       outOfStock: activeInventoryProducts.filter(isProductOutOfStock).length,
       inStock: activeInventoryProducts.filter((product) => getProductDisplayStatus(product) === 'In Stock').length,
+      topSelling: topProducts.length,
       inventoryValue: value,
       inventoryValueLabel: formatCompactInventoryValue(value),
     }
-  }, [products])
+  }, [products, topProducts.length])
 
   return (
     <div className="page resource-center">
@@ -1094,6 +1232,7 @@ export default function Products({
           canCreate={canCreate}
           summary={productSummary}
           activeStatusFilter={filters.status}
+          isTopSellingView={isTopSellingView}
           onFilterStatus={handleMetricFilterClick}
           onAdd={handleOpenCreate}
         />
@@ -1132,13 +1271,15 @@ export default function Products({
             ? 'Loading products...'
             : errorMessage
               ? 'Products could not be loaded. Check the API connection and try again.'
-              : isLowStockView
-                ? 'No low-stock products found.'
-                : filters.status === 'Archived'
-                  ? 'No archived products found.'
-                  : filters.status === 'In Stock'
-                    ? 'No in-stock products available.'
-                    : 'No products available.'
+              : isTopSellingView
+                ? 'No top-selling products found.'
+                : isLowStockView
+                  ? 'No low-stock products found.'
+                  : filters.status === 'Archived'
+                    ? 'No archived products found.'
+                    : filters.status === 'In Stock'
+                      ? 'No in-stock products available.'
+                      : 'No products available.'
         }
         loading={isLoading}
       />

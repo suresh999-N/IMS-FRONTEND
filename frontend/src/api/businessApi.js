@@ -819,6 +819,23 @@ export async function getDashboardData() {
   return normalizeDashboardPayload(responses)
 }
 
+export async function getTopProducts() {
+  const response = await apiRequest(API_ENDPOINTS.dashboard.topProducts)
+  if (!response.success) return response
+  return {
+    ...response,
+    data: getResponseList(response).map((item) => ({
+      ...item,
+      id: idOf(item, ['productId', 'ProductId', 'id']),
+      productId: idOf(item, ['productId', 'ProductId', 'id']),
+      name: text(item?.name ?? item?.Name),
+      sku: text(item?.sku ?? item?.SKU),
+      totalSold: number(item?.totalSold ?? item?.TotalSold),
+      revenue: number(item?.revenue ?? item?.Revenue),
+    })),
+  }
+}
+
 export async function getCustomerPayments() {
   const response = await apiRequest(API_ENDPOINTS.customerPayments.list)
   return response.success ? { ...response, data: getResponseList(response).map((item) => normalizePayment(item, 'customer')) } : response

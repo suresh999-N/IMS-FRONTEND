@@ -13,7 +13,13 @@ export default function TopProductsList({ products = [] }) {
         <div>
           <h2>Top Products</h2>
         </div>
-        <Link className="dashboard-panel__link" to="/inventory/products">View all</Link>
+        <Link
+          className="dashboard-panel__link"
+          to="/inventory/products?filter=top-selling"
+          state={{ topProducts }}
+        >
+          View all
+        </Link>
       </div>
 
       {topProducts.length > 0 ? (
