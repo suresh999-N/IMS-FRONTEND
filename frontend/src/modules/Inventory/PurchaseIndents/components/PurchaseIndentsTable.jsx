@@ -1,7 +1,7 @@
 import { Ban, Check, Download, Eye, Mail, Pencil, Printer, RefreshCw, ShoppingCart, Trash2 } from 'lucide-react'
 import { useMemo } from 'react'
 import { ActionMenu, DataTable, FilterBar, StatusBadge } from '../../../../components/erp'
-import { formatDate } from '../../../../utils/helpers'
+import { formatDate, formatIndentNumber } from '../../../../utils/helpers'
 
 const EMPTY_VALUE = 'Not Available'
 const NOT_ASSIGNED = 'Not Assigned'
@@ -9,7 +9,7 @@ const DEFAULT_STATUS = 'Pending'
 const DEFAULT_PRIORITY = 'Medium'
 
 function getIndentNumber(indent) {
-  return indent?.indentNumber || indent?.indentNo || indent?.purchaseIndentId || indent?.indentId || indent?.id || EMPTY_VALUE
+  return formatIndentNumber(indent)
 }
 
 function getStatusKind(status) {

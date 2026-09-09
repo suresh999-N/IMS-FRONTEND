@@ -43,25 +43,99 @@ function SupplierDetailsOverview({ supplier = {}, purchases = [], payments = [] 
   const primaryContact = Array.isArray(currentSupplier.contacts)
     ? currentSupplier.contacts.find((contact) => contact?.isPrimary) || currentSupplier.contacts[0]
     : null
-  const primaryBank = Array.isArray(currentSupplier.bankAccounts) ? currentSupplier.bankAccounts[0] : null
+  const primaryBank = useMemo(() => {
+    if (Array.isArray(currentSupplier.bankAccounts) && currentSupplier.bankAccounts.length > 0) {
+      return currentSupplier.bankAccounts.find((acc) => acc?.isPrimary) || currentSupplier.bankAccounts[0]
+    }
+    if (Array.isArray(currentSupplier.bankDetails) && currentSupplier.bankDetails.length > 0) {
+      return currentSupplier.bankDetails.find((acc) => acc?.isPrimary) || currentSupplier.bankDetails[0]
+    }
+    if (currentSupplier.bankDetails && typeof currentSupplier.bankDetails === 'object') {
+      return currentSupplier.bankDetails
+    }
+    if (currentSupplier.bankName || currentSupplier.accountNumber || currentSupplier.ifscCode || currentSupplier.accountName) {
+      return {
+        bankName: currentSupplier.bankName || currentSupplier.bank || '',
+        accountNumber: currentSupplier.accountNumber || currentSupplier.bankAccountNumber || '',
+        accountName: currentSupplier.accountName || '',
+        ifscCode: currentSupplier.ifscCode || currentSupplier.ifsc || '',
+        branch: currentSupplier.branch || currentSupplier.bankBranch || '',
+        upiId: currentSupplier.upiId || '',
+      }
+    }
+    return null
+  }, [currentSupplier])
+
   const paymentTerms = currentSupplier.paymentTerm || currentSupplier.paymentTermsProfile || {}
 
+  const bankSummary = useMemo(() => {
+    const bankName = String(primaryBank?.bankName ?? '').trim()
+    const accountNumber = String(primaryBank?.accountNumber ?? '').trim()
+    const accountName = String(primaryBank?.accountName ?? '').trim()
+    const ifscCode = String(primaryBank?.ifscCode ?? '').trim().toUpperCase()
+    const branch = String(primaryBank?.branch ?? '').trim()
+    const upiId = String(primaryBank?.upiId ?? '').trim()
+
+    const rawPaymentMethod = paymentTerms.preferredPaymentMethod || currentSupplier.preferredPaymentMethod || currentSupplier.paymentMethod || ''
+    const formattedPaymentMethod = formatPaymentMethod(rawPaymentMethod)
+
+    const hasAccountDetails = Boolean(bankName || accountNumber || ifscCode || accountName || upiId)
+
+    if (hasAccountDetails) {
+      let value = ''
+      if (bankName && accountNumber) {
+        value = `${bankName} • A/C ${accountNumber}`
+      } else if (bankName) {
+        value = bankName
+      } else if (accountNumber) {
+        value = `A/C ${accountNumber}`
+      } else if (upiId) {
+        value = `UPI: ${upiId}`
+      } else if (accountName) {
+        value = accountName
+      } else if (ifscCode) {
+        value = `IFSC: ${ifscCode}`
+      }
+
+      const helperParts = []
+      if (accountName && value !== accountName) {
+        helperParts.push(`A/C Name: ${accountName}`)
+      }
+      if (ifscCode && !value.includes(ifscCode)) {
+        helperParts.push(`IFSC: ${ifscCode}`)
+      }
+      if (branch && !value.includes(branch)) {
+        helperParts.push(`Branch: ${branch}`)
+      }
+      if (formattedPaymentMethod && helperParts.length === 0) {
+        helperParts.push(formattedPaymentMethod)
+      }
+
+      return {
+        value,
+        helper: helperParts.join(' • ') || formattedPaymentMethod || 'Bank Account',
+      }
+    }
+
+    if (formattedPaymentMethod) {
+      return {
+        value: formattedPaymentMethod,
+        helper: 'Account details not provided',
+      }
+    }
+
+    return {
+      value: 'Not provided',
+      helper: 'No bank details or payment method',
+    }
+  }, [primaryBank, paymentTerms, currentSupplier])
+
   const computedTotalPurchases = useMemo(() => {
-    if (!currentSupplier) return 0
-    const rawTotal = currentSupplier.totalPurchaseAmount ?? currentSupplier.purchases ?? currentSupplier.totalPurchases ?? currentSupplier.totalAmount ?? currentSupplier.purchaseAmount
-    if (rawTotal != null && !isNaN(Number(rawTotal)) && Number(rawTotal) > 0) {
-      return Number(rawTotal)
-    }
-    if (Array.isArray(purchases) && purchases.length > 0) {
-      return purchases.reduce((sum, p) => sum + (Number(p?.totalAmount ?? p?.TotalAmount ?? p?.amount ?? p?.grandTotal ?? 0) || 0), 0)
-    }
-    return Number(rawTotal) || 0
+    if (!currentSupplier || !Array.isArray(purchases) || purchases.length === 0) return 0
+    return purchases.reduce((sum, p) => sum + (Number(p?.totalAmount ?? p?.TotalAmount ?? p?.amount ?? p?.grandTotal ?? 0) || 0), 0)
   }, [purchases, currentSupplier])
 
   const computedLastPurchaseDate = useMemo(() => {
-    if (currentSupplier.lastPurchaseDate) {
-      return currentSupplier.lastPurchaseDate
-    }
     if (Array.isArray(purchases) && purchases.length > 0) {
       const dates = purchases
         .map((p) => p?.orderDate || p?.createdAt || p?.createdDate || p?.date)
@@ -70,15 +144,20 @@ function SupplierDetailsOverview({ supplier = {}, purchases = [], payments = [] 
       if (dates.length > 0) return dates[0]
     }
     return null
-  }, [purchases, currentSupplier])
+  }, [purchases])
 
   const computedOutstandingPayable = useMemo(() => {
+    if (!currentSupplier || !Array.isArray(purchases) || purchases.length === 0) return 0
     const rawOutstanding = currentSupplier.outstandingPayable ?? currentSupplier.outstandingAmount ?? currentSupplier.outstandingBalance ?? currentSupplier.balanceAmount ?? currentSupplier.outstanding ?? currentSupplier.balance
-    if (rawOutstanding != null && !isNaN(Number(rawOutstanding))) {
+    if (rawOutstanding != null && !isNaN(Number(rawOutstanding)) && Number(rawOutstanding) > 0) {
       return Number(rawOutstanding)
     }
-    return 0
-  }, [currentSupplier])
+    const totalPurchases = purchases.reduce((sum, p) => sum + (Number(p?.totalAmount ?? p?.TotalAmount ?? p?.amount ?? p?.grandTotal ?? 0) || 0), 0)
+    const totalPaid = Array.isArray(payments) && payments.length > 0
+      ? payments.reduce((sum, pay) => sum + (Number(pay?.amount ?? pay?.Amount ?? pay?.paidAmount ?? 0) || 0), 0)
+      : purchases.reduce((sum, p) => sum + (Number(p?.paidAmount ?? p?.PaidAmount ?? p?.totalPaid ?? 0) || 0), 0)
+    return Math.max(0, totalPurchases - totalPaid)
+  }, [purchases, payments, currentSupplier])
 
   return (
     <div className="supplier-details__overview">
@@ -94,12 +173,12 @@ function SupplierDetailsOverview({ supplier = {}, purchases = [], payments = [] 
       </div>
 
       <div className="supplier-detail-grid">
-        <DetailCard icon={CreditCard} label="Outstanding Payable" value={formatNullableCurrency(formatCurrency, computedOutstandingPayable)} helper="API-reported open payable" />
+        <DetailCard icon={CreditCard} label="Outstanding Payable" value={formatNullableCurrency(formatCurrency, computedOutstandingPayable)} helper={Array.isArray(purchases) && purchases.length > 0 ? "API-reported open payable" : "No open payables"} />
         <DetailCard icon={Truck} label="Total Purchases" value={formatNullableCurrency(formatCurrency, computedTotalPurchases)} helper={`${Array.isArray(purchases) ? purchases.length : 0} purchase order records`} />
         <DetailCard icon={Building2} label="Last Purchase" value={formatLastPurchase(computedLastPurchaseDate, formatDate)} helper={formatCategory(currentSupplier.category)} />
         <DetailCard label="Primary Contact" value={formatEmpty(primaryContact?.name || currentSupplier.contact)} helper={formatEmpty(primaryContact?.phone || currentSupplier.phone)} />
         <DetailCard icon={Mail} label="Email" value={formatEmpty(currentSupplier.email || primaryContact?.email)} helper="Supplier communication" />
-        <DetailCard icon={Landmark} label="Bank Summary" value={formatEmpty(primaryBank?.bankName)} helper={formatEmpty(primaryBank?.accountName || formatPaymentMethod(paymentTerms.preferredPaymentMethod))} />
+        <DetailCard icon={Landmark} label="Bank Summary" value={bankSummary.value} helper={bankSummary.helper} />
       </div>
 
       <div className="card supplier-details__terms">

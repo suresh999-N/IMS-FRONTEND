@@ -246,25 +246,62 @@ export default function SupplierDocumentsTab({
   }
 
   async function handleUpload(type, file) {
-    // Always remember the selected file first so the filename can be shown
-    // in the error state — even if the upload can't proceed (e.g. no supplierId yet).
+    // Always remember the selected file first so the filename can be shown in errors or state.
     setLastUploadByType((currentValue) => ({ ...currentValue, [type]: file }))
-
-    if (!supplierId) {
-      setErrorByType((currentValue) => ({ ...currentValue, [type]: 'Save the supplier before uploading documents.' }))
-      return
-    }
 
     setErrorByType((currentValue) => {
       const nextValue = { ...currentValue }
       delete nextValue[type]
       return nextValue
     })
+
+    if (!supplierId) {
+      const normalizedType = normalizeSupplierDocumentType(type)
+      const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`
+      const stagedDocument = {
+        id: tempId,
+        supplierDocumentId: tempId,
+        documentId: tempId,
+        documentType: normalizedType,
+        type: normalizedType,
+        fileName: file.name,
+        originalFileName: file.name,
+        displayName: file.name,
+        fileSize: file.size,
+        size: file.size,
+        uploadedAt: new Date().toISOString(),
+        status: 'Staged for upload',
+        isTemporary: true,
+        file,
+      }
+
+      setDocumentList((currentList) => {
+        let nextList
+        if (SUPPLIER_SINGLE_DOCUMENT_TYPES.includes(normalizedType)) {
+          nextList = [
+            ...currentList.filter((doc) => getDocumentType(doc) !== normalizedType),
+            stagedDocument,
+          ]
+        } else {
+          nextList = [...currentList, stagedDocument]
+        }
+        onDocumentsChange?.(nextList)
+        return nextList
+      })
+
+      showToast({
+        type: 'success',
+        title: 'Supplier Documents',
+        message: `${getSupplierDocumentTypeLabel(type)} attached. Save supplier to finalize upload.`,
+      })
+      clearInput(type)
+      return
+    }
+
     setUploadStateByType((currentValue) => ({
       ...currentValue,
       [type]: { isUploading: true, progress: 3, fileName: file.name },
     }))
-
 
     try {
       const response = await uploadSupplierDocument(supplierId, {
@@ -330,6 +367,17 @@ export default function SupplierDocumentsTab({
     const documentId = getDocumentId(document)
     if (!documentId) return
 
+    if (document?.file instanceof File || document?.file instanceof Blob) {
+      if (!previewBlob(document.file)) {
+        showToast({
+          type: 'warning',
+          title: 'Supplier Documents',
+          message: 'Preview was blocked by the browser. Use Download to open the file.',
+        })
+      }
+      return
+    }
+
     setPreviewingId(documentId)
 
     try {
@@ -361,6 +409,11 @@ export default function SupplierDocumentsTab({
     const documentId = getDocumentId(document)
     if (!documentId) return
 
+    if (document?.file instanceof File || document?.file instanceof Blob) {
+      saveBlob(document.file, getDocumentFileName(document))
+      return
+    }
+
     setDownloadingId(documentId)
 
     try {
@@ -385,6 +438,20 @@ export default function SupplierDocumentsTab({
   async function handleDelete(document) {
     const documentId = getDocumentId(document)
     if (!documentId) return
+
+    const isStagedOrTemp = Boolean(document?.file instanceof File || document?.isTemporary || String(documentId).startsWith('temp-') || !supplierId)
+
+    if (isStagedOrTemp) {
+      const nextDocuments = documentList.filter((item) => getDocumentId(item) !== documentId)
+      setDocumentList(nextDocuments)
+      onDocumentsChange?.(nextDocuments)
+      showToast({
+        type: 'success',
+        title: 'Supplier Documents',
+        message: 'Document removed.',
+      })
+      return
+    }
 
     const previousDocuments = documentList
     const nextDocuments = documentList.filter((item) => getDocumentId(item) !== documentId)

@@ -26,7 +26,7 @@ import { getSuppliers } from '../../../api/suppliersApi'
 import { showToast } from '../../../components/common/toast'
 import FormModal from '../../../layouts/FormModal'
 import { useAuth } from '../../../hooks/useAuth'
-import { formatDate } from '../../../utils/helpers'
+import { formatDate, formatIndentNumber } from '../../../utils/helpers'
 import { getLocalTodayDate } from '../../../utils/dateUtils'
 import {
   emailInputProps,
@@ -70,7 +70,7 @@ function getIndentId(indent) {
 }
 
 function getIndentNumber(indent) {
-  return indent?.indentNumber || indent?.indentNo || indent?.indentId || indent?.purchaseIndentId || indent?.id || EMPTY_VALUE
+  return formatIndentNumber(indent)
 }
 
 function getResponseListData(data) {

@@ -152,7 +152,7 @@ function buildInitialDraft(initialIndentNo) {
   const today = getToday()
   return {
     vendorId: '',
-    indentNo: initialIndentNo || `IND-${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(Math.floor(1000 + Math.random() * 9000))}`,
+    indentNo: initialIndentNo || generateIndentNumber([]),
     indentDate: today,
     expectedDeliveryDate: today, // Required Date
     requestedBy: '',

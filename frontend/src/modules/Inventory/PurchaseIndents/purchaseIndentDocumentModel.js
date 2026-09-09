@@ -1,3 +1,5 @@
+import { formatIndentNumber } from '../../../utils/helpers'
+
 function getPathValue(source, path) {
   return String(path)
     .split('.')
@@ -422,14 +424,16 @@ export function buildPurchaseIndentDocumentModel(indent = {}, options = {}) {
 
   return {
     id: getIndentId(indent),
-    indentNumber: textValue(indent, [
-      'indentNumber',
-      'IndentNumber',
-      'indentNo',
-      'IndentNo',
-      'purchaseIndentNumber',
-      'PurchaseIndentNumber',
-    ], String(getIndentId(indent) || '')),
+    indentNumber: formatIndentNumber(
+      textValue(indent, [
+        'indentNumber',
+        'IndentNumber',
+        'indentNo',
+        'IndentNo',
+        'purchaseIndentNumber',
+        'PurchaseIndentNumber',
+      ], String(getIndentId(indent) || ''))
+    ),
     indentDate: firstValue(indent, [
       'indentDate',
       'IndentDate',

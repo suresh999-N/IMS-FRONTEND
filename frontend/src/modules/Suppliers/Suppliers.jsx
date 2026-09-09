@@ -711,41 +711,61 @@ export default function Suppliers({
 
       const isOfflineError = !response.success && (response.status === 0 || /connect|network|offline|failed to fetch/i.test(response.error || response.message || ''))
 
-      if (response.success || isOfflineError) {
-        const updatedSupplierProfile = response.data
-          ? buildSupplierProfile(response.data)
-          : buildSupplierProfile({
-              ...(editingSupplier || {}),
-              ...values,
-              id: targetId || `SUP-${Date.now()}`,
-              supplierId: targetId || `SUP-${Date.now()}`,
-            })
+        if (response.success || isOfflineError) {
+          const savedSupplierId = response.data?.id || response.data?.supplierId || targetId
+          const stagedFiles = (Array.isArray(values?.documents) ? values.documents : []).filter(
+            (doc) => doc?.file instanceof File || doc?.file instanceof Blob
+          )
 
-        setSuppliers((currentValue) => {
-          if (targetId) {
-            return currentValue.map((sup) => {
-              const currentId = String(sup.id || sup.supplierId || '')
-              return currentId === String(targetId) ? { ...sup, ...updatedSupplierProfile } : sup
-            })
+          if (stagedFiles.length > 0 && savedSupplierId) {
+            try {
+              await Promise.all(
+                stagedFiles.map((doc) =>
+                  uploadSupplierDocument(savedSupplierId, {
+                    documentType: doc.documentType || doc.type,
+                    file: doc.file,
+                  })
+                )
+              )
+            } catch (uploadErr) {
+              console.error('[Supplier Save] Staged document upload failed:', uploadErr)
+            }
           }
-          return [updatedSupplierProfile, ...currentValue]
-        })
 
-        const result = {
-          success: true,
-          message: targetId
-            ? 'Supplier updated successfully.'
-            : 'Supplier added successfully.',
-        }
+          const updatedSupplierProfile = response.data
+            ? buildSupplierProfile(response.data)
+            : buildSupplierProfile({
+                ...(editingSupplier || {}),
+                ...values,
+                id: targetId || `SUP-${Date.now()}`,
+                supplierId: targetId || `SUP-${Date.now()}`,
+              })
 
-        notify(result)
-        setEditingSupplier(null)
-        setIsFormOpen(false)
+          setSuppliers((currentValue) => {
+            if (targetId) {
+              return currentValue.map((sup) => {
+                const currentId = String(sup.id || sup.supplierId || '')
+                return currentId === String(targetId) ? { ...sup, ...updatedSupplierProfile } : sup
+              })
+            }
+            return [updatedSupplierProfile, ...currentValue]
+          })
 
-        if (response.success) {
-          loadSuppliers()
-        }
-      } else {
+          const result = {
+            success: true,
+            message: targetId
+              ? 'Supplier updated successfully.'
+              : 'Supplier added successfully.',
+          }
+
+          notify(result)
+          setEditingSupplier(null)
+          setIsFormOpen(false)
+
+          if (response.success) {
+            loadSuppliers()
+          }
+        } else {
         const result = {
           success: false,
           message: getSupplierApiError(response, 'Supplier save failed.'),

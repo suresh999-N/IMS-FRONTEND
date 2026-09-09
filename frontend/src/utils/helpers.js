@@ -739,3 +739,73 @@ export function settledResponse(result, fallbackMessage) {
 
   return rejectedResponse(fallbackMessage)
 }
+
+export function formatIndentNumber(rawIndent, rawDate) {
+  const indentObj = typeof rawIndent === 'object' && rawIndent !== null ? rawIndent : null
+  const str = String(
+    indentObj?.indentNumber ||
+    indentObj?.indentNo ||
+    indentObj?.indentId ||
+    indentObj?.purchaseIndentId ||
+    (typeof rawIndent === 'string' || typeof rawIndent === 'number' ? rawIndent : '')
+  ).trim()
+
+  const fallbackDateStr = indentObj?.indentDate || indentObj?.createdAt || indentObj?.date || rawDate
+  let datePart = ''
+
+  if (fallbackDateStr) {
+    const d = new Date(fallbackDateStr)
+    if (!isNaN(d.getTime())) {
+      const yyyy = d.getFullYear()
+      const mm = String(d.getMonth() + 1).padStart(2, '0')
+      const dd = String(d.getDate()).padStart(2, '0')
+      datePart = `${yyyy}${mm}${dd}`
+    }
+  }
+
+  if (!datePart) {
+    const today = new Date()
+    const yyyy = today.getFullYear()
+    const mm = String(today.getMonth() + 1).padStart(2, '0')
+    const dd = String(today.getDate()).padStart(2, '0')
+    datePart = `${yyyy}${mm}${dd}`
+  }
+
+  if (!str || str === 'Not Available' || str === 'Not Provided' || str === 'EMPTY_VALUE') {
+    return `IND-${datePart}-001`
+  }
+
+  const stdMatch = str.match(/^IND-(\d{8})-(\d+)$/i)
+  if (stdMatch) {
+    const dateStr = stdMatch[1]
+    const seqNum = String(stdMatch[2]).padStart(3, '0')
+    return `IND-${dateStr}-${seqNum}`
+  }
+
+  const dashDateMatch = str.match(/^IND-(\d{4})-(\d{2})-(\d{2})-(\d+)$/i)
+  if (dashDateMatch) {
+    const dateStr = `${dashDateMatch[1]}${dashDateMatch[2]}${dashDateMatch[3]}`
+    const seqNum = String(dashDateMatch[4]).padStart(3, '0')
+    return `IND-${dateStr}-${seqNum}`
+  }
+
+  const dashYearMonthMatch = str.match(/^IND-(\d{4})-(\d{2})-(\d+)$/i)
+  if (dashYearMonthMatch) {
+    const dateStr = `${dashYearMonthMatch[1]}${dashYearMonthMatch[2]}01`
+    const seqNum = String(dashYearMonthMatch[3]).padStart(3, '0')
+    return `IND-${dateStr}-${seqNum}`
+  }
+
+  const shortSeqMatch = str.match(/^(?:IND|PI)-(\d+)$/i)
+  if (shortSeqMatch) {
+    const seqNum = String(shortSeqMatch[1]).padStart(3, '0')
+    return `IND-${datePart}-${seqNum}`
+  }
+
+  if (/^\d+$/.test(str)) {
+    const seqNum = str.padStart(3, '0')
+    return `IND-${datePart}-${seqNum}`
+  }
+
+  return str.toUpperCase()
+}

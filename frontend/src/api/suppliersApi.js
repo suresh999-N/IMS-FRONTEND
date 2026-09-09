@@ -90,7 +90,7 @@ function normalizePaymentTerm(supplier) {
 
 function normalizeBankAccounts(bankAccounts) {
   return Array.isArray(bankAccounts)
-    ? bankAccounts.map((account) => ({
+    ? bankAccounts.map((account, index) => ({
         id: readValue(account, 'id', 'bankId', 'BankId'),
         accountName: readValue(account, 'accountName', 'AccountName') || '',
         accountNumber: readValue(account, 'accountNumber', 'AccountNumber') || '',
@@ -100,6 +100,7 @@ function normalizeBankAccounts(bankAccounts) {
         bankState: readValue(account, 'bankState', 'BankState') || '',
         bankCity: readValue(account, 'bankCity', 'BankCity') || '',
         upiId: readValue(account, 'upiId', 'UpiId') || '',
+        isPrimary: Boolean(readValue(account, 'isPrimary', 'IsPrimary')) || index === 0,
       }))
     : []
 }
