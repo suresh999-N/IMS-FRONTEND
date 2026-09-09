@@ -246,12 +246,15 @@ export default function SupplierDocumentsTab({
   }
 
   async function handleUpload(type, file) {
+    // Always remember the selected file first so the filename can be shown
+    // in the error state — even if the upload can't proceed (e.g. no supplierId yet).
+    setLastUploadByType((currentValue) => ({ ...currentValue, [type]: file }))
+
     if (!supplierId) {
       setErrorByType((currentValue) => ({ ...currentValue, [type]: 'Save the supplier before uploading documents.' }))
       return
     }
 
-    setLastUploadByType((currentValue) => ({ ...currentValue, [type]: file }))
     setErrorByType((currentValue) => {
       const nextValue = { ...currentValue }
       delete nextValue[type]
@@ -261,6 +264,7 @@ export default function SupplierDocumentsTab({
       ...currentValue,
       [type]: { isUploading: true, progress: 3, fileName: file.name },
     }))
+
 
     try {
       const response = await uploadSupplierDocument(supplierId, {
@@ -519,16 +523,23 @@ export default function SupplierDocumentsTab({
     }
 
     if (error) {
+      const selectedFile = lastUploadByType[type]
       return (
         <div className="supplier-doc-state supplier-doc-state--error">
           <strong>Upload needs attention</strong>
+          {selectedFile ? (
+            <p className="supplier-doc-selected-filename" title={selectedFile.name}>
+              <FileText size={13} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
+              {selectedFile.name}
+            </p>
+          ) : null}
           <p>{error}</p>
           <div className="supplier-doc-state-actions">
-            {lastUploadByType[type] ? renderActionButton({
+            {selectedFile ? renderActionButton({
               kind: 'primary',
               icon: <RotateCcw size={15} />,
               label: 'Retry',
-              onClick: () => requestUpload(type, lastUploadByType[type]),
+              onClick: () => requestUpload(type, selectedFile),
             }) : null}
             {!readOnly ? renderActionButton({
               kind: 'neutral',
