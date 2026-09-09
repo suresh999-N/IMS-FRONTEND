@@ -2,7 +2,7 @@ import { ArrowLeft, Building2, CreditCard, Landmark, Mail, Phone, Truck } from '
 import { useMemo, useState, useEffect } from 'react'
 import { StatusBadge } from '../../../components/erp'
 import { getPurchaseOrders } from '../../../api/businessApi'
-import { formatCurrency, formatDate } from '../../../utils/helpers'
+import { formatCreditLimit, formatCurrency, formatDate } from '../../../utils/helpers'
 import {
   formatEmpty,
   formatCategory,
@@ -107,6 +107,14 @@ function SupplierDetailsOverview({ supplier = {}, purchases = [], payments = [] 
         <div>
           <span>Credit Days</span>
           <strong>{formatEmpty(paymentTerms.creditDays)}</strong>
+        </div>
+        <div>
+          <span>Credit Limit</span>
+          <strong>
+            {paymentTerms.creditLimit !== undefined && paymentTerms.creditLimit !== null && paymentTerms.creditLimit !== ''
+              ? formatCreditLimit(paymentTerms.creditLimit, paymentTerms.currency || currentSupplier.currency || 'INR')
+              : '-'}
+          </strong>
         </div>
         <div>
           <span>Preferred Method</span>

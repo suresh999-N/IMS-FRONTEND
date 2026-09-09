@@ -16,7 +16,7 @@ import {
 import { useState } from 'react'
 import StateBlock from '../../../components/common/StateBlock'
 import { DataTable } from '../../../components/erp'
-import { formatCurrency } from '../../../utils/helpers'
+import { formatCreditLimit, formatCurrency } from '../../../utils/helpers'
 import CustomerDetailCard from './CustomerDetailCard'
 import StatusBadge from './StatusBadge'
 
@@ -278,6 +278,14 @@ export default function CustomerDetailsPanel({
                       <div>
                         <dt>Tax profile</dt>
                         <dd>{customer.gstNumber || 'Not provided'}</dd>
+                      </div>
+                      <div>
+                        <dt>Credit limit</dt>
+                        <dd>
+                          {customer.creditLimit !== undefined && customer.creditLimit !== null && customer.creditLimit !== ''
+                            ? formatCreditLimit(customer.creditLimit, 'INR')
+                            : 'Not set'}
+                        </dd>
                       </div>
                       <div>
                         <dt>Account Number</dt>

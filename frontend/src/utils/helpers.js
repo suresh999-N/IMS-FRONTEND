@@ -1,4 +1,4 @@
-import { formatINR } from './currency'
+import { formatCreditLimit, formatINR } from './currency'
 import {
   getEmailError as getSharedEmailError,
   isValidEmail,
@@ -289,7 +289,7 @@ export function formatCurrency(value) {
   return formatINR(value)
 }
 
-export { formatINR }
+export { formatCreditLimit, formatINR }
 
 export function formatDate(value) {
   return formatDateForDisplay(value)

@@ -39,7 +39,7 @@ import ResponsiveChart from '../../components/charts/ResponsiveChart'
 import DatePicker from '../../components/DatePicker'
 import { DataTable, ExportMenu, StatisticsCard, StatusBadge } from '../../components/erp'
 import { showToast } from '../../components/common/toast'
-import { formatCurrency, formatDate } from '../../utils/helpers'
+import { formatCreditLimit, formatCurrency, formatDate } from '../../utils/helpers'
 import {
   buildCustomerOutstandingReport,
   buildFastMovingReport,
@@ -1511,7 +1511,7 @@ export default function Reports({ data = {} }) {
     customerBalances: [
       { key: 'name', label: 'Customer', sortable: true, width: '220px', render: (row) => row.name || row.customer },
       { key: 'company', label: 'Company', sortable: true, width: '220px' },
-      { key: 'creditLimit', label: 'Credit Limit', sortable: true, width: '160px', className: 'reports-table__numeric', render: (row) => formatCurrency(row.creditLimit) },
+      { key: 'creditLimit', label: 'Credit Limit', sortable: true, width: '160px', className: 'reports-table__numeric', render: (row) => formatCreditLimit(row.creditLimit, 'INR') },
       { key: 'outstandingBalance', label: 'Outstanding', sortable: true, width: '170px', className: 'reports-table__numeric', render: (row) => formatCurrency(row.outstandingBalance) },
       { key: 'status', label: 'Status', sortable: true, width: '150px', render: (row) => renderStatusBadge(row.status) },
     ],

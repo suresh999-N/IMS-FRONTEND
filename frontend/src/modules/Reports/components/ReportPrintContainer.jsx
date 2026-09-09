@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatCurrency, formatDate } from '../../../utils/helpers'
+import { formatCreditLimit, formatCurrency, formatDate } from '../../../utils/helpers'
 
 const QUICK_RANGES_MAP = {
   all_time: 'All Time',
@@ -69,7 +69,7 @@ function getReportSummaryTotals(reportKey, rows) {
       const outstandingBalance = sum('outstandingBalance')
       return [
         { label: 'Total Customers', value: rows.length },
-        { label: 'Total Credit Limit', value: formatCurrency(creditLimit) },
+        { label: 'Total Credit Limit', value: formatCreditLimit(creditLimit, 'INR') },
         { label: 'Total Outstanding Balance', value: formatCurrency(outstandingBalance) },
       ]
     }

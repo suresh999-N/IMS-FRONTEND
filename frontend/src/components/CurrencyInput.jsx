@@ -2,22 +2,25 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { renderFormLabel } from '../utils/labelUtils'
 import { sanitizeNumericInput } from './numericInputUtils'
 
-const currencyFormatters = {
-  INR: new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }),
-}
-
-function getCurrencyFormatter(currency) {
-  return currencyFormatters[currency] ?? new Intl.NumberFormat(undefined, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
+function getCurrencyFormatter(currency = 'INR') {
+  const code = String(currency || 'INR').trim().toUpperCase() || 'INR'
+  try {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: code,
+      currencyDisplay: 'code',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  } catch {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      currencyDisplay: 'code',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  }
 }
 
 function getRawValue(value, { maxIntegerDigits = 10, maxDecimalDigits = 2 } = {}) {
@@ -42,7 +45,7 @@ function getFormattedValue(value, currency, { maxIntegerDigits = 10, maxDecimalD
     return rawValue
   }
 
-  return getCurrencyFormatter(currency).format(numericValue)
+  return getCurrencyFormatter(currency).format(numericValue).replace(/\u00A0/g, ' ')
 }
 
 function normalizeCompletedCurrencyValue(value, { maxIntegerDigits = 10, maxDecimalDigits = 2 } = {}) {
@@ -80,7 +83,7 @@ export default function CurrencyInput({
   const [displayValue, setDisplayValue] = useState(() =>
     getFormattedValue(value, currency, { maxIntegerDigits, maxDecimalDigits }),
   )
-  const resolvedPrefix = prefix
+  const resolvedPrefix = prefix || (isFocused && currency ? String(currency).trim().toUpperCase() : null)
   const describedBy = [
     helperText ? `${id}-help` : '',
     error ? `${id}-error` : '',

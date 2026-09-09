@@ -1,7 +1,7 @@
 import { Check, Eye, Pencil, Printer, RefreshCw, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionMenu, DataTable, FilterBar, StatusBadge } from '../../../components/erp'
-import { formatCurrency } from '../../../utils/helpers'
+import { formatCreditLimit, formatCurrency } from '../../../utils/helpers'
 
 const COLUMN_STORAGE_KEY = 'ims.customers.visibleColumns.supplierImageParity.v1'
 const DEFAULT_VISIBLE_COLUMNS = [
@@ -316,7 +316,7 @@ export default function CustomersTable({
       key: 'creditLimit',
       label: 'Credit Limit',
       className: 'is-numeric customers-col-credit-limit',
-      render: (customer) => formatCurrency(customer.creditLimit || 0),
+      render: (customer) => formatCreditLimit(customer.creditLimit || 0, 'INR'),
     },
     {
       key: 'lastActivity',

@@ -2073,6 +2073,8 @@ export default function CustomerForm({
                     currency="INR"
                     disabled={isBusy || isReadOnly}
                     placeholder="Enter credit limit"
+                    maxIntegerDigits={10}
+                    helperText="Up to 999,999,999.99"
                     className="customer-payment-field customer-payment-field--numeric"
                   />
                   <SearchableSelect
