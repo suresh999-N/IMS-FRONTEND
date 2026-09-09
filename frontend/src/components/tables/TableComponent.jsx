@@ -95,6 +95,11 @@ function parseDateRobust(val) {
   const trimmed = val.trim()
   if (!trimmed || trimmed.length < 8) return null
 
+  // Pure numbers (or numbers with commas/currency) are NOT dates
+  if (/^[-+]?[$₹€£]?\s*[-+]?\d+(?:,\d{3})*(?:\.\d+)?%?$/.test(trimmed)) {
+    return null
+  }
+
   // 1. Match DD-MM-YYYY or DD/MM/YYYY with optional time and AM/PM (e.g. "03-09-2026", "19-08-2026 05:15 PM")
   const ddmmyyyyMatch = trimmed.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*(AM|PM))?)?$/i)
   if (ddmmyyyyMatch) {
@@ -119,9 +124,11 @@ function parseDateRobust(val) {
     if (!Number.isNaN(parsed)) return parsed
   }
 
-  // 3. Fallback to standard Date.parse
-  const parsed = Date.parse(trimmed)
-  if (!Number.isNaN(parsed)) return parsed
+  // 3. Fallback for textual month formats like "Jan 15, 2026" or "15-Aug-2026"
+  if (/^(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+\d{4}|\d{1,2}[-\s]+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[-\s]+\d{4})/i.test(trimmed)) {
+    const parsed = Date.parse(trimmed)
+    if (!Number.isNaN(parsed)) return parsed
+  }
 
   return null
 }
@@ -407,6 +414,17 @@ export default function TableComponent({
     key: defaultSortKey,
     direction: defaultSortDirection,
   })
+
+  useEffect(() => {
+    if (defaultSortKey) {
+      setSortConfig((current) => {
+        if (!current.key) {
+          return { key: defaultSortKey, direction: defaultSortDirection }
+        }
+        return current
+      })
+    }
+  }, [defaultSortKey, defaultSortDirection])
   const selectedKeys = Array.isArray(selectedRowKeys) ? selectedRowKeys : internalSelectedKeys
   const minimumVisibleColumnCount = Math.max(1, Number(minVisibleColumnCount) || 1)
 
@@ -423,6 +441,36 @@ export default function TableComponent({
 
     return [...lockedKeys]
   }, [columns, lockedColumnKeys])
+
+  const resolvedInvalidSearchMessage = useMemo(() => {
+    if (invalidSearchMessage && typeof invalidSearchMessage === 'string' && invalidSearchMessage.trim()) {
+      return invalidSearchMessage.trim()
+    }
+
+    if (searchPlaceholder && typeof searchPlaceholder === 'string') {
+      const trimmed = searchPlaceholder.trim()
+      const lower = trimmed.toLowerCase()
+      if (lower.startsWith('search by ')) {
+        const criteria = trimmed.slice(10).trim()
+        if (criteria && !lower.includes('name or keyword')) {
+          return `Please enter a valid search term (e.g., ${criteria}).`
+        }
+      } else if (lower.startsWith('search indents by ')) {
+        const criteria = trimmed.slice(18).trim()
+        return `Please enter a valid search term (e.g., ${criteria}).`
+      } else if (lower.startsWith('search products by ')) {
+        const criteria = trimmed.slice(19).trim()
+        return `Please enter a valid search term (e.g., ${criteria}).`
+      } else if (lower.startsWith('search ')) {
+        const criteria = trimmed.slice(7).replace(/^for\s+/i, '').replace(/^by\s+/i, '').trim()
+        if (criteria && !lower.includes('name or keyword')) {
+          return `Please enter a valid search term (e.g., ${criteria}).`
+        }
+      }
+    }
+
+    return 'Please enter a valid search term (e.g., name, code, date).'
+  }, [invalidSearchMessage, searchPlaceholder])
 
   useEffect(() => {
     function handlePointerDown(event) {
@@ -533,25 +581,33 @@ export default function TableComponent({
         const diff = (Number(Boolean(rawFirst)) - Number(Boolean(rawSecond))) * mult
         if (diff !== 0) return diff
       } else {
-        // Dates (ISO timestamp, DD-MM-YYYY, Date object)
-        const dateFirst = parseDateRobust(rawFirst)
-        const dateSecond = parseDateRobust(rawSecond)
+        // Numbers or Numeric strings (e.g. 10 vs 2, or currency "$1,200.50", "₹ 15,000", "200")
+        const numFirst = parseNumeric(rawFirst)
+        const numSecond = parseNumeric(rawSecond)
 
-        if (dateFirst !== null && dateSecond !== null) {
-          const diff = (dateFirst - dateSecond) * mult
+        if (numFirst !== null && numSecond !== null) {
+          const diff = (numFirst - numSecond) * mult
           if (diff !== 0) return diff
+        } else if (numFirst !== null) {
+          return -1
+        } else if (numSecond !== null) {
+          return 1
         } else {
-          // Numbers or Numeric strings (e.g. 10 vs 2, or currency "$1,200.50", "₹ 15,000", "200")
-          const numFirst = parseNumeric(rawFirst)
-          const numSecond = parseNumeric(rawSecond)
+          // Dates (ISO timestamp, DD-MM-YYYY, Date object)
+          const dateFirst = parseDateRobust(rawFirst)
+          const dateSecond = parseDateRobust(rawSecond)
 
-          if (numFirst !== null && numSecond !== null) {
-            const diff = (numFirst - numSecond) * mult
+          if (dateFirst !== null && dateSecond !== null) {
+            const diff = (dateFirst - dateSecond) * mult
             if (diff !== 0) return diff
+          } else if (dateFirst !== null) {
+            return -1
+          } else if (dateSecond !== null) {
+            return 1
           } else {
             // Natural String comparison with localeCompare
-            const strFirst = String(rawFirst)
-            const strSecond = String(rawSecond)
+            const strFirst = String(rawFirst).trim()
+            const strSecond = String(rawSecond).trim()
 
             const diff = strFirst.localeCompare(strSecond, undefined, { numeric: true, sensitivity: 'base' }) * mult
             if (diff !== 0) return diff
@@ -754,6 +810,7 @@ export default function TableComponent({
       value={searchTerm}
       onChange={setSearchTerm}
       placeholder={searchPlaceholder}
+      errorMessage={resolvedInvalidSearchMessage}
     />
   ) : null
 

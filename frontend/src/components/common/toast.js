@@ -6,6 +6,14 @@ let lastToastAt = 0
 function sanitizeToastMessage(message) {
   const value = String(message ?? '').trim()
 
+  if (/normalizeCategory\s+is\s+not\s+defined/i.test(value)) {
+    return 'Invalid category name. Please select from predefined categories.'
+  }
+
+  if (/is\s+not\s+defined|referenceerror|typeerror|syntaxerror|cannot\s+read\s+propert|is\s+not\s+a\s+function|uncaught\b/i.test(value)) {
+    return 'An unexpected error occurred. Please try again.'
+  }
+
   if (/vite_api_base_url|backend server|ims api|failed to fetch|networkerror|load failed/i.test(value)) {
     return 'Unable to connect to the server.'
   }

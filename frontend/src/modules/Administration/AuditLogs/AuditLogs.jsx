@@ -3019,6 +3019,7 @@ function ResourcePage({ config, navigationContent = null }) {
           defaultPageSize={isProductStylePage || isSubCategoriesPage || isInventoryCompactPage || isNotificationsPage || isInvoicesPage ? 20 : 8}
           showSearch={isSubCategoriesPage ? !hasSelectedSubCategories : isProductStylePage ? !hasSelectedProductStyleRows : true}
           searchPlaceholder={config.searchPlaceholder || (isAuditLogsPage ? 'Search by action, module, user, or date' : `Search ${config.title.toLowerCase()}`)}
+          invalidSearchMessage={isAuditLogsPage ? 'Please enter a valid search term (e.g., action, user, module, date).' : undefined}
           emptyMessage={`No ${config.title.toLowerCase()} records found.`}
           splitToolbar={isProductStylePage || isSubCategoriesPage || isInventoryCompactPage || isNotificationsPage || isInvoicesPage}
           showColumnControls={!(isProductStylePage && hasSelectedProductStyleRows)}

@@ -3,7 +3,7 @@ import './ERPComponents.css'
 
 export default function DataTable({
   defaultPageSize = 10,
-  allowSortReset = true,
+  allowSortReset = false,
   enableRowSelection = false,
   className = '',
   ...props

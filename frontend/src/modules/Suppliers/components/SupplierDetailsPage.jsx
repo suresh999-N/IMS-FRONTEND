@@ -1,6 +1,7 @@
 import { ArrowLeft, Building2, CreditCard, Landmark, Mail, Phone, Truck } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { StatusBadge } from '../../../components/erp'
+import { getPurchaseOrders } from '../../../api/businessApi'
 import { formatCurrency, formatDate } from '../../../utils/helpers'
 import {
   formatEmpty,
@@ -130,12 +131,56 @@ export default function SupplierDetailsPage({
 }) {
   const [activeTab, setActiveTab] = useState(initialTab)
   const currentSupplier = supplier || {}
+  const [internalPurchases, setInternalPurchases] = useState([])
+
+  useEffect(() => {
+    let isMounted = true
+    if (!purchases || purchases.length === 0) {
+      getPurchaseOrders()
+        .then((res) => {
+          if (!isMounted) return
+          const poData = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : [])
+          if (poData.length > 0) {
+            const targetId = String(currentSupplier.id || currentSupplier.supplierId || '').trim().toLowerCase()
+            const targetCode = String(currentSupplier.supplierCode || currentSupplier.code || '').trim().toLowerCase()
+            const targetName = String(currentSupplier.name || '').trim().toLowerCase()
+            const targetCompany = String(currentSupplier.companyName || '').trim().toLowerCase()
+            const cleanTargetName = targetName.replace(/[^a-z0-9]/g, '')
+            const cleanTargetCompany = targetCompany.replace(/[^a-z0-9]/g, '')
+
+            const matched = poData.filter((item) => {
+              const itemSupId = String(item.supplierId || item.SupplierId || item.supplier_id || '').trim().toLowerCase()
+              const itemSupCode = String(item.supplierCode || item.SupplierCode || item.code || '').trim().toLowerCase()
+              const itemSupName = String(item.supplierName || item.SupplierName || item.supplier || '').trim().toLowerCase()
+              const cleanItemSupName = itemSupName.replace(/[^a-z0-9]/g, '')
+
+              const matchId = Boolean(targetId && targetId !== '0' && (itemSupId === targetId || itemSupCode === targetId))
+              const matchCode = Boolean(targetCode && (itemSupId === targetCode || itemSupCode === targetCode))
+              const matchName = Boolean(
+                (targetName && itemSupName && (itemSupName === targetName || itemSupName.includes(targetName) || targetName.includes(itemSupName))) ||
+                (targetCompany && itemSupName && (itemSupName === targetCompany || itemSupName.includes(targetCompany) || targetCompany.includes(itemSupName))) ||
+                (cleanTargetName && cleanItemSupName && (cleanTargetName === cleanItemSupName || cleanItemSupName.includes(cleanTargetName) || cleanTargetName.includes(cleanItemSupName))) ||
+                (cleanTargetCompany && cleanItemSupName && (cleanTargetCompany === cleanItemSupName || cleanItemSupName.includes(cleanTargetCompany) || cleanTargetCompany.includes(cleanItemSupName)))
+              )
+              return matchId || matchCode || matchName
+            })
+            setInternalPurchases(matched)
+          }
+        })
+        .catch(() => {})
+    }
+    return () => { isMounted = false }
+  }, [purchases, currentSupplier])
+
+  const effectivePurchases = useMemo(() => {
+    return Array.isArray(purchases) && purchases.length > 0 ? purchases : internalPurchases
+  }, [purchases, internalPurchases])
 
   const performance = useMemo(() => {
     const apiPerf = currentSupplier.performance || currentSupplier.Performance || {}
     const totalOrdersFromApi = apiPerf.totalOrders ?? apiPerf.TotalOrders
 
-    const poList = Array.isArray(purchases) ? purchases : []
+    const poList = Array.isArray(purchases) && purchases.length > 0 ? purchases : internalPurchases
     const poCount = poList.length
 
     const hasPurchaseHistorySignal = Boolean(
@@ -216,7 +261,7 @@ export default function SupplierDetailsPage({
       returnPercentage: 0,
       ...apiPerf,
     }
-  }, [currentSupplier, purchases])
+  }, [currentSupplier, purchases, internalPurchases])
 
   if (!supplier || (!supplier.id && !supplier.supplierId && !supplier.name)) {
     return null
@@ -248,10 +293,10 @@ export default function SupplierDetailsPage({
         ))}
       </div>
 
-      {activeTab === 'overview' ? <SupplierDetailsOverview supplier={currentSupplier} purchases={purchases} payments={payments} /> : null}
-      {activeTab === 'purchaseHistory' ? <SupplierPurchaseHistoryTab purchases={purchases} /> : null}
+      {activeTab === 'overview' ? <SupplierDetailsOverview supplier={currentSupplier} purchases={effectivePurchases} payments={payments} /> : null}
+      {activeTab === 'purchaseHistory' ? <SupplierPurchaseHistoryTab purchases={effectivePurchases} /> : null}
       {activeTab === 'paymentHistory' ? <SupplierPaymentsTab payments={payments} /> : null}
-      {activeTab === 'performance' ? <SupplierPerformanceTab performance={performance} /> : null}
+      {activeTab === 'performance' ? <SupplierPerformanceTab performance={performance} supplier={currentSupplier} purchases={effectivePurchases} /> : null}
       {activeTab === 'documents' ? (
         <SupplierDocumentsTab
           supplierId={currentSupplier.id || currentSupplier.supplierId}

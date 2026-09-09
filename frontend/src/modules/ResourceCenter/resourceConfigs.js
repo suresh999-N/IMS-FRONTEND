@@ -24,6 +24,8 @@ import { API_ENDPOINTS } from '../../api/endpoints'
 import { getRoleUserCount, readResourceValue } from '../../api/resourceApi'
 import { formatDate, getToday } from '../../utils/helpers'
 import { autoCapitalizeWords } from '../../validators/nameValidator'
+import { getDescriptiveProductName } from '../../utils/productNameUtils'
+import { getStandardizedSku } from '../../utils/skuUtils'
 
 const activeStatusOptions = [
   { value: 'active', label: 'Active' },
@@ -226,11 +228,11 @@ export const RESOURCE_CONFIGS = {
           const productId = row.productId ?? row.product?.id ?? row.product_id;
           const products = referenceData?.products ?? [];
           const product = products.find(p => String(p.id ?? p.productId) === String(productId));
-          return product ? product.name : (row.productName || row.product?.name || `Product ${productId}`);
+          return getDescriptiveProductName(product, row);
         }
       },
       { key: 'variantName', label: 'Variant', sortable: true },
-      { key: 'sku', label: 'SKU', sortable: true },
+      { key: 'sku', label: 'SKU', sortable: true, render: (row) => getStandardizedSku(row.sku, row) },
       { key: 'price', label: 'Price', format: 'currency', sortable: true },
       { key: 'costPrice', label: 'Cost', format: 'currency', sortable: true },
     ],
@@ -620,7 +622,7 @@ export const RESOURCE_CONFIGS = {
           const productId = row.productId;
           const products = referenceData?.products ?? [];
           const product = products.find(p => String(p.productId ?? p.id) === String(productId));
-          return product ? product.name : (row.productName || `Product ${productId}`);
+          return getDescriptiveProductName(product, row);
         }
       },
       {
@@ -817,7 +819,7 @@ export const RESOURCE_CONFIGS = {
           const productId = row.productId
           const products = referenceData?.products ?? []
           const product = products.find(p => String(p.id ?? p.productId) === String(productId))
-          return product ? product.name : (row.productName ?? `Product ${productId}`)
+          return getDescriptiveProductName(product, row)
         },
       },
       {

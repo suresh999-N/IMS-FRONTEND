@@ -3,13 +3,32 @@ import { formatDate } from '../../../utils/helpers'
 import { formatEmpty } from '../supplierFormatters'
 import { SupplierMetricCard, SupplierSection } from './SupplierFormSections'
 
-export default function SupplierPerformanceTab({ performance }) {
-  const totalOrders = Number(performance?.totalOrders ?? 0)
-  const onTimeDeliveries = Number(performance?.onTimeDeliveries ?? 0)
-  const delayedDeliveries = Number(performance?.delayedDeliveries ?? 0)
+export default function SupplierPerformanceTab({ performance, supplier, purchases = [] }) {
+  const resolvedLastSupplyDate =
+    performance?.lastSupplyDate ||
+    supplier?.lastPurchaseDate ||
+    supplier?.lastSupplyDate ||
+    supplier?.lastOrderDate ||
+    (Array.isArray(purchases) && purchases.length > 0
+      ? purchases
+          .map((p) => p?.orderDate || p?.receivedDate || p?.createdAt || p?.createdDate || p?.date)
+          .filter(Boolean)
+          .sort((a, b) => new Date(b) - new Date(a))[0]
+      : null)
+
+  const formattedDate = resolvedLastSupplyDate && resolvedLastSupplyDate !== '-' && resolvedLastSupplyDate !== '—'
+    ? formatDate(resolvedLastSupplyDate)
+    : null
+  const displayLastSupplyDate = formattedDate && formattedDate !== '-' ? formattedDate : 'No supply history'
+
+  const totalOrders = Number(
+    performance?.totalOrders ??
+    (Array.isArray(purchases) && purchases.length > 0 ? purchases.length : (resolvedLastSupplyDate ? 1 : 0))
+  )
+  const onTimeDeliveries = Number(performance?.onTimeDeliveries ?? (totalOrders > 0 ? totalOrders : 0))
   const onTimeRate = totalOrders
     ? Math.round((onTimeDeliveries / totalOrders) * 100)
-    : (totalOrders === 0 ? 100 : 0)
+    : 100
 
   const ratingValue = performance?.vendorRating
     ? (String(performance.vendorRating).includes('/5') ? performance.vendorRating : `${performance.vendorRating}/5`)
@@ -21,8 +40,8 @@ export default function SupplierPerformanceTab({ performance }) {
       description="Read-only vendor scorecard derived from supplier_performance."
     >
       <div className="supplier-performance-grid">
-        <SupplierMetricCard label="Total Orders" value={formatEmpty(performance?.totalOrders ?? 0)} helper="POs raised against this vendor." />
-        <SupplierMetricCard label="On-Time Deliveries" value={formatEmpty(performance?.onTimeDeliveries ?? 0)} helper={totalOrders ? `${onTimeRate}% delivery reliability` : '100% delivery reliability'} tone="success" />
+        <SupplierMetricCard label="Total Orders" value={formatEmpty(totalOrders || performance?.totalOrders || 0)} helper="POs raised against this vendor." />
+        <SupplierMetricCard label="On-Time Deliveries" value={formatEmpty(totalOrders ? onTimeDeliveries : (performance?.onTimeDeliveries ?? 0))} helper={`${onTimeRate}% delivery reliability`} tone="success" />
         <SupplierMetricCard label="Delayed Deliveries" value={formatEmpty(performance?.delayedDeliveries ?? 0)} helper="Requires procurement review." tone="warning" />
         <SupplierMetricCard label="Vendor Rating" value={ratingValue} helper="Weighted delivery and quality score." />
       </div>
@@ -33,7 +52,7 @@ export default function SupplierPerformanceTab({ performance }) {
         </div>
         <div className="supplier-progress"><span style={{ width: `${onTimeRate}%` }} /></div>
         <div className="supplier-analytics__split">
-          <span><CalendarDays size={16} /> Last Supply Date: <strong>{formatDate(performance?.lastSupplyDate) || 'No supply history'}</strong></span>
+          <span><CalendarDays size={16} /> Last Supply Date: <strong>{displayLastSupplyDate}</strong></span>
           <span><TrendingUp size={16} /> Return Percentage: <strong>{performance?.returnPercentage != null ? `${performance.returnPercentage}%` : '0%'}</strong></span>
           <span><Star size={16} /> Rating: <strong>{ratingValue}</strong></span>
         </div>

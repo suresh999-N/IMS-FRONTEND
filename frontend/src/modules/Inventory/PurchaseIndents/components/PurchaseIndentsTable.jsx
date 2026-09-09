@@ -157,12 +157,15 @@ export default function PurchaseIndentsTable({
       tableWidth: 320,
       style: { width: 320, minWidth: 320 },
       headerStyle: { width: 320, minWidth: 320 },
-      sortValue: (indent) => indent?.productName || getFirstProductSummary(indent, safeProducts),
+      sortValue: (indent) => {
+        const text = indent?.productName || getFirstProductSummary(indent, safeProducts)
+        return String(text || '').trim()
+      },
       render: (indent) => {
         const text = indent?.productName || getFirstProductSummary(indent, safeProducts)
         return (
           <span style={{ whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: '1.4', display: 'inline-block' }}>
-            {text}
+            {text || EMPTY_VALUE}
           </span>
         )
       },
@@ -190,6 +193,7 @@ export default function PurchaseIndentsTable({
       style: { width: 140, minWidth: 140 },
       headerStyle: { width: 140, minWidth: 140 },
       sortValue: (indent) => indent?.indentDate || '',
+      searchValue: (indent) => `${indent?.indentDate || ''} ${indent?.indentDate ? formatDate(indent.indentDate) : ''}`,
       render: (indent) => indent?.indentDate ? formatDate(indent.indentDate) : EMPTY_VALUE,
     },
     {
@@ -199,8 +203,16 @@ export default function PurchaseIndentsTable({
       tableWidth: 110,
       style: { width: 110, minWidth: 110 },
       headerStyle: { width: 110, minWidth: 110 },
-      sortValue: (indent) => Number(indent?.quantity ?? getIndentQuantity(indent) ?? 0),
-      render: (indent) => (indent?.quantity !== undefined && indent?.quantity !== null ? indent.quantity : (getIndentQuantity(indent) || EMPTY_VALUE)),
+      sortValue: (indent) => {
+        const val = indent?.quantity ?? getIndentQuantity(indent)
+        const num = Number(val)
+        return Number.isFinite(num) ? num : 0
+      },
+      render: (indent) => {
+        const val = indent?.quantity ?? getIndentQuantity(indent)
+        const num = Number(val)
+        return Number.isFinite(num) ? num : EMPTY_VALUE
+      },
     },
     {
       key: 'status',
@@ -397,7 +409,9 @@ export default function PurchaseIndentsTable({
         columns={columns}
         loading={loading}
         defaultPageSize={20}
-        defaultSortKey=""
+        defaultSortKey="indentDate"
+        defaultSortDirection="desc"
+        allowSortReset={false}
         splitToolbar
         toolbarContent={selectionToolbar}
         enableRowSelection={true}
@@ -410,7 +424,8 @@ export default function PurchaseIndentsTable({
         columnStorageKey="ims.purchase-indents.visibleColumns.compact.v6"
         defaultVisibleColumnKeys={['indentNumber', 'productName', 'priority', 'indentDate', 'quantity', 'status', 'requestedByDisplay', 'actions']}
         fitExplicitColumnsToContainer={false}
-        searchPlaceholder="Search indents by number or status"
+        searchPlaceholder="Search by indent number, product name, or request date"
+        invalidSearchMessage="Please enter a valid search term (e.g., indent number, product name, request date)."
         emptyMessage="No purchase indents found."
       />
     </div>

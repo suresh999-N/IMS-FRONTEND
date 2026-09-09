@@ -27,6 +27,7 @@ import {
   normalizeCategory,
   updateCategory,
 } from '../../../api/productApi'
+import { validateCategoryName } from '../../../validators/categoryValidator'
 import FormModal from '../../../layouts/FormModal'
 import StateBlock from '../../../components/common/StateBlock'
 import RecordDetailsView from '../../../components/common/RecordDetailsView'
@@ -326,7 +327,8 @@ function buildVisibleRows(categories, expandedIds, viewMode = 'grid') {
 function upsertCategories(currentCategories, nextCategories) {
   const map = new Map(currentCategories.map((category) => [categoryIdOf(category), category]))
   nextCategories.forEach((category) => {
-    map.set(categoryIdOf(category), normalizeCategory(category))
+    const normalized = typeof normalizeCategory === 'function' ? normalizeCategory(category) : category
+    map.set(categoryIdOf(category), normalized)
   })
   return sortByName([...map.values()])
 }
@@ -497,12 +499,13 @@ function CategoryForm({
   const selfParent = isEditing && parentId && parentId === editingId
   const circularParent = isEditing && parentId && descendantIds.has(parentId)
 
+  const categoryValidationErr = validateCategoryName(name, categories, editingId)
   const errors = {
     name: !name
       ? 'Category name is required.'
       : duplicateName
         ? 'A category with this name already exists under the selected parent.'
-        : '',
+        : categoryValidationErr,
     parentId: selfParent
       ? 'A category cannot be its own parent.'
       : circularParent
@@ -864,6 +867,16 @@ export default function Categories() {
   }
 
   async function handleSubmit(values) {
+    const categoryNameErr = validateCategoryName(values?.name, categories, formState?.category?.id)
+    if (categoryNameErr) {
+      showToast({
+        type: 'error',
+        title: 'Categories',
+        message: categoryNameErr,
+      })
+      return
+    }
+
     setIsSaving(true)
 
     const response = formState?.category
@@ -930,7 +943,7 @@ export default function Categories() {
     }
 
     if (response.data) {
-      const normalizedData = normalizeCategory(response.data)
+      const normalizedData = typeof normalizeCategory === 'function' ? normalizeCategory(response.data) : (response.data || {})
       setCategories((currentValue) =>
         currentValue.map((item) =>
           categoryIdOf(item) === catId ? { ...item, ...normalizedData, status: nextStatus } : item,

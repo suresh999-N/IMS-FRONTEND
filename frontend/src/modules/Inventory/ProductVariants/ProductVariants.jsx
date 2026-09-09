@@ -18,7 +18,9 @@ import {
   normalizeResourceRow,
   readResourceValue,
 } from '../../../api/resourceApi'
-import { getProducts, getProductAttributes, getAttributeValues } from '../../../api/productApi'
+import { getProducts, getProductById, getProductAttributes, getAttributeValues } from '../../../api/productApi'
+import { getDescriptiveProductName, getDescriptiveProductBarcode } from '../../../utils/productNameUtils'
+import { getStandardizedSku } from '../../../utils/skuUtils'
 import { getStockRegister } from '../../../api/stockApi'
 import { RESOURCE_CONFIGS } from '../../ResourceCenter/resourceConfigs'
 import FormModal from '../../../layouts/FormModal'
@@ -100,6 +102,7 @@ export default function ProductVariants() {
       const [
         variantsRes,
         productsRes,
+        archivedProductsRes,
         attributesRes,
         valuesRes,
         varAttrRes,
@@ -107,6 +110,7 @@ export default function ProductVariants() {
       ] = await Promise.all([
         listResource(config, { page: 1, pageSize: 500 }, { force }),
         getProducts({ page: 1, pageSize: 500 }, { force }),
+        getProducts({ page: 1, pageSize: 500, isArchived: true }, { force }).catch(() => ({ success: false, data: [] })),
         getProductAttributes({ force }),
         getAttributeValues('', { force }),
         listResource({ key: 'variantAttributes', endpoint: '/variant-attributes' }, { page: 1, pageSize: 1000 }, { force }),
@@ -121,13 +125,53 @@ export default function ProductVariants() {
       }
 
       const variantsList = variantsRes.data ?? []
-      const productsList = Array.isArray(productsRes.data) ? productsRes.data : (productsRes.data?.items ?? productsRes.data?.data ?? [])
+      const activeProducts = Array.isArray(productsRes.data)
+        ? productsRes.data
+        : (productsRes.data?.items ?? productsRes.data?.data ?? [])
+      const archivedProducts = Array.isArray(archivedProductsRes?.data)
+        ? archivedProductsRes.data
+        : (archivedProductsRes?.data?.items ?? archivedProductsRes?.data?.data ?? [])
+
+      // Merge active and archived products into a Map
+      const productsMap = new Map()
+      ;[...activeProducts, ...archivedProducts].forEach((p) => {
+        const id = String(p.productId ?? p.id ?? '')
+        if (id && !productsMap.has(id)) {
+          productsMap.set(id, p)
+        }
+      })
+
+      // Fetch any missing product records individually
+      const missingProductIds = [
+        ...new Set(
+          variantsList
+            .map((v) => v.productId)
+            .filter((id) => id && !productsMap.has(String(id)))
+        ),
+      ]
+
+      if (missingProductIds.length > 0) {
+        const missingResults = await Promise.allSettled(
+          missingProductIds.map((id) => getProductById(id, { force }))
+        )
+        missingResults.forEach((res) => {
+          if (res.status === 'fulfilled' && res.value?.success && res.value?.data) {
+            const p = res.value.data
+            const id = String(p.productId ?? p.id ?? '')
+            if (id && !productsMap.has(id)) {
+              productsMap.set(id, p)
+            }
+          }
+        })
+      }
+
+      const allProductsList = Array.from(productsMap.values())
       const attributesList = attributesRes.success ? (attributesRes.data ?? []) : []
       const valuesList = valuesRes.success ? (valuesRes.data ?? []) : []
       const varAttrList = varAttrRes.success ? (varAttrRes.data ?? []) : []
       const stockList = stockRes.success ? (stockRes.data ?? []) : []
 
-      setProducts(productsList)
+      setProducts(allProductsList)
       setAttributes(attributesList)
       setAttributeValues(valuesList)
       setVariantAttributes(varAttrList)
@@ -139,8 +183,10 @@ export default function ProductVariants() {
         const productId = variant.productId
         const variantName = variant.variantName ?? variant.name ?? variant.title ?? ''
 
-        // Find parent product details
-        const product = productsList.find((p) => String(p.productId ?? p.id) === String(productId))
+        // Find parent product details and resolve descriptive name & barcode
+        const product = productsMap.get(String(productId))
+        const descriptiveName = getDescriptiveProductName(product, variant)
+        const descriptiveBarcode = getDescriptiveProductBarcode(product, variant)
 
         // Find stock total quantity for this variant
         const matchedStock = stockList.filter((s) => String(s.variantId) === String(variantId))
@@ -194,8 +240,8 @@ export default function ProductVariants() {
           id: variantId,
           variantId,
           variantName,
-          productName: product ? product.name : `Product ${productId}`,
-          barcode: product ? product.barcode : '',
+          productName: descriptiveName,
+          barcode: descriptiveBarcode,
           status: product ? product.status : 'Active',
           reorderLevel: product ? product.reorderLevel : 0,
           stock: totalStock,
@@ -268,10 +314,11 @@ export default function ProductVariants() {
       showToast('Please select a product first.', 'warning')
       return
     }
+    const baseSku = getStandardizedSku(selectedProd.sku, selectedProd)
     const suffix = Math.floor(1000 + Math.random() * 9000)
     setFormValues((prev) => ({
       ...prev,
-      sku: `${selectedProd.sku}-VAR-${suffix}`.toUpperCase(),
+      sku: `${baseSku}-VAR-${suffix}`.toUpperCase(),
     }))
   }
 
@@ -376,7 +423,9 @@ export default function ProductVariants() {
       if (searchTerm) {
         const query = searchTerm.toLowerCase()
         const matchesName = item.variantName?.toLowerCase().includes(query)
-        const matchesSku = item.sku?.toLowerCase().includes(query)
+        const matchesSku =
+          item.sku?.toLowerCase().includes(query) ||
+          getStandardizedSku(item.sku, item).toLowerCase().includes(query)
         const matchesProduct = item.productName?.toLowerCase().includes(query)
         const matchesAttr = item.mappedAttributes?.some((a) => a.toLowerCase().includes(query))
 
@@ -416,7 +465,9 @@ export default function ProductVariants() {
         key: 'productName',
         label: 'Product Name',
         sortable: true,
-        tableWidth: 220,
+        tableWidth: 320,
+        style: { width: 320, minWidth: 320 },
+        headerStyle: { width: 320, minWidth: 320 },
         render: (item) => (
           <div className="variants__identity">
             <strong title={item.productName}>{item.productName}</strong>
@@ -429,19 +480,23 @@ export default function ProductVariants() {
         key: 'variantName',
         label: 'Variant Name',
         sortable: true,
-        tableWidth: 150,
-        style: { width: 150, minWidth: 150 },
-        headerStyle: { width: 150, minWidth: 150 },
+        tableWidth: 140,
+        style: { width: 140, minWidth: 140 },
+        headerStyle: { width: 140, minWidth: 140 },
         render: (item) => <span className="font-medium">{item.variantName}</span>,
       },
       {
         key: 'sku',
         label: 'SKU',
         sortable: true,
-        tableWidth: 130,
-        style: { width: 130, minWidth: 130 },
-        headerStyle: { width: 130, minWidth: 130 },
-        render: (item) => <span className="font-mono text-xs">{item.sku}</span>,
+        tableWidth: 160,
+        style: { width: 160, minWidth: 160 },
+        headerStyle: { width: 160, minWidth: 160 },
+        render: (item) => (
+          <span className="variants-table__sku font-mono text-xs">
+            {getStandardizedSku(item.sku, item)}
+          </span>
+        ),
       },
       {
         key: 'mappedAttributes',
@@ -564,8 +619,8 @@ export default function ProductVariants() {
           >
             <option value="">All Products</option>
             {products.map((p) => (
-              <option key={p.productId} value={p.productId}>
-                {p.name}
+              <option key={p.productId ?? p.id} value={p.productId ?? p.id}>
+                {getDescriptiveProductName(p)}
               </option>
             ))}
           </select>
@@ -712,7 +767,7 @@ export default function ProductVariants() {
                       searchPlaceholder="Search products by name"
                       options={products.map((p) => {
                         const pId = String(p.productId ?? p.id ?? '')
-                        const pName = p.name ?? p.Name ?? `Product ${pId}`
+                        const pName = getDescriptiveProductName(p)
                         const pSku = p.sku ?? p.SKU ?? ''
                         return {
                           value: pId,
@@ -952,7 +1007,7 @@ export default function ProductVariants() {
             <div className="delete-confirmation__copy">
               <p>
                 Are you sure you want to delete <strong>{deleteTarget.variantName}</strong>{' '}
-                (<code>{deleteTarget.sku}</code>)?
+                (<code>{getStandardizedSku(deleteTarget.sku, deleteTarget)}</code>)?
               </p>
               <p className="delete-confirmation__warning">This action cannot be undone.</p>
             </div>
@@ -983,13 +1038,13 @@ export default function ProductVariants() {
         <RecordDetailsView
           modalTitle="Product Variant Details"
           heroTitle={viewingItem.variantName || viewingItem.name}
-          heroSubtitle={`Product: ${viewingItem.productName} • SKU: ${viewingItem.sku}`}
+          heroSubtitle={`Product: ${viewingItem.productName} • SKU: ${getStandardizedSku(viewingItem.sku, viewingItem)}`}
           icon={GitBranch}
           status={viewingItem.status || 'Active'}
           fields={[
             { label: 'Product Name', value: viewingItem.productName },
             { label: 'Variant Name', value: viewingItem.variantName },
-            { label: 'SKU', render: () => <code>{viewingItem.sku}</code> },
+            { label: 'SKU', render: () => <code>{getStandardizedSku(viewingItem.sku, viewingItem)}</code> },
             { label: 'Selling Price', value: formatCurrency(viewingItem.price) },
             { label: 'Purchase Price', value: formatCurrency(viewingItem.costPrice) },
             { label: 'Status', render: () => <StatusBadge status={viewingItem.status || 'Active'}>{viewingItem.status || 'Active'}</StatusBadge> },

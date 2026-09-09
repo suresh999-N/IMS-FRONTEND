@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { API_ENDPOINTS } from '../../../api/endpoints'
 import { getToday } from '../../../utils/helpers'
+import { getDescriptiveProductName } from '../../../utils/productNameUtils'
 
 const activeStatusOptions = [
   { value: 'active', label: 'Active' },
@@ -503,7 +504,7 @@ export const RESOURCE_CONFIGS = {
           const productId = row.productId;
           const products = referenceData?.products ?? [];
           const product = products.find(p => String(p.productId ?? p.id) === String(productId));
-          return product ? product.name : (row.productName || `Product ${productId}`);
+          return getDescriptiveProductName(product, row);
         }
       },
       {
@@ -688,7 +689,7 @@ export const RESOURCE_CONFIGS = {
           const productId = row.productId
           const products = referenceData?.products ?? []
           const product = products.find(p => String(p.id ?? p.productId) === String(productId))
-          return product ? product.name : (row.productName ?? `Product ${productId}`)
+          return getDescriptiveProductName(product, row)
         },
       },
       {

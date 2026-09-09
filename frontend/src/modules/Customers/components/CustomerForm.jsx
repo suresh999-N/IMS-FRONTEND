@@ -1737,7 +1737,6 @@ export default function CustomerForm({
                     placeholder="Enter registered customer name"
                     disabled={isBusy || isReadOnly}
                     required
-                    autoFocus={!isReadOnly}
                     maxLength={100}
                   />
                   <InputField
@@ -1918,7 +1917,7 @@ export default function CustomerForm({
                           </div>
                         </div>
                         <div className="customer-contact-card-form">
-                          <InputField id={`customer-contact-name-${index}`} name="contactName" label="Contact Name *" icon={User} value={contact.contactName} onChange={(event) => updateInlineContact(index, event)} onBlur={(event) => blurInlineContact(index, event)} error={(submitAttempted || touched.collections) ? contactError.contactName : ''} placeholder="Enter contact name" disabled={isReadOnly} autoFocus={!isReadOnly && index === 0 && contact.isInlineDraft} />
+                          <InputField id={`customer-contact-name-${index}`} name="contactName" label="Contact Name *" icon={User} value={contact.contactName} onChange={(event) => updateInlineContact(index, event)} onBlur={(event) => blurInlineContact(index, event)} error={(submitAttempted || touched.collections) ? contactError.contactName : ''} placeholder="Enter contact name" disabled={isReadOnly} />
                           <label className="customer-form__status-field customer-contact-select-field">
                             <span>Role *</span>
                             <select name="role" value={contact.role || 'Sales'} onChange={(event) => updateInlineContact(index, event)} onBlur={(event) => blurInlineContact(index, event)} aria-invalid={Boolean((submitAttempted || touched.collections) && contactError.role)} disabled={isReadOnly}>
@@ -2011,7 +2010,7 @@ export default function CustomerForm({
                           </select>
                           {(submitAttempted || touched.collections) && addressError.addressType ? <span className="field-error">{addressError.addressType}</span> : null}
                         </label>
-                        <InputField id={`customer-address-line1-${index}`} name="addressLine" label="Address Line 1 *" icon={MapPin} value={address.addressLine} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} error={(submitAttempted || touched.collections) ? addressError.addressLine : ''} placeholder="Street address, building, locality" disabled={isReadOnly} autoFocus={!isReadOnly && index === 0 && address.isInlineDraft} />
+                        <InputField id={`customer-address-line1-${index}`} name="addressLine" label="Address Line 1 *" icon={MapPin} value={address.addressLine} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} error={(submitAttempted || touched.collections) ? addressError.addressLine : ''} placeholder="Street address, building, locality" disabled={isReadOnly} />
                         <InputField id={`customer-address-line2-${index}`} name="addressLine2" label="Address Line 2" icon={MapPin} value={address.addressLine2} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} error="" placeholder="Apartment, suite, landmark" disabled={isReadOnly} />
                         <InputField id={`customer-address-city-${index}`} name="city" label="City *" icon={MapPin} value={address.city} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} error={(submitAttempted || touched.collections) ? addressError.city : ''} placeholder="Enter city" disabled={isReadOnly} />
                         <InputField id={`customer-address-state-${index}`} name="state" label="State *" icon={MapPin} value={address.state} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} error={(submitAttempted || touched.collections) ? addressError.state : ''} placeholder="Enter state" disabled={isReadOnly} />
@@ -2169,7 +2168,7 @@ export default function CustomerForm({
                         </div>
                       </div>
                       <div className="customer-bank-card-form">
-                        <InputField id={`customer-bank-name-${index}`} name="bankName" label="Bank Name *" icon={Landmark} value={bank.bankName} onChange={(event) => updateInlineBankDetail(index, event)} onBlur={(event) => blurInlineBankDetail(index, event)} error={(submitAttempted || touched.collections) ? bankError.bankName : ''} placeholder="Enter bank name" disabled={isReadOnly} autoFocus={!isReadOnly && index === 0 && bank.isInlineDraft} />
+                        <InputField id={`customer-bank-name-${index}`} name="bankName" label="Bank Name *" icon={Landmark} value={bank.bankName} onChange={(event) => updateInlineBankDetail(index, event)} onBlur={(event) => blurInlineBankDetail(index, event)} error={(submitAttempted || touched.collections) ? bankError.bankName : ''} placeholder="Enter bank name" disabled={isReadOnly} />
                         <InputField id={`customer-bank-account-name-${index}`} name="accountName" label="Account Holder Name *" icon={User} value={bank.accountName} onChange={(event) => updateInlineBankDetail(index, event)} onBlur={(event) => blurInlineBankDetail(index, event)} error={(submitAttempted || touched.collections) ? bankError.accountName : ''} placeholder="Enter account holder name" disabled={isReadOnly} />
                         <InputField id={`customer-bank-account-number-${index}`} name="accountNumber" label="Account Number *" icon={Hash} value={bank.accountNumber} onChange={(event) => updateInlineBankDetail(index, event)} onBlur={(event) => blurInlineBankDetail(index, event)} error={(submitAttempted || touched.collections) ? bankError.accountNumber : ''} placeholder="Enter account number" inputMode="numeric" maxLength={18} disabled={isReadOnly} />
                         <InputField id={`customer-bank-ifsc-${index}`} name="ifscCode" label="IFSC Code *" icon={Hash} value={bank.ifscCode} onChange={(event) => updateInlineBankDetail(index, event)} onBlur={(event) => blurInlineBankDetail(index, event)} error={(submitAttempted || touched.collections) ? bankError.ifscCode : ''} placeholder="SBIN0001234" maxLength={11} disabled={isReadOnly} />

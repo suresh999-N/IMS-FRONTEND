@@ -19,6 +19,7 @@ import DropdownWithAdd from "../../../../components/DropdownWithAdd";
 import InputField from "../../../../components/InputField";
 import QuantityInput from "../../../../components/QuantityInput";
 import SearchableSelect from "../../../../components/SearchableSelect";
+import { validateCategoryName } from "../../../../validators/categoryValidator";
 import { validateUnitName } from "../../../../validators/unitValidator";
 import { getResponseData, getResponseList, resolveApiAssetUrl } from "../../../../api/apiClient";
 import {
@@ -39,6 +40,7 @@ import {
 } from "../../../../api/productApi";
 import { getVariantsByProduct } from "../../../../api/productVariantsApi";
 import { createId, getNumberError, getRequiredError, getToday } from "../../../../utils/helpers";
+import { getStandardSkuError, getStandardizedSku } from "../../../../utils/skuUtils";
 import { showToast } from "../../../../components/common/toast";
 import './ProductForm.css'
 
@@ -298,43 +300,7 @@ function getProductEntityId(product) {
 }
 
 function getSkuError(value, options = {}) {
-  const normalized = String(value ?? '').trim().toUpperCase()
-
-  if (!normalized) {
-    return 'SKU is required.'
-  }
-
-  if (normalized.length < 6) {
-    return 'SKU must contain at least 6 characters.'
-  }
-
-  if (normalized.length > 20) {
-    return 'SKU must not exceed 20 characters.'
-  }
-
-  if (!/^[A-Z0-9_-]+$/.test(normalized)) {
-    return 'SKU can contain only letters, numbers, hyphens, and underscores.'
-  }
-
-  if (/(.)\1{3,}/i.test(normalized)) {
-    return 'Please enter a valid, meaningful SKU.'
-  }
-
-  const currentProductId = String(options.currentProductId ?? '')
-  const productList = options.products ?? []
-  if (Array.isArray(productList) && productList.length > 0) {
-    const isDuplicate = productList.some((product) => {
-      const pId = String(product.id ?? product.productId ?? product._id ?? '')
-      const pSku = String(product.sku ?? product.SKU ?? '').trim().toUpperCase()
-      return pSku === normalized && Boolean(normalized) && pId !== currentProductId
-    })
-
-    if (isDuplicate) {
-      return 'SKU already exists. Please enter a unique SKU.'
-    }
-  }
-
-  return ''
+  return getStandardSkuError(value, options)
 }
 
 function getProductNameError(value) {
@@ -407,7 +373,7 @@ function getFieldError(name, value, mode, options = {}) {
     if (categoryList.length > 0) {
       const isValid = categoryList.some((category) => String(category.id) === String(value))
       if (!isValid) {
-        return 'Please select a valid category.'
+        return 'Invalid category name. Please select from predefined categories.'
       }
     }
 
@@ -791,6 +757,13 @@ export default function ProductForm({
   async function handleAddCategory(draft) {
     const label = normalizeString(draft?.name)
     if (!label) {
+      showToast('Category name is required.', 'error')
+      return null
+    }
+
+    const validationError = validateCategoryName(label, categories)
+    if (validationError) {
+      showToast(validationError, 'error')
       return null
     }
 
@@ -800,8 +773,10 @@ export default function ProductForm({
         throw new Error(response.error || 'Failed to create category')
       }
 
-      const createdCategory = normalizeCategory(response.data)
-      const createdId = String(createdCategory.id)
+      const createdCategory = typeof normalizeCategory === 'function'
+        ? normalizeCategory(response.data)
+        : (response.data || {})
+      const createdId = String(createdCategory?.id || createdCategory?.categoryId || '')
 
       await refreshFormOptions()
       setFormData((currentValue) => ({
@@ -813,7 +788,10 @@ export default function ProductForm({
       showToast('Category created successfully.', 'success')
       return toOption(createdCategory)
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Failed to create category'
+      const rawMsg = error instanceof Error ? error.message : 'Failed to create category'
+      const msg = /normalizeCategory|is not defined|referenceerror|typeerror|failed to fetch/i.test(rawMsg)
+        ? 'Invalid category name. Please select from predefined categories.'
+        : rawMsg
       showToast(msg, 'error')
       return null
     }
@@ -1037,11 +1015,16 @@ export default function ProductForm({
       return
     }
 
+    const baseParentSku = getStandardizedSku(formData.sku, formData)
+    const fallbackVariantSku = baseParentSku && baseParentSku !== '—'
+      ? `${baseParentSku}-VAR-${String(formData.variants.length + 1).padStart(2, '0')}`
+      : ''
+
     const nextDraft = normalizeVariant({
       ...variantDraft,
       id: variantDraft.id || createId('VRN'),
       variantName: normalizeString(variantDraft.variantName),
-      sku: normalizeString(variantDraft.sku),
+      sku: normalizeString(variantDraft.sku) || fallbackVariantSku,
       priceDelta: variantDraft.priceDelta || '0',
       attributes: variantDraft.attributeId && variantDraft.valueId
         ? [{ attributeId: variantDraft.attributeId, valueId: variantDraft.valueId }]
@@ -1313,7 +1296,7 @@ export default function ProductForm({
             onChange={handleChange}
             onBlur={handleBlur}
             required
-            placeholder="e.g. SKU-100001"
+            placeholder="e.g. SD-DAP-20230947"
             error={shouldShowError('sku') ? errors.sku : ''}
           />
           <div className="product-form__barcode-field">
@@ -1459,7 +1442,7 @@ export default function ProductForm({
                 label="Variant SKU"
                 value={variantDraft.sku || ''}
                 onChange={handleVariantDraftChange}
-                placeholder="Variant SKU"
+                placeholder="e.g. SD-DAP-20230947-VAR-01"
               />
               <SearchableSelect
                 id="variant-attribute-id"

@@ -17,6 +17,8 @@ import {
 } from 'lucide-react'
 import { API_ENDPOINTS } from '../../../api/endpoints'
 import { getToday } from '../../../utils/helpers'
+import { getDescriptiveProductName } from '../../../utils/productNameUtils'
+import { getStandardizedSku } from '../../../utils/skuUtils'
 
 const activeStatusOptions = [
   { value: 'active', label: 'Active' },
@@ -154,7 +156,7 @@ export const RESOURCE_CONFIGS = {
       { key: 'variantId', label: 'Variant ID', sortable: true },
       { key: 'productId', label: 'Product ID', sortable: true },
       { key: 'variantName', label: 'Variant', sortable: true },
-      { key: 'sku', label: 'SKU', sortable: true },
+      { key: 'sku', label: 'SKU', sortable: true, render: (row) => getStandardizedSku(row.sku, row) },
       { key: 'price', label: 'Price', format: 'currency', sortable: true },
       { key: 'costPrice', label: 'Cost', format: 'currency', sortable: true },
     ],
@@ -503,7 +505,7 @@ export const RESOURCE_CONFIGS = {
           const productId = row.productId;
           const products = referenceData?.products ?? [];
           const product = products.find(p => String(p.productId ?? p.id) === String(productId));
-          return product ? product.name : (row.productName || `Product ${productId}`);
+          return getDescriptiveProductName(product, row);
         }
       },
       {
@@ -688,7 +690,7 @@ export const RESOURCE_CONFIGS = {
           const productId = row.productId
           const products = referenceData?.products ?? []
           const product = products.find(p => String(p.id ?? p.productId) === String(productId))
-          return product ? product.name : (row.productName ?? `Product ${productId}`)
+          return getDescriptiveProductName(product, row)
         },
       },
       {

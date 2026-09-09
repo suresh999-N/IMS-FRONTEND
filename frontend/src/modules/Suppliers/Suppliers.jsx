@@ -492,8 +492,18 @@ export default function Suppliers({
   const selectedPurchases = useMemo(() => {
     if (!selectedSupplier) return []
 
-    const targetId = String(selectedSupplier.id || selectedSupplier.supplierId || selectedSupplier.SupplierId || '').trim().toLowerCase()
-    const targetCode = String(selectedSupplier.supplierCode || selectedSupplier.code || '').trim().toLowerCase()
+    const targetIds = [
+      String(selectedSupplier.id || ''),
+      String(selectedSupplier.supplierId || ''),
+      String(selectedSupplier.supplier_id || ''),
+      String(selectedSupplier.SupplierId || ''),
+    ].filter((id) => id && id !== '0').map((id) => id.trim().toLowerCase())
+
+    const targetCodes = [
+      String(selectedSupplier.supplierCode || ''),
+      String(selectedSupplier.code || ''),
+    ].filter(Boolean).map((c) => c.trim().toLowerCase())
+
     const targetName = String(selectedSupplier.name || selectedSupplier.companyName || '').trim().toLowerCase()
     const targetCompany = String(selectedSupplier.companyName || selectedSupplier.name || '').trim().toLowerCase()
 
@@ -516,8 +526,8 @@ export default function Suppliers({
 
       const cleanItemSupName = itemSupName.replace(/[^a-z0-9]/g, '')
 
-      const matchId = Boolean(targetId && targetId !== '0' && (itemSupId === targetId || itemSupCode === targetId))
-      const matchCode = Boolean(targetCode && (itemSupId === targetCode || itemSupCode === targetCode))
+      const matchId = targetIds.some((tId) => itemSupId === tId || itemSupCode === tId)
+      const matchCode = targetCodes.some((tCode) => itemSupId === tCode || itemSupCode === tCode)
 
       const matchName = Boolean(
         (targetName && itemSupName && (itemSupName === targetName || itemSupName.includes(targetName) || targetName.includes(itemSupName))) ||
@@ -603,17 +613,21 @@ export default function Suppliers({
     setDetailsInitialTab(tab)
     const baseSupplier = supplier || {}
 
-    getPurchaseOrders().then((res) => {
-      const poData = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : [])
+    const [detailedSupplier, poRes, payRes] = await Promise.all([
+      loadSupplierDetail(supplier),
+      getPurchaseOrders().catch(() => null),
+      getSupplierPayments().catch(() => null),
+    ])
+
+    if (poRes?.success || Array.isArray(poRes?.data) || Array.isArray(poRes)) {
+      const poData = Array.isArray(poRes?.data) ? poRes.data : (Array.isArray(poRes) ? poRes : [])
       if (poData.length > 0) setPurchasesState(poData)
-    }).catch(() => {})
+    }
 
-    getSupplierPayments().then((res) => {
-      const payData = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : [])
+    if (payRes?.success || Array.isArray(payRes?.data) || Array.isArray(payRes)) {
+      const payData = Array.isArray(payRes?.data) ? payRes.data : (Array.isArray(payRes) ? payRes : [])
       if (payData.length > 0) setSupplierPaymentsState(payData)
-    }).catch(() => {})
-
-    const detailedSupplier = await loadSupplierDetail(supplier)
+    }
 
     const mergedSupplier = detailedSupplier
       ? {

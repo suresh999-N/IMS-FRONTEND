@@ -310,6 +310,14 @@ export function sanitizeApiError(message, status = 0) {
     return 'We are having trouble completing this request right now.'
   }
 
+  if (/normalizeCategory\s+is\s+not\s+defined/i.test(rawMessage)) {
+    return 'Invalid category name. Please select from predefined categories.'
+  }
+
+  if (/is\s+not\s+defined|referenceerror|typeerror|syntaxerror|cannot\s+read\s+propert|is\s+not\s+a\s+function/i.test(rawMessage)) {
+    return 'We are having trouble completing this request right now.'
+  }
+
   if (/request failed with status/i.test(rawMessage)) {
     return 'The request could not be completed. Please try again.'
   }

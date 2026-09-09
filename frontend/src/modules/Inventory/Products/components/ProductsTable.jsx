@@ -24,6 +24,7 @@ import {
   StatusBadge,
 } from '../../../../components/erp'
 import { formatCurrency } from '../../../../utils/helpers'
+import { getStandardizedSku } from '../../../../utils/skuUtils'
 
 function getProductId(product) {
   return product?.productId ?? product?.id ?? product?._id ?? ''
@@ -95,7 +96,7 @@ function exportProductsExcel(products) {
     <tr>
       <td>${product.image ? `<img src="${escapeHtml(getExportImageSrc(product.image))}" alt="" />` : ''}</td>
       <td>${escapeHtml(product.name)}</td>
-      <td>${escapeHtml(product.sku)}</td>
+      <td>${escapeHtml(getStandardizedSku(product.sku, product))}</td>
       <td>${escapeHtml(product.barcode)}</td>
       <td>${escapeHtml(product.category)}</td>
       <td>${escapeHtml(product.subCategory)}</td>
@@ -153,7 +154,7 @@ function printProductsPdf(products) {
     <tr>
       <td>${product.image ? `<img src="${escapeHtml(getExportImageSrc(product.image))}" alt="" />` : ''}</td>
       <td>${escapeHtml(product.name)}</td>
-      <td>${escapeHtml(product.sku)}</td>
+      <td>${escapeHtml(getStandardizedSku(product.sku, product))}</td>
       <td>${escapeHtml(product.barcode)}</td>
       <td>${escapeHtml(product.category)}</td>
       <td>${escapeHtml(product.subCategory)}</td>
@@ -278,7 +279,7 @@ export default function ProductTable({
       mobileLabel: 'Product',
       hideable: false,
       searchValue: (product) =>
-        `${product.name} ${product.sku} ${product.barcode} ${product.category} ${product.subCategory} ${product.brand}`,
+        `${product.name} ${product.sku} ${getStandardizedSku(product.sku, product)} ${product.barcode} ${product.category} ${product.subCategory} ${product.brand}`,
       render: (product) => (
         <ProductIdentity
           name={product.name}
@@ -297,7 +298,7 @@ export default function ProductTable({
       sortable: true,
       render: (product) => (
         <div className="products-table__stack">
-          <strong>{product.sku}</strong>
+          <strong>{getStandardizedSku(product.sku, product)}</strong>
           <span>{product.barcode || 'Barcode pending'}</span>
         </div>
       ),

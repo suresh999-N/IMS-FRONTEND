@@ -59,7 +59,6 @@
   min-width: 0;
 }
 
-.product-identity__copy strong,
 .product-identity__copy span {
   min-width: 0;
   overflow: hidden;
@@ -69,9 +68,13 @@
 }
 
 .product-identity__copy strong {
+  min-width: 0;
   color: var(--text);
   font-size: 13px;
   font-weight: 750;
+  line-height: 1.35;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .product-identity__copy span {
