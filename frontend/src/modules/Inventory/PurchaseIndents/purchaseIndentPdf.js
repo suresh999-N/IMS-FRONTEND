@@ -295,7 +295,7 @@ function drawItemsTable(doc, model, startY) {
     ]],
     body: model.items.map((item) => [
       String(item.serialNumber),
-      item.notes ? `${item.productName || '-'}\n${item.notes}` : item.productName || '-',
+      item.notes ? `${item.productName || '-'}\nJustification: ${item.notes}` : item.productName || '-',
       item.sku || '-',
       item.availableStock === '' ? '-' : String(item.availableStock),
       item.quantity.toLocaleString('en-IN'),

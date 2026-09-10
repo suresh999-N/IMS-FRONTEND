@@ -212,11 +212,19 @@ export default function PurchaseIndentDocument({ model, printRoot = false }) {
                 <td className="invoice-document__center">{item.serialNumber}</td>
                 <td className="invoice-document__product-name">
                   {item.productName || '-'}
-                  {item.notes ? <small className="purchase-indent-document__item-note">{item.notes}</small> : null}
+                  {item.notes ? (
+                    <small className="purchase-indent-document__item-note">
+                      <strong>Justification:</strong> {item.notes}
+                    </small>
+                  ) : null}
                 </td>
                 <td>{item.sku || '-'}</td>
                 <td className="invoice-document__numeric">
-                  {displayNumericValue(item.availableStock)}
+                  {item.availableStock !== '' && item.availableStock !== null && Number(item.availableStock) === 0 ? (
+                    <span style={{ color: '#dc2626', fontWeight: 600 }}>0</span>
+                  ) : (
+                    displayNumericValue(item.availableStock)
+                  )}
                 </td>
                 <td className="invoice-document__numeric">{item.quantity.toLocaleString('en-IN')}</td>
                 <td>{item.unit || '-'}</td>

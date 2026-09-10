@@ -586,6 +586,7 @@ function PurchaseIndentForm({
       ...currentValue,
       [`item_${index}_productId`]: '',
       [`item_${index}_quantity`]: '',
+      [`item_${index}_remarks`]: '',
     }))
     setFormError('')
   }
@@ -704,6 +705,19 @@ function PurchaseIndentForm({
       const qty = toNumber(item.quantity)
       if (qty <= 0) {
         setError(`item_${index}_quantity`, 'Quantity must be greater than zero.')
+      }
+
+      // Stock validation: If available stock is 0, justification is required
+      if (item.productId) {
+        const matchedProduct = productOptions.find(
+          (p) => String(getProductId(p)) === String(item.productId)
+        )
+        if (matchedProduct) {
+          const availableStock = getProductStock(matchedProduct)
+          if (availableStock <= 0 && (!item.remarks || !item.remarks.trim())) {
+            setError(`item_${index}_remarks`, 'Justification is required for items with 0 available stock.')
+          }
+        }
       }
     })
 
@@ -941,21 +955,24 @@ function PurchaseIndentForm({
           <table className="indent-items-table" style={{ tableLayout: 'fixed' }}>
             <thead>
               <tr>
-                <th style={{ width: '55px', textAlign: 'center' }}>S.No</th>
-                <th style={{ width: '27%' }}>Item Name *</th>
-                <th style={{ width: '12%', textAlign: 'center' }}>Required Qty *</th>
-                <th style={{ width: '10%', textAlign: 'center' }}>Unit</th>
-                <th style={{ width: '13%', textAlign: 'center' }}>Unit Price (₹)</th>
-                <th style={{ width: '14%', textAlign: 'center' }}>Available Stock</th>
-                <th style={{ width: '17%' }}>Required Date</th>
-                <th style={{ width: '70px', textAlign: 'center' }}>Actions</th>
+                <th style={{ width: '50px', textAlign: 'center' }}>S.No</th>
+                <th style={{ width: '22%' }}>Item Name *</th>
+                <th style={{ width: '10%', textAlign: 'center' }}>Required Qty *</th>
+                <th style={{ width: '8%', textAlign: 'center' }}>Unit</th>
+                <th style={{ width: '11%', textAlign: 'center' }}>Unit Price (₹)</th>
+                <th style={{ width: '13%', textAlign: 'center' }}>Available Stock</th>
+                <th style={{ width: '18%' }}>Justification / Remarks</th>
+                <th style={{ width: '14%' }}>Required Date</th>
+                <th style={{ width: '60px', textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {draft.items.map((item, index) => {
                 const matchedProduct = productOptions.find(
-  (p) => String(getProductId(p)) === String(item.productId)
-)
+                  (p) => String(getProductId(p)) === String(item.productId)
+                )
+                const availableStock = matchedProduct ? getProductStock(matchedProduct) : null
+                const isUnavailable = matchedProduct && availableStock <= 0
                 return (
                   <tr key={index}>
                     {/* S.No */}
@@ -1055,15 +1072,78 @@ function PurchaseIndentForm({
                     </td>
 
                     {/* Available Stock */}
+                    <td style={{ textAlign: 'center' }}>
+                      {matchedProduct ? (
+                        isUnavailable ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                padding: '3px 8px',
+                                borderRadius: '4px',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                backgroundColor: '#fef2f2',
+                                color: '#dc2626',
+                                border: '1px solid #fecaca',
+                              }}
+                              title="Available stock is 0 in warehouse - justification required"
+                            >
+                              0 (Out of Stock)
+                            </span>
+                          </div>
+                        ) : (
+                          <input
+                            type="text"
+                            className="indent-table-input"
+                            value={String(availableStock)}
+                            readOnly
+                            disabled
+                            style={{ textAlign: 'center' }}
+                          />
+                        )
+                      ) : (
+                        <input
+                          type="text"
+                          className="indent-table-input"
+                          value="Not Available"
+                          readOnly
+                          disabled
+                          style={{ textAlign: 'center', color: '#94a3b8' }}
+                        />
+                      )}
+                    </td>
+
+                    {/* Justification / Remarks */}
                     <td>
-                      <input
-                        type="text"
-                        className="indent-table-input"
-                        value={matchedProduct ? String(getProductStock(matchedProduct)) : 'Not Available'}
-                        readOnly
-                        disabled
-                        style={{ textAlign: 'center' }}
-                      />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <input
+                          type="text"
+                          className="indent-table-input"
+                          data-field-key={`item_${index}_remarks`}
+                          placeholder={isUnavailable ? 'Justification required *' : 'Optional remarks'}
+                          value={item.remarks || ''}
+                          onChange={(e) => handleItemFieldChange(index, 'remarks', e.target.value)}
+                          disabled={isSubmitting}
+                          style={{
+                            borderColor: errors[`item_${index}_remarks`]
+                              ? '#ef4444'
+                              : (isUnavailable && !item.remarks?.trim() ? '#f59e0b' : '#cbd5e1'),
+                            backgroundColor: errors[`item_${index}_remarks`]
+                              ? '#fef2f2'
+                              : (isUnavailable && !item.remarks?.trim() ? '#fffbeb' : '#fff'),
+                          }}
+                        />
+                        {errors[`item_${index}_remarks`] && (
+                          <span
+                            className="indent-field-error"
+                            style={{ fontSize: '11px', color: '#ef4444', lineHeight: 1.2, marginTop: '2px' }}
+                          >
+                            {errors[`item_${index}_remarks`]}
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Required Date */}
