@@ -255,7 +255,7 @@ function drawIndentParties(doc, model, y) {
   const indentLines = [
     model.department || 'Department not assigned',
     model.requestedBy ? `Requested by: ${model.requestedBy}` : '',
-    model.priority ? `Priority: ${model.priority}` : '',
+    model.requiredDate ? `Required by: ${formatPdfDate(model.requiredDate)}` : '',
     model.reference ? `Reference: ${model.reference}` : '',
   ].filter(Boolean)
   const gap = 4
@@ -374,36 +374,18 @@ function drawSummary(doc, model, startY) {
     doc.text(value, x, y + 18)
   })
 
-  const rows = [
-    ['Line Items', model.summary.itemCount.toLocaleString('en-IN')],
-    ['Total Quantity', model.summary.totalQuantity.toLocaleString('en-IN')],
-  ]
-  doc.setDrawColor(...COLORS.border)
-  doc.roundedRect(rightX, y, rightWidth, 26, 1.5, 1.5, 'S')
-  rows.forEach(([label, value], index) => {
-    const rowY = y + 5 + (index * 6)
-    if (index > 0) doc.line(rightX, rowY - 3.5, rightX + rightWidth, rowY - 3.5)
-    doc.setTextColor(...COLORS.muted)
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(6.5)
-    doc.text(label, rightX + 3, rowY)
-    doc.setTextColor(...COLORS.ink)
-    doc.setFont('helvetica', 'bold')
-    doc.text(value, rightX + rightWidth - 3, rowY, { align: 'right' })
-  })
-
   doc.setFillColor(...COLORS.primary)
-  doc.roundedRect(rightX, y + 16, rightWidth, 10, 1.5, 1.5, 'F')
+  doc.roundedRect(rightX, y, rightWidth, 26, 1.5, 1.5, 'F')
   doc.setTextColor(...COLORS.white)
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(7.5)
-  doc.text('Estimated Value', rightX + 3, y + 22.3)
+  doc.setFontSize(8.5)
+  doc.text('Estimated Value', rightX + 6, y + 15)
   doc.text(
     model.summary.hasEstimatedValue
       ? formatPurchaseIndentCurrency(model.summary.estimatedValue)
       : '-',
-    rightX + rightWidth - 3,
-    y + 22.3,
+    rightX + rightWidth - 6,
+    y + 15,
     { align: 'right' },
   )
 

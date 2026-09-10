@@ -352,13 +352,38 @@ function getConvertedByName(indent, userMap) {
 }
 
 function getUpdatedByName(indent, userMap) {
-  return getReadablePersonName(
+  const name = getReadablePersonName(
     indent,
     ['updatedByName', 'UpdatedByName', 'modifiedByName', 'ModifiedByName', 'updatedBy', 'UpdatedBy', 'modifiedBy', 'ModifiedBy'],
     ['updatedById', 'UpdatedById', 'modifiedById', 'ModifiedById', 'updatedBy', 'UpdatedBy', 'modifiedBy', 'ModifiedBy'],
     userMap,
-    NOT_UPDATED,
+    '',
   )
+
+  if (name && name !== NOT_UPDATED) {
+    return name
+  }
+
+  // If approved or rejected or updated date exists, fallback to approver/rejecter/creator
+  const approvedPerson = getApprovedByName(indent, userMap)
+  if (approvedPerson && approvedPerson !== PENDING_APPROVAL) {
+    return approvedPerson
+  }
+
+  const rejectedPerson = getRejectedByName(indent, userMap)
+  if (rejectedPerson && rejectedPerson !== NOT_REJECTED) {
+    return rejectedPerson
+  }
+
+  const updatedDate = getFirstValue(indent, ['updatedAt', 'UpdatedAt', 'modifiedAt', 'ModifiedAt', 'updatedOn', 'UpdatedOn', 'modifiedOn', 'ModifiedOn'])
+  if (updatedDate) {
+    const createdPerson = getCreatedByName(indent, userMap)
+    if (createdPerson) {
+      return createdPerson
+    }
+  }
+
+  return NOT_UPDATED
 }
 
 function getSupplierDisplayName(indent, supplierMap) {

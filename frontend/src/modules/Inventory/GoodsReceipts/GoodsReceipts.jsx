@@ -2106,7 +2106,7 @@ function handlePrintGoodsReceipt(row, referenceData = {}, viewingPoItems = []) {
         <table class="indent-items-table">
           <thead>
             <tr>
-              <th style="width: 38px; text-align: center;">#</th>
+              <th style="width: 50px; text-align: center;">S.No.</th>
               <th style="text-align: left; min-width: 200px;">Product</th>
               <th style="width: 90px; text-align: center;">Variant</th>
               <th style="width: 95px; text-align: right;">Ordered Qty</th>
@@ -2134,8 +2134,8 @@ function handlePrintGoodsReceipt(row, referenceData = {}, viewingPoItems = []) {
                 <td style="text-align: right; color: #0f172a; font-weight: 700;">${item.receivedQuantity}</td>
                 <td style="text-align: center; color: #64748b;">${escapeHtml(item.unitName)}</td>
                 <td style="text-align: right; color: #334155;">${formatCurrency(item.unitPrice)}</td>
-                <td style="text-align: right; color: ${item.discountPercentage > 0 ? '#dc2626' : '#64748b'};">${item.discountPercentage}%</td>
-                <td style="text-align: right; color: #64748b;">${item.taxPercentage}%</td>
+                <td style="text-align: right; color: ${item.discountPercentage > 0 ? '#dc2626' : '#64748b'};">${item.discountPercentage > 0 ? `${item.discountPercentage}%` : '—'}</td>
+                <td style="text-align: right; color: #64748b;">${item.taxPercentage > 0 ? `${item.taxPercentage}%` : '—'}</td>
                 <td style="text-align: right; color: #0f172a;"><strong>${formatCurrency(item.lineTotal)}</strong></td>
               </tr>
             `).join('')}
@@ -5260,7 +5260,7 @@ function ResourcePage({ config, navigationContent = null }) {
                 <table className="indent-items-table" style={{ width: '100%', minWidth: '850px', borderCollapse: 'collapse', fontSize: '13px' }}>
                   <thead>
                     <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 5, color: '#475569', fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                      <th style={{ width: '38px', padding: '11px 10px', textAlign: 'center' }}>#</th>
+                      <th style={{ width: '52px', padding: '11px 10px', textAlign: 'center' }}>S.No.</th>
                       <th style={{ padding: '11px 12px', textAlign: 'left', minWidth: '220px' }}>Product</th>
                       <th style={{ width: '90px', padding: '11px 10px', textAlign: 'center' }}>Variant</th>
                       <th style={{ width: '95px', padding: '11px 12px', textAlign: 'right' }}>Ordered Qty</th>
@@ -5331,8 +5331,8 @@ function ResourcePage({ config, navigationContent = null }) {
                             <td style={{ textAlign: 'right', padding: '10px 12px', color: '#0f172a', fontWeight: 700 }}>{receivedQty}</td>
                             <td style={{ padding: '10px 10px', textAlign: 'center', color: '#64748b' }}>{unit}</td>
                             <td style={{ textAlign: 'right', padding: '10px 12px', color: '#334155' }}>{formatCurrency(unitPrice)}</td>
-                            <td style={{ textAlign: 'right', padding: '10px 12px', color: discountPct > 0 ? '#dc2626' : '#64748b' }}>{discountPct}%</td>
-                            <td style={{ textAlign: 'right', padding: '10px 12px', color: '#64748b' }}>{taxPct}%</td>
+                            <td style={{ textAlign: 'right', padding: '10px 12px', color: discountPct > 0 ? '#dc2626' : '#64748b' }}>{discountPct > 0 ? `${discountPct}%` : '—'}</td>
+                            <td style={{ textAlign: 'right', padding: '10px 12px', color: '#64748b' }}>{taxPct > 0 ? `${taxPct}%` : '—'}</td>
                             <td style={{ textAlign: 'right', padding: '10px 12px', color: '#0f172a' }}><strong>{formatCurrency(lineTotal)}</strong></td>
                           </tr>
                         )

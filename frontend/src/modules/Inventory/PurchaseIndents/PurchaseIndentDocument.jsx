@@ -90,9 +90,7 @@ function IndentInformationBlock({ model }) {
   return (
     <section className="invoice-document__address-block">
       <h2>Indent Information</h2>
-      <p className="invoice-document__party-company">{model.department || 'Department not assigned'}</p>
-      <ContactLine label="Requested by" value={model.requestedBy} />
-      <ContactLine label="Priority" value={model.priority} />
+      <ContactLine label="Required by" value={model.requiredDate ? displayDate(model.requiredDate) : ''} />
       <ContactLine label="Reference" value={model.reference} />
     </section>
   )
@@ -257,8 +255,6 @@ export default function PurchaseIndentDocument({ model, printRoot = false }) {
         </section>
 
         <section className="invoice-document__summary" aria-label="Purchase Indent totals">
-          <SummaryRow label="Line Items" value={summary.itemCount.toLocaleString('en-IN')} />
-          <SummaryRow label="Total Quantity" value={summary.totalQuantity.toLocaleString('en-IN')} />
           <SummaryRow
             label="Estimated Value"
             value={summary.hasEstimatedValue ? formatPurchaseIndentCurrency(summary.estimatedValue) : '-'}

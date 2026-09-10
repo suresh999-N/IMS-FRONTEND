@@ -239,6 +239,14 @@ function buildItem(item, index, indent, options = {}) {
     'CostPrice',
     'price',
     'Price',
+    'costPrice',
+    'CostPrice',
+    'purchasePrice',
+    'PurchasePrice',
+    'cost',
+    'Cost',
+    'product.costPrice',
+    'product.price',
   ])
   let unitPrice = numberValue(item, [
     'unitPrice',
@@ -251,6 +259,14 @@ function buildItem(item, index, indent, options = {}) {
     'CostPrice',
     'price',
     'Price',
+    'costPrice',
+    'CostPrice',
+    'purchasePrice',
+    'PurchasePrice',
+    'cost',
+    'Cost',
+    'product.costPrice',
+    'product.price',
   ])
 
   if (unitPrice <= 0 && (options.productMap || options.products)) {
@@ -377,30 +393,63 @@ function buildItem(item, index, indent, options = {}) {
 }
 
 function buildApprovalActivity(indent) {
+  const createdPerson = textValue(indent, ['createdByDisplay', 'createdByName', 'CreatedByName', 'createdBy', 'CreatedBy'])
+  const createdDate = firstValue(indent, ['createdAt', 'CreatedAt', 'createdOn', 'CreatedOn', 'createdDate', 'CreatedDate'])
+
+  const approvedPerson = textValue(indent, ['approvedByDisplay', 'approvedByName', 'ApprovedByName', 'approvedBy', 'ApprovedBy'])
+  const approvedDate = firstValue(indent, ['approvedAt', 'ApprovedAt', 'approvedOn', 'ApprovedOn', 'approvedDate', 'ApprovedDate'])
+
+  const rejectedPerson = textValue(indent, ['rejectedByDisplay', 'rejectedByName', 'RejectedByName', 'rejectedBy', 'RejectedBy'])
+  const rejectedDate = firstValue(indent, ['rejectedAt', 'RejectedAt', 'rejectedOn', 'RejectedOn', 'rejectedDate', 'RejectedDate'])
+
+  const directUpdatedPerson = textValue(indent, ['updatedByDisplay', 'updatedByName', 'UpdatedByName', 'modifiedByName', 'ModifiedByName', 'updatedBy', 'UpdatedBy'])
+  const directUpdatedDate = firstValue(indent, ['updatedAt', 'UpdatedAt', 'modifiedAt', 'ModifiedAt', 'updatedOn', 'UpdatedOn', 'modifiedOn', 'ModifiedOn'])
+
+  let updatedPerson = directUpdatedPerson
+  let updatedDate = directUpdatedDate
+
+  if (!updatedPerson || updatedPerson === 'Not Updated') {
+    if (approvedPerson) {
+      updatedPerson = approvedPerson
+    } else if (rejectedPerson) {
+      updatedPerson = rejectedPerson
+    } else if (updatedDate) {
+      updatedPerson = createdPerson
+    }
+  }
+
+  if (!updatedDate) {
+    if (approvedDate) {
+      updatedDate = approvedDate
+    } else if (rejectedDate) {
+      updatedDate = rejectedDate
+    }
+  }
+
   return [
     {
       key: 'created',
       label: 'Created',
-      person: textValue(indent, ['createdByDisplay', 'createdByName', 'CreatedByName', 'createdBy', 'CreatedBy']),
-      date: firstValue(indent, ['createdAt', 'CreatedAt', 'createdOn', 'CreatedOn', 'createdDate', 'CreatedDate']),
+      person: createdPerson,
+      date: createdDate,
     },
     {
       key: 'updated',
       label: 'Updated',
-      person: textValue(indent, ['updatedByDisplay', 'updatedByName', 'UpdatedByName', 'modifiedByName', 'ModifiedByName', 'updatedBy', 'UpdatedBy']),
-      date: firstValue(indent, ['updatedAt', 'UpdatedAt', 'modifiedAt', 'ModifiedAt', 'updatedOn', 'UpdatedOn', 'modifiedOn', 'ModifiedOn']),
+      person: updatedPerson,
+      date: updatedDate,
     },
     {
       key: 'approved',
       label: 'Approved',
-      person: textValue(indent, ['approvedByDisplay', 'approvedByName', 'ApprovedByName', 'approvedBy', 'ApprovedBy']),
-      date: firstValue(indent, ['approvedAt', 'ApprovedAt', 'approvedOn', 'ApprovedOn', 'approvedDate', 'ApprovedDate']),
+      person: approvedPerson,
+      date: approvedDate,
     },
     {
       key: 'rejected',
       label: 'Rejected',
-      person: textValue(indent, ['rejectedByDisplay', 'rejectedByName', 'RejectedByName', 'rejectedBy', 'RejectedBy']),
-      date: firstValue(indent, ['rejectedAt', 'RejectedAt', 'rejectedOn', 'RejectedOn', 'rejectedDate', 'RejectedDate']),
+      person: rejectedPerson,
+      date: rejectedDate,
     },
     {
       key: 'converted',
