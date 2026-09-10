@@ -2980,6 +2980,7 @@ function ResourcePage({ config, navigationContent = null }) {
   const [notificationFilters, setNotificationFilters] = useState({ read: 'all', type: 'all' })
   const [selectedSubCategoryIds, setSelectedSubCategoryIds] = useState([])
   const [selectedProductStyleRowIds, setSelectedProductStyleRowIds] = useState([])
+  const [selectedGoodsReceiptIds, setSelectedGoodsReceiptIds] = useState([])
 
   const canCreate = (config.canCreate ?? true) && hasPermission(config.permissionKey, 'create')
   const canUpdate = (config.canUpdate ?? true) && hasPermission(config.permissionKey, 'edit')
@@ -3489,6 +3490,12 @@ function ResourcePage({ config, navigationContent = null }) {
   }, [rows, selectedProductStyleRowIds])
   const hasSelectedProductStyleRows = selectedProductStyleRows.length > 0
 
+  const selectedGoodsReceipts = useMemo(() => {
+    const selectedIdSet = new Set(selectedGoodsReceiptIds.map(String))
+    return rows.filter((row) => selectedIdSet.has(String(row.id || '')))
+  }, [rows, selectedGoodsReceiptIds])
+  const hasSelectedGoodsReceipts = selectedGoodsReceipts.length > 0
+
   useEffect(() => {
     if (!isSubCategoriesPage) {
       return
@@ -3506,6 +3513,15 @@ function ResourcePage({ config, navigationContent = null }) {
     const visibleIdSet = new Set(rows.map((row, index) => getSelectionRowKey(row, index)))
     setSelectedProductStyleRowIds((currentValue) => currentValue.filter((id) => visibleIdSet.has(String(id))))
   }, [isProductStylePage, rows])
+
+  useEffect(() => {
+    if (!isGoodsReceiptsPage) {
+      return
+    }
+
+    const visibleIdSet = new Set(rows.map((row) => String(row.id || '')))
+    setSelectedGoodsReceiptIds((currentValue) => currentValue.filter((id) => visibleIdSet.has(String(id))))
+  }, [isGoodsReceiptsPage, rows])
 
   async function handleSave(dataArg) {
     const payload = dataArg?.payload || dataArg || {}
@@ -3867,6 +3883,43 @@ function ResourcePage({ config, navigationContent = null }) {
         message: `${selectedSubCategories.length} ${config.entityName} record${selectedSubCategories.length === 1 ? '' : 's'} deleted successfully.`,
       })
       notifyCatalogStructureUpdate(config, 'deleted')
+      await loadRows({ force: true })
+    } catch (deleteError) {
+      showToast({
+        type: 'error',
+        title: config.title,
+        message:
+          deleteError instanceof Error
+            ? deleteError.message
+            : `Unable to delete ${config.entityName.toLowerCase()}.`,
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  async function handleBulkGoodsReceiptDelete() {
+    if (!canDelete || selectedGoodsReceipts.length === 0) {
+      return
+    }
+
+    setIsDeleting(true)
+
+    try {
+      for (const row of selectedGoodsReceipts) {
+        const response = await deleteResource(config, row.id)
+
+        if (!response.success) {
+          throw new Error(getDeleteErrorMessage(config, response.error))
+        }
+      }
+
+      setSelectedGoodsReceiptIds([])
+      showToast({
+        type: 'success',
+        title: config.title,
+        message: `${selectedGoodsReceipts.length} ${config.entityName} record${selectedGoodsReceipts.length === 1 ? '' : 's'} deleted successfully.`,
+      })
       await loadRows({ force: true })
     } catch (deleteError) {
       showToast({
@@ -4808,11 +4861,48 @@ function ResourcePage({ config, navigationContent = null }) {
       </select>
     </FilterBar>
   ) : null
-  const resolvedFilterContent = isSubCategoriesPage
-    ? subCategorySelectedToolbarContent
-    : isProductStylePage && hasSelectedProductStyleRows
-      ? productStyleSelectedToolbarContent
-      : notificationFilterContent
+  const goodsReceiptSelectedToolbarContent = hasSelectedGoodsReceipts ? (
+    <FilterBar className="resource-center__product-style-selection-actions" ariaLabel="Selected Goods Receipts actions">
+      <div className="resource-center__product-style-selection-summary" aria-live="polite">
+        <Check size={15} />
+        <strong>{selectedGoodsReceipts.length} selected</strong>
+      </div>
+      <button
+        type="button"
+        className="button button-secondary resource-center__product-style-selection-button"
+        onClick={() => exportResourceRowsCsv(config, selectedGoodsReceipts)}
+      >
+        <Download size={15} />
+        Export
+      </button>
+      <button
+        type="button"
+        className="button button-secondary resource-center__product-style-selection-button"
+        onClick={() => printResourceRows(config, selectedGoodsReceipts)}
+      >
+        <Printer size={15} />
+        Print
+      </button>
+      {canDelete ? (
+        <button
+          type="button"
+          className="button button-secondary resource-center__product-style-selection-button resource-center__product-style-selection-button--danger"
+          onClick={handleBulkGoodsReceiptDelete}
+          disabled={isDeleting}
+        >
+          <Trash2 size={15} />
+          Delete
+        </button>
+      ) : null}
+    </FilterBar>
+  ) : null
+  const resolvedFilterContent = isGoodsReceiptsPage && hasSelectedGoodsReceipts
+    ? goodsReceiptSelectedToolbarContent
+    : isSubCategoriesPage
+      ? subCategorySelectedToolbarContent
+      : isProductStylePage && hasSelectedProductStyleRows
+        ? productStyleSelectedToolbarContent
+        : notificationFilterContent
   const resolvedToolbarContent = isProductStylePage && hasSelectedProductStyleRows
     ? productStyleSelectedRightContent
     : isSubCategoriesPage
@@ -5017,9 +5107,9 @@ function ResourcePage({ config, navigationContent = null }) {
           rowClassName={isNotificationsPage ? (row) => (getNotificationReadState(row) ? 'is-read' : 'is-unread') : undefined}
           defaultSortKey={isProductStylePage ? config.columns?.[0]?.key || '' : isSubCategoriesPage ? 'name' : isInventoryCompactPage ? config.columns?.[0]?.key || '' : isNotificationsPage ? 'createdAt' : isInvoicesPage ? 'invoiceDate' : ''}
           defaultSortDirection={isNotificationsPage || isInvoicesPage ? 'desc' : 'asc'}
-          enableRowSelection={isSubCategoriesPage || isProductStylePage}
-          selectedRowKeys={isSubCategoriesPage ? selectedSubCategoryIds : isProductStylePage ? selectedProductStyleRowIds : undefined}
-          onSelectionChange={isSubCategoriesPage ? setSelectedSubCategoryIds : isProductStylePage ? setSelectedProductStyleRowIds : undefined}
+          enableRowSelection={isGoodsReceiptsPage || isSubCategoriesPage || isProductStylePage}
+          selectedRowKeys={isGoodsReceiptsPage ? selectedGoodsReceiptIds : isSubCategoriesPage ? selectedSubCategoryIds : isProductStylePage ? selectedProductStyleRowIds : undefined}
+          onSelectionChange={isGoodsReceiptsPage ? setSelectedGoodsReceiptIds : isSubCategoriesPage ? setSelectedSubCategoryIds : isProductStylePage ? setSelectedProductStyleRowIds : undefined}
           keyField={isProductStylePage ? '__resourceSelectionKey' : 'id'}
         />
       </div>
