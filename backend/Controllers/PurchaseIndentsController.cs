@@ -984,7 +984,12 @@ namespace IMSBackend.Controllers
                 quantity = i.RequiredQty,
                 availableStock = i.AvailableStock,
                 requiredDate = i.RequiredDate,
-                remarks = i.Remarks
+                remarks = i.Remarks,
+                unitPrice = i.Product.CostPrice ?? i.Product.Price ?? 0m,
+                rate = i.Product.CostPrice ?? i.Product.Price ?? 0m,
+                costPrice = i.Product.CostPrice ?? 0m,
+                price = i.Product.Price ?? 0m,
+                amount = i.RequiredQty * (i.Product.CostPrice ?? i.Product.Price ?? 0m)
             })
             .ToListAsync();
 
@@ -1118,6 +1123,8 @@ namespace IMSBackend.Controllers
                 remarks = indent.Remarks,
                 totalItems = indent.TotalItems,
                 totalQuantity = indent.TotalQuantity,
+                estimatedValue = items.Sum(x => x.amount),
+                totalAmount = items.Sum(x => x.amount),
                 createdBy = createdBy,
                 createdByName = UserName(createdBy),
                 updatedBy = updatedBy,

@@ -219,7 +219,7 @@ function buildSupplier(indent, supplierRecord) {
   }
 }
 
-function buildItem(item, index, indent) {
+function buildItem(item, index, indent, options = {}) {
   const quantity = numberValue(item, [
     'requiredQty',
     'RequiredQty',
@@ -235,19 +235,53 @@ function buildItem(item, index, indent) {
     'EstimatedRate',
     'rate',
     'Rate',
+    'costPrice',
+    'CostPrice',
     'price',
     'Price',
   ])
-  const unitPrice = numberValue(item, [
+  let unitPrice = numberValue(item, [
     'unitPrice',
     'UnitPrice',
     'estimatedRate',
     'EstimatedRate',
     'rate',
     'Rate',
+    'costPrice',
+    'CostPrice',
     'price',
     'Price',
   ])
+
+  if (unitPrice <= 0 && (options.productMap || options.products)) {
+    const productId = String(item.productId ?? item.ProductId ?? '')
+    const productSku = String(item.sku ?? item.SKU ?? item.productSku ?? '')
+    const productName = String(item.productName ?? item.ProductName ?? item.name ?? '')
+    const product = options.productMap?.get(productId) ||
+      (Array.isArray(options.products)
+        ? options.products.find(
+            (p) =>
+              (productId && String(p.id ?? p.productId) === productId) ||
+              (productSku && String(p.sku ?? p.SKU) === productSku) ||
+              (productName && String(p.name ?? p.Name).trim().toLowerCase() === productName.trim().toLowerCase())
+          )
+        : null)
+
+    if (product) {
+      unitPrice = numberValue(product, [
+        'costPrice',
+        'CostPrice',
+        'cost_price',
+        'cost',
+        'Cost',
+        'purchasePrice',
+        'PurchasePrice',
+        'price',
+        'Price',
+      ])
+    }
+  }
+
   const hasDirectAmount = hasValue(item, [
     'amount',
     'Amount',
@@ -272,6 +306,8 @@ function buildItem(item, index, indent) {
     'total',
     'Total',
   ])
+  const computedAmount = quantity * unitPrice
+  const amount = hasDirectAmount && directAmount > 0 ? directAmount : computedAmount
 
   return {
     id: String(firstValue(item, [
@@ -315,9 +351,9 @@ function buildItem(item, index, indent) {
       'UOM',
     ]),
     unitPrice,
-    hasUnitPrice,
-    amount: hasDirectAmount ? directAmount : quantity * unitPrice,
-    hasAmount: hasDirectAmount || hasUnitPrice,
+    hasUnitPrice: unitPrice > 0 || hasUnitPrice,
+    amount,
+    hasAmount: amount > 0 || hasDirectAmount || (hasUnitPrice && unitPrice > 0),
     requiredDate: firstValue(item, [
       'requiredDate',
       'RequiredDate',
@@ -401,7 +437,7 @@ export function formatPurchaseIndentCurrency(value) {
 export function buildPurchaseIndentDocumentModel(indent = {}, options = {}) {
   const rawItems = Array.isArray(indent.items) ? indent.items : []
   const items = (rawItems.length > 0 ? rawItems : [indent])
-    .map((item, index) => buildItem(item, index, indent))
+    .map((item, index) => buildItem(item, index, indent, options))
   const directEstimatedValue = numberValue(indent, [
     'estimatedValue',
     'EstimatedValue',
@@ -410,8 +446,8 @@ export function buildPurchaseIndentDocumentModel(indent = {}, options = {}) {
     'amount',
     'Amount',
   ])
-  const calculatedEstimatedValue = items.reduce((sum, item) => sum + item.amount, 0)
-  const estimatedValue = directEstimatedValue || calculatedEstimatedValue
+  const calculatedEstimatedValue = items.reduce((sum, item) => sum + (item.amount || 0), 0)
+  const estimatedValue = directEstimatedValue > 0 ? directEstimatedValue : calculatedEstimatedValue
   const supplier = buildSupplier(indent, options.supplier)
   const status = textValue(indent, ['status', 'Status'], 'Pending')
   const approvedBy = textValue(indent, [
@@ -485,7 +521,7 @@ export function buildPurchaseIndentDocumentModel(indent = {}, options = {}) {
       itemCount: items.length,
       totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
       estimatedValue,
-      hasEstimatedValue: directEstimatedValue > 0 || items.some((item) => item.hasAmount),
+      hasEstimatedValue: estimatedValue > 0 || directEstimatedValue > 0 || items.some((item) => item.hasAmount),
     },
     remarks: textValue(indent, ['remarks', 'Remarks', 'notes', 'Notes']),
     terms: normalizeTerms(firstValue(indent, [

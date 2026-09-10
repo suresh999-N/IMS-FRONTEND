@@ -23,6 +23,7 @@ import {
 import { getInvoiceCompanyProfile } from '../../../api/businessApi'
 import { apiRequest, IMS_DATA_MUTATION_EVENT } from '../../../api/apiClient'
 import { getSuppliers } from '../../../api/suppliersApi'
+import { getProducts } from '../../../api/productApi'
 import { showToast } from '../../../components/common/toast'
 import FormModal from '../../../layouts/FormModal'
 import { useAuth } from '../../../hooks/useAuth'
@@ -871,23 +872,66 @@ export default function PurchaseIndentsScreen({
       throw new Error('Purchase Indent identifier is unavailable. The document was not generated.')
     }
 
-    const [indentResponse, companyResponse] = await Promise.all([
+    const [indentResponse, companyResponse, productsResponse] = await Promise.all([
       getPurchaseIndent(id),
       getInvoiceCompanyProfile(),
+      getProducts({ pageSize: 500 }).catch(() => null),
     ])
 
     if (!indentResponse.success || !indentResponse.data) {
       throw new Error(indentResponse.error || 'Unable to load complete Purchase Indent data.')
     }
 
+    const products = productsResponse?.success
+      ? (Array.isArray(productsResponse.data?.data)
+          ? productsResponse.data.data
+          : Array.isArray(productsResponse.data)
+            ? productsResponse.data
+            : [])
+      : []
+
+    const productMap = new Map(
+      products.map((p) => [String(p.id ?? p.productId), p])
+    )
+
     const responseIndent = indentResponse.data?.data || indentResponse.data
+    const rawItems = responseIndent?.items?.length
+      ? responseIndent.items
+      : indent?.items || []
+
+    const enrichedItems = rawItems.map((item) => {
+      const product = productMap.get(String(item.productId))
+      const rate = Number(
+        item.unitPrice ??
+        item.rate ??
+        item.costPrice ??
+        item.price ??
+        product?.costPrice ??
+        product?.cost ??
+        product?.purchasePrice ??
+        product?.price ??
+        0
+      )
+      const qty = Number(item.requiredQty ?? item.quantity ?? 1)
+      const amount = Number(
+        item.amount ??
+        (rate * qty)
+      )
+
+      return {
+        ...item,
+        unitPrice: rate,
+        rate,
+        costPrice: product?.costPrice ?? rate,
+        amount,
+      }
+    })
+
     const fullIndent = withReadableIndentFields(
       normalizeIndent({
         ...indent,
         ...responseIndent,
-        items: responseIndent?.items?.length
-          ? responseIndent.items
-          : indent?.items || [],
+        items: enrichedItems,
       }),
       userMap,
       supplierMap,
@@ -896,6 +940,8 @@ export default function PurchaseIndentsScreen({
       companyProfile: companyResponse.success ? companyResponse.data : {},
       supplier: getSupplierRecord(fullIndent, backendSuppliers),
       generatedBy: getCurrentUserName(user),
+      products,
+      productMap,
     })
     const validationError = validatePurchaseIndentDocumentModel(model)
 
