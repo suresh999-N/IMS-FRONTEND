@@ -2145,18 +2145,18 @@ function handlePrintGoodsReceipt(row, referenceData = {}, viewingPoItems = []) {
 
       <div class="goods-receipt-details__summary">
         <div class="summary-line">
-          <span style="color: #64748b;">Subtotal:</span>
-          <strong style="color: #0f172a;">${formatCurrency(totals.subtotal)}</strong>
+          <span style="color: #475569; font-weight: 600;">Subtotal:</span>
+          <strong style="color: #0f172a; font-weight: 700; text-align: right;">${formatCurrency(totals.subtotal)}</strong>
         </div>
         ${totals.totalDiscount > 0 ? `
           <div class="summary-line">
-            <span style="color: #64748b;">Total Discount:</span>
-            <span style="color: #dc2626; font-weight: 650;">-${formatCurrency(totals.totalDiscount)}</span>
+            <span style="color: #475569; font-weight: 600;">Total Discount:</span>
+            <strong style="color: #dc2626; font-weight: 700; text-align: right;">-${formatCurrency(totals.totalDiscount)}</strong>
           </div>
         ` : ''}
         <div class="summary-line">
-          <span style="color: #64748b;">Tax Total:</span>
-          <strong style="color: #059669;">+${formatCurrency(totals.totalTax)}</strong>
+          <span style="color: #475569; font-weight: 600;">Tax Total:</span>
+          <strong style="color: #059669; font-weight: 700; text-align: right;">+${formatCurrency(totals.totalTax)}</strong>
         </div>
         <div class="summary-line summary-line--grand">
           <strong style="color: #0f172a;">Grand Total:</strong>
@@ -5261,15 +5261,15 @@ function ResourcePage({ config, navigationContent = null }) {
                   <thead>
                     <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 5, color: '#475569', fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                       <th style={{ width: '52px', padding: '11px 10px', textAlign: 'center' }}>S.No.</th>
-                      <th style={{ padding: '11px 12px', textAlign: 'left', minWidth: '220px' }}>Product</th>
+                      <th style={{ padding: '11px 12px', textAlign: 'center', minWidth: '220px' }}>Product</th>
                       <th style={{ width: '90px', padding: '11px 10px', textAlign: 'center' }}>Variant</th>
-                      <th style={{ width: '95px', padding: '11px 12px', textAlign: 'right' }}>Ordered Qty</th>
-                      <th style={{ width: '95px', padding: '11px 12px', textAlign: 'right' }}>Received Qty</th>
+                      <th style={{ width: '95px', padding: '11px 12px', textAlign: 'center' }}>Ordered Qty</th>
+                      <th style={{ width: '95px', padding: '11px 12px', textAlign: 'center' }}>Received Qty</th>
                       <th style={{ width: '65px', padding: '11px 10px', textAlign: 'center' }}>Unit</th>
-                      <th style={{ width: '105px', padding: '11px 12px', textAlign: 'right' }}>Unit Price</th>
-                      <th style={{ width: '85px', padding: '11px 12px', textAlign: 'right' }}>Discount %</th>
-                      <th style={{ width: '75px', padding: '11px 12px', textAlign: 'right' }}>Tax %</th>
-                      <th style={{ width: '110px', padding: '11px 12px', textAlign: 'right' }}>Line Total</th>
+                      <th style={{ width: '105px', padding: '11px 12px', textAlign: 'center' }}>Unit Price</th>
+                      <th style={{ width: '85px', padding: '11px 12px', textAlign: 'center' }}>Discount %</th>
+                      <th style={{ width: '75px', padding: '11px 12px', textAlign: 'center' }}>Tax %</th>
+                      <th style={{ width: '110px', padding: '11px 12px', textAlign: 'center' }}>Line Total</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -5344,22 +5344,22 @@ function ResourcePage({ config, navigationContent = null }) {
 
               <div className="goods-receipt-details__summary" style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', width: '290px', padding: '5px 0', fontSize: '13px' }}>
-                  <span style={{ color: '#64748b' }}>Subtotal:</span>
-                  <strong style={{ color: '#0f172a' }}>{formatCurrency(viewingRecordTotals.subtotal)}</strong>
+                  <span style={{ color: '#475569', fontWeight: 600 }}>Subtotal:</span>
+                  <strong style={{ color: '#0f172a', fontWeight: 700, textAlign: 'right' }}>{formatCurrency(viewingRecordTotals.subtotal)}</strong>
                 </div>
                 {viewingRecordTotals.totalDiscount > 0 ? (
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '290px', padding: '5px 0', fontSize: '13px' }}>
-                    <span style={{ color: '#64748b' }}>Total Discount:</span>
-                    <span style={{ color: '#dc2626', fontWeight: 650 }}>-{formatCurrency(viewingRecordTotals.totalDiscount)}</span>
+                    <span style={{ color: '#475569', fontWeight: 600 }}>Total Discount:</span>
+                    <strong style={{ color: '#dc2626', fontWeight: 700, textAlign: 'right' }}>-{formatCurrency(viewingRecordTotals.totalDiscount)}</strong>
                   </div>
                 ) : null}
                 <div style={{ display: 'flex', justifyContent: 'space-between', width: '290px', padding: '5px 0', fontSize: '13px' }}>
-                  <span style={{ color: '#64748b' }}>Tax Total:</span>
-                  <strong style={{ color: '#059669' }}>+{formatCurrency(viewingRecordTotals.totalTax)}</strong>
+                  <span style={{ color: '#475569', fontWeight: 600 }}>Tax Total:</span>
+                  <strong style={{ color: '#059669', fontWeight: 700, textAlign: 'right' }}>+{formatCurrency(viewingRecordTotals.totalTax)}</strong>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', width: '290px', borderTop: '2px solid #e2e8f0', paddingTop: '10px', marginTop: '4px', fontSize: '15px' }}>
-                  <strong style={{ color: '#0f172a' }}>Grand Total:</strong>
-                  <strong style={{ color: '#047857', fontSize: '16px', fontWeight: 800 }}>{formatCurrency(viewingRecordTotals.grandTotal)}</strong>
+                  <strong style={{ color: '#0f172a', fontWeight: 750 }}>Grand Total:</strong>
+                  <strong style={{ color: '#047857', fontSize: '16px', fontWeight: 800, textAlign: 'right' }}>{formatCurrency(viewingRecordTotals.grandTotal)}</strong>
                 </div>
               </div>
             </section>

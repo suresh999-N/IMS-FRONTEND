@@ -318,6 +318,14 @@ export function sanitizeApiError(message, status = 0) {
     return 'We are having trouble completing this request right now.'
   }
 
+  if (/the\s+dto\s+field\s+is\s+required/i.test(rawMessage)) {
+    return 'Please fill in all mandatory Goods Receipt fields.'
+  }
+
+  if (/\bdto\b/i.test(rawMessage)) {
+    return rawMessage.replace(/\bthe\s+dto\s+field\b/gi, 'The required form field').replace(/\bdto\b/gi, 'form data')
+  }
+
   if (/request failed with status/i.test(rawMessage)) {
     return 'The request could not be completed. Please try again.'
   }

@@ -352,6 +352,7 @@
 .indent-items-table {
   width: 100%;
   border-collapse: collapse;
+  text-align: left;
   font-size: 13px;
   min-width: 0;
 }
