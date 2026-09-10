@@ -706,8 +706,92 @@ button.dashboard-status:active {
   color: #a16207;
 }
 
+.low-stock-widget__count.is-critical {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
 .low-stock-widget__count.is-healthy {
   background: #f0fdf4;
+  color: #15803d;
+}
+
+.low-stock-widget__tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  margin-bottom: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.low-stock-widget__tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.low-stock-widget__tab:hover {
+  color: #1e293b;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.low-stock-widget__tab.is-active {
+  color: #0f172a;
+  background: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.low-stock-widget__tab.is-active.is-low-stock {
+  color: #a16207;
+}
+
+.low-stock-widget__tab.is-active.is-out-of-stock {
+  color: #dc2626;
+}
+
+.low-stock-widget__tab-icon {
+  flex-shrink: 0;
+}
+
+.low-stock-widget__tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+}
+
+.low-stock-widget__tab-badge.is-warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.low-stock-widget__tab-badge.is-critical {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.low-stock-widget__tab-badge.is-healthy {
+  background: #dcfce7;
   color: #15803d;
 }
 

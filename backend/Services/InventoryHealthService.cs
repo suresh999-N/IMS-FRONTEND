@@ -64,13 +64,14 @@ public sealed class InventoryHealthService
     public async Task<int> GetLowStockCount(CancellationToken cancellationToken = default)
     {
         return await GetInventoryRows()
-            .CountAsync(item => item.CurrentStock <= item.ReorderLevel, cancellationToken);
+            .CountAsync(item => item.CurrentStock > 0 && item.CurrentStock <= item.ReorderLevel, cancellationToken);
     }
 
     public async Task<InventoryHealthStatusDto> GetInventoryHealthStatus(CancellationToken cancellationToken = default)
     {
         var lowStockProducts = await GetLowStockProducts(cancellationToken);
         var outOfStockCount = lowStockProducts.Count(item => item.CurrentStock <= 0);
+        var actualLowStockCount = lowStockProducts.Count(item => item.CurrentStock > 0 && item.CurrentStock <= item.ReorderLevel);
 
         if (lowStockProducts.Count == 0)
         {
@@ -86,7 +87,7 @@ public sealed class InventoryHealthService
 
         return new InventoryHealthStatusDto
         {
-            LowStockCount = lowStockProducts.Count,
+            LowStockCount = actualLowStockCount,
             OutOfStockCount = outOfStockCount,
             Status = outOfStockCount > 0 ? "Critical" : "Attention",
             Tone = "danger",

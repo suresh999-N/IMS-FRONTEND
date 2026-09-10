@@ -228,7 +228,7 @@ function buildInsights({
       description: 'No low-stock products are currently detected.',
     })
   } else if (lowStockProducts > 0) {
-    const firstLowStockItem = safeLowStockItems[0]
+    const firstLowStockItem = safeLowStockItems.find((item) => Number(item.stock) > 0) || safeLowStockItems[0]
     insights.push({
       tone: 'warning',
       title: lowStockProducts === 1 ? 'Replenishment needed' : 'Restocking required',
@@ -368,7 +368,14 @@ export default function Dashboard() {
   const totalProducts = readNumber(summary, 'totalProducts', 'TotalProducts')
   const totalCustomers = readNumber(summary, 'totalCustomers', 'TotalCustomers')
   const totalSuppliers = readNumber(summary, 'totalSuppliers', 'TotalSuppliers')
-  const lowStockProducts = readNumber(summary, 'lowStockProducts', 'LowStockProducts')
+  const lowStockProducts = useMemo(() => {
+    if (Array.isArray(dashboard.lowStock) && dashboard.lowStock.length > 0) {
+      return dashboard.lowStock.filter(
+        (item) => Number(item.stock) > 0 && Number(item.stock) <= Number(item.reorderLevel ?? 10),
+      ).length
+    }
+    return readNumber(summary, 'lowStockProducts', 'LowStockProducts')
+  }, [dashboard.lowStock, summary])
   const totalSales = readNumber(summary, 'totalSales', 'TotalSales')
   const totalPurchases = readNumber(summary, 'totalPurchases', 'TotalPurchases')
   const latestMonthlyRevenue = getLatestValue(dashboard.monthlySales, 'totalSales', 'TotalSales')

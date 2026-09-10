@@ -745,6 +745,12 @@ export function normalizeDashboardPayload(responses) {
     availableQty: number(item?.availableQuantity ?? item?.AvailableQuantity ?? item?.currentStock ?? item?.CurrentStock),
     status: text(item?.status ?? item?.Status),
   })) : []
+  const lowStockOnly = normalizedLowStock.filter(
+    (item) => Number(item.stock) > 0 && Number(item.stock) <= Number(item.reorderLevel ?? 10),
+  )
+  const outOfStockOnly = normalizedLowStock.filter(
+    (item) => Number(item.stock) <= 0 || String(item.status || '').toLowerCase() === 'out of stock',
+  )
   const summaryData = summary.success ? getResponseData(summary, {}) ?? {} : {}
   const productRows = productCatalog?.success ? getResponseList(productCatalog, 'products') : []
   const customerRows = customers?.success ? getResponseList(customers, 'customers') : []
@@ -763,9 +769,11 @@ export function normalizeDashboardPayload(responses) {
         ? supplierRows.length
         : number(summaryData.totalSuppliers ?? summaryData.TotalSuppliers),
       lowStockProducts: lowStock.success
-        ? normalizedLowStock.length
+        ? lowStockOnly.length
         : number(summaryData.lowStockProducts ?? summaryData.LowStockProducts),
-      outOfStockProducts: number(summaryData.outOfStockProducts ?? summaryData.OutOfStockProducts),
+      outOfStockProducts: lowStock.success
+        ? outOfStockOnly.length
+        : number(summaryData.outOfStockProducts ?? summaryData.OutOfStockProducts),
       inventoryHealthStatus: text(summaryData.inventoryHealthStatus ?? summaryData.InventoryHealthStatus),
       inventoryHealthTone: text(summaryData.inventoryHealthTone ?? summaryData.InventoryHealthTone),
       inventoryHealthMessage: text(summaryData.inventoryHealthMessage ?? summaryData.InventoryHealthMessage),

@@ -1,25 +1,95 @@
 import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import SkeletonCard from './SkeletonCard'
 
+function isOutOfStockItem(item) {
+  const stock = Number(item?.stock ?? item?.currentStock ?? item?.quantity ?? 0)
+  const status = String(item?.status ?? '').trim().toLowerCase()
+  return stock <= 0 || status === 'out of stock'
+}
+
+function isLowStockItem(item) {
+  const stock = Number(item?.stock ?? item?.currentStock ?? item?.quantity ?? 0)
+  if (stock <= 0) return false
+  const reorder = Number(item?.reorderLevel ?? item?.ReorderLevel ?? 10)
+  const status = String(item?.status ?? '').trim().toLowerCase()
+  return stock <= reorder || status === 'low stock'
+}
+
 export default function LowStockWidget({ items = [], isLoading }) {
   const safeItems = Array.isArray(items) ? items : []
-  const isHealthy = !isLoading && safeItems.length === 0
+  const [activeSection, setActiveSection] = useState('low-stock')
+
+  const lowStockItems = useMemo(
+    () => safeItems.filter(isLowStockItem),
+    [safeItems],
+  )
+
+  const outOfStockItems = useMemo(
+    () => safeItems.filter(isOutOfStockItem),
+    [safeItems],
+  )
+
+  const isLowStockActive = activeSection === 'low-stock'
+  const displayItems = isLowStockActive ? lowStockItems : outOfStockItems
+  const currentCount = displayItems.length
+  const viewAllTo = isLowStockActive
+    ? '/inventory/products?filter=low-stock'
+    : '/inventory/products?filter=out-of-stock'
+  const isHealthy = !isLoading && displayItems.length === 0
 
   return (
     <section className={`dashboard-panel low-stock-widget ${isHealthy ? 'is-healthy' : ''}`}>
       <div className="dashboard-panel__header">
         <div>
-          <h2>Low Stock</h2>
+          <h2>{isLowStockActive ? 'Low Stock' : 'Out of Stock'}</h2>
         </div>
         <div className="dashboard-panel__actions">
-          {safeItems.length > 0 && (
-            <Link className="dashboard-panel__link" to="/inventory/products?filter=low-stock">View all</Link>
+          {displayItems.length > 0 && (
+            <Link className="dashboard-panel__link" to={viewAllTo}>
+              View all
+            </Link>
           )}
-          <strong className={`low-stock-widget__count ${safeItems.length > 0 ? 'is-warning' : 'is-healthy'}`}>
-            {safeItems.length}
+          <strong
+            className={`low-stock-widget__count ${
+              isLowStockActive
+                ? (lowStockItems.length > 0 ? 'is-warning' : 'is-healthy')
+                : (outOfStockItems.length > 0 ? 'is-critical' : 'is-healthy')
+            }`}
+          >
+            {currentCount}
           </strong>
         </div>
+      </div>
+
+      <div className="low-stock-widget__tabs" role="tablist" aria-label="Stock status sections">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={isLowStockActive}
+          className={`low-stock-widget__tab ${isLowStockActive ? 'is-active is-low-stock' : ''}`}
+          onClick={() => setActiveSection('low-stock')}
+        >
+          <AlertTriangle size={14} className="low-stock-widget__tab-icon" />
+          <span>Low Stock</span>
+          <span className={`low-stock-widget__tab-badge ${lowStockItems.length > 0 ? 'is-warning' : 'is-healthy'}`}>
+            {lowStockItems.length}
+          </span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={!isLowStockActive}
+          className={`low-stock-widget__tab ${!isLowStockActive ? 'is-active is-out-of-stock' : ''}`}
+          onClick={() => setActiveSection('out-of-stock')}
+        >
+          <XCircle size={14} className="low-stock-widget__tab-icon" />
+          <span>Out of Stock</span>
+          <span className={`low-stock-widget__tab-badge ${outOfStockItems.length > 0 ? 'is-critical' : 'is-healthy'}`}>
+            {outOfStockItems.length}
+          </span>
+        </button>
       </div>
 
       {isLoading ? (
@@ -28,11 +98,11 @@ export default function LowStockWidget({ items = [], isLoading }) {
           <SkeletonCard variant="row" />
           <SkeletonCard variant="row" />
         </div>
-      ) : safeItems.length > 0 ? (
+      ) : displayItems.length > 0 ? (
         <div className="low-stock-widget__list">
-          {safeItems.slice(0, 50).map((item) => {
+          {displayItems.slice(0, 50).map((item) => {
             const isZeroStock = Number(item.stock) <= 0 || item.status === 'Critical' || item.status === 'Out of Stock'
-            const badgeLabel = isZeroStock ? 'Out of Stock' : (item.status || 'Low Stock')
+            const badgeLabel = isZeroStock ? 'Out of Stock' : (item.status && item.status !== 'Critical' ? item.status : 'Low Stock')
 
             return (
               <Link
@@ -61,8 +131,14 @@ export default function LowStockWidget({ items = [], isLoading }) {
       ) : (
         <div className="dashboard-empty dashboard-empty--success">
           <CheckCircle2 size={18} strokeWidth={2.5} />
-          <strong>No low-stock products found</strong>
-          <p>All items in your catalog are healthy and above reorder levels.</p>
+          <strong>
+            {isLowStockActive ? 'No low-stock products found' : 'No out-of-stock products found'}
+          </strong>
+          <p>
+            {isLowStockActive
+              ? 'All items in your catalog are healthy and above reorder levels.'
+              : 'All catalog products currently have available inventory in stock.'}
+          </p>
           <Link className="dashboard-empty__button" to="/inventory/products">
             Manage Catalog
           </Link>
