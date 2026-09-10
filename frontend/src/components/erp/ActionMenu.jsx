@@ -13,6 +13,8 @@ export default function ActionMenu({
   className = '',
   disabled = false,
   menuKey = '',
+  tooltip = null,
+  showTooltip = false,
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [popoverStyle, setPopoverStyle] = useState(null)
@@ -160,10 +162,8 @@ export default function ActionMenu({
     </div>
   ) : null
 
-  const tooltipText = !isOpen && iconOnly
-    ? label && label.startsWith('Actions for')
-      ? 'Actions'
-      : label || 'Actions'
+  const tooltipText = !isOpen && iconOnly && (tooltip || showTooltip)
+    ? tooltip || (label && label.startsWith('Actions for') ? 'Actions' : label || 'Actions')
     : undefined
 
   return (

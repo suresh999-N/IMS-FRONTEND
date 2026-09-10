@@ -4502,6 +4502,7 @@ function ResourcePage({ config, navigationContent = null }) {
           render: (row) => (
             <ActionMenu
               iconOnly
+              showTooltip={false}
               label="Goods Receipt actions"
               menuKey={row.id || getGoodsReceiptId(row)}
               actions={[
