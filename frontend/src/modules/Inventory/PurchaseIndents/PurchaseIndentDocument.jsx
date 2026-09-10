@@ -93,7 +93,6 @@ function IndentInformationBlock({ model }) {
       <p className="invoice-document__party-company">{model.department || 'Department not assigned'}</p>
       <ContactLine label="Requested by" value={model.requestedBy} />
       <ContactLine label="Priority" value={model.priority} />
-      <ContactLine label="Required by" value={model.requiredDate ? displayDate(model.requiredDate) : ''} />
       <ContactLine label="Reference" value={model.reference} />
     </section>
   )

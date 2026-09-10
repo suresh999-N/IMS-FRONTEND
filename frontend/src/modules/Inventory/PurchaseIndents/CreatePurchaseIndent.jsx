@@ -822,9 +822,9 @@ function PurchaseIndentForm({
             {errors.expectedDeliveryDate && <span className="indent-field-error">{errors.expectedDeliveryDate}</span>}
           </div>
 
-          {/* Request By */}
+          {/* Requested by */}
           <div className={`indent-field-group ${errors.requestedBy ? 'indent-field-group--error' : ''}`}>
-            <label>Request By <span className="required">*</span></label>
+            <label>Requested by <span className="required">*</span></label>
             <select
               id="indent-requested-by"
               name="requestedBy"

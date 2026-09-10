@@ -256,7 +256,6 @@ function drawIndentParties(doc, model, y) {
     model.department || 'Department not assigned',
     model.requestedBy ? `Requested by: ${model.requestedBy}` : '',
     model.priority ? `Priority: ${model.priority}` : '',
-    model.requiredDate ? `Required by: ${formatPdfDate(model.requiredDate)}` : '',
     model.reference ? `Reference: ${model.reference}` : '',
   ].filter(Boolean)
   const gap = 4
