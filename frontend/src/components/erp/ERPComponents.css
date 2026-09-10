@@ -325,6 +325,13 @@ button.erp-action-menu__trigger--icon,
   color: var(--primary);
 }
 
+.erp-export-menu__item:disabled,
+.erp-action-menu__item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: auto;
+}
+
 .erp-action-menu__item--danger,
 .erp-action-menu__item--danger * {
   color: #dc2626 !important;

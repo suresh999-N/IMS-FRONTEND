@@ -142,8 +142,12 @@ export default function ActionMenu({
             className={`erp-action-menu__item ${isDanger ? 'erp-action-menu__item--danger' : ''}`.trim()}
             role="menuitem"
             disabled={action.disabled || action.loading}
+            title={action.title}
             onClick={(event) => {
               event.stopPropagation()
+              if (action.disabled || action.loading) {
+                return
+              }
               setIsOpen(false)
               action.onClick?.()
             }}

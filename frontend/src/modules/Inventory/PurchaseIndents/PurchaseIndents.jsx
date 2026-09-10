@@ -984,6 +984,15 @@ export default function PurchaseIndentsScreen({
   }
 
   async function handleDownloadPdf(indent, preparedModel = null) {
+    if (String(indent?.status || preparedModel?.status || '').toLowerCase().includes('pending')) {
+      showToast({
+        type: 'warning',
+        title: 'Purchase Indents',
+        message: 'PDF download is disabled until the indent is approved or rejected.',
+      })
+      return
+    }
+
     const id = getIndentId(indent)
     setBusyAction({ id, key: 'pdf' })
 
@@ -1008,6 +1017,15 @@ export default function PurchaseIndentsScreen({
   }
 
   async function handlePrintIndent(indent, preparedModel = null) {
+    if (String(indent?.status || preparedModel?.status || '').toLowerCase().includes('pending')) {
+      showToast({
+        type: 'warning',
+        title: 'Purchase Indents',
+        message: 'Print is disabled until the indent is approved or rejected.',
+      })
+      return
+    }
+
     const id = getIndentId(indent)
     setBusyAction({ id, key: 'print' })
 
@@ -1063,6 +1081,16 @@ export default function PurchaseIndentsScreen({
         type: 'warning',
         title: 'Purchase Indents',
         message: 'Select at least one Purchase Indent to mail.',
+      })
+      return
+    }
+
+    const hasPending = safeRows.some((row) => String(row.status || '').toLowerCase().includes('pending'))
+    if (hasPending) {
+      showToast({
+        type: 'warning',
+        title: 'Purchase Indents',
+        message: 'Email is disabled until the indent is approved or rejected.',
       })
       return
     }
@@ -1671,38 +1699,49 @@ export default function PurchaseIndentsScreen({
               <PurchaseIndentDocument model={viewDocumentModel} />
 
               <div className="purchase-indent-details__actions">
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => handleDownloadPdf(viewTarget, viewDocumentModel)}
-                  disabled={busyAction?.key === 'pdf'}
-                >
-                  {busyAction?.key === 'pdf' ? <LoaderCircle className="animate-spin" size={15} /> : <Download size={15} />}
-                  Download PDF
-                </button>
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => handlePrintIndent(viewTarget, viewDocumentModel)}
-                  disabled={busyAction?.key === 'print'}
-                >
-                  {busyAction?.key === 'print' ? <LoaderCircle className="animate-spin" size={15} /> : <Printer size={15} />}
-                  Print
-                </button>
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => {
-                    const indentToMail = viewTarget
-                    setViewTarget(null)
-                    setViewDocumentModel(null)
-                    handleOpenMailCopy([indentToMail])
-                  }}
-                  disabled={busyAction?.key === 'mail'}
-                >
-                  {busyAction?.key === 'mail' ? <LoaderCircle className="animate-spin" size={15} /> : <Mail size={15} />}
-                  Mail Copy
-                </button>
+                {(() => {
+                  const isViewPending = String(viewTarget?.status || viewDocumentModel?.status || '').toLowerCase().includes('pending')
+                  return (
+                    <>
+                      <button
+                        type="button"
+                        className="button button-secondary"
+                        onClick={() => handleDownloadPdf(viewTarget, viewDocumentModel)}
+                        disabled={isViewPending || busyAction?.key === 'pdf'}
+                        title={isViewPending ? 'PDF download is disabled until the indent is approved or rejected' : undefined}
+                      >
+                        {busyAction?.key === 'pdf' ? <LoaderCircle className="animate-spin" size={15} /> : <Download size={15} />}
+                        Download PDF
+                      </button>
+                      <button
+                        type="button"
+                        className="button button-secondary"
+                        onClick={() => handlePrintIndent(viewTarget, viewDocumentModel)}
+                        disabled={isViewPending || busyAction?.key === 'print'}
+                        title={isViewPending ? 'Print is disabled until the indent is approved or rejected' : undefined}
+                      >
+                        {busyAction?.key === 'print' ? <LoaderCircle className="animate-spin" size={15} /> : <Printer size={15} />}
+                        Print
+                      </button>
+                      <button
+                        type="button"
+                        className="button button-secondary"
+                        onClick={() => {
+                          if (isViewPending) return
+                          const indentToMail = viewTarget
+                          setViewTarget(null)
+                          setViewDocumentModel(null)
+                          handleOpenMailCopy([indentToMail])
+                        }}
+                        disabled={isViewPending || busyAction?.key === 'mail'}
+                        title={isViewPending ? 'Email is disabled until the indent is approved or rejected' : undefined}
+                      >
+                        {busyAction?.key === 'mail' ? <LoaderCircle className="animate-spin" size={15} /> : <Mail size={15} />}
+                        Mail Copy
+                      </button>
+                    </>
+                  )
+                })()}
                 {canConvertIndent(viewTarget) ? (
                 <button
                   type="button"
