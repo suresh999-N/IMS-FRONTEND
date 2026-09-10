@@ -18,8 +18,11 @@ import {
   normalizeResourceRow,
   readResourceValue,
 } from '../../../api/resourceApi'
-import { getProducts, getProductById, getProductAttributes, getAttributeValues } from '../../../api/productApi'
-import { getDescriptiveProductName, getDescriptiveProductBarcode } from '../../../utils/productNameUtils'
+import {
+  getDescriptiveProductName,
+  getDescriptiveProductBarcode,
+  getDescriptiveVariantName,
+} from '../../../utils/productNameUtils'
 import { getStandardizedSku } from '../../../utils/skuUtils'
 import { getStockRegister } from '../../../api/stockApi'
 import { RESOURCE_CONFIGS } from '../../ResourceCenter/resourceConfigs'
@@ -235,11 +238,14 @@ export default function ProductVariants() {
 
         const mappedAttrs = mappedFromDirect.length > 0 ? mappedFromDirect : mappedFromList
 
+        const descriptiveVariant = getDescriptiveVariantName(variant, product, mappedAttrs)
+
         return {
           ...variant,
           id: variantId,
           variantId,
-          variantName,
+          variantName: descriptiveVariant,
+          rawVariantName: variant.variantName ?? variant.name ?? '',
           productName: descriptiveName,
           barcode: descriptiveBarcode,
           status: product ? product.status : 'Active',
@@ -422,7 +428,9 @@ export default function ProductVariants() {
       // Search text matches variant name, sku, product name, or attributes list
       if (searchTerm) {
         const query = searchTerm.toLowerCase()
-        const matchesName = item.variantName?.toLowerCase().includes(query)
+        const matchesName =
+          item.variantName?.toLowerCase().includes(query) ||
+          item.rawVariantName?.toLowerCase().includes(query)
         const matchesSku =
           item.sku?.toLowerCase().includes(query) ||
           getStandardizedSku(item.sku, item).toLowerCase().includes(query)
@@ -779,9 +787,11 @@ export default function ProductVariants() {
                         const selectedId = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
                         const prod = products.find((p) => String(p.productId ?? p.id) === String(selectedId))
                         const prodSku = prod?.sku ?? prod?.SKU ?? ''
+                        const autoVariant = prod ? getDescriptiveVariantName(null, prod) : ''
                         setFormValues((prev) => ({
                           ...prev,
                           productId: String(selectedId || ''),
+                          variantName: (!prev.variantName || /^default$/i.test(prev.variantName)) && autoVariant ? autoVariant : prev.variantName,
                           sku: prodSku ? `${prodSku}-VAR-${Math.floor(1000 + Math.random() * 9000)}`.toUpperCase() : prev.sku,
                         }))
                       }}

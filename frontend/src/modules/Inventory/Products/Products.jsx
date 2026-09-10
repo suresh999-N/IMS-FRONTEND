@@ -29,6 +29,7 @@ import ProductForm from './components/ProductForm'
 import StateBlock from '../../../components/common/StateBlock'
 import { StatusBadge } from '../../../components/erp'
 import { formatCurrency } from '../../../utils/helpers'
+import { getDescriptiveVariantName } from '../../../utils/productNameUtils'
 import './Products.css'
 
 const PRODUCT_CATALOG_UPDATED_EVENT = 'ims:product-catalog-updated'
@@ -179,9 +180,16 @@ function prepareProductPayload(values) {
   let variants = Array.isArray(values?.variants) ? values.variants : []
 
   if (variants.length === 0) {
+    const derivedVariantName =
+      getDescriptiveVariantName(null, values) ||
+      [values.variantColor, values.variantSize].filter(Boolean).join(' / ') ||
+      values.variantColor ||
+      values.variantSize ||
+      'Standard'
+
     variants = [
       {
-        variantName: 'Default',
+        variantName: derivedVariantName,
         sku: values.sku || '',
         priceDelta: 0,
         attributes: [],
@@ -211,18 +219,25 @@ function prepareProductPayload(values) {
     imageUrl: values.imageFile ? '' : values.image || '',
     image: values.imageFile ? '' : values.image || '',
 
-    variants: variants.map((variant, index) => ({
-      variantName: variant.variantName || `Variant-${index + 1}`,
-      sku: variant.sku || values.sku || '',
-      priceDelta: toSafeNumber(variant.priceDelta, 0),
+    variants: variants.map((variant, index) => {
+      const resolvedName =
+        variant.variantName && !/^default$/i.test(variant.variantName)
+          ? variant.variantName
+          : getDescriptiveVariantName(variant, values) || `Variant-${index + 1}`
 
-      attributes: (Array.isArray(variant.attributes) ? variant.attributes : [])
-        .map((attribute) => ({
-          attributeId: toNullableId(attribute.attributeId),
-          valueId: toNullableId(attribute.valueId),
-        }))
-        .filter((attribute) => attribute.attributeId && attribute.valueId),
-    })),
+      return {
+        variantName: resolvedName,
+        sku: variant.sku || values.sku || '',
+        priceDelta: toSafeNumber(variant.priceDelta, 0),
+
+        attributes: (Array.isArray(variant.attributes) ? variant.attributes : [])
+          .map((attribute) => ({
+            attributeId: toNullableId(attribute.attributeId),
+            valueId: toNullableId(attribute.valueId),
+          }))
+          .filter((attribute) => attribute.attributeId && attribute.valueId),
+      }
+    }),
   }
 }
 
