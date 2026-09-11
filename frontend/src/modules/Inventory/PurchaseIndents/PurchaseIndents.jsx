@@ -1225,19 +1225,14 @@ export default function PurchaseIndentsScreen({
     setMailFeedback('')
 
     try {
-      const { downloadProfessionalPurchaseIndentPdf } = await import('./purchaseIndentPdf')
-      for (const model of mailDraft.models) {
-        await downloadProfessionalPurchaseIndentPdf(model)
-      }
-
       const mailtoUrl = `mailto:${encodeURIComponent(mailDraft.recipient)}?subject=${encodeURIComponent(mailDraft.subject.trim())}&body=${encodeURIComponent(mailDraft.message.trim())}`
       window.location.href = mailtoUrl
       showToast({
         type: 'success',
         title: 'Purchase Indents',
         message: mailDraft.models.length === 1
-          ? 'Email draft opened and the Purchase Indent PDF was downloaded for attachment.'
-          : 'Email draft opened and the Purchase Indent PDFs were downloaded for attachment.',
+          ? 'Email draft opened successfully.'
+          : 'Email draft opened successfully for selected Purchase Indents.',
       })
       setMailDraft(null)
       setMailErrors({})
@@ -1917,8 +1912,8 @@ export default function PurchaseIndentsScreen({
                     <FileText size={18} />
                   </span>
                   <div className="purchase-indent-mail__attachment-copy">
-                    <strong>{getPurchaseIndentPdfFilename(model)}</strong>
-                    <span>Generated from Purchase Indent {model.indentNumber} and downloaded when the email draft opens.</span>
+                    <strong>{model.indentNumber}</strong>
+                    <span>Purchase Indent details will be pre-filled into your mail client.</span>
                   </div>
                 </div>
               ))}
