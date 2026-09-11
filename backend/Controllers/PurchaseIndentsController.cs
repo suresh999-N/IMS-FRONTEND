@@ -102,11 +102,15 @@ namespace IMSBackend.Controllers
 
 
 
+                var requiredDate = dto.RequiredDate <= dto.IndentDate
+                    ? dto.IndentDate.AddDays(7)
+                    : dto.RequiredDate;
+
                 var purchaseIndent = new PurchaseIndent
                 {
                     IndentNumber = indentNumber,
                     IndentDate = dto.IndentDate,
-                    RequiredDate = dto.RequiredDate,
+                    RequiredDate = requiredDate,
                     RequestedBy = dto.RequestedBy,
                     DepartmentId = dto.DepartmentId,
                     SupplierId = dto.SupplierId,
@@ -121,13 +125,7 @@ namespace IMSBackend.Controllers
                     IsDeleted = false
                 };
 
-
-
                 _context.PurchaseIndents.Add(purchaseIndent);
-
-
-
-
 
                 try
                 {
@@ -141,15 +139,15 @@ namespace IMSBackend.Controllers
                     });
                 }
 
-
-
                 foreach (var item in dto.Items)
                 {
                     var availableStock = await _context.Stocks
                     .Where(s => s.ProductId == item.ProductId)
                     .SumAsync(s => (decimal?)s.AvailableQuantity) ?? 0m;
 
-
+                    var itemRequiredDate = item.RequiredDate > dto.IndentDate
+                        ? item.RequiredDate
+                        : requiredDate;
 
                     var indentItem = new PurchaseIndentItem
                     {
@@ -158,15 +156,12 @@ namespace IMSBackend.Controllers
                         RequiredQty = item.RequiredQty,
                         UnitId = item.UnitId,
                         AvailableStock = availableStock,
-                        RequiredDate = item.RequiredDate,
+                        RequiredDate = itemRequiredDate,
                         Remarks = item.Remarks
                     };
 
-
-
                     _context.PurchaseIndentItems.Add(indentItem);
                 }
-
 
 
                 await _context.SaveChangesAsync();
@@ -339,8 +334,12 @@ namespace IMSBackend.Controllers
 
 
 
+                var requiredDate = dto.RequiredDate <= dto.IndentDate
+                    ? dto.IndentDate.AddDays(7)
+                    : dto.RequiredDate;
+
                 purchaseIndent.IndentDate = dto.IndentDate;
-                purchaseIndent.RequiredDate = dto.RequiredDate;
+                purchaseIndent.RequiredDate = requiredDate;
                 purchaseIndent.RequestedBy = dto.RequestedBy;
                 purchaseIndent.DepartmentId = dto.DepartmentId;
                 purchaseIndent.SupplierId = dto.SupplierId;
@@ -350,24 +349,14 @@ namespace IMSBackend.Controllers
                 purchaseIndent.TotalQuantity = dto.Items.Sum(x => x.RequiredQty);
                 purchaseIndent.UpdatedAt = DateTime.UtcNow;
 
-
-
                 await _context.SaveChangesAsync();
-
-
 
                 var oldItems = _context.PurchaseIndentItems
                 .Where(x => x.PurchaseIndentId == id);
 
-
-
                 _context.PurchaseIndentItems.RemoveRange(oldItems);
 
-
-
                 await _context.SaveChangesAsync();
-
-
 
                 foreach (var item in dto.Items)
                 {
@@ -375,7 +364,9 @@ namespace IMSBackend.Controllers
                     .Where(s => s.ProductId == item.ProductId)
                     .SumAsync(s => (decimal?)s.AvailableQuantity) ?? 0m;
 
-
+                    var itemRequiredDate = item.RequiredDate > dto.IndentDate
+                        ? item.RequiredDate
+                        : requiredDate;
 
                     await _context.PurchaseIndentItems.AddAsync(new PurchaseIndentItem
                     {
@@ -384,7 +375,7 @@ namespace IMSBackend.Controllers
                         RequiredQty = item.RequiredQty,
                         UnitId = item.UnitId,
                         AvailableStock = availableStock,
-                        RequiredDate = item.RequiredDate,
+                        RequiredDate = itemRequiredDate,
                         Remarks = item.Remarks
                     });
                 }

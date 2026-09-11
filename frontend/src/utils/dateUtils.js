@@ -261,3 +261,42 @@ export function formatExactTimestamp(value) {
   if (!exactTime) return relativeTime
   return `${exactTime} • ${relativeTime}`
 }
+
+/**
+ * Adds a specified number of days to a YYYY-MM-DD date string without UTC timezone shifting.
+ * @param {string|Date|null|undefined} dateStr
+ * @param {number} days
+ * @returns {string} e.g. "2026-09-15"
+ */
+export function addDaysToDate(dateStr, days = 7) {
+  const inputVal = toDateInputValue(dateStr) || getLocalTodayDate()
+  const parts = inputVal.split('-')
+  if (parts.length !== 3) return getLocalTodayDate()
+
+  const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
+  date.setDate(date.getDate() + days)
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+/**
+ * Returns rawRequiredDate if it is strictly later than indentDateStr, or defaults to indentDateStr + defaultDays.
+ * @param {string|Date|null|undefined} rawRequiredDate
+ * @param {string|Date|null|undefined} indentDateStr
+ * @param {number} defaultDays
+ * @returns {string} e.g. "2026-09-15"
+ */
+export function getLogicalRequiredDate(rawRequiredDate, indentDateStr, defaultDays = 7) {
+  const reqDate = toDateInputValue(rawRequiredDate)
+  const indDate = toDateInputValue(indentDateStr) || getLocalTodayDate()
+
+  if (reqDate && compareDateOnly(reqDate, indDate) > 0) {
+    return reqDate
+  }
+
+  return addDaysToDate(indDate, defaultDays)
+}
+

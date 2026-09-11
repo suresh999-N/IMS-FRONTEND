@@ -97,7 +97,10 @@ export default function ProductIdentity({
   const showImage = Boolean(blobUrl || rawImageSrc) && !hasImageError
 
   return (
-    <div className={`product-identity product-identity--${size} ${className}`.trim()}>
+    <div
+      className={`product-identity product-identity--${size} ${className}`.trim()}
+      title={displayName}
+    >
       {showImage ? (
         <img
           src={blobUrl || rawImageSrc}
@@ -113,8 +116,8 @@ export default function ProductIdentity({
       )}
 
       <span className="product-identity__copy">
-        <strong>{displayName}</strong>
-        {meta ? <span>{meta}</span> : null}
+        <strong title={displayName}>{displayName}</strong>
+        {meta ? <span title={meta}>{meta}</span> : null}
       </span>
     </div>
   )

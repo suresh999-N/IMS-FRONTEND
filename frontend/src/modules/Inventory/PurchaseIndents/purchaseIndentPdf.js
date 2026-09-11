@@ -222,13 +222,16 @@ function drawMetadata(doc, model, y) {
 }
 
 function getSupplierLines(supplier) {
+  const displayName = supplier.companyName || supplier.name || ''
+  const contactPerson = supplier.name && supplier.name !== supplier.companyName ? supplier.name : ''
+
   return [
-    supplier.companyName,
-    supplier.name && supplier.name !== supplier.companyName ? supplier.name : '',
-    supplier.address,
+    displayName ? `Name: ${displayName}` : '',
+    contactPerson ? `Contact: ${contactPerson}` : '',
     supplier.gstNumber ? `GSTIN: ${supplier.gstNumber}` : '',
     supplier.phone ? `Phone: ${supplier.phone}` : '',
     supplier.email ? `Email: ${supplier.email}` : '',
+    supplier.address ? `Address: ${supplier.address}` : '',
   ].filter(Boolean)
 }
 

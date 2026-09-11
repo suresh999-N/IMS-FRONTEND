@@ -252,6 +252,42 @@
   font-weight: 600;
 }
 
+.invoice-document__empty-text {
+  color: var(--invoice-muted);
+  font-size: 10.5px;
+  font-style: italic;
+}
+
+.invoice-document__detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.invoice-document__detail-row {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 8px;
+  align-items: baseline;
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+.invoice-document__detail-label {
+  color: var(--invoice-muted);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.invoice-document__detail-value {
+  color: var(--invoice-ink);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
 .invoice-document__items-wrap {
   width: 100%;
   margin-bottom: 18px;

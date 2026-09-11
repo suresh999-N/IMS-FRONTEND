@@ -95,6 +95,12 @@
   font-weight: 800;
 }
 
+.resource-center__page--products .resource-center__inventory-metric--info.is-active {
+  border-color: #2563eb;
+  background: #dbeafe;
+  color: #1e40af;
+}
+
 .resource-center__page--products .resource-center__inventory-metric--success.is-active {
   border-color: #059669;
   background: #d1fae5;

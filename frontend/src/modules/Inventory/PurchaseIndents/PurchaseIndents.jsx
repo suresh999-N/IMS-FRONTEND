@@ -26,7 +26,7 @@ import { getSuppliers } from '../../../api/suppliersApi'
 import { showToast } from '../../../components/common/toast'
 import FormModal from '../../../layouts/FormModal'
 import { useAuth } from '../../../hooks/useAuth'
-import { formatDate, formatIndentNumber } from '../../../utils/helpers'
+import { formatDate, formatIndentNumber, getLogicalRequiredDate } from '../../../utils/helpers'
 import { getLocalTodayDate } from '../../../utils/dateUtils'
 import {
   emailInputProps,
@@ -530,7 +530,9 @@ function getIndentConversionIssues(indent) {
 
 function getRequiredDate(indent) {
   const items = getLineItems(indent)
-  return indent?.requiredDate || indent?.expectedDeliveryDate || items[0]?.requiredDate || ''
+  const rawDate = indent?.requiredDate || indent?.expectedDeliveryDate || items[0]?.requiredDate
+  const indentDate = indent?.indentDate || indent?.createdAt
+  return getLogicalRequiredDate(rawDate, indentDate, 7)
 }
 
 function getCurrentUserName(user) {

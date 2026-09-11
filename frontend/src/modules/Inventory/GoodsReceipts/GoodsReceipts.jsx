@@ -5260,7 +5260,7 @@ function ResourcePage({ config, navigationContent = null }) {
                   <thead>
                     <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 5, color: '#475569', fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                       <th style={{ width: '38px', padding: '11px 10px', textAlign: 'center' }}>#</th>
-                      <th style={{ padding: '11px 12px', textAlign: 'left', minWidth: '220px' }}>Product</th>
+                      <th style={{ padding: '11px 12px', textAlign: 'left', minWidth: '300px' }}>Product</th>
                       <th style={{ width: '90px', padding: '11px 10px', textAlign: 'center' }}>Variant</th>
                       <th style={{ width: '95px', padding: '11px 12px', textAlign: 'right' }}>Ordered Qty</th>
                       <th style={{ width: '95px', padding: '11px 12px', textAlign: 'right' }}>Received Qty</th>
@@ -5308,14 +5308,12 @@ function ResourcePage({ config, navigationContent = null }) {
                             style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? '#ffffff' : '#fbfcfd' }}
                           >
                             <td style={{ padding: '10px 10px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>{idx + 1}</td>
-                            <td style={{ padding: '10px 12px', minWidth: '220px', maxWidth: '280px' }}>
+                            <td style={{ padding: '10px 12px', minWidth: '300px' }}>
                               <strong
                                 style={{
-                                  display: '-webkit-box',
-                                  WebkitLineClamp: 2,
-                                  WebkitBoxOrient: 'vertical',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
+                                  display: 'block',
+                                  whiteSpace: 'normal',
+                                  wordBreak: 'break-word',
                                   lineHeight: '1.35',
                                   color: '#0f172a',
                                   fontWeight: 650,

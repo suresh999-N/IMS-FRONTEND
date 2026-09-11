@@ -889,10 +889,10 @@ select:focus {
 #root .button-secondary.button-cancel,
 #root .button.button-cancel,
 body .button-cancel {
-  border-color: var(--cancel-border, #bfdbfe) !important;
-  background: var(--cancel-bg, #eff6ff) !important;
-  background-color: var(--cancel-bg, #eff6ff) !important;
-  color: var(--cancel-text, #1d4ed8) !important;
+  border-color: var(--cancel-border, #fca5a5) !important;
+  background: var(--cancel-bg, #fef2f2) !important;
+  background-color: var(--cancel-bg, #fef2f2) !important;
+  color: var(--cancel-text, #dc2626) !important;
   box-shadow: none !important;
 }
 
@@ -920,10 +920,10 @@ body .button-cancel {
 #root .button-secondary.button-cancel:hover:not(:disabled),
 #root .button.button-cancel:hover:not(:disabled),
 body .button-cancel:hover:not(:disabled) {
-  border-color: var(--cancel-border-hover, #93c5fd) !important;
-  background: var(--cancel-bg-hover, #dbeafe) !important;
-  background-color: var(--cancel-bg-hover, #dbeafe) !important;
-  color: var(--cancel-text-hover, #1e40af) !important;
+  border-color: var(--cancel-border-hover, #f87171) !important;
+  background: var(--cancel-bg-hover, #fee2e2) !important;
+  background-color: var(--cancel-bg-hover, #fee2e2) !important;
+  color: var(--cancel-text-hover, #b91c1c) !important;
 }
 
 /* Universal Small Minimalist Modal Close Button Rule for All Modules & Popups */

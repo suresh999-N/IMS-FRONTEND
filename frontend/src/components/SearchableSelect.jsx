@@ -316,8 +316,9 @@ export default function SearchableSelect(props) {
               role="option"
               aria-selected={option.isPlaceholder ? !selectedOption : String(option.value) === String(selectedValue)}
               style={{ cursor: 'pointer' }}
+              title={option.label}
             >
-              <span>{renderOptionLabel(option.label)}</span>
+              <span title={option.label}>{renderOptionLabel(option.label)}</span>
               {String(option.value) === String(selectedValue) && !option.isPlaceholder ? <Check size={14} /> : null}
             </div>
           ))
@@ -345,10 +346,11 @@ export default function SearchableSelect(props) {
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-invalid={Boolean(showError && error)}
+        title={selectedOption?.label ?? placeholder}
       >
-        <span className="searchable-select__value">
+        <span className="searchable-select__value" title={selectedOption?.label ?? placeholder}>
           {Icon ? <Icon size={16} /> : null}
-          <span className={selectedOption ? '' : 'searchable-select__placeholder'}>
+          <span className={selectedOption ? '' : 'searchable-select__placeholder'} title={selectedOption?.label ?? placeholder}>
             {selectedOption?.label ?? placeholder}
           </span>
         </span>

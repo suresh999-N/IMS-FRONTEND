@@ -15,14 +15,31 @@ function isTruncated(element) {
 
   return (
     element.scrollWidth > element.clientWidth + 1 ||
-    element.scrollHeight > element.clientHeight + 1
+    element.scrollHeight > element.clientHeight + 1 ||
+    element.offsetWidth < element.scrollWidth
   )
 }
 
 function findTruncatedElement(cell) {
-  const descendants = [...cell.querySelectorAll('*')]
+  const titleElement = cell.querySelector('[title]')
+  if (titleElement && isTruncated(titleElement)) {
+    return titleElement
+  }
 
-  return descendants.find((element) => isTruncated(element)) || (isTruncated(cell) ? cell : null)
+  const descendants = [...cell.querySelectorAll('*')]
+  const truncatedDescendant = descendants.find((element) => isTruncated(element))
+  if (truncatedDescendant) return truncatedDescendant
+
+  if (isTruncated(cell)) return cell
+
+  if (titleElement) {
+    const titleVal = titleElement.getAttribute('title')?.trim()
+    if (titleVal) {
+      return titleElement
+    }
+  }
+
+  return null
 }
 
 function getTooltipPosition(element) {
@@ -71,7 +88,8 @@ export default function TruncatedCellTooltip({ containerRef }) {
 
       timerRef.current = window.setTimeout(() => {
         const truncatedElement = findTruncatedElement(cell)
-        const text = String(truncatedElement?.innerText || truncatedElement?.textContent || '').trim()
+        const titleText = truncatedElement?.getAttribute?.('title')
+        const text = String(titleText || truncatedElement?.innerText || truncatedElement?.textContent || '').trim()
 
         if (!truncatedElement || !text || activeCellRef.current !== cell) return
 

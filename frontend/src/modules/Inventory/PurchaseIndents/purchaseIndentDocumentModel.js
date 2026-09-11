@@ -1,4 +1,4 @@
-import { formatIndentNumber } from '../../../utils/helpers'
+import { formatIndentNumber, getLogicalRequiredDate } from '../../../utils/helpers'
 
 function getPathValue(source, path) {
   return String(path)
@@ -318,17 +318,29 @@ function buildItem(item, index, indent) {
     hasUnitPrice,
     amount: hasDirectAmount ? directAmount : quantity * unitPrice,
     hasAmount: hasDirectAmount || hasUnitPrice,
-    requiredDate: firstValue(item, [
-      'requiredDate',
-      'RequiredDate',
-      'expectedDeliveryDate',
-      'ExpectedDeliveryDate',
-    ], firstValue(indent, [
-      'requiredDate',
-      'RequiredDate',
-      'expectedDeliveryDate',
-      'ExpectedDeliveryDate',
-    ])),
+    requiredDate: getLogicalRequiredDate(
+      firstValue(item, [
+        'requiredDate',
+        'RequiredDate',
+        'expectedDeliveryDate',
+        'ExpectedDeliveryDate',
+      ], firstValue(indent, [
+        'requiredDate',
+        'RequiredDate',
+        'expectedDeliveryDate',
+        'ExpectedDeliveryDate',
+      ])),
+      firstValue(indent, [
+        'indentDate',
+        'IndentDate',
+        'requestDate',
+        'RequestDate',
+        'requestedDate',
+        'RequestedDate',
+        'createdAt',
+        'CreatedAt',
+      ])
+    ),
     notes: textValue(item, [
       'remarks',
       'Remarks',
@@ -444,12 +456,24 @@ export function buildPurchaseIndentDocumentModel(indent = {}, options = {}) {
       'createdAt',
       'CreatedAt',
     ]),
-    requiredDate: firstValue(indent, [
-      'requiredDate',
-      'RequiredDate',
-      'expectedDeliveryDate',
-      'ExpectedDeliveryDate',
-    ], items[0]?.requiredDate || ''),
+    requiredDate: getLogicalRequiredDate(
+      firstValue(indent, [
+        'requiredDate',
+        'RequiredDate',
+        'expectedDeliveryDate',
+        'ExpectedDeliveryDate',
+      ], items[0]?.requiredDate || ''),
+      firstValue(indent, [
+        'indentDate',
+        'IndentDate',
+        'requestDate',
+        'RequestDate',
+        'requestedDate',
+        'RequestedDate',
+        'createdAt',
+        'CreatedAt',
+      ])
+    ),
     status,
     priority: textValue(indent, ['priority', 'Priority'], 'Medium'),
     reference: textValue(indent, [

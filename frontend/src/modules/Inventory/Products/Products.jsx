@@ -40,7 +40,7 @@ function ProductsHeader({ canCreate, summary, activeStatusFilter, isTopSellingVi
       filterValue: 'all',
       label: 'Products',
       value: formatCompactCount(summary.total),
-      tone: 'neutral',
+      tone: 'info',
       isActive: !isTopSellingView && activeStatusFilter === 'all',
       title: 'Show active products',
     },

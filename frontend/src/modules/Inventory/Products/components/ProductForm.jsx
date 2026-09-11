@@ -3,7 +3,6 @@ import {
   Barcode,
   CheckCircle2,
   ChevronDown,
-  Eraser,
   FileText,
   GitBranch,
   ImagePlus,
@@ -11,7 +10,6 @@ import {
   Plus,
   Save,
   Trash2,
-  X,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import CurrencyInput from "../../../../components/CurrencyInput";
@@ -1625,8 +1623,7 @@ export default function ProductForm({
             {actionLabel}
           </button>
           <button type="button" className="button button-secondary button-cancel" onClick={handleCancel} disabled={isSaving}>
-            {isEdit ? <X size={16} /> : <Eraser size={16} />}
-            {isEdit ? 'Cancel' : 'Clear'}
+            Cancel
           </button>
         </div>
       </form>

@@ -1,4 +1,4 @@
-import { FilePlus2, Menu, PackageCheck, Plus, Truck, UserPlus, Users } from 'lucide-react'
+import { FilePlus2, PackageCheck, Plus, Truck, UserPlus, Users } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import GlobalSearch from './GlobalSearch'
@@ -25,14 +25,6 @@ export default function Header({ user, onLogout, onOpenDrawer }) {
   return (
     <header className="app-header">
       <div className="app-header__left">
-        <button
-          type="button"
-          className="app-icon-button app-header__drawer-button"
-          aria-label="Open navigation"
-          onClick={onOpenDrawer}
-        >
-          <Menu size={19} />
-        </button>
         <GlobalSearch />
       </div>
 

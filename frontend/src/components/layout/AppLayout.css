@@ -683,7 +683,7 @@
 }
 
 .app-header__drawer-button {
-  display: none;
+  display: none !important;
 }
 
 .app-header__search {
@@ -1761,9 +1761,12 @@
     display: none;
   }
 
-  .app-sidebar__mobile-close,
-  .app-header__drawer-button {
+  .app-sidebar__mobile-close {
     display: inline-flex;
+  }
+
+  .app-header__drawer-button {
+    display: none !important;
   }
 
   .app-sidebar__collapse {

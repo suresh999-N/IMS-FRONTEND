@@ -565,14 +565,7 @@ function SearchDropdown({
 }
 
 function SearchFooter() {
-  return (
-    <div className="global-search__footer" aria-hidden="true">
-      <span><kbd>↑↓</kbd> Navigate</span>
-      <span><kbd>Enter</kbd> Open</span>
-      <span><kbd>Esc</kbd> Close</span>
-      <span><kbd>Ctrl K</kbd> Search</span>
-    </div>
-  )
+  return null
 }
 
 export default function GlobalSearch() {

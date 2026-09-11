@@ -9,12 +9,14 @@ import {
   sanitizeNameInput,
 } from '../validators/nameValidator'
 import {
+  addDaysToDate,
   compareDateOnly,
   formatDateForDisplay,
   formatDateTimeForDisplay,
   formatExactTimestamp,
   formatRelativeTime,
   getLocalTodayDate,
+  getLogicalRequiredDate,
   isValidDateValue,
   normaliseDateOnlyPayload,
   parseDateValue,
@@ -269,12 +271,14 @@ export const DEFAULT_RETURNS = [
 ]
 
 export {
+  addDaysToDate,
   compareDateOnly,
   formatDateForDisplay,
   formatDateTimeForDisplay,
   formatExactTimestamp,
   formatRelativeTime,
   getLocalTodayDate,
+  getLogicalRequiredDate,
   isValidDateValue,
   normaliseDateOnlyPayload,
   parseDateValue,

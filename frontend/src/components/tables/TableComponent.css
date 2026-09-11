@@ -84,9 +84,18 @@
 }
 
 .table-container td {
-  max-width: 220px;
+  max-width: 280px;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.table-container td[data-column='name'],
+.table-container td[data-column='productName'],
+.table-container td[data-column='product'],
+.table-container td[data-column='itemName'],
+.table-container td[data-column='item'] {
+  min-width: 220px;
+  max-width: 400px;
 }
 
 .table-container td[data-column='role'],

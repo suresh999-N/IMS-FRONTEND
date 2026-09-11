@@ -53,9 +53,16 @@ function CompanyLogo({ company }) {
   )
 }
 
-function ContactLine({ label, value }) {
+function DetailRow({ label, value, isMultiline = false }) {
   if (!hasText(value)) return null
-  return <p><strong>{label}:</strong> {value}</p>
+  return (
+    <div className="invoice-document__detail-row">
+      <span className="invoice-document__detail-label">{label}</span>
+      <span className={`invoice-document__detail-value${isMultiline ? ' invoice-document__multiline' : ''}`}>
+        {value}
+      </span>
+    </div>
+  )
 }
 
 function SupplierBlock({ supplier }) {
@@ -68,20 +75,24 @@ function SupplierBlock({ supplier }) {
     supplier.address,
   ].some(hasText)
 
+  const displayName = supplier.companyName || supplier.name || ''
+  const contactPerson = supplier.name && supplier.name !== supplier.companyName ? supplier.name : ''
+
   return (
     <section className="invoice-document__address-block">
-      <h2>Supplier</h2>
-      {!hasDetails ? <p>Not assigned</p> : null}
-      {supplier.companyName ? (
-        <p className="invoice-document__party-company">{supplier.companyName}</p>
-      ) : null}
-      {supplier.name && supplier.name !== supplier.companyName ? (
-        <p className="invoice-document__party-name">{supplier.name}</p>
-      ) : null}
-      {supplier.address ? <p className="invoice-document__multiline">{supplier.address}</p> : null}
-      <ContactLine label="GSTIN" value={supplier.gstNumber} />
-      <ContactLine label="Phone" value={supplier.phone} />
-      <ContactLine label="Email" value={supplier.email} />
+      <h2>Supplier Details</h2>
+      {!hasDetails ? (
+        <p className="invoice-document__empty-text">Not assigned</p>
+      ) : (
+        <div className="invoice-document__detail-list">
+          <DetailRow label="Name" value={displayName} />
+          {contactPerson ? <DetailRow label="Contact" value={contactPerson} /> : null}
+          <DetailRow label="GSTIN" value={supplier.gstNumber} />
+          <DetailRow label="Phone" value={supplier.phone} />
+          <DetailRow label="Email" value={supplier.email} />
+          <DetailRow label="Address" value={supplier.address} isMultiline />
+        </div>
+      )}
     </section>
   )
 }
@@ -90,11 +101,13 @@ function IndentInformationBlock({ model }) {
   return (
     <section className="invoice-document__address-block">
       <h2>Indent Information</h2>
-      <p className="invoice-document__party-company">{model.department || 'Department not assigned'}</p>
-      <ContactLine label="Requested by" value={model.requestedBy} />
-      <ContactLine label="Priority" value={model.priority} />
-      <ContactLine label="Required by" value={model.requiredDate ? displayDate(model.requiredDate) : ''} />
-      <ContactLine label="Reference" value={model.reference} />
+      <div className="invoice-document__detail-list">
+        <DetailRow label="Department" value={model.department || 'Department not assigned'} />
+        <DetailRow label="Requested by" value={model.requestedBy} />
+        <DetailRow label="Priority" value={model.priority} />
+        <DetailRow label="Required by" value={model.requiredDate ? displayDate(model.requiredDate) : ''} />
+        <DetailRow label="Reference" value={model.reference} />
+      </div>
     </section>
   )
 }

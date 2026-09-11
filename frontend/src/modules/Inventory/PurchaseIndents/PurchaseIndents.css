@@ -1039,22 +1039,24 @@
 }
 
 .indent-table-searchable-select .searchable-select__trigger {
-  height: 36px !important;
+  min-height: 36px !important;
+  height: auto !important;
   padding: 6px 10px !important;
   font-size: 13px !important;
   border-radius: 6px !important;
   border: 1px solid #cbd5e1 !important;
   background-color: #ffffff !important;
-  overflow: hidden !important;
+  overflow: visible !important;
 }
 
 .indent-table-searchable-select .searchable-select__value,
 .indent-table-searchable-select .searchable-select__placeholder,
 .indent-table-searchable-select .searchable-select__trigger span {
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  max-width: calc(100% - 18px) !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
   display: inline-block !important;
   vertical-align: middle !important;
 }

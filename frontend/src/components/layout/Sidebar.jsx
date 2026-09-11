@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { ChevronLeft, ChevronUp, Menu, User } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronUp, Menu, User } from 'lucide-react'
 import imsSidebarIcon from '../../assets/brand/ims-sidebar-icon.png'
 import SidebarItem from './SidebarItem'
 import SidebarSection from './SidebarSection'

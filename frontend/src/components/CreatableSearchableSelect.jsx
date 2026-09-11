@@ -164,9 +164,10 @@ export default function CreatableSearchableSelect({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-invalid={Boolean(showError && error)}
+        title={selectedOption?.label || value || placeholder}
       >
-        <span className="searchable-select__value">
-          <span className={selectedOption || value ? '' : 'searchable-select__placeholder'}>
+        <span className="searchable-select__value" title={selectedOption?.label || value || placeholder}>
+          <span className={selectedOption || value ? '' : 'searchable-select__placeholder'} title={selectedOption?.label || value || placeholder}>
             {selectedOption?.label || value || placeholder}
           </span>
         </span>

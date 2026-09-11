@@ -17,7 +17,7 @@ import { getSuppliers } from '../../../api/suppliersApi'
 import { showToast } from '../../../components/common/toast'
 import SearchableSelect from '../../../components/SearchableSelect'
 import DatePicker from '../../../components/DatePicker'
-import { getToday } from '../../../utils/helpers'
+import { addDaysToDate, compareDateOnly, getLogicalRequiredDate, getToday } from '../../../utils/helpers'
 import './PurchaseIndents.css'
 
 const defaultItem = {
@@ -150,11 +150,12 @@ function generateIndentNumber(indents = []) {
 
 function buildInitialDraft(initialIndentNo) {
   const today = getToday()
+  const defaultRequiredDate = addDaysToDate(today, 7)
   return {
     vendorId: '',
     indentNo: initialIndentNo || generateIndentNumber([]),
     indentDate: today,
-    expectedDeliveryDate: today, // Required Date
+    expectedDeliveryDate: defaultRequiredDate, // Required Date (7 days lead time)
     requestedBy: '',
     department: 'Production',
     priority: 'Medium',
@@ -164,7 +165,7 @@ function buildInitialDraft(initialIndentNo) {
     reference: '',
     paidAmount: '',
     remarks: '',
-    items: [{ ...defaultItem, requiredDate: today, remarks: '' }],
+    items: [{ ...defaultItem, requiredDate: defaultRequiredDate, remarks: '' }],
   }
 }
 
@@ -183,12 +184,16 @@ function buildDraftFromIndent(indent, initialIndentNo) {
         remarks: indent?.remarks,
       }]
 
+  const indentDate = toDateInput(indent?.indentDate)
+  const rawRequiredDate = indent?.requiredDate || indent?.expectedDeliveryDate || items[0]?.requiredDate
+  const expectedDeliveryDate = getLogicalRequiredDate(rawRequiredDate, indentDate, 7)
+
   return {
     ...baseDraft,
     vendorId: String(indent?.supplierId || indent?.vendorId || indent?.suggestedSupplierId || ''),
     indentNo: indent?.indentNo || indent?.indentNumber || initialIndentNo || baseDraft.indentNo,
-    indentDate: toDateInput(indent?.indentDate),
-    expectedDeliveryDate: toDateInput(indent?.requiredDate || indent?.expectedDeliveryDate || items[0]?.requiredDate || indent?.indentDate),
+    indentDate,
+    expectedDeliveryDate,
     requestedBy: String(indent?.requestedById ?? indent?.RequestedById ?? indent?.requestedByUserId ?? indent?.RequestedByUserId ?? indent?.requestedBy ?? indent?.RequestedBy ?? ''),
     department: getDepartmentNameFromIndent(indent, baseDraft.department),
     priority: indent?.priority || baseDraft.priority,
@@ -199,7 +204,7 @@ function buildDraftFromIndent(indent, initialIndentNo) {
       ...defaultItem,
       productId: item?.productId ? String(item.productId) : '',
       quantity: String(item?.requiredQty ?? item?.quantity ?? 1),
-      requiredDate: toDateInput(item?.requiredDate || indent?.requiredDate || indent?.indentDate),
+      requiredDate: getLogicalRequiredDate(item?.requiredDate || expectedDeliveryDate, indentDate, 7),
       remarks: item?.remarks || '',
     })),
   }
@@ -534,10 +539,20 @@ function PurchaseIndentForm({
   const balanceDue = Math.max(0, calculatedTotals.grandTotal - amountPaid)
 
   function updateField(name, value) {
-    setDraft((currentValue) => ({
-      ...currentValue,
-      [name]: value,
-    }))
+    setDraft((currentValue) => {
+      const nextDraft = {
+        ...currentValue,
+        [name]: value,
+      }
+
+      if (name === 'indentDate' && value) {
+        if (!currentValue.expectedDeliveryDate || compareDateOnly(currentValue.expectedDeliveryDate, value) <= 0) {
+          nextDraft.expectedDeliveryDate = addDaysToDate(value, 7)
+        }
+      }
+
+      return nextDraft
+    })
 
     setErrors((currentValue) => ({
       ...currentValue,
@@ -674,8 +689,8 @@ function PurchaseIndentForm({
       setError('requestedBy', 'Requester is required.')
     }
 
-    if (draft.expectedDeliveryDate && draft.indentDate && draft.expectedDeliveryDate < draft.indentDate) {
-      setError('expectedDeliveryDate', 'Required date cannot be before indent date.')
+    if (draft.expectedDeliveryDate && draft.indentDate && compareDateOnly(draft.expectedDeliveryDate, draft.indentDate) <= 0) {
+      setError('expectedDeliveryDate', 'Required date must be later than request date.')
     }
 
     const enteredPaidAmount = toNumber(draft.paidAmount)
@@ -980,6 +995,7 @@ function PurchaseIndentForm({
                           className="indent-table-input"
                           data-field-key={`item_${index}_productId`}
                           value={item.productId}
+                          title={matchedProduct?.name || 'Select product'}
                           onChange={(e) => handleItemProductChange(index, e.target.value)}
                           disabled={isSubmitting}
                           style={{

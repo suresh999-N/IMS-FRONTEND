@@ -1045,12 +1045,12 @@ export default function GoodsReceiptForm({
         <h3 className="indent-card__title">Received Product Line Items</h3>
 
         <div className="indent-items-table-wrapper" style={{ overflowX: 'auto', overflowY: 'hidden', width: '100%', display: 'block', minWidth: 0, maxWidth: '100%' }}>
-          <table className="indent-items-table" style={{ width: '100%', minWidth: '1200px', tableLayout: 'fixed' }}>
+          <table className="indent-items-table" style={{ width: '100%', minWidth: '1500px', tableLayout: 'fixed' }}>
             <thead>
               <tr>
                 <th style={{ width: '36px', textAlign: 'center' }}>#</th>
-                <th style={{ width: '250px' }}>Product *</th>
-                <th style={{ width: '130px' }}>Variant</th>
+                <th style={{ width: '420px' }}>Product *</th>
+                <th style={{ width: '180px' }}>Variant</th>
                 <th style={{ width: '90px', textAlign: 'center' }}>Ordered Qty</th>
                 <th style={{ width: '95px', textAlign: 'center' }}>Received *</th>
                 <th style={{ width: '110px', textAlign: 'center' }}>Remaining Qty</th>
