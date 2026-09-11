@@ -255,7 +255,7 @@ export default function PurchaseIndentDocument({ model, printRoot = false }) {
                     displayNumericValue(item.availableStock)
                   )}
                 </td>
-                <td className="invoice-document__numeric">{item.quantity.toLocaleString('en-IN')}</td>
+                <td className="invoice-document__numeric">{(Number(item.quantity) || 0).toLocaleString('en-IN')}</td>
                 <td>{item.unit || '-'}</td>
                 <td className="invoice-document__numeric">
                   <ItemCurrency available={item.hasUnitPrice} value={item.unitPrice} />
@@ -276,11 +276,11 @@ export default function PurchaseIndentDocument({ model, printRoot = false }) {
           <div className="invoice-document__payment-cards">
             <div>
               <span>Total Items</span>
-              <strong>{summary.itemCount.toLocaleString('en-IN')}</strong>
+              <strong>{(Number(summary.itemCount) || 0).toLocaleString('en-IN')}</strong>
             </div>
             <div>
               <span>Total Quantity</span>
-              <strong>{summary.totalQuantity.toLocaleString('en-IN')}</strong>
+              <strong>{(Number(summary.totalQuantity) || 0).toLocaleString('en-IN')}</strong>
             </div>
           </div>
         </section>

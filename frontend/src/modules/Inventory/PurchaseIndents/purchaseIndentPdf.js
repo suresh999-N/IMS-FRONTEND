@@ -301,7 +301,7 @@ function drawItemsTable(doc, model, startY) {
       item.notes ? `${item.productName || '-'}\nJustification: ${item.notes}` : item.productName || '-',
       item.sku || '-',
       item.availableStock === '' ? '-' : String(item.availableStock),
-      item.quantity.toLocaleString('en-IN'),
+      (Number(item.quantity) || 0).toLocaleString('en-IN'),
       item.unit || '-',
       itemCurrency(item.hasUnitPrice, item.unitPrice),
       itemCurrency(item.hasAmount, item.amount),
@@ -364,8 +364,8 @@ function drawSummary(doc, model, startY) {
   doc.text('REQUISITION SUMMARY', PAGE_MARGIN + 3, y + 5)
 
   const overviewColumns = [
-    ['TOTAL ITEMS', model.summary.itemCount.toLocaleString('en-IN')],
-    ['TOTAL QUANTITY', model.summary.totalQuantity.toLocaleString('en-IN')],
+    ['TOTAL ITEMS', (Number(model.summary.itemCount) || 0).toLocaleString('en-IN')],
+    ['TOTAL QUANTITY', (Number(model.summary.totalQuantity) || 0).toLocaleString('en-IN')],
   ]
   overviewColumns.forEach(([label, value], index) => {
     const x = PAGE_MARGIN + 3 + (index * 38)

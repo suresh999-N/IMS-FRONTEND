@@ -79,7 +79,43 @@ function getResponseListData(data) {
     return data
   }
 
-  return data?.data || data?.users || data?.items || data?.results || []
+  if (Array.isArray(data?.data)) {
+    return data.data
+  }
+
+  if (Array.isArray(data?.items)) {
+    return data.items
+  }
+
+  if (Array.isArray(data?.results)) {
+    return data.results
+  }
+
+  if (Array.isArray(data?.users)) {
+    return data.users
+  }
+
+  if (Array.isArray(data?.suppliers)) {
+    return data.suppliers
+  }
+
+  if (Array.isArray(data?.indents)) {
+    return data.indents
+  }
+
+  if (Array.isArray(data?.purchaseIndents)) {
+    return data.purchaseIndents
+  }
+
+  if (Array.isArray(data?.data?.items)) {
+    return data.data.items
+  }
+
+  if (Array.isArray(data?.data?.purchaseIndents)) {
+    return data.data.purchaseIndents
+  }
+
+  return []
 }
 
 function isLikelyId(value) {
@@ -245,8 +281,10 @@ function getSupplierName(supplier) {
 
 function makeUserMap(users) {
   const map = new Map()
+  const safeUsers = Array.isArray(users) ? users : []
 
-  users.forEach((user) => {
+  safeUsers.forEach((user) => {
+    if (!user) return
     const userId = getUserId(user)
     const userName = getUserDisplayName(user)
 
@@ -260,8 +298,10 @@ function makeUserMap(users) {
 
 function makeSupplierMap(suppliers) {
   const map = new Map()
+  const safeSuppliers = Array.isArray(suppliers) ? suppliers : []
 
-  suppliers.forEach((supplier) => {
+  safeSuppliers.forEach((supplier) => {
+    if (!supplier) return
     const supplierId = getSupplierId(supplier)
     const supplierName = getSupplierName(supplier)
 
@@ -696,7 +736,7 @@ export default function PurchaseIndentsScreen({
       }
     } else {
       setBackendSuppliers(
-        (Array.isArray(response.data) ? response.data : [])
+        getResponseListData(response.data)
           .filter((supplier) => supplier && !supplier.isDeleted),
       )
     }
@@ -910,24 +950,24 @@ export default function PurchaseIndentsScreen({
     }
 
     const products = productsResponse?.success
-      ? (Array.isArray(productsResponse.data?.data)
-          ? productsResponse.data.data
-          : Array.isArray(productsResponse.data)
-            ? productsResponse.data
-            : [])
+      ? getResponseListData(productsResponse.data)
       : []
 
     const productMap = new Map(
-      products.map((p) => [String(p.id ?? p.productId), p])
+      products
+        .filter(Boolean)
+        .map((p) => [String(p.id ?? p.productId ?? p.Id ?? p.ProductId), p])
     )
 
     const responseIndent = indentResponse.data?.data || indentResponse.data
-    const rawItems = responseIndent?.items?.length
+    const rawItems = Array.isArray(responseIndent?.items) && responseIndent.items.length > 0
       ? responseIndent.items
-      : indent?.items || []
+      : Array.isArray(indent?.items)
+        ? indent.items
+        : []
 
-    const enrichedItems = rawItems.map((item) => {
-      const product = productMap.get(String(item.productId))
+    const enrichedItems = rawItems.filter(Boolean).map((item) => {
+      const product = productMap.get(String(item.productId ?? item.ProductId))
       const rate = Number(
         item.unitPrice ??
         item.rate ??
