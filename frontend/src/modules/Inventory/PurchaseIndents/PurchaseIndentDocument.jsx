@@ -26,6 +26,15 @@ function statusClassName(status) {
   return 'partially-paid'
 }
 
+function ContactLine({ label, value }) {
+  if (!hasText(value)) return null
+  return (
+    <span>
+      <strong>{label}:</strong> {value}
+    </span>
+  )
+}
+
 function CompanyLogo({ company }) {
   if (company.logoUrl) {
     return (
@@ -132,9 +141,15 @@ function displayNumericValue(value) {
 }
 
 export default function PurchaseIndentDocument({ model, printRoot = false }) {
-  const { company, supplier, summary } = model
+  if (!model) return null
+  const company = model.company || {}
+  const supplier = model.supplier || {}
+  const summary = model.summary || { itemCount: 0, totalQuantity: 0, estimatedValue: 0 }
+  const items = Array.isArray(model.items) ? model.items : []
+  const terms = Array.isArray(model.terms) ? model.terms : []
+  const approvalActivity = Array.isArray(model.approvalActivity) ? model.approvalActivity : []
   const hasCompanyContact = company.address || company.gstNumber || company.phone || company.email
-  const hasTermsOrRemarks = model.terms.length > 0 || model.remarks
+  const hasTermsOrRemarks = terms.length > 0 || model.remarks
 
   return (
     <article
@@ -221,7 +236,7 @@ export default function PurchaseIndentDocument({ model, printRoot = false }) {
             </tr>
           </thead>
           <tbody>
-            {model.items.map((item) => (
+            {items.map((item) => (
               <tr key={item.id}>
                 <td className="invoice-document__center">{item.serialNumber}</td>
                 <td className="invoice-document__product-name">
@@ -282,7 +297,7 @@ export default function PurchaseIndentDocument({ model, printRoot = false }) {
       <section className="purchase-indent-document__approval">
         <h2>Approval Activity</h2>
         <div className="purchase-indent-document__approval-grid">
-          {model.approvalActivity.map((activity) => (
+          {approvalActivity.map((activity) => (
             <div key={activity.key}>
               <span>{activity.label}</span>
               <strong>{activity.person || '-'}</strong>
@@ -297,9 +312,9 @@ export default function PurchaseIndentDocument({ model, printRoot = false }) {
           <section className="invoice-document__terms">
             <h2>Notes and Terms</h2>
             {model.remarks ? <p><strong>Remarks:</strong> {model.remarks}</p> : null}
-            {model.terms.length > 0 ? (
+            {terms.length > 0 ? (
               <ol>
-                {model.terms.map((term, index) => <li key={`${term}-${index}`}>{term}</li>)}
+                {terms.map((term, index) => <li key={`${term}-${index}`}>{term}</li>)}
               </ol>
             ) : null}
           </section>

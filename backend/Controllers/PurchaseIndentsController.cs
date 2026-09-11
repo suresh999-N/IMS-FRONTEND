@@ -967,20 +967,20 @@ namespace IMSBackend.Controllers
             {
                 purchaseIndentItemId = i.PurchaseIndentItemId,
                 productId = i.ProductId,
-                productName = i.Product.Name,
-                productSku = i.Product.SKU,
+                productName = i.Product != null ? i.Product.Name : null,
+                productSku = i.Product != null ? i.Product.SKU : null,
                 unitId = i.UnitId,
-                unitName = i.Unit.Name,
+                unitName = i.Unit != null ? i.Unit.Name : null,
                 requiredQty = i.RequiredQty,
                 quantity = i.RequiredQty,
                 availableStock = i.AvailableStock,
                 requiredDate = i.RequiredDate,
                 remarks = i.Remarks,
-                unitPrice = i.Product.CostPrice ?? i.Product.Price ?? 0m,
-                rate = i.Product.CostPrice ?? i.Product.Price ?? 0m,
-                costPrice = i.Product.CostPrice ?? 0m,
-                price = i.Product.Price ?? 0m,
-                amount = i.RequiredQty * (i.Product.CostPrice ?? i.Product.Price ?? 0m)
+                unitPrice = i.Product != null ? (i.Product.CostPrice ?? i.Product.Price ?? 0m) : 0m,
+                rate = i.Product != null ? (i.Product.CostPrice ?? i.Product.Price ?? 0m) : 0m,
+                costPrice = i.Product != null ? (i.Product.CostPrice ?? 0m) : 0m,
+                price = i.Product != null ? (i.Product.Price ?? 0m) : 0m,
+                amount = i.RequiredQty * (i.Product != null ? (i.Product.CostPrice ?? i.Product.Price ?? 0m) : 0m)
             })
             .ToListAsync();
 
