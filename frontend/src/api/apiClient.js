@@ -33,6 +33,7 @@ function notifyApiStatus(detail) {
 
     if (detail.status === 'ok') {
       apiStatusBatch.serverReached = true
+      apiStatusBatch.lastIssue = null
     }
 
     if (detail.status === 'offline' || detail.status === 'timeout' || detail.status === 'server-error') {
@@ -48,7 +49,7 @@ function notifyApiStatus(detail) {
     ...detail,
     batchComplete,
     batchServerReached: apiStatusBatch.serverReached,
-    batchIssue: apiStatusBatch.lastIssue,
+    batchIssue: apiStatusBatch.serverReached ? null : apiStatusBatch.lastIssue,
   }
 
   window.dispatchEvent(new CustomEvent(IMS_API_STATUS_EVENT, { detail: eventDetail }))
@@ -383,6 +384,31 @@ export function getResponseList(response, key) {
   return []
 }
  
+export async function checkServerHealth() {
+  if (typeof window === 'undefined') {
+    return true
+  }
+
+  try {
+    const healthUrl = buildUrl('/health')
+    const controller = new AbortController()
+    const timeoutId = window.setTimeout(() => controller.abort(), 4000)
+
+    const response = await fetch(healthUrl, {
+      signal: controller.signal,
+      headers: {
+        Accept: 'application/json',
+        [NGROK_SKIP_BROWSER_WARNING_HEADER]: 'true',
+      },
+    })
+
+    window.clearTimeout(timeoutId)
+    return response.ok
+  } catch {
+    return false
+  }
+}
+
 export async function apiRequest(endpoint, options = {}) {
   const {
     body,
@@ -534,32 +560,60 @@ export async function apiRequest(endpoint, options = {}) {
       error instanceof TypeError &&
       /failed to fetch|networkerror|load failed/i.test(error.message)
 
+    // Automatic single retry for transient network drops on idempotent GET requests
+    if (method === 'GET' && !options._isRetry && (isNetworkFailure || didTimeOut) && !isCancelled && !signal?.aborted) {
+      await new Promise((resolve) => window.setTimeout(resolve, 600))
+      if (!signal?.aborted) {
+        return apiRequest(endpoint, { ...options, _isRetry: true })
+      }
+    }
+
+    if (isCancelled) {
+      notifyApiStatus({
+        status: 'cancelled',
+        requestId,
+        endpoint,
+        url: requestUrl,
+        method,
+      })
+
+      return {
+        success: false,
+        data: null,
+        error: 'Request cancelled.',
+        message: null,
+        errors: null,
+        traceId: null,
+        status: 0,
+        url: requestUrl,
+        cancelled: true,
+      }
+    }
+
+    let isServerDown = isNetworkFailure || didTimeOut
+    if (isServerDown && endpoint !== '/health' && !endpoint.includes('/health')) {
+      const isHealthy = await checkServerHealth()
+      if (isHealthy) {
+        isServerDown = false
+      }
+    }
+
     notifyApiStatus({
-      status: didTimeOut
-        ? 'timeout'
-        : isNetworkFailure
-          ? 'offline'
-          : isCancelled
-            ? 'cancelled'
-            : 'error',
+      status: isServerDown
+        ? (didTimeOut ? 'timeout' : 'offline')
+        : 'error',
       requestId,
       endpoint,
       url: requestUrl,
       method,
-      message: didTimeOut
-        ? 'Unable to connect to the server.'
-        : isNetworkFailure
-          ? 'Unable to connect to the server.'
-          : '',
+      message: isServerDown ? 'Unable to connect to the server.' : '',
     })
 
     return {
       success: false,
       data: null,
       error: didTimeOut
-        ? 'Unable to connect to the server.'
-        : isCancelled
-          ? 'Request cancelled.'
+        ? 'The request timed out. Please try again.'
         : isNetworkFailure
           ? 'Unable to connect to the server.'
           : error instanceof Error
@@ -570,11 +624,11 @@ export async function apiRequest(endpoint, options = {}) {
       traceId: null,
       status: 0,
       url: requestUrl,
-      cancelled: isCancelled,
+      cancelled: false,
     }
   } finally {
     window.clearTimeout(timeoutId)
   }
 }
- 
+
 export default apiRequest

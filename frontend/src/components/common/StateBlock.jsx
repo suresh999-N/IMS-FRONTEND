@@ -42,7 +42,7 @@ export default function StateBlock({
         <Icon size={compact ? 18 : 22} className={type === 'loading' ? 'animate-spin' : ''} />
       </div>
       <div className="state-block__body">
-        <h2>{(type === 'server' || type === 'offline') ? 'We could not load this workspace' : title}</h2>
+        <h2>{title || ((type === 'server' || type === 'offline') ? 'We could not load this workspace' : '')}</h2>
         {message ? <p>{message}</p> : null}
         {diagnostics ? <small>{diagnostics}</small> : null}
         {actionLabel || secondaryActionLabel ? (
