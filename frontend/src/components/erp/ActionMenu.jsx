@@ -13,6 +13,8 @@ export default function ActionMenu({
   className = '',
   disabled = false,
   menuKey = '',
+  tooltip = null,
+  showTooltip = false,
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [popoverStyle, setPopoverStyle] = useState(null)
@@ -140,8 +142,12 @@ export default function ActionMenu({
             className={`erp-action-menu__item ${isDanger ? 'erp-action-menu__item--danger' : ''}`.trim()}
             role="menuitem"
             disabled={action.disabled || action.loading}
+            title={action.title}
             onClick={(event) => {
               event.stopPropagation()
+              if (action.disabled || action.loading) {
+                return
+              }
               setIsOpen(false)
               action.onClick?.()
             }}
@@ -160,10 +166,8 @@ export default function ActionMenu({
     </div>
   ) : null
 
-  const tooltipText = !isOpen && iconOnly
-    ? label && label.startsWith('Actions for')
-      ? 'Actions'
-      : label || 'Actions'
+  const tooltipText = !isOpen && iconOnly && (tooltip || showTooltip)
+    ? tooltip || (label && label.startsWith('Actions for') ? 'Actions' : label || 'Actions')
     : undefined
 
   return (

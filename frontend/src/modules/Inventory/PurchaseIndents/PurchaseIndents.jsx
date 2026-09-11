@@ -23,6 +23,7 @@ import {
 import { getInvoiceCompanyProfile } from '../../../api/businessApi'
 import { apiRequest, IMS_DATA_MUTATION_EVENT } from '../../../api/apiClient'
 import { getSuppliers } from '../../../api/suppliersApi'
+import { getProducts } from '../../../api/productApi'
 import { showToast } from '../../../components/common/toast'
 import FormModal from '../../../layouts/FormModal'
 import { useAuth } from '../../../hooks/useAuth'
@@ -351,13 +352,38 @@ function getConvertedByName(indent, userMap) {
 }
 
 function getUpdatedByName(indent, userMap) {
-  return getReadablePersonName(
+  const name = getReadablePersonName(
     indent,
     ['updatedByName', 'UpdatedByName', 'modifiedByName', 'ModifiedByName', 'updatedBy', 'UpdatedBy', 'modifiedBy', 'ModifiedBy'],
     ['updatedById', 'UpdatedById', 'modifiedById', 'ModifiedById', 'updatedBy', 'UpdatedBy', 'modifiedBy', 'ModifiedBy'],
     userMap,
-    NOT_UPDATED,
+    '',
   )
+
+  if (name && name !== NOT_UPDATED) {
+    return name
+  }
+
+  // If approved or rejected or updated date exists, fallback to approver/rejecter/creator
+  const approvedPerson = getApprovedByName(indent, userMap)
+  if (approvedPerson && approvedPerson !== PENDING_APPROVAL) {
+    return approvedPerson
+  }
+
+  const rejectedPerson = getRejectedByName(indent, userMap)
+  if (rejectedPerson && rejectedPerson !== NOT_REJECTED) {
+    return rejectedPerson
+  }
+
+  const updatedDate = getFirstValue(indent, ['updatedAt', 'UpdatedAt', 'modifiedAt', 'ModifiedAt', 'updatedOn', 'UpdatedOn', 'modifiedOn', 'ModifiedOn'])
+  if (updatedDate) {
+    const createdPerson = getCreatedByName(indent, userMap)
+    if (createdPerson) {
+      return createdPerson
+    }
+  }
+
+  return NOT_UPDATED
 }
 
 function getSupplierDisplayName(indent, supplierMap) {
@@ -873,23 +899,66 @@ export default function PurchaseIndentsScreen({
       throw new Error('Purchase Indent identifier is unavailable. The document was not generated.')
     }
 
-    const [indentResponse, companyResponse] = await Promise.all([
+    const [indentResponse, companyResponse, productsResponse] = await Promise.all([
       getPurchaseIndent(id),
       getInvoiceCompanyProfile(),
+      getProducts({ pageSize: 500 }).catch(() => null),
     ])
 
     if (!indentResponse.success || !indentResponse.data) {
       throw new Error(indentResponse.error || 'Unable to load complete Purchase Indent data.')
     }
 
+    const products = productsResponse?.success
+      ? (Array.isArray(productsResponse.data?.data)
+          ? productsResponse.data.data
+          : Array.isArray(productsResponse.data)
+            ? productsResponse.data
+            : [])
+      : []
+
+    const productMap = new Map(
+      products.map((p) => [String(p.id ?? p.productId), p])
+    )
+
     const responseIndent = indentResponse.data?.data || indentResponse.data
+    const rawItems = responseIndent?.items?.length
+      ? responseIndent.items
+      : indent?.items || []
+
+    const enrichedItems = rawItems.map((item) => {
+      const product = productMap.get(String(item.productId))
+      const rate = Number(
+        item.unitPrice ??
+        item.rate ??
+        item.costPrice ??
+        item.price ??
+        product?.costPrice ??
+        product?.cost ??
+        product?.purchasePrice ??
+        product?.price ??
+        0
+      )
+      const qty = Number(item.requiredQty ?? item.quantity ?? 1)
+      const amount = Number(
+        item.amount ??
+        (rate * qty)
+      )
+
+      return {
+        ...item,
+        unitPrice: rate,
+        rate,
+        costPrice: product?.costPrice ?? rate,
+        amount,
+      }
+    })
+
     const fullIndent = withReadableIndentFields(
       normalizeIndent({
         ...indent,
         ...responseIndent,
-        items: responseIndent?.items?.length
-          ? responseIndent.items
-          : indent?.items || [],
+        items: enrichedItems,
       }),
       userMap,
       supplierMap,
@@ -898,6 +967,8 @@ export default function PurchaseIndentsScreen({
       companyProfile: companyResponse.success ? companyResponse.data : {},
       supplier: getSupplierRecord(fullIndent, backendSuppliers),
       generatedBy: getCurrentUserName(user),
+      products,
+      productMap,
     })
     const validationError = validatePurchaseIndentDocumentModel(model)
 
@@ -940,6 +1011,15 @@ export default function PurchaseIndentsScreen({
   }
 
   async function handleDownloadPdf(indent, preparedModel = null) {
+    if (String(indent?.status || preparedModel?.status || '').toLowerCase().includes('pending')) {
+      showToast({
+        type: 'warning',
+        title: 'Purchase Indents',
+        message: 'PDF download is disabled until the indent is approved or rejected.',
+      })
+      return
+    }
+
     const id = getIndentId(indent)
     setBusyAction({ id, key: 'pdf' })
 
@@ -964,6 +1044,15 @@ export default function PurchaseIndentsScreen({
   }
 
   async function handlePrintIndent(indent, preparedModel = null) {
+    if (String(indent?.status || preparedModel?.status || '').toLowerCase().includes('pending')) {
+      showToast({
+        type: 'warning',
+        title: 'Purchase Indents',
+        message: 'Print is disabled until the indent is approved or rejected.',
+      })
+      return
+    }
+
     const id = getIndentId(indent)
     setBusyAction({ id, key: 'print' })
 
@@ -1019,6 +1108,16 @@ export default function PurchaseIndentsScreen({
         type: 'warning',
         title: 'Purchase Indents',
         message: 'Select at least one Purchase Indent to mail.',
+      })
+      return
+    }
+
+    const hasPending = safeRows.some((row) => String(row.status || '').toLowerCase().includes('pending'))
+    if (hasPending) {
+      showToast({
+        type: 'warning',
+        title: 'Purchase Indents',
+        message: 'Email is disabled until the indent is approved or rejected.',
       })
       return
     }
@@ -1627,38 +1726,49 @@ export default function PurchaseIndentsScreen({
               <PurchaseIndentDocument model={viewDocumentModel} />
 
               <div className="purchase-indent-details__actions">
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => handleDownloadPdf(viewTarget, viewDocumentModel)}
-                  disabled={busyAction?.key === 'pdf'}
-                >
-                  {busyAction?.key === 'pdf' ? <LoaderCircle className="animate-spin" size={15} /> : <Download size={15} />}
-                  Download PDF
-                </button>
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => handlePrintIndent(viewTarget, viewDocumentModel)}
-                  disabled={busyAction?.key === 'print'}
-                >
-                  {busyAction?.key === 'print' ? <LoaderCircle className="animate-spin" size={15} /> : <Printer size={15} />}
-                  Print
-                </button>
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => {
-                    const indentToMail = viewTarget
-                    setViewTarget(null)
-                    setViewDocumentModel(null)
-                    handleOpenMailCopy([indentToMail])
-                  }}
-                  disabled={busyAction?.key === 'mail'}
-                >
-                  {busyAction?.key === 'mail' ? <LoaderCircle className="animate-spin" size={15} /> : <Mail size={15} />}
-                  Mail Copy
-                </button>
+                {(() => {
+                  const isViewPending = String(viewTarget?.status || viewDocumentModel?.status || '').toLowerCase().includes('pending')
+                  return (
+                    <>
+                      <button
+                        type="button"
+                        className="button button-secondary"
+                        onClick={() => handleDownloadPdf(viewTarget, viewDocumentModel)}
+                        disabled={isViewPending || busyAction?.key === 'pdf'}
+                        title={isViewPending ? 'PDF download is disabled until the indent is approved or rejected' : undefined}
+                      >
+                        {busyAction?.key === 'pdf' ? <LoaderCircle className="animate-spin" size={15} /> : <Download size={15} />}
+                        Download PDF
+                      </button>
+                      <button
+                        type="button"
+                        className="button button-secondary"
+                        onClick={() => handlePrintIndent(viewTarget, viewDocumentModel)}
+                        disabled={isViewPending || busyAction?.key === 'print'}
+                        title={isViewPending ? 'Print is disabled until the indent is approved or rejected' : undefined}
+                      >
+                        {busyAction?.key === 'print' ? <LoaderCircle className="animate-spin" size={15} /> : <Printer size={15} />}
+                        Print
+                      </button>
+                      <button
+                        type="button"
+                        className="button button-secondary"
+                        onClick={() => {
+                          if (isViewPending) return
+                          const indentToMail = viewTarget
+                          setViewTarget(null)
+                          setViewDocumentModel(null)
+                          handleOpenMailCopy([indentToMail])
+                        }}
+                        disabled={isViewPending || busyAction?.key === 'mail'}
+                        title={isViewPending ? 'Email is disabled until the indent is approved or rejected' : undefined}
+                      >
+                        {busyAction?.key === 'mail' ? <LoaderCircle className="animate-spin" size={15} /> : <Mail size={15} />}
+                        Mail Copy
+                      </button>
+                    </>
+                  )
+                })()}
                 {canConvertIndent(viewTarget) ? (
                 <button
                   type="button"

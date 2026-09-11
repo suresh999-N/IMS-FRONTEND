@@ -383,22 +383,37 @@ export default function PurchaseIndentsTable({
             key: 'mail',
             label: isBusy('mail') ? 'Preparing email...' : 'Mail Copy',
             icon: Mail,
+            disabled: isPending,
+            title: isPending ? 'Email is disabled until the indent is approved or rejected' : undefined,
             loading: isBusy('mail'),
-            onClick: () => onMail?.(indent),
+            onClick: () => {
+              if (isPending) return
+              onMail?.(indent)
+            },
           },
           {
             key: 'pdf',
             label: isBusy('pdf') ? 'Downloading...' : 'Download PDF',
             icon: Download,
+            disabled: isPending,
+            title: isPending ? 'PDF download is disabled until the indent is approved or rejected' : undefined,
             loading: isBusy('pdf'),
-            onClick: () => onPdf?.(indent),
+            onClick: () => {
+              if (isPending) return
+              onPdf?.(indent)
+            },
           },
           {
             key: 'print',
             label: isBusy('print') ? 'Preparing print...' : 'Print',
             icon: Printer,
+            disabled: isPending,
+            title: isPending ? 'Print is disabled until the indent is approved or rejected' : undefined,
             loading: isBusy('print'),
-            onClick: () => onPrint?.(indent),
+            onClick: () => {
+              if (isPending) return
+              onPrint?.(indent)
+            },
           },
           canDelete && isPending && {
             key: 'delete',
@@ -415,6 +430,15 @@ export default function PurchaseIndentsTable({
   ], [busyAction, canDelete, onApprove, onConvert, onDelete, onEdit, onMail, onPdf, onPrint, onReject, onView, safeProducts])
 
   const hasSelection = selectedIndentIds.length > 0
+
+  const selectedRows = useMemo(() => {
+    const idSet = new Set(selectedIndentIds.map(String))
+    return safeIndents.filter((indent) => idSet.has(String(getIndentId(indent))))
+  }, [safeIndents, selectedIndentIds])
+
+  const hasPendingInSelection = selectedRows.some((indent) => getStatusKind(indent?.status) === 'pending')
+  const canBulkPrint = selectedRows.length > 0 && !hasPendingInSelection
+  const canBulkMail = selectedRows.length > 0 && !hasPendingInSelection
 
   const selectionToolbar = hasSelection ? (
     <FilterBar className="resource-center__product-style-selection-actions" ariaLabel="Selected purchase indents actions">
@@ -434,6 +458,8 @@ export default function PurchaseIndentsTable({
         type="button"
         className="button button-secondary resource-center__product-style-selection-button"
         onClick={onBulkPrint}
+        disabled={!canBulkPrint}
+        title={canBulkPrint ? 'Print selected purchase indents' : 'Print is disabled because one or more selected indents are pending approval'}
       >
         <Printer size={15} />
         Print
@@ -442,6 +468,8 @@ export default function PurchaseIndentsTable({
         type="button"
         className="button button-secondary resource-center__product-style-selection-button"
         onClick={onBulkMail}
+        disabled={!canBulkMail}
+        title={canBulkMail ? 'Mail selected purchase indents' : 'Email is disabled because one or more selected indents are pending approval'}
       >
         <Mail size={15} />
         Mail

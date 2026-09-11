@@ -219,7 +219,7 @@ function buildSupplier(indent, supplierRecord) {
   }
 }
 
-function buildItem(item, index, indent) {
+function buildItem(item, index, indent, options = {}) {
   const quantity = numberValue(item, [
     'requiredQty',
     'RequiredQty',
@@ -235,19 +235,69 @@ function buildItem(item, index, indent) {
     'EstimatedRate',
     'rate',
     'Rate',
+    'costPrice',
+    'CostPrice',
     'price',
     'Price',
+    'costPrice',
+    'CostPrice',
+    'purchasePrice',
+    'PurchasePrice',
+    'cost',
+    'Cost',
+    'product.costPrice',
+    'product.price',
   ])
-  const unitPrice = numberValue(item, [
+  let unitPrice = numberValue(item, [
     'unitPrice',
     'UnitPrice',
     'estimatedRate',
     'EstimatedRate',
     'rate',
     'Rate',
+    'costPrice',
+    'CostPrice',
     'price',
     'Price',
+    'costPrice',
+    'CostPrice',
+    'purchasePrice',
+    'PurchasePrice',
+    'cost',
+    'Cost',
+    'product.costPrice',
+    'product.price',
   ])
+
+  if (unitPrice <= 0 && (options.productMap || options.products)) {
+    const productId = String(item.productId ?? item.ProductId ?? '')
+    const productSku = String(item.sku ?? item.SKU ?? item.productSku ?? '')
+    const productName = String(item.productName ?? item.ProductName ?? item.name ?? '')
+    const product = options.productMap?.get(productId) ||
+      (Array.isArray(options.products)
+        ? options.products.find(
+            (p) =>
+              (productId && String(p.id ?? p.productId) === productId) ||
+              (productSku && String(p.sku ?? p.SKU) === productSku) ||
+              (productName && String(p.name ?? p.Name).trim().toLowerCase() === productName.trim().toLowerCase())
+          )
+        : null)
+
+    if (product) {
+      unitPrice = numberValue(product, [
+        'costPrice',
+        'CostPrice',
+        'cost_price',
+        'cost',
+        'Cost',
+        'purchasePrice',
+        'PurchasePrice',
+        'price',
+        'Price',
+      ])
+    }
+  }
+
   const hasDirectAmount = hasValue(item, [
     'amount',
     'Amount',
@@ -272,6 +322,8 @@ function buildItem(item, index, indent) {
     'total',
     'Total',
   ])
+  const computedAmount = quantity * unitPrice
+  const amount = hasDirectAmount && directAmount > 0 ? directAmount : computedAmount
 
   return {
     id: String(firstValue(item, [
@@ -315,9 +367,9 @@ function buildItem(item, index, indent) {
       'UOM',
     ]),
     unitPrice,
-    hasUnitPrice,
-    amount: hasDirectAmount ? directAmount : quantity * unitPrice,
-    hasAmount: hasDirectAmount || hasUnitPrice,
+    hasUnitPrice: unitPrice > 0 || hasUnitPrice,
+    amount: hasDirectAmount ? directAmount : (quantity * unitPrice > 0 ? quantity * unitPrice : amount),
+    hasAmount: amount > 0 || hasDirectAmount || (hasUnitPrice && unitPrice > 0),
     requiredDate: getLogicalRequiredDate(
       firstValue(item, [
         'requiredDate',
@@ -353,30 +405,63 @@ function buildItem(item, index, indent) {
 }
 
 function buildApprovalActivity(indent) {
+  const createdPerson = textValue(indent, ['createdByDisplay', 'createdByName', 'CreatedByName', 'createdBy', 'CreatedBy'])
+  const createdDate = firstValue(indent, ['createdAt', 'CreatedAt', 'createdOn', 'CreatedOn', 'createdDate', 'CreatedDate'])
+
+  const approvedPerson = textValue(indent, ['approvedByDisplay', 'approvedByName', 'ApprovedByName', 'approvedBy', 'ApprovedBy'])
+  const approvedDate = firstValue(indent, ['approvedAt', 'ApprovedAt', 'approvedOn', 'ApprovedOn', 'approvedDate', 'ApprovedDate'])
+
+  const rejectedPerson = textValue(indent, ['rejectedByDisplay', 'rejectedByName', 'RejectedByName', 'rejectedBy', 'RejectedBy'])
+  const rejectedDate = firstValue(indent, ['rejectedAt', 'RejectedAt', 'rejectedOn', 'RejectedOn', 'rejectedDate', 'RejectedDate'])
+
+  const directUpdatedPerson = textValue(indent, ['updatedByDisplay', 'updatedByName', 'UpdatedByName', 'modifiedByName', 'ModifiedByName', 'updatedBy', 'UpdatedBy'])
+  const directUpdatedDate = firstValue(indent, ['updatedAt', 'UpdatedAt', 'modifiedAt', 'ModifiedAt', 'updatedOn', 'UpdatedOn', 'modifiedOn', 'ModifiedOn'])
+
+  let updatedPerson = directUpdatedPerson
+  let updatedDate = directUpdatedDate
+
+  if (!updatedPerson || updatedPerson === 'Not Updated') {
+    if (approvedPerson) {
+      updatedPerson = approvedPerson
+    } else if (rejectedPerson) {
+      updatedPerson = rejectedPerson
+    } else if (updatedDate) {
+      updatedPerson = createdPerson
+    }
+  }
+
+  if (!updatedDate) {
+    if (approvedDate) {
+      updatedDate = approvedDate
+    } else if (rejectedDate) {
+      updatedDate = rejectedDate
+    }
+  }
+
   return [
     {
       key: 'created',
       label: 'Created',
-      person: textValue(indent, ['createdByDisplay', 'createdByName', 'CreatedByName', 'createdBy', 'CreatedBy']),
-      date: firstValue(indent, ['createdAt', 'CreatedAt', 'createdOn', 'CreatedOn', 'createdDate', 'CreatedDate']),
+      person: createdPerson,
+      date: createdDate,
     },
     {
       key: 'updated',
       label: 'Updated',
-      person: textValue(indent, ['updatedByDisplay', 'updatedByName', 'UpdatedByName', 'modifiedByName', 'ModifiedByName', 'updatedBy', 'UpdatedBy']),
-      date: firstValue(indent, ['updatedAt', 'UpdatedAt', 'modifiedAt', 'ModifiedAt', 'updatedOn', 'UpdatedOn', 'modifiedOn', 'ModifiedOn']),
+      person: updatedPerson,
+      date: updatedDate,
     },
     {
       key: 'approved',
       label: 'Approved',
-      person: textValue(indent, ['approvedByDisplay', 'approvedByName', 'ApprovedByName', 'approvedBy', 'ApprovedBy']),
-      date: firstValue(indent, ['approvedAt', 'ApprovedAt', 'approvedOn', 'ApprovedOn', 'approvedDate', 'ApprovedDate']),
+      person: approvedPerson,
+      date: approvedDate,
     },
     {
       key: 'rejected',
       label: 'Rejected',
-      person: textValue(indent, ['rejectedByDisplay', 'rejectedByName', 'RejectedByName', 'rejectedBy', 'RejectedBy']),
-      date: firstValue(indent, ['rejectedAt', 'RejectedAt', 'rejectedOn', 'RejectedOn', 'rejectedDate', 'RejectedDate']),
+      person: rejectedPerson,
+      date: rejectedDate,
     },
     {
       key: 'converted',
@@ -413,7 +498,7 @@ export function formatPurchaseIndentCurrency(value) {
 export function buildPurchaseIndentDocumentModel(indent = {}, options = {}) {
   const rawItems = Array.isArray(indent.items) ? indent.items : []
   const items = (rawItems.length > 0 ? rawItems : [indent])
-    .map((item, index) => buildItem(item, index, indent))
+    .map((item, index) => buildItem(item, index, indent, options))
   const directEstimatedValue = numberValue(indent, [
     'estimatedValue',
     'EstimatedValue',
@@ -422,8 +507,8 @@ export function buildPurchaseIndentDocumentModel(indent = {}, options = {}) {
     'amount',
     'Amount',
   ])
-  const calculatedEstimatedValue = items.reduce((sum, item) => sum + item.amount, 0)
-  const estimatedValue = directEstimatedValue || calculatedEstimatedValue
+  const calculatedEstimatedValue = items.reduce((sum, item) => sum + (item.amount || 0), 0)
+  const estimatedValue = directEstimatedValue > 0 ? directEstimatedValue : calculatedEstimatedValue
   const supplier = buildSupplier(indent, options.supplier)
   const status = textValue(indent, ['status', 'Status'], 'Pending')
   const approvedBy = textValue(indent, [
@@ -509,7 +594,7 @@ export function buildPurchaseIndentDocumentModel(indent = {}, options = {}) {
       itemCount: items.length,
       totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
       estimatedValue,
-      hasEstimatedValue: directEstimatedValue > 0 || items.some((item) => item.hasAmount),
+      hasEstimatedValue: estimatedValue > 0 || directEstimatedValue > 0 || items.some((item) => item.hasAmount),
     },
     remarks: textValue(indent, ['remarks', 'Remarks', 'notes', 'Notes']),
     terms: normalizeTerms(firstValue(indent, [

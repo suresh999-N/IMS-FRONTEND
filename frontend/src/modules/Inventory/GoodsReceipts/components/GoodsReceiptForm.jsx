@@ -782,6 +782,7 @@ export default function GoodsReceiptForm({
     supplierId: getRequiredError(formData.supplierId, 'Supplier'),
     warehouseId: getRequiredError(formData.warehouseId, 'Warehouse'),
     receiptDate: getRequiredError(formData.receiptDate, 'Receipt date'),
+    supplierInvoiceNo: getRequiredError(formData.supplierInvoiceNo, 'Supplier Invoice No'),
     lineItems: formData.lineItems.map(item => {
       const ordQty = Number(item.orderedQuantity || 0)
       const prevRx = Number(item.previouslyReceivedQuantity || 0)
@@ -811,6 +812,7 @@ export default function GoodsReceiptForm({
     !errors.supplierId &&
     !errors.warehouseId &&
     !errors.receiptDate &&
+    !errors.supplierInvoiceNo &&
     errors.lineItems.every(line => !line.productId && !line.receivedQuantity && !line.unitPrice)
 
   const summary = useMemo(() => {
@@ -830,6 +832,8 @@ export default function GoodsReceiptForm({
       supplierId: true,
       warehouseId: true,
       receiptDate: true,
+      supplierInvoiceNo: true,
+      supplierInvoiceDate: true,
       ...formData.lineItems.reduce((acc, line) => ({
         ...acc,
         [`${line.id}-productId`]: true,
@@ -991,7 +995,7 @@ export default function GoodsReceiptForm({
             />
           </div>
 
-          <div className="indent-field-group">
+          <div className={`indent-field-group ${touched.supplierInvoiceNo && errors.supplierInvoiceNo ? 'indent-field-group--error' : ''}`}>
             <label htmlFor="grn-supplier-invoice-no">{renderFormLabel('Supplier Invoice No *')}</label>
             <input
               type="text"
@@ -1003,7 +1007,8 @@ export default function GoodsReceiptForm({
                 minHeight: '38px',
                 padding: '8px 12px',
                 borderRadius: '8px',
-                border: '1px solid #cbd5e1',
+                border: touched.supplierInvoiceNo && errors.supplierInvoiceNo ? '1px solid #ef4444' : '1px solid #cbd5e1',
+                background: touched.supplierInvoiceNo && errors.supplierInvoiceNo ? '#fef2f2' : '#ffffff',
                 fontSize: '13px',
               }}
               placeholder="Enter supplier invoice no"
@@ -1011,9 +1016,12 @@ export default function GoodsReceiptForm({
               onChange={handleChange}
               onBlur={handleBlur}
             />
+            {touched.supplierInvoiceNo && errors.supplierInvoiceNo && (
+              <span className="indent-field-error">{errors.supplierInvoiceNo}</span>
+            )}
           </div>
 
-          <div className="indent-field-group">
+          <div className={`indent-field-group ${touched.supplierInvoiceDate && errors.supplierInvoiceDate ? 'indent-field-group--error' : ''}`}>
             <label htmlFor="grn-supplier-invoice-date">Supplier Invoice Date</label>
             <DatePicker
               id="grn-supplier-invoice-date"
@@ -1021,6 +1029,7 @@ export default function GoodsReceiptForm({
               value={formData.supplierInvoiceDate}
               onChange={handleChange}
               onBlur={handleBlur}
+              error={touched.supplierInvoiceDate ? errors.supplierInvoiceDate : ''}
               className="indent-details-date-picker"
             />
           </div>
@@ -1048,7 +1057,7 @@ export default function GoodsReceiptForm({
           <table className="indent-items-table" style={{ width: '100%', minWidth: '1500px', tableLayout: 'fixed' }}>
             <thead>
               <tr>
-                <th style={{ width: '36px', textAlign: 'center' }}>#</th>
+                <th style={{ width: '52px', textAlign: 'center' }}>S.No.</th>
                 <th style={{ width: '420px' }}>Product *</th>
                 <th style={{ width: '180px' }}>Variant</th>
                 <th style={{ width: '90px', textAlign: 'center' }}>Ordered Qty</th>

@@ -25,6 +25,7 @@ import {
 } from '../../../../components/erp'
 import { formatCurrency } from '../../../../utils/helpers'
 import { getStandardizedSku } from '../../../../utils/skuUtils'
+import { getDescriptiveVariantName } from '../../../../utils/productNameUtils'
 
 function getProductId(product) {
   return product?.productId ?? product?.id ?? product?._id ?? ''
@@ -63,10 +64,14 @@ function isProductArchived(product) {
 
 function getVariantLabel(product) {
   if (product.variantSize || product.variantColor) {
-    return [product.variantSize || 'Standard', product.variantColor || 'Default'].join(' / ')
+    const parts = [
+      product.variantSize,
+      product.variantColor && !/^default$/i.test(product.variantColor) ? product.variantColor : '',
+    ].filter(Boolean)
+    if (parts.length > 0) return parts.join(' / ')
   }
 
-  return 'Standard'
+  return getDescriptiveVariantName(null, product) || 'Standard'
 }
 
 function escapeHtml(value) {
