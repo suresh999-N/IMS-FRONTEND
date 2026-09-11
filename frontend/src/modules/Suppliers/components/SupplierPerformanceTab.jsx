@@ -1,6 +1,6 @@
 import { CalendarDays, Star, TimerReset, TrendingUp } from 'lucide-react'
 import { formatDate } from '../../../utils/helpers'
-import { formatEmpty } from '../supplierFormatters'
+import { formatEmpty, formatVendorRating } from '../supplierFormatters'
 import { SupplierMetricCard, SupplierSection } from './SupplierFormSections'
 
 export default function SupplierPerformanceTab({ performance, supplier, purchases = [] }) {
@@ -30,9 +30,7 @@ export default function SupplierPerformanceTab({ performance, supplier, purchase
     ? Math.round((onTimeDeliveries / totalOrders) * 100)
     : 100
 
-  const ratingValue = performance?.vendorRating
-    ? (String(performance.vendorRating).includes('/5') ? performance.vendorRating : `${performance.vendorRating}/5`)
-    : '5.0/5'
+  const ratingValue = formatVendorRating(performance?.vendorRating)
 
   return (
     <SupplierSection

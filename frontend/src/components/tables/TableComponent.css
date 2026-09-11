@@ -695,8 +695,10 @@
     linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.9));
 }
 
-.table-component__empty.state-block {
+.table-component__empty.state-block,
+.table-component__empty--invalid {
   min-height: var(--erp-table-viewport-min-height);
+  margin-top: 12px;
 }
 
 .table-component__empty:not(.state-block) svg {

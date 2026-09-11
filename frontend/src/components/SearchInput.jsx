@@ -9,6 +9,7 @@ export default function SearchInput({
   placeholder = 'Search by name or keyword',
   debounce = 200,
   errorMessage,
+  showInlineError = true,
 }) {
   const [internalValue, setInternalValue] = useState(value ?? '')
   const validation = validateSearchQuery(internalValue)
@@ -54,7 +55,7 @@ export default function SearchInput({
           </button>
         ) : null}
       </div>
-      {validation.isInvalid ? (
+      {showInlineError && validation.isInvalid ? (
         <span className="search-input-error" role="alert">
           {errorMessage || validation.errorMessage}
         </span>

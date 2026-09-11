@@ -819,7 +819,7 @@ export default function TableComponent({
       value={searchTerm}
       onChange={setSearchTerm}
       placeholder={searchPlaceholder}
-      errorMessage={resolvedInvalidSearchMessage}
+      showInlineError={false}
     />
   ) : null
 
@@ -971,6 +971,7 @@ export default function TableComponent({
                 .filter((v, i, a) => a.indexOf(v) === i)
 
               const messageText =
+                resolvedInvalidSearchMessage ||
                 invalidSearchMessage ||
                 (defaultExamples.length > 0
                   ? `Please enter a valid search term (e.g., ${defaultExamples.slice(0, 4).join(', ')}).`

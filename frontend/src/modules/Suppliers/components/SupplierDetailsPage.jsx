@@ -282,7 +282,7 @@ export default function SupplierDetailsPage({
         totalOrders: Number(totalOrdersFromApi),
         onTimeDeliveries: Number(apiPerf.onTimeDeliveries ?? apiPerf.OnTimeDeliveries ?? Number(totalOrdersFromApi)),
         delayedDeliveries: Number(apiPerf.delayedDeliveries ?? apiPerf.DelayedDeliveries ?? 0),
-        vendorRating: apiPerf.vendorRating || apiPerf.VendorRating || apiPerf.rating || '5.0',
+        vendorRating: apiPerf.vendorRating || apiPerf.VendorRating || apiPerf.rating || '5',
         lastSupplyDate: apiPerf.lastSupplyDate || apiPerf.LastSupplyDate || currentSupplier.lastPurchaseDate || null,
         returnPercentage: apiPerf.returnPercentage ?? apiPerf.ReturnPercentage ?? 0,
         ...apiPerf,
@@ -310,7 +310,7 @@ export default function SupplierDetailsPage({
 
       const lastSupplyDate = sortedDates[0] || currentSupplier.lastPurchaseDate || null
 
-      let calculatedRating = '5.0'
+      let calculatedRating = '5'
       if (onTimeRate < 50) calculatedRating = '2.5'
       else if (onTimeRate < 75) calculatedRating = '3.5'
       else if (onTimeRate < 90) calculatedRating = '4.2'
@@ -332,7 +332,7 @@ export default function SupplierDetailsPage({
         totalOrders: 1,
         onTimeDeliveries: 1,
         delayedDeliveries: 0,
-        vendorRating: apiPerf.vendorRating || apiPerf.rating || '5.0',
+        vendorRating: apiPerf.vendorRating || apiPerf.rating || '5',
         lastSupplyDate: currentSupplier.lastPurchaseDate || apiPerf.lastSupplyDate || null,
         returnPercentage: apiPerf.returnPercentage ?? 0,
         ...apiPerf,
@@ -343,7 +343,7 @@ export default function SupplierDetailsPage({
       totalOrders: 0,
       onTimeDeliveries: 0,
       delayedDeliveries: 0,
-      vendorRating: apiPerf.vendorRating || apiPerf.rating || '5.0',
+      vendorRating: apiPerf.vendorRating || apiPerf.rating || '5',
       lastSupplyDate: null,
       returnPercentage: 0,
       ...apiPerf,

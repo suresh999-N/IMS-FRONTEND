@@ -75,3 +75,18 @@ export function getStatusBadgeType(status) {
   if (['paid', 'received', 'reconciled', 'active'].includes(normalized)) return 'received'
   return 'ordered'
 }
+
+export function formatVendorRating(value) {
+  if (value == null || value === '') return '5/5'
+  let raw = String(value).trim()
+  if (raw.endsWith('/5')) {
+    raw = raw.slice(0, -2).trim()
+  }
+  const num = Number(raw)
+  if (Number.isNaN(num)) {
+    return raw.includes('/5') ? raw : `${raw}/5`
+  }
+  const formatted = num % 1 === 0 ? String(Math.round(num)) : String(num)
+  return `${formatted}/5`
+}
+
