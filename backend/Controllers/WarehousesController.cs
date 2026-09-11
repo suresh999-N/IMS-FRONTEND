@@ -1,4 +1,4 @@
-﻿using IMSBackend.Data;
+using IMSBackend.Data;
 using IMSBackend.DTOs;
 using IMSBackend.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -49,6 +49,18 @@ namespace IMSBackend.Controllers
                     })
                 .ToListAsync(cancellationToken);
 
+            var rackCounts = await _context.Racks
+                .AsNoTracking()
+                .GroupBy(r => r.WarehouseId)
+                .Select(g => new { WarehouseId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.WarehouseId, x => x.Count, cancellationToken);
+
+            var binCounts = await _context.Bins
+                .AsNoTracking()
+                .GroupBy(b => b.WarehouseId)
+                .Select(g => new { WarehouseId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.WarehouseId, x => x.Count, cancellationToken);
+
             var result = warehouses.Select(w =>
             {
                 // Only stocks belonging to THIS warehouse
@@ -89,13 +101,9 @@ namespace IMSBackend.Controllers
 
                     stockUnits = warehouseStocks.Sum(x => x.quantity),
 
-                    rackCount = _context.Racks
-                        .AsNoTracking()
-                        .Count(r => r.WarehouseId == w.WarehouseId),
+                    rackCount = rackCounts.TryGetValue(w.WarehouseId, out var rCount) ? rCount : 0,
 
-                    binCount = _context.Bins
-                        .AsNoTracking()
-                        .Count(b => b.WarehouseId == w.WarehouseId)
+                    binCount = binCounts.TryGetValue(w.WarehouseId, out var bCount) ? bCount : 0
                 };
             }).ToList();
 
