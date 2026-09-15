@@ -55,7 +55,9 @@ function AddressBlock({ title, party, address, required = false }) {
       <h2>{title}</h2>
       {!hasDetails ? <p>Details unavailable</p> : null}
       {party.companyName ? <p className="invoice-document__party-company">{party.companyName}</p> : null}
-      {party.name && party.name !== party.companyName ? (
+      {party.companyName && party.name && party.name !== party.companyName ? (
+        <p className="invoice-document__party-contact"><strong>Contact:</strong> {party.name}</p>
+      ) : !party.companyName && party.name ? (
         <p className="invoice-document__party-name">{party.name}</p>
       ) : null}
       {address ? <p className="invoice-document__multiline">{address}</p> : null}

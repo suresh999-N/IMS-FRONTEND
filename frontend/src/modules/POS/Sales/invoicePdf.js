@@ -223,9 +223,16 @@ function drawMetadata(doc, model, y) {
 }
 
 function getPartyLines(party, address) {
+  const contactPerson =
+    party.companyName && party.name && party.name !== party.companyName
+      ? `Contact: ${party.name}`
+      : !party.companyName && party.name
+      ? party.name
+      : ''
+
   return [
     party.companyName,
-    party.name && party.name !== party.companyName ? party.name : '',
+    contactPerson,
     address,
     party.gstNumber ? `GSTIN: ${party.gstNumber}` : '',
     party.phone ? `Phone: ${party.phone}` : '',

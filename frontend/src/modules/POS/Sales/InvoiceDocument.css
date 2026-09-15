@@ -253,6 +253,17 @@
   font-weight: 600;
 }
 
+.invoice-document__party-contact {
+  color: var(--invoice-muted);
+  font-size: 11px;
+  margin-top: 1px;
+}
+
+.invoice-document__party-contact strong {
+  color: var(--invoice-ink);
+  font-weight: 600;
+}
+
 .invoice-document__empty-text {
   color: var(--invoice-muted);
   font-size: 10.5px;
