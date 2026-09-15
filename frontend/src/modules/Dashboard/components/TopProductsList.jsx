@@ -15,7 +15,7 @@ export default function TopProductsList({ products = [] }) {
         </div>
         <Link
           className="dashboard-panel__link"
-          to="/inventory/products?filter=top-selling"
+          to="/inventory/products?filter=top-products"
           state={{ topProducts }}
         >
           View all

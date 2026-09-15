@@ -980,9 +980,9 @@ export default function SupplierForm({
         city: getPlaceNameError(address.city, 'City') || getCityStateError(address.city, state, country),
         state:
           isIndiaCountry(country)
-            ? getRequiredError(state, 'State') ||
+            ? getRequiredError(state, 'State / UT') ||
               (INDIA_STATES.includes(state) ? '' : 'Select a valid Indian state or union territory.')
-            : getPlaceNameError(state, 'State'),
+            : getPlaceNameError(state, 'State / UT'),
         country: getRequiredError(country, 'Country'),
         pincode: getPincodeError(address.pincode, state, country, { required: false }),
       }

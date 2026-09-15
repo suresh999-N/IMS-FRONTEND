@@ -76,6 +76,9 @@ export default function ProductVariants() {
   const [editingItem, setEditingItem] = useState(null)
   const [viewingItem, setViewingItem] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [selectedVariantIds, setSelectedVariantIds] = useState([])
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false)
 
   // Filters / Search
   const [searchTerm, setSearchTerm] = useState('')
@@ -428,6 +431,32 @@ export default function ProductVariants() {
     }
   }
 
+  const handleConfirmBulkDelete = async () => {
+    if (!selectedVariantIds.length) return
+    setIsBulkDeleting(true)
+
+    try {
+      let deletedCount = 0
+      for (const id of selectedVariantIds) {
+        const response = await apiRequest(`${API_ENDPOINTS.productVariants.list}/${id}`, {
+          method: 'DELETE',
+        })
+        if (response.success) {
+          deletedCount += 1
+        }
+      }
+
+      showToast(`Deleted ${deletedCount} product variant${deletedCount === 1 ? '' : 's'}.`, 'success')
+      setSelectedVariantIds([])
+      setIsBulkDeleteModalOpen(false)
+      loadData({ force: true, showLoading: false })
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'An error occurred while deleting selected variants.', 'error')
+    } finally {
+      setIsBulkDeleting(false)
+    }
+  }
+
   // ── Filtered Variants list ──────────────────────────────────────────────────
   const filteredVariants = useMemo(() => {
     return variants.filter((item) => {
@@ -675,6 +704,31 @@ export default function ProductVariants() {
   const toolbarContent = useMemo(
     () => (
       <FilterBar className="variants__toolbar-actions" ariaLabel="Variant table refresh actions">
+        {selectedVariantIds.length > 0 ? (
+          <div className="variants-table__selection-actions">
+            <span className="variants-selection-summary">
+              <strong>{selectedVariantIds.length}</strong> selected
+            </span>
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={() => setSelectedVariantIds([])}
+            >
+              Clear
+            </button>
+            {canDelete && (
+              <button
+                type="button"
+                className="button button-danger"
+                onClick={() => setIsBulkDeleteModalOpen(true)}
+              >
+                <Trash2 size={15} />
+                Delete Selected ({selectedVariantIds.length})
+              </button>
+            )}
+          </div>
+        ) : null}
+
         <button
           type="button"
           className="button button-secondary"
@@ -686,7 +740,7 @@ export default function ProductVariants() {
         </button>
       </FilterBar>
     ),
-    [isLoading, loadData]
+    [canDelete, isLoading, loadData, selectedVariantIds.length]
   )
 
   // ── Render Page ─────────────────────────────────────────────────────────────
@@ -736,6 +790,9 @@ export default function ProductVariants() {
           columns={columns}
           rows={filteredVariants}
           keyField="variantId"
+          enableRowSelection={true}
+          selectedRowKeys={selectedVariantIds}
+          onSelectionChange={setSelectedVariantIds}
           searchPlaceholder="Search variants by name, SKU, or attribute"
           invalidSearchMessage="Please enter a valid search term (e.g., variant SKU, product name, variant name, attribute, price)."
           loading={isLoading}
@@ -1043,6 +1100,46 @@ export default function ProductVariants() {
               >
                 <Trash2 size={16} />
                 {isDeleting ? 'Deleting...' : 'Delete Variant'}
+              </button>
+            </div>
+          </div>
+        </FormModal>
+      )}
+
+      {/* Bulk Delete Modal */}
+      {isBulkDeleteModalOpen && (
+        <FormModal
+          title="Delete Product Variants"
+          onClose={() => {
+            if (!isBulkDeleting) {
+              setIsBulkDeleteModalOpen(false)
+            }
+          }}
+        >
+          <div className="resource-center__delete-dialog">
+            <div className="delete-confirmation__copy">
+              <p>
+                Are you sure you want to delete <strong>{selectedVariantIds.length}</strong> selected product variant{selectedVariantIds.length === 1 ? '' : 's'}?
+              </p>
+              <p className="delete-confirmation__warning">This action cannot be undone.</p>
+            </div>
+            <div className="button-row">
+              <button
+                className="button button-cancel button-secondary"
+                type="button"
+                onClick={() => setIsBulkDeleteModalOpen(false)}
+                disabled={isBulkDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="button button-danger"
+                onClick={handleConfirmBulkDelete}
+                disabled={isBulkDeleting}
+              >
+                <Trash2 size={16} />
+                {isBulkDeleting ? 'Deleting...' : `Delete ${selectedVariantIds.length} Variant${selectedVariantIds.length === 1 ? '' : 's'}`}
               </button>
             </div>
           </div>

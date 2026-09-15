@@ -115,13 +115,13 @@ function AddressCountryStateFields({
           key={`address-${index}-state-select-${country}`}
           id={`supplier-address-state-${index}`}
           name="state"
-          label="State *"
+          label="State / UT *"
           value={state}
           onChange={(event) => onAddressChange(index, event)}
           onBlur={(event) => onAddressBlur(index, event)}
           options={INDIA_STATE_OPTIONS}
-          placeholder="Select state"
-          searchPlaceholder="Search state"
+          placeholder="Select State / UT"
+          searchPlaceholder="Search State / UT"
           error={getVisibleError({ error: stateError, blurred: stateBlurred, focused: stateFocused, submitted: showErrors })}
           showError={showErrors || stateBlurred}
           className={`supplier-address-field supplier-address-select ${getCompleteClass({ value: addressState, error: stateError, blurred: stateBlurred && !stateFocused })}`.trim()}

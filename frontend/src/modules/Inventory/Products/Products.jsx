@@ -47,12 +47,12 @@ function ProductsHeader({ canCreate, summary, activeStatusFilter, isTopSellingVi
     },
     ...(isTopSellingView || summary.topSelling > 0 ? [{
       key: 'topSelling',
-      filterValue: 'top-selling',
-      label: 'Top Selling',
+      filterValue: 'top-products',
+      label: 'Top Products',
       value: formatCompactCount(summary.topSelling || (isTopSellingView ? summary.total : 0)),
       tone: 'success',
       isActive: isTopSellingView,
-      title: 'Filter top-selling products',
+      title: 'Filter top products',
     }] : []),
     {
       key: 'inStock',
@@ -1095,13 +1095,23 @@ export default function Products({
       const matched = []
       const matchedKeys = new Set()
 
-      topProducts.forEach((topItem) => {
+      topProducts.forEach((topItem, index) => {
         const found = products.find((p) => isMatchingTopProduct(p, topItem))
+        const rank = topItem.rank || index + 1
+        const totalSold = Number(topItem.totalSold ?? 0)
+        const revenue = Number(topItem.revenue ?? 0)
+
         if (found) {
           const key = String(getEntityId(found) || found.productId || found.id || found.sku || found.name)
           if (!matchedKeys.has(key)) {
             matchedKeys.add(key)
-            matched.push(found)
+            matched.push({
+              ...found,
+              rank,
+              totalSold,
+              revenue,
+              isTopProduct: true,
+            })
           }
         } else if (!isLoading && products.length > 0) {
           const key = String(topItem.productId || topItem.id || topItem.sku || topItem.name)
@@ -1117,6 +1127,10 @@ export default function Products({
               price: topItem.revenue && topItem.totalSold ? Math.round((topItem.revenue / topItem.totalSold) * 100) / 100 : 0,
               costPrice: 0,
               status: 'Active',
+              rank,
+              totalSold,
+              revenue,
+              isTopProduct: true,
             })
           }
         }
@@ -1192,11 +1206,11 @@ export default function Products({
       navigate('/inventory/products', { replace: true })
     }
 
-    if (targetStatus === 'top-selling') {
+    if (targetStatus === 'top-selling' || targetStatus === 'top-products') {
       if (isTopSellingView) {
         navigate('/inventory/products', { replace: true })
       } else {
-        navigate('/inventory/products?filter=top-selling', { replace: true })
+        navigate('/inventory/products?filter=top-products', { replace: true })
       }
       setFilters((currentValue) => ({
         ...currentValue,
@@ -1265,6 +1279,7 @@ export default function Products({
 
       <ProductsTable
         products={filteredProducts}
+        isTopSellingView={isTopSellingView}
         canEdit={canEdit}
         canDelete={canDelete}
         filters={filters}
@@ -1287,7 +1302,7 @@ export default function Products({
             : errorMessage
               ? 'Products could not be loaded. Check the API connection and try again.'
               : isTopSellingView
-                ? 'No top-selling products found.'
+                ? 'No top products found.'
                 : isLowStockView
                   ? 'No low-stock products found.'
                   : filters.status === 'Archived'
@@ -1352,6 +1367,7 @@ export default function Products({
 
               <div className="product-details-hero__content">
                 <div className="product-details-hero__tags">
+                  {viewTarget.rank ? <span className="product-details-tag product-details-tag--brand">Rank #{viewTarget.rank}</span> : null}
                   {viewTarget.category ? <span className="product-details-tag">{viewTarget.category}</span> : null}
                   {viewTarget.subCategory ? <span className="product-details-tag product-details-tag--sub">{viewTarget.subCategory}</span> : null}
                   {viewTarget.brand ? <span className="product-details-tag product-details-tag--brand">{viewTarget.brand}</span> : null}
@@ -1367,6 +1383,27 @@ export default function Products({
 
             {/* Financial & Inventory Key Stat Cards */}
             <div className="product-details-stats">
+              {viewTarget.rank ? (
+                <div className="product-details-stat-card product-details-stat-card--rank">
+                  <div className="product-details-stat-card__label">Sales Rank</div>
+                  <div className="product-details-stat-card__value">#{viewTarget.rank}</div>
+                </div>
+              ) : null}
+
+              {viewTarget.totalSold !== undefined ? (
+                <div className="product-details-stat-card product-details-stat-card--sold">
+                  <div className="product-details-stat-card__label">Total Sold</div>
+                  <div className="product-details-stat-card__value">{viewTarget.totalSold} Units</div>
+                </div>
+              ) : null}
+
+              {viewTarget.revenue !== undefined ? (
+                <div className="product-details-stat-card product-details-stat-card--revenue">
+                  <div className="product-details-stat-card__label">Sales Revenue</div>
+                  <div className="product-details-stat-card__value">{formatCurrency(viewTarget.revenue)}</div>
+                </div>
+              ) : null}
+
               <div className="product-details-stat-card product-details-stat-card--price">
                 <div className="product-details-stat-card__label">Selling Price (MRP)</div>
                 <div className="product-details-stat-card__value">{formatCurrency(viewTarget.price)}</div>

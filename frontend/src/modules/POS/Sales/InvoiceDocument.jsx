@@ -205,20 +205,6 @@ export default function InvoiceDocument({ model, printRoot = false }) {
       </div>
 
       <div className="invoice-document__closing">
-        <section className="invoice-document__payment-overview">
-          <h2>Payment Summary</h2>
-          <div className="invoice-document__payment-cards">
-            <div>
-              <span>Amount Paid</span>
-              <strong>{formatInvoiceCurrency(summary.paidAmount)}</strong>
-            </div>
-            <div>
-              <span>Balance Amount</span>
-              <strong>{formatInvoiceCurrency(summary.balanceAmount)}</strong>
-            </div>
-          </div>
-        </section>
-
         <section className="invoice-document__summary" aria-label="Invoice totals">
           <SummaryRow label="Subtotal" value={summary.subtotal} />
           <SummaryRow label="Discount" value={summary.discount} negative />

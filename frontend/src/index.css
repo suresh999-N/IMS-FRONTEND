@@ -1202,11 +1202,16 @@ button.status-badge:disabled,
 .status-pending,
 .status-draft,
 .status-archived,
-.status-unpaid,
-.status-inactive {
+.status-unpaid {
   color: #475569 !important;
   background: var(--color-neutral-100, #f1f5f9) !important;
   border-color: var(--color-neutral-300, #cbd5e1) !important;
+}
+
+.status-inactive {
+  color: #b91c1c !important;
+  background: #fef2f2 !important;
+  border-color: #fecaca !important;
 }
 
 .status-info {

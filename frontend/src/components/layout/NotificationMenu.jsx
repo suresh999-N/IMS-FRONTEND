@@ -112,13 +112,11 @@ export default function NotificationMenu() {
           ) : (
             <div className="app-notification-list">
               {notifications.map((notification) => (
-                <button
+                <div
                   key={notification.id}
-                  type="button"
                   className={`app-notification-item ${notification.isRead ? 'is-read' : 'is-unread'}`}
-                  onClick={() => handleRead(notification)}
                 >
-                  <span className="app-notification-item__copy">
+                  <div className="app-notification-item__copy">
                     <strong>{notification.title}</strong>
                     <small>{notification.message}</small>
                     {notification.createdAt ? (
@@ -126,9 +124,19 @@ export default function NotificationMenu() {
                         {formatDateTime(notification.createdAt)}
                       </span>
                     ) : null}
-                  </span>
-                  {!notification.isRead ? <Check size={15} /> : null}
-                </button>
+                  </div>
+                  {!notification.isRead ? (
+                    <button
+                      type="button"
+                      className="app-notification-item__mark-read"
+                      onClick={() => handleRead(notification)}
+                      title="Mark as Read"
+                    >
+                      <Check size={13} />
+                      <span>Mark as Read</span>
+                    </button>
+                  ) : null}
+                </div>
               ))}
             </div>
           )}

@@ -10,7 +10,7 @@
   --invoice-surface: var(--color-neutral-50, #f8fafc);
   width: min(100%, 210mm);
   margin: 0 auto;
-  padding: clamp(20px, 4vw, 34px);
+  padding: 20px 22px;
   background: #ffffff;
   color: var(--invoice-ink);
   border: 1px solid var(--invoice-border);
@@ -37,9 +37,9 @@
 .invoice-document__header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 28px;
+  gap: 16px;
   align-items: start;
-  padding-bottom: 22px;
+  padding-bottom: 12px;
   border-bottom: 2px solid var(--invoice-primary);
 }
 
@@ -171,7 +171,7 @@
 .invoice-document__meta {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
-  margin: 18px 0;
+  margin: 10px 0;
   border: 1px solid var(--invoice-border);
   border-radius: 8px;
   background: var(--invoice-primary-soft);
@@ -180,7 +180,7 @@
 
 .invoice-document__meta > div {
   min-width: 0;
-  padding: 10px 12px;
+  padding: 7px 10px;
   border-right: 1px solid var(--invoice-border);
 }
 
@@ -210,8 +210,8 @@
 .invoice-document__addresses {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 18px;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 .invoice-document__addresses--single {
@@ -220,7 +220,7 @@
 
 .invoice-document__address-block {
   min-width: 0;
-  padding: 13px 14px;
+  padding: 8px 11px;
   border: 1px solid var(--invoice-border);
   border-radius: 8px;
 }
@@ -228,7 +228,7 @@
 .invoice-document__address-block h2,
 .invoice-document__payment-overview h2,
 .invoice-document__terms h2 {
-  margin-bottom: 7px;
+  margin-bottom: 4px;
   color: var(--invoice-primary);
   font-size: 9px;
   font-weight: 800;
@@ -291,7 +291,7 @@
 
 .invoice-document__items-wrap {
   width: 100%;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
   overflow-x: auto;
   border: 1px solid var(--invoice-border);
   border-radius: 8px;
@@ -342,7 +342,7 @@
 }
 
 .invoice-document__items th {
-  padding: 9px 7px;
+  padding: 6px 8px;
   border-bottom: 1px solid var(--invoice-primary);
   background: var(--invoice-primary);
   color: #ffffff;
@@ -355,7 +355,7 @@
 }
 
 .invoice-document__items td {
-  padding: 9px 7px;
+  padding: 6px 8px;
   border-right: 1px solid var(--invoice-border-light);
   border-bottom: 1px solid var(--invoice-border-light);
   color: var(--invoice-text);
@@ -410,46 +410,15 @@
 }
 
 .invoice-document__closing {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 292px;
-  gap: 24px;
-  align-items: start;
+  display: flex;
+  justify-content: flex-end;
   break-inside: avoid;
   page-break-inside: avoid;
 }
 
-.invoice-document__payment-overview {
-  padding: 13px 14px;
-  border: 1px solid var(--invoice-border);
-  border-radius: 8px;
-}
-
-.invoice-document__payment-cards {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.invoice-document__payment-cards > div {
-  min-width: 0;
-  padding-right: 10px;
-  border-right: 1px solid var(--invoice-border);
-}
-
-.invoice-document__payment-cards > div:last-child {
-  padding-right: 0;
-  border-right: 0;
-}
-
-.invoice-document__payment-cards strong {
-  display: block;
-  color: var(--invoice-ink);
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
-}
-
 .invoice-document__summary {
+  width: 292px;
+  max-width: 100%;
   border: 1px solid var(--invoice-border);
   border-radius: 8px;
   overflow: hidden;
@@ -459,7 +428,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 16px;
-  padding: 6px 10px;
+  padding: 4px 8px;
   border-bottom: 1px solid var(--invoice-border-light);
   color: var(--invoice-muted);
   font-size: 10.5px;
@@ -473,8 +442,8 @@
 }
 
 .invoice-document__summary-row--strong {
-  padding-top: 9px;
-  padding-bottom: 9px;
+  padding-top: 6px;
+  padding-bottom: 6px;
   border-bottom: 0;
   background: var(--invoice-primary);
   color: #ffffff;
@@ -489,10 +458,10 @@
 .invoice-document__footer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 220px;
-  gap: 28px;
+  gap: 16px;
   align-items: end;
-  margin-top: 24px;
-  padding-top: 18px;
+  margin-top: 12px;
+  padding-top: 10px;
   border-top: 1px solid var(--invoice-border);
   break-inside: avoid;
   page-break-inside: avoid;
@@ -743,7 +712,8 @@
   }
 
   .invoice-document--print-root .invoice-document__closing {
-    grid-template-columns: minmax(0, 1fr) 292px !important;
+    display: flex !important;
+    justify-content: flex-end !important;
   }
 
   .invoice-document--print-root .invoice-document__footer {
@@ -751,7 +721,7 @@
   }
 
   .invoice-document--print-root .invoice-document__header {
-    padding-bottom: 14px;
+    padding-bottom: 10px;
   }
 
   .invoice-document--print-root .invoice-document__logo {
@@ -769,12 +739,12 @@
   }
 
   .invoice-document--print-root .invoice-document__meta {
-    margin: 12px 0;
+    margin: 8px 0;
   }
 
   .invoice-document--print-root .invoice-document__addresses,
   .invoice-document--print-root .invoice-document__items-wrap {
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
 
   .invoice-document--print-root .invoice-document__items-wrap {

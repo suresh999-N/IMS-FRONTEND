@@ -219,7 +219,7 @@ function drawMetadata(doc, model, y) {
     doc.text(valueLines.slice(0, 1), x + 3, y + 9.5)
   })
 
-  return y + 19
+  return y + 16
 }
 
 function getPartyLines(party, address) {
@@ -273,7 +273,7 @@ function drawAddresses(doc, model, y) {
     )
   }
 
-  return y + height + 5
+  return y + height + 3
 }
 
 function percentageText(rate) {
@@ -314,7 +314,7 @@ function drawItemsTable(doc, model, startY) {
     styles: {
       font: 'helvetica',
       fontSize: 5.8,
-      cellPadding: { top: 2.2, right: 1.3, bottom: 2.2, left: 1.3 },
+      cellPadding: { top: 1.6, right: 1.2, bottom: 1.6, left: 1.2 },
       lineColor: COLORS.border,
       lineWidth: 0.15,
       textColor: COLORS.ink,
@@ -365,31 +365,9 @@ function drawPaymentAndTotals(doc, model, startY) {
   ]
   const rowHeight = 6
   const totalsHeight = (totalRows.length * rowHeight) + 10
-  const y = ensureSpace(doc, startY + 5, Math.max(26, totalsHeight))
-  const leftWidth = 80
+  const y = ensureSpace(doc, startY + 3, Math.max(26, totalsHeight))
   const rightWidth = 78
   const rightX = PAGE_WIDTH - PAGE_MARGIN - rightWidth
-
-  doc.setDrawColor(...COLORS.border)
-  doc.roundedRect(PAGE_MARGIN, y, leftWidth, 26, 1.5, 1.5, 'S')
-  doc.setTextColor(...COLORS.primary)
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(6)
-  doc.text('PAYMENT SUMMARY', PAGE_MARGIN + 3, y + 5)
-
-  const paymentColumns = [
-    ['AMOUNT PAID', formatInvoiceCurrency(model.summary.paidAmount)],
-    ['BALANCE AMOUNT', formatInvoiceCurrency(model.summary.balanceAmount)],
-  ]
-  paymentColumns.forEach(([label, value], index) => {
-    const x = PAGE_MARGIN + 3 + (index * 38)
-    doc.setTextColor(...COLORS.muted)
-    doc.setFontSize(5.5)
-    doc.text(label, x, y + 12)
-    doc.setTextColor(...COLORS.ink)
-    doc.setFontSize(7.5)
-    doc.text(value, x, y + 18)
-  })
 
   doc.setDrawColor(...COLORS.border)
   doc.roundedRect(rightX, y, rightWidth, totalsHeight, 1.5, 1.5, 'S')

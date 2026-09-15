@@ -2018,7 +2018,6 @@
   background: #ffffff;
   color: #0f172a;
   text-align: left;
-  cursor: pointer;
 }
 
 .app-notification-item:hover {
@@ -2034,6 +2033,7 @@
   display: grid;
   min-width: 0;
   gap: 3px;
+  flex: 1 1 auto;
 }
 
 .app-notification-item__copy strong,
@@ -2058,9 +2058,27 @@
   margin-top: 1px;
 }
 
-.app-notification-item>svg {
+.app-notification-item__mark-read {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px solid var(--ims-green-border);
+  border-radius: 6px;
+  background: var(--ims-mint-light);
+  color: var(--ims-green-primary);
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+  white-space: nowrap;
   flex: 0 0 auto;
-  color: #059669;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.app-notification-item__mark-read:hover {
+  background: var(--ims-mint-soft);
+  border-color: var(--ims-green-medium);
+  color: var(--ims-green-deep);
 }
 
 .app-notification-view-all {

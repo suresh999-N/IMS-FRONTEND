@@ -127,7 +127,10 @@
 }
 
 .warehouses-page__table-card .table-component__pagination {
-  min-height: 38px;
+  min-height: 44px;
+  height: auto !important;
+  padding: 6px 12px;
+  margin-top: 6px;
 }
 
 .warehouses-page__table-card .table-container {

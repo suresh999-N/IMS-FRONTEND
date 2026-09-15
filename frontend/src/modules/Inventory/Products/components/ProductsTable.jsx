@@ -97,8 +97,10 @@ function getExportImageSrc(value) {
 }
 
 function exportProductsExcel(products) {
+  const isTopProducts = products.some((p) => p.rank !== undefined || p.totalSold !== undefined || p.revenue !== undefined)
   const rows = products.map((product) => `
     <tr>
+      ${isTopProducts ? `<td>#${escapeHtml(product.rank || '—')}</td>` : ''}
       <td>${product.image ? `<img src="${escapeHtml(getExportImageSrc(product.image))}" alt="" />` : ''}</td>
       <td>${escapeHtml(product.name)}</td>
       <td>${escapeHtml(getStandardizedSku(product.sku, product))}</td>
@@ -106,6 +108,8 @@ function exportProductsExcel(products) {
       <td>${escapeHtml(product.category)}</td>
       <td>${escapeHtml(product.subCategory)}</td>
       <td>${escapeHtml(product.brand)}</td>
+      ${isTopProducts ? `<td>${escapeHtml(product.totalSold || 0)}</td>` : ''}
+      ${isTopProducts ? `<td>${escapeHtml(formatCurrency(product.revenue || 0))}</td>` : ''}
       <td>${escapeHtml(product.unit)}</td>
       <td>${escapeHtml(product.price)}</td>
       <td>${escapeHtml(isProductArchived(product) ? '—' : product.stock)}</td>
@@ -127,6 +131,7 @@ function exportProductsExcel(products) {
         <table>
           <thead>
             <tr>
+              ${isTopProducts ? '<th>Rank</th>' : ''}
               <th>Image</th>
               <th>Product</th>
               <th>SKU</th>
@@ -134,6 +139,8 @@ function exportProductsExcel(products) {
               <th>Category</th>
               <th>SubCategory</th>
               <th>Brand</th>
+              ${isTopProducts ? '<th>Total Sold</th>' : ''}
+              ${isTopProducts ? '<th>Revenue</th>' : ''}
               <th>Unit</th>
               <th>Price</th>
               <th>Stock</th>
@@ -149,14 +156,16 @@ function exportProductsExcel(products) {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  link.download = 'ProductCatalog.xls'
+  link.download = isTopProducts ? 'TopProductsList.xls' : 'ProductCatalog.xls'
   link.click()
   URL.revokeObjectURL(url)
 }
 
 function printProductsPdf(products) {
+  const isTopProducts = products.some((p) => p.rank !== undefined || p.totalSold !== undefined || p.revenue !== undefined)
   const rows = products.map((product) => `
     <tr>
+      ${isTopProducts ? `<td>#${escapeHtml(product.rank || '—')}</td>` : ''}
       <td>${product.image ? `<img src="${escapeHtml(getExportImageSrc(product.image))}" alt="" />` : ''}</td>
       <td>${escapeHtml(product.name)}</td>
       <td>${escapeHtml(getStandardizedSku(product.sku, product))}</td>
@@ -164,6 +173,8 @@ function printProductsPdf(products) {
       <td>${escapeHtml(product.category)}</td>
       <td>${escapeHtml(product.subCategory)}</td>
       <td>${escapeHtml(product.brand)}</td>
+      ${isTopProducts ? `<td>${escapeHtml(product.totalSold || 0)}</td>` : ''}
+      ${isTopProducts ? `<td>${escapeHtml(formatCurrency(product.revenue || 0))}</td>` : ''}
       <td>${escapeHtml(product.unit)}</td>
       <td>${escapeHtml(product.price)}</td>
       <td>${escapeHtml(isProductArchived(product) ? '—' : product.stock)}</td>
@@ -179,7 +190,7 @@ function printProductsPdf(products) {
   printWindow.document.write(`
     <html>
       <head>
-        <title>Product Catalog</title>
+        <title>${isTopProducts ? 'Top Products Report' : 'Product Catalog'}</title>
         <style>
           body { font-family: Segoe UI, Arial, sans-serif; color: #0f172a; padding: 20px; }
           h1 { font-size: 18px; margin: 0 0 12px; }
@@ -190,10 +201,11 @@ function printProductsPdf(products) {
         </style>
       </head>
       <body>
-        <h1>Product Catalog</h1>
+        <h1>${isTopProducts ? 'Top Products Report' : 'Product Catalog'}</h1>
         <table>
           <thead>
             <tr>
+              ${isTopProducts ? '<th>Rank</th>' : ''}
               <th>Image</th>
               <th>Product</th>
               <th>SKU</th>
@@ -201,6 +213,8 @@ function printProductsPdf(products) {
               <th>Category</th>
               <th>SubCategory</th>
               <th>Brand</th>
+              ${isTopProducts ? '<th>Total Sold</th>' : ''}
+              ${isTopProducts ? '<th>Revenue</th>' : ''}
               <th>Unit</th>
               <th>Price</th>
               <th>Stock</th>
@@ -239,6 +253,7 @@ function printProductsPdf(products) {
 
 export default function ProductTable({
   products,
+  isTopSellingView = false,
   canCreate: _canCreate,
   canEdit,
   canDelete,
@@ -274,6 +289,19 @@ export default function ProductTable({
   }
 
   const columns = [
+    ...(isTopSellingView ? [{
+      key: 'rank',
+      label: 'Rank',
+      tableWidth: 80,
+      className: 'products-col-rank',
+      sortable: true,
+      sortValue: (product) => product.rank ?? 999,
+      render: (product) => (
+        <span className={`products-table__rank-badge ${product.rank && product.rank <= 3 ? 'products-table__rank-badge--top3' : ''}`}>
+          #{product.rank || '—'}
+        </span>
+      ),
+    }] : []),
     {
       key: 'name',
       label: 'Product',
@@ -321,6 +349,35 @@ export default function ProductTable({
         </div>
       ),
     },
+    ...(isTopSellingView ? [
+      {
+        key: 'totalSold',
+        label: 'Total Sold',
+        tableWidth: 130,
+        className: 'products-col-sold',
+        sortable: true,
+        sortValue: (product) => Number(product.totalSold || 0),
+        render: (product) => (
+          <div className="products-table__stack">
+            <strong>{product.totalSold || 0}</strong>
+            <span>units sold</span>
+          </div>
+        ),
+      },
+      {
+        key: 'revenue',
+        label: 'Revenue',
+        tableWidth: 140,
+        className: 'products-col-revenue',
+        sortable: true,
+        sortValue: (product) => Number(product.revenue || 0),
+        render: (product) => (
+          <strong className="products-table__revenue-value">
+            {formatCurrency(product.revenue || 0)}
+          </strong>
+        ),
+      },
+    ] : []),
     {
       key: 'unit',
       label: 'Unit',

@@ -631,8 +631,8 @@ function getAddressErrors(address) {
     addressLine2: getAddressLineError(address.addressLine2, 'Address line 2'),
     city: getPlaceNameError(address.city, 'City') || getCityStateError(address.city, state, country),
     state: isIndiaCountry(country)
-      ? (!state ? 'State is required.' : INDIA_STATES.includes(state) ? '' : 'Select a valid Indian state or union territory.')
-      : getPlaceNameError(state, 'State'),
+      ? (!state ? 'State / UT is required.' : INDIA_STATES.includes(state) ? '' : 'Select a valid Indian state or union territory.')
+      : getPlaceNameError(state, 'State / UT'),
     country: country ? '' : 'Country is required.',
     pincode: getPincodeError(address.pincode, state, country, { required: false }),
   }
@@ -2013,7 +2013,7 @@ export default function CustomerForm({
                         <InputField id={`customer-address-line1-${index}`} name="addressLine" label="Address Line 1 *" icon={MapPin} value={address.addressLine} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} error={(submitAttempted || touched.collections) ? addressError.addressLine : ''} placeholder="Street address, building, locality" disabled={isReadOnly} />
                         <InputField id={`customer-address-line2-${index}`} name="addressLine2" label="Address Line 2" icon={MapPin} value={address.addressLine2} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} error="" placeholder="Apartment, suite, landmark" disabled={isReadOnly} />
                         <InputField id={`customer-address-city-${index}`} name="city" label="City *" icon={MapPin} value={address.city} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} error={(submitAttempted || touched.collections) ? addressError.city : ''} placeholder="Enter city" disabled={isReadOnly} />
-                        <InputField id={`customer-address-state-${index}`} name="state" label="State *" icon={MapPin} value={address.state} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} error={(submitAttempted || touched.collections) ? addressError.state : ''} placeholder="Enter state" disabled={isReadOnly} />
+                        <InputField id={`customer-address-state-${index}`} name="state" label="State / UT *" icon={MapPin} value={address.state} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} error={(submitAttempted || touched.collections) ? addressError.state : ''} placeholder="Enter State / UT" disabled={isReadOnly} />
                         <InputField id={`customer-address-country-${index}`} name="country" label="Country *" icon={MapPin} value={address.country} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} error={(submitAttempted || touched.collections) ? addressError.country : ''} placeholder="Enter country" disabled={isReadOnly} />
                         <InputField id={`customer-address-pincode-${index}`} name="pincode" label="Pincode *" icon={Hash} value={address.pincode} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} error={(submitAttempted || touched.collections || (address.pincode && String(address.pincode).trim().length >= 6)) ? addressError.pincode : ''} placeholder="560001" inputMode="numeric" maxLength={6} disabled={isReadOnly} />
                       </div>

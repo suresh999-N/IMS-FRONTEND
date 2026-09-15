@@ -224,6 +224,25 @@
   gap: 8px;
 }
 
+.variants-table__selection-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.variants-selection-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid #a7f3d0;
+  border-radius: 6px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
 .resource-center__page--productVariants .resource-center__inventory-table .table-component__pagination {
   min-height: 36px;
   height: 36px;
