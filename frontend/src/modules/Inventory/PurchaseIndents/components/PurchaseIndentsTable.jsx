@@ -8,6 +8,10 @@ const NOT_ASSIGNED = 'Not Assigned'
 const DEFAULT_STATUS = 'Pending'
 const DEFAULT_PRIORITY = 'Medium'
 
+function getIndentId(indent) {
+  return indent?.purchaseIndentId || indent?.indentId || indent?.id
+}
+
 function getIndentNumber(indent) {
   return formatIndentNumber(indent)
 }
@@ -325,7 +329,7 @@ export default function PurchaseIndentsTable({
     style: { width: 80, minWidth: 80, maxWidth: 80 },
     headerStyle: { width: 80, minWidth: 80, maxWidth: 80 },
     render: (indent) => {
-      const indentId = indent?.purchaseIndentId || indent?.indentId || indent?.id
+      const indentId = getIndentId(indent)
       const statusKind = getStatusKind(indent?.status)
       const isPending = statusKind === 'pending'
       const isApproved = statusKind === 'approved'
