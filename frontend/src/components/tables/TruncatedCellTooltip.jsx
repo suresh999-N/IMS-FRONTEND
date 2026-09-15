@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 const HOVER_DELAY_MS = 250
 const VIEWPORT_GUTTER = 12
 const TOOLTIP_GAP = 8
-const MAX_TOOLTIP_WIDTH = 360
+const MAX_TOOLTIP_WIDTH = 380
 
 function hasVisibleText(element) {
   return Boolean(String(element?.innerText || element?.textContent || '').trim())
@@ -20,8 +20,23 @@ function isTruncated(element) {
   )
 }
 
-function findTruncatedElement(cell) {
-  const titleElement = cell.querySelector('[title]')
+function findTruncatedElement(cell, target) {
+  if (target && cell.contains(target)) {
+    const titledTarget = target.closest?.('[title], [data-tooltip-title]')
+    if (titledTarget && cell.contains(titledTarget)) {
+      const titleVal = (titledTarget.getAttribute('title') || titledTarget.getAttribute('data-tooltip-title'))?.trim()
+      if (titleVal || isTruncated(titledTarget)) {
+        return titledTarget
+      }
+    }
+
+    const truncatedTarget = target.closest?.('*')
+    if (truncatedTarget && cell.contains(truncatedTarget) && isTruncated(truncatedTarget)) {
+      return truncatedTarget
+    }
+  }
+
+  const titleElement = cell.querySelector('[title], [data-tooltip-title]')
   if (titleElement && isTruncated(titleElement)) {
     return titleElement
   }
@@ -33,7 +48,7 @@ function findTruncatedElement(cell) {
   if (isTruncated(cell)) return cell
 
   if (titleElement) {
-    const titleVal = titleElement.getAttribute('title')?.trim()
+    const titleVal = (titleElement.getAttribute('title') || titleElement.getAttribute('data-tooltip-title'))?.trim()
     if (titleVal) {
       return titleElement
     }
@@ -44,21 +59,82 @@ function findTruncatedElement(cell) {
 
 function getTooltipPosition(element) {
   const rect = element.getBoundingClientRect()
-  const left = Math.max(VIEWPORT_GUTTER, Math.min(rect.left, window.innerWidth - VIEWPORT_GUTTER - 100))
-  const maxWidth = Math.min(MAX_TOOLTIP_WIDTH, window.innerWidth - left - VIEWPORT_GUTTER)
+  const maxWidth = Math.min(MAX_TOOLTIP_WIDTH, window.innerWidth - 2 * VIEWPORT_GUTTER)
+  const left = Math.max(
+    VIEWPORT_GUTTER,
+    Math.min(rect.left, window.innerWidth - maxWidth - VIEWPORT_GUTTER)
+  )
+
+  const spaceAbove = rect.top - VIEWPORT_GUTTER
+  const spaceBelow = window.innerHeight - rect.bottom - VIEWPORT_GUTTER
+
+  const preferAbove = spaceAbove >= 90 || spaceAbove >= spaceBelow
+  const placement = preferAbove ? 'above' : 'below'
+  const top = placement === 'above'
+    ? rect.top - TOOLTIP_GAP
+    : rect.bottom + TOOLTIP_GAP
 
   return {
     left,
     maxWidth,
-    top: rect.top,
-    placement: 'overlay',
+    top,
+    placement,
+    anchorTop: rect.top,
+    anchorBottom: rect.bottom,
   }
 }
 
 export default function TruncatedCellTooltip({ containerRef }) {
   const timerRef = useRef(null)
-  const activeCellRef = useRef(null)
+  const activeElementRef = useRef(null)
+  const tooltipRef = useRef(null)
   const [tooltip, setTooltip] = useState(null)
+
+  useLayoutEffect(() => {
+    if (!tooltip || !tooltipRef.current) return
+    const el = tooltipRef.current
+    const tooltipRect = el.getBoundingClientRect()
+
+    if (tooltip.placement === 'above' && tooltipRect.top < VIEWPORT_GUTTER) {
+      const spaceBelow = window.innerHeight - (tooltip.anchorBottom ?? 0) - VIEWPORT_GUTTER
+      if (spaceBelow >= tooltipRect.height + TOOLTIP_GAP) {
+        setTooltip((prev) =>
+          prev
+            ? {
+                ...prev,
+                placement: 'below',
+                top: (prev.anchorBottom ?? prev.top) + TOOLTIP_GAP,
+              }
+            : null
+        )
+      } else {
+        const clampedTop = VIEWPORT_GUTTER + tooltipRect.height
+        if (Math.abs(tooltip.top - clampedTop) > 1) {
+          setTooltip((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  top: clampedTop,
+                }
+              : null
+          )
+        }
+      }
+    } else if (tooltip.placement === 'below' && tooltipRect.bottom > window.innerHeight - VIEWPORT_GUTTER) {
+      const spaceAbove = (tooltip.anchorTop ?? 0) - VIEWPORT_GUTTER
+      if (spaceAbove >= tooltipRect.height + TOOLTIP_GAP) {
+        setTooltip((prev) =>
+          prev
+            ? {
+                ...prev,
+                placement: 'above',
+                top: (prev.anchorTop ?? prev.top) - TOOLTIP_GAP,
+              }
+            : null
+        )
+      }
+    }
+  }, [tooltip?.text, tooltip?.top, tooltip?.placement])
 
   useEffect(() => {
     const container = containerRef.current
@@ -71,27 +147,63 @@ export default function TruncatedCellTooltip({ containerRef }) {
       }
     }
 
+    function restoreTitle(element) {
+      if (!element) return
+      if (element.hasAttribute('data-tooltip-title')) {
+        element.setAttribute('title', element.getAttribute('data-tooltip-title'))
+        element.removeAttribute('data-tooltip-title')
+      }
+    }
+
     function hideTooltip() {
       clearTimer()
-      activeCellRef.current = null
+      if (activeElementRef.current) {
+        restoreTitle(activeElementRef.current)
+        activeElementRef.current = null
+      }
       setTooltip(null)
     }
 
     function handlePointerOver(event) {
       const cell = event.target.closest?.('td')
-      if (!cell || !container.contains(cell) || cell === activeCellRef.current) return
+      if (!cell || !container.contains(cell)) return
       if (cell.classList.contains('table-component__selection-cell')) return
 
-      clearTimer()
-      setTooltip(null)
-      activeCellRef.current = cell
+      const isAction = event.target.closest?.('button, a, input, select')
+      if (
+        isAction &&
+        !isAction.hasAttribute('title') &&
+        !isAction.hasAttribute('data-tooltip-title') &&
+        !isTruncated(isAction)
+      ) {
+        hideTooltip()
+        return
+      }
+
+      const truncatedElement = findTruncatedElement(cell, event.target)
+      if (!truncatedElement) {
+        hideTooltip()
+        return
+      }
+
+      if (activeElementRef.current === truncatedElement) return
+
+      hideTooltip()
+      activeElementRef.current = truncatedElement
 
       timerRef.current = window.setTimeout(() => {
-        const truncatedElement = findTruncatedElement(cell)
-        const titleText = truncatedElement?.getAttribute?.('title')
-        const text = String(titleText || truncatedElement?.innerText || truncatedElement?.textContent || '').trim()
+        if (activeElementRef.current !== truncatedElement) return
 
-        if (!truncatedElement || !text || activeCellRef.current !== cell) return
+        const rawTitle =
+          truncatedElement.getAttribute('title') || truncatedElement.getAttribute('data-tooltip-title')
+        const text = String(rawTitle || truncatedElement.innerText || truncatedElement.textContent || '').trim()
+
+        if (!text) return
+
+        if (truncatedElement.hasAttribute('title')) {
+          truncatedElement.setAttribute('data-tooltip-title', rawTitle)
+          truncatedElement.removeAttribute('title')
+        }
 
         setTooltip({
           text,
@@ -104,7 +216,16 @@ export default function TruncatedCellTooltip({ containerRef }) {
       const currentCell = event.target.closest?.('td')
       const nextCell = event.relatedTarget?.closest?.('td')
 
-      if (currentCell && currentCell !== nextCell) hideTooltip()
+      if (currentCell && currentCell !== nextCell) {
+        hideTooltip()
+        return
+      }
+
+      const currentItem = event.target.closest?.('[title], [data-tooltip-title]')
+      const nextItem = event.relatedTarget?.closest?.('[title], [data-tooltip-title]')
+      if (currentItem && currentItem !== nextItem) {
+        hideTooltip()
+      }
     }
 
     container.addEventListener('pointerover', handlePointerOver)
@@ -125,6 +246,7 @@ export default function TruncatedCellTooltip({ containerRef }) {
 
   return createPortal(
     <div
+      ref={tooltipRef}
       className={`table-truncated-tooltip table-truncated-tooltip--${tooltip.placement}`}
       role="tooltip"
       style={{

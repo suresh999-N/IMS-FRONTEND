@@ -3949,7 +3949,8 @@
   background: linear-gradient(180deg, #fffbeb, #fef3c7);
 }
 
-.customers-page .status-badge.status-critical {
+.customers-page .status-badge.status-critical,
+.customers-page .status-badge.status-inactive {
   color: #b91c1c;
   border-color: rgba(248, 113, 113, 0.42);
   background: linear-gradient(180deg, #fff1f2, #fee2e2);
@@ -8315,7 +8316,8 @@
     linear-gradient(180deg, rgba(255, 251, 235, 0.68), rgba(254, 243, 199, 0.42));
 }
 
-.customers-page__directory-card .status-badge.status-critical {
+.customers-page__directory-card .status-badge.status-critical,
+.customers-page__directory-card .status-badge.status-inactive {
   color: #a23b3b;
   border-color: rgba(239, 68, 68, 0.17);
   background:
@@ -8572,7 +8574,8 @@
   border-color: rgba(245, 158, 11, 0.13);
 }
 
-.customers-page__directory-card .status-badge.status-critical {
+.customers-page__directory-card .status-badge.status-critical,
+.customers-page__directory-card .status-badge.status-inactive {
   border-color: rgba(239, 68, 68, 0.13);
 }
 
@@ -22141,3 +22144,306 @@
   align-content: start !important;
   align-items: start !important;
 }
+
+/* ==========================================================================
+   Customer Form Modal: Layout, Spacing & Hierarchy Fixes
+   Prevents text overlap between error banner, tab labels, and panel/activity content.
+   Ensures consistent vertical flow across all device sizes.
+   ========================================================================== */
+
+.customer-form-modal__dialog {
+  display: flex !important;
+  flex-direction: column !important;
+  width: min(980px, calc(100vw - 32px)) !important;
+  max-height: min(92dvh, calc(100dvh - 24px)) !important;
+  height: min(90dvh, 760px) !important;
+  min-height: min(480px, 90dvh) !important;
+  overflow: hidden !important;
+  background: #ffffff !important;
+}
+
+.customer-form-modal__body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.customer-form--master-v2 {
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  background: #ffffff !important;
+}
+
+.customer-form--master-v2 .customer-master-shell {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: #ffffff !important;
+  overflow: hidden !important;
+}
+
+/* Error message banner: Clear vertical breathing room, no collision with tabs */
+.customer-form--master-v2 .customer-form__message {
+  flex: 0 0 auto !important;
+  margin: 12px 16px 10px !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  align-self: stretch !important;
+  box-sizing: border-box !important;
+}
+
+/* Loading state */
+.customer-form--master-v2 .customer-form__loading {
+  flex: 0 0 auto !important;
+  margin: 8px 16px !important;
+}
+
+/* Tabs: Dedicated row with fixed comfortable height, clear borders, no clipping */
+.customer-form--master-v2 .customer-form__tabs {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  height: 48px !important;
+  padding: 0 16px !important;
+  margin: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: thin !important;
+  box-sizing: border-box !important;
+}
+
+.customer-form--master-v2 .customer-form__tab {
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  height: 32px !important;
+  padding: 0 14px !important;
+  border: 1px solid transparent !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: #526174 !important;
+  font-size: 12.5px !important;
+  font-weight: 650 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease !important;
+}
+
+.customer-form--master-v2 .customer-form__tab:hover:not(:disabled) {
+  border-color: #a7f3d0 !important;
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+}
+
+.customer-form--master-v2 .customer-form__tab.is-active {
+  border-color: #86efac !important;
+  background: #dffaf0 !important;
+  color: #047857 !important;
+  box-shadow: none !important;
+}
+
+/* Panel: Consumes exact remaining vertical space, scrolls smoothly */
+.customer-form--master-v2 .customer-form__panel {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 16px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+}
+
+/* Content cards inside panel */
+.customer-form--master-v2 :where(.customer-master-section, .customer-form__section) {
+  margin: 0 !important;
+  padding: 16px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+.customer-form--master-v2 :where(.customer-master-section__heading, .customer-form__section-heading) {
+  margin: 0 0 14px 0 !important;
+  padding: 0 0 10px 0 !important;
+  border-bottom: 1px solid #edf2f7 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+.customer-form--master-v2 :where(.customer-master-section__heading h3, .customer-form__section-heading h3) {
+  margin: 0 !important;
+  color: #111827 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+}
+
+.customer-form--master-v2 :where(.customer-master-section__heading p, .customer-form__section-heading p) {
+  margin: 0 !important;
+  color: #64748b !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+}
+
+/* Timeline: clean spacing and alignment */
+.customer-form--master-v2 .customer-enterprise-timeline {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  padding: 4px 0 !important;
+  list-style: none !important;
+}
+
+.customer-form--master-v2 .customer-enterprise-timeline li {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: 24px minmax(0, 1fr) !important;
+  gap: 12px !important;
+  padding: 0 0 16px !important;
+}
+
+.customer-form--master-v2 .customer-enterprise-timeline li::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 7px !important;
+  top: 16px !important;
+  bottom: 0 !important;
+  width: 1px !important;
+  background: #dbe5ef !important;
+}
+
+.customer-form--master-v2 .customer-enterprise-timeline li:last-child {
+  padding-bottom: 0 !important;
+}
+
+.customer-form--master-v2 .customer-enterprise-timeline li:last-child::before {
+  display: none !important;
+}
+
+.customer-form--master-v2 .customer-enterprise-timeline__marker {
+  width: 15px !important;
+  height: 15px !important;
+  margin-top: 2px !important;
+  border: 3px solid #dff8fb !important;
+  border-radius: 999px !important;
+  background: #0f9aaa !important;
+  box-shadow: 0 0 0 1px #a5e7ef !important;
+  z-index: 1 !important;
+}
+
+.customer-form--master-v2 .customer-enterprise-timeline strong {
+  display: block !important;
+  color: #111827 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+  line-height: 1.3 !important;
+}
+
+.customer-form--master-v2 .customer-enterprise-timeline p {
+  margin: 3px 0 !important;
+  color: #526278 !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+}
+
+.customer-form--master-v2 .customer-enterprise-timeline time {
+  display: block !important;
+  color: #7b8797 !important;
+  font-size: 11.5px !important;
+}
+
+/* Footer actions: Clean pinned footer at bottom */
+.customer-form-modal .customer-form--master-v2 .customer-form__actions {
+  flex: 0 0 auto !important;
+  min-height: 54px !important;
+  max-height: 54px !important;
+  height: 54px !important;
+  padding: 8px 16px !important;
+  border-top: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  box-sizing: border-box !important;
+}
+
+/* Responsive adjustments across screen sizes */
+@media (max-width: 767px) {
+  .customer-form-modal__dialog {
+    width: calc(100vw - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    height: calc(100dvh - 16px) !important;
+    border-radius: 10px !important;
+  }
+
+  .customer-form--master-v2 .customer-form__message {
+    margin: 8px 12px 6px !important;
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+
+  .customer-form--master-v2 .customer-form__tabs {
+    padding: 0 10px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    height: 44px !important;
+    gap: 4px !important;
+  }
+
+  .customer-form--master-v2 .customer-form__tab {
+    padding: 0 10px !important;
+    font-size: 12px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
+    height: 28px !important;
+  }
+
+  .customer-form--master-v2 .customer-form__panel {
+    padding: 10px 12px !important;
+  }
+
+  .customer-form--master-v2 :where(.customer-master-section, .customer-form__section) {
+    padding: 12px !important;
+  }
+
+  .customer-form-modal .customer-form--master-v2 .customer-form__actions {
+    padding: 8px 12px !important;
+  }
+}
+

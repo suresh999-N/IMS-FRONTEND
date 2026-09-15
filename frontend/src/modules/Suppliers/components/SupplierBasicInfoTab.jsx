@@ -275,7 +275,7 @@ export default function SupplierBasicInfoTab({
           disabled={readOnly}
         />
         <div className={`field supplier-basic-status-select ${getFieldDisplayError('status', formData.status, errors.status, touched) ? 'field--error' : ''} ${formData.status && !errors.status ? 'field--success' : ''}`.trim()}>
-          <label htmlFor="supplier-status">Status *</label>
+          <label htmlFor="supplier-status">Status <span className="required-asterisk">*</span></label>
           <ReactSelect
             inputId="supplier-status"
             instanceId="supplier-status"

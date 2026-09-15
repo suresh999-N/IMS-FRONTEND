@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   SlidersHorizontal,
   Pencil,
@@ -61,6 +61,7 @@ export default function ProductVariants() {
   const { hasPermission } = useAuth()
   const [variants, setVariants] = useState([])
   const [products, setProducts] = useState([])
+  const productsMapRef = useRef(new Map())
   const [attributes, setAttributes] = useState([])
   const [attributeValues, setAttributeValues] = useState([])
   const [variantAttributes, setVariantAttributes] = useState([])
@@ -144,12 +145,17 @@ export default function ProductVariants() {
         ? archivedProductsRes.data
         : (archivedProductsRes?.data?.items ?? archivedProductsRes?.data?.data ?? [])
 
-      // Merge active and archived products into a Map
+      // Merge active and archived products into a Map (by ID and by SKU)
       const productsMap = new Map()
+      const productsBySku = new Map()
       ;[...activeProducts, ...archivedProducts].forEach((p) => {
         const id = String(p.productId ?? p.id ?? '')
         if (id && !productsMap.has(id)) {
           productsMap.set(id, p)
+        }
+        const sku = String(p.sku ?? p.SKU ?? '').trim().toUpperCase()
+        if (sku && !productsBySku.has(sku)) {
+          productsBySku.set(sku, p)
         }
       })
 
@@ -157,7 +163,7 @@ export default function ProductVariants() {
       const missingProductIds = [
         ...new Set(
           variantsList
-            .map((v) => v.productId)
+            .map((v) => v.productId ?? v.ProductId ?? v.product_id)
             .filter((id) => id && !productsMap.has(String(id)))
         ),
       ]
@@ -173,9 +179,15 @@ export default function ProductVariants() {
             if (id && !productsMap.has(id)) {
               productsMap.set(id, p)
             }
+            const sku = String(p.sku ?? p.SKU ?? '').trim().toUpperCase()
+            if (sku && !productsBySku.has(sku)) {
+              productsBySku.set(sku, p)
+            }
           }
         })
       }
+
+      productsMapRef.current = productsMap
 
       const allProductsList = Array.from(productsMap.values())
       const attributesList = attributesRes.success ? (attributesRes.data ?? []) : []
@@ -191,17 +203,20 @@ export default function ProductVariants() {
 
       // Map and normalize variants for screen display
       const normalized = variantsList.map((variant) => {
-        const variantId = variant.variantId ?? variant.id
-        const productId = variant.productId
-        const variantName = variant.variantName ?? variant.name ?? variant.title ?? ''
+        const variantId = variant.variantId ?? variant.VariantId ?? variant.id
+        const productId = variant.productId ?? variant.ProductId ?? variant.product_id
+        const variantSku = variant.sku ?? variant.SKU ?? ''
+        const variantName = variant.variantName ?? variant.VariantName ?? variant.name ?? variant.title ?? ''
 
         // Find parent product details and resolve descriptive name & barcode
-        const product = productsMap.get(String(productId))
-        const descriptiveName = getDescriptiveProductName(product, variant)
-        const descriptiveBarcode = getDescriptiveProductBarcode(product, variant)
+        const product =
+          productsMap.get(String(productId)) ||
+          (variantSku ? productsBySku.get(String(variantSku).trim().toUpperCase()) : null)
+        const descriptiveName = getDescriptiveProductName(product, { ...variant, productId, sku: variantSku })
+        const descriptiveBarcode = getDescriptiveProductBarcode(product, { ...variant, productId, sku: variantSku })
 
         // Find stock total quantity for this variant
-        const matchedStock = stockList.filter((s) => String(s.variantId) === String(variantId))
+        const matchedStock = stockList.filter((s) => String(s.variantId ?? s.VariantId) === String(variantId))
         const totalStock = matchedStock.reduce((sum, item) => sum + (item.quantity || 0), 0)
 
         // Find attribute values mappings for this variant
@@ -247,14 +262,19 @@ export default function ProductVariants() {
 
         const mappedAttrs = mappedFromDirect.length > 0 ? mappedFromDirect : mappedFromList
 
-        const descriptiveVariant = getDescriptiveVariantName(variant, product, mappedAttrs)
+        const descriptiveVariant = getDescriptiveVariantName(
+          { ...variant, variantId, productId, sku: variantSku, variantName },
+          product,
+          mappedAttrs
+        )
 
         return {
           ...variant,
           id: variantId,
           variantId,
           variantName: descriptiveVariant,
-          rawVariantName: variant.variantName ?? variant.name ?? '',
+          rawVariantName: variantName,
+          sku: variantSku,
           productName: descriptiveName,
           barcode: descriptiveBarcode,
           status: product ? product.status : 'Active',
@@ -526,7 +546,17 @@ export default function ProductVariants() {
         tableWidth: 140,
         style: { width: 140, minWidth: 140 },
         headerStyle: { width: 140, minWidth: 140 },
-        render: (item) => <span className="font-medium">{item.variantName}</span>,
+        render: (item) => {
+          const raw = String(item.variantName ?? item.name ?? '').trim()
+          const isGeneric = !raw || /^default$/i.test(raw)
+          const displayVariant = isGeneric
+            ? getDescriptiveVariantName(
+                item,
+                productsMapRef.current?.get(String(item.productId ?? item.product_id))
+              )
+            : raw
+          return <span className="font-medium">{displayVariant || 'Standard'}</span>
+        },
       },
       {
         key: 'sku',
@@ -592,7 +622,7 @@ export default function ProductVariants() {
           const rawStatus = String(item.status || 'Active').trim()
           const formattedStatus = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1).toLowerCase()
           return (
-            <StatusBadge type={rawStatus.toLowerCase() === 'inactive' ? 'critical' : 'active'}>
+            <StatusBadge status={rawStatus}>
               {formattedStatus}
             </StatusBadge>
           )
@@ -1079,7 +1109,11 @@ export default function ProductVariants() {
           <div className="resource-center__delete-dialog">
             <div className="delete-confirmation__copy">
               <p>
-                Are you sure you want to delete <strong>{deleteTarget.variantName}</strong>{' '}
+                Are you sure you want to delete <strong>{
+                  (!deleteTarget.variantName || /^default$/i.test(deleteTarget.variantName))
+                    ? (getDescriptiveVariantName(deleteTarget, productsMapRef.current?.get(String(deleteTarget.productId))) || 'Standard')
+                    : deleteTarget.variantName
+                }</strong>{' '}
                 (<code>{getStandardizedSku(deleteTarget.sku, deleteTarget)}</code>)?
               </p>
               <p className="delete-confirmation__warning">This action cannot be undone.</p>
@@ -1147,16 +1181,21 @@ export default function ProductVariants() {
       )}
 
       {/* View Details Modal */}
-      {viewingItem && (
-        <RecordDetailsView
-          modalTitle="Product Variant Details"
-          heroTitle={viewingItem.variantName || viewingItem.name}
-          heroSubtitle={`Product: ${viewingItem.productName} • SKU: ${getStandardizedSku(viewingItem.sku, viewingItem)}`}
-          icon={GitBranch}
-          status={viewingItem.status || 'Active'}
-          fields={[
-            { label: 'Product Name', value: viewingItem.productName },
-            { label: 'Variant Name', value: viewingItem.variantName },
+      {viewingItem && (() => {
+        const displayVariant = (!viewingItem.variantName || /^default$/i.test(viewingItem.variantName))
+          ? (getDescriptiveVariantName(viewingItem, productsMapRef.current?.get(String(viewingItem.productId))) || 'Standard')
+          : viewingItem.variantName
+
+        return (
+          <RecordDetailsView
+            modalTitle="Product Variant Details"
+            heroTitle={displayVariant}
+            heroSubtitle={`Product: ${viewingItem.productName} • SKU: ${getStandardizedSku(viewingItem.sku, viewingItem)}`}
+            icon={GitBranch}
+            status={viewingItem.status || 'Active'}
+            fields={[
+              { label: 'Product Name', value: viewingItem.productName },
+              { label: 'Variant Name', value: displayVariant },
             { label: 'SKU', render: () => <code>{getStandardizedSku(viewingItem.sku, viewingItem)}</code> },
             { label: 'Selling Price', value: formatCurrency(viewingItem.price) },
             { label: 'Purchase Price', value: formatCurrency(viewingItem.costPrice) },
@@ -1181,7 +1220,8 @@ export default function ProductVariants() {
           ]}
           onClose={() => setViewingItem(null)}
         />
-      )}
+        )
+      })()}
     </div>
   )
 }

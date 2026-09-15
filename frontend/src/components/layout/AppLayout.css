@@ -2014,19 +2014,36 @@
   width: 100%;
   padding: 11px 14px;
   border: 0;
+  border-left: 3px solid transparent;
   border-bottom: 1px solid #eef2f7;
   background: #ffffff;
   color: #0f172a;
   text-align: left;
-}
-
-.app-notification-item:hover {
-  background: #f8fafc;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
 }
 
 .app-notification-item.is-unread {
-  border-left: 3px solid #059669;
+  border-left-color: #059669;
   background: #f7fffb;
+}
+
+.app-notification-item:hover,
+.app-notification-item:focus-visible,
+.app-notification-item.is-unread:hover,
+.app-notification-item.is-unread:focus-visible {
+  background: var(--color-neutral-200, #e2e8f0);
+  outline: none;
+}
+
+.app-notification-item:hover .app-notification-item__copy small,
+.app-notification-item:focus-visible .app-notification-item__copy small {
+  color: #475569;
+}
+
+.app-notification-item:hover .app-notification-item__time,
+.app-notification-item:focus-visible .app-notification-item__time {
+  color: #64748b;
 }
 
 .app-notification-item__copy {

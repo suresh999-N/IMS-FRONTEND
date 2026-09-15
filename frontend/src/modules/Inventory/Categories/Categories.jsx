@@ -1268,7 +1268,7 @@ export default function Categories() {
             {isChild ? <span>{parentLabel}</span> : null}
           </div>
 
-          <StatusBadge type={String(row.status).toLowerCase() === 'inactive' ? 'critical' : 'active'}>
+          <StatusBadge status={row.status || 'Active'}>
             {row.status || 'Active'}
           </StatusBadge>
         </div>

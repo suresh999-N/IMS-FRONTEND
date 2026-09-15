@@ -1418,7 +1418,7 @@ export default function CreatePurchaseReturn() {
                     <th style={{ width: '100px', textAlign: 'center' }}>Received Qty</th>
                     <th style={{ width: '130px', textAlign: 'center' }}>Previously Returned</th>
                     <th style={{ width: '110px', textAlign: 'center' }}>Returnable Qty</th>
-                    <th style={{ width: '110px', textAlign: 'center' }}>Return Qty *</th>
+                    <th style={{ width: '110px', textAlign: 'center' }}>Return Qty <span className="required-asterisk">*</span></th>
                     <th style={{ width: '110px', textAlign: 'right' }}>Unit Price</th>
                     <th style={{ width: '110px', textAlign: 'right' }}>Total</th>
                     <th style={{ width: '60px', textAlign: 'center' }} />

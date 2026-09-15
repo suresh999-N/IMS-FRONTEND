@@ -1192,11 +1192,11 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
         <label>{field.label}</label>
         <div className="resource-form__line-items">
           <div className="resource-form__line-heading" aria-hidden="true" style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 2fr 1.2fr 1.2fr 40px', gap: '8px', marginBottom: '8px', fontWeight: 'bold' }}>
-            <span>Product *</span>
+            <span>Product <span className="required-asterisk">*</span></span>
             <span>Variant</span>
-            <span>Bin *</span>
-            <span>System Qty *</span>
-            <span>Physical Qty *</span>
+            <span>Bin <span className="required-asterisk">*</span></span>
+            <span>System Qty <span className="required-asterisk">*</span></span>
+            <span>Physical Qty <span className="required-asterisk">*</span></span>
             <span />
           </div>
 
@@ -1314,9 +1314,9 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
         <label>{field.label}</label>
         <div className="resource-form__line-items">
           <div className="resource-form__line-heading" aria-hidden="true" style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 40px', gap: '8px', marginBottom: '8px', fontWeight: 'bold' }}>
-            <span>Product *</span>
+            <span>Product <span className="required-asterisk">*</span></span>
             <span>Variant</span>
-            <span>Quantity *</span>
+            <span>Quantity <span className="required-asterisk">*</span></span>
             <span />
           </div>
 

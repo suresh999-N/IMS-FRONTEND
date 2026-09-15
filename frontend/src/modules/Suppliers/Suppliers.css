@@ -490,11 +490,10 @@
 }
 
 .supplier-table-card .status-badge.status-inactive,
-.supplier-table-card .status-badge.status-failed.status-inactive,
-.status-badge.status-inactive {
-  border: 1px solid #fecaca !important;
-  background: #fef2f2 !important;
-  color: #b91c1c !important;
+.supplier-table-card .status-badge.status-failed.status-inactive {
+  border: 1px solid var(--status-inactive-border, #cbd5e1) !important;
+  background: var(--status-inactive-bg, #f1f5f9) !important;
+  color: var(--status-inactive-color, #475569) !important;
 }
 
 .supplier-table-card .status-badge.status-blocked {

@@ -523,12 +523,12 @@ export default function CreateSalesReturn({ mode = 'create' }) {
               <table className="items-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '30%' }}>Product *</th>
+                    <th style={{ width: '30%' }}>Product <span className="required-asterisk">*</span></th>
                     <th style={{ width: '20%' }}>Variant</th>
                     <th style={{ width: '15%' }}>Invoiced Qty</th>
                     <th style={{ width: '15%' }}>Returnable Qty</th>
-                    <th style={{ width: '15%' }}>Return Qty *</th>
-                    <th style={{ width: '15%' }}>Price *</th>
+                    <th style={{ width: '15%' }}>Return Qty <span className="required-asterisk">*</span></th>
+                    <th style={{ width: '15%' }}>Price <span className="required-asterisk">*</span></th>
                     <th style={{ width: '15%' }} className="text-right">Total</th>
                   </tr>
                 </thead>

@@ -142,6 +142,17 @@ export default function Customers() {
     return () => window.clearTimeout(timer)
   }, [message])
 
+  // Auto-dismiss form error message after 6 seconds (within 5-7 seconds requirement)
+  useEffect(() => {
+    if (!formMessage) return
+
+    const timer = window.setTimeout(() => {
+      setFormMessage('')
+    }, 6000)
+
+    return () => window.clearTimeout(timer)
+  }, [formMessage])
+
   // Clear acknowledgement message when navigating or switching customer view
   useEffect(() => {
     setMessage(null)
@@ -902,6 +913,7 @@ export default function Customers() {
             activity={formActivity}
             apiErrors={formErrors}
             apiMessage={formMessage}
+            onClearApiMessage={() => setFormMessage('')}
             isLoadingInitial={isFormPreloading}
             isSubmitting={isSaving}
             readOnly={customerFormMode === 'view'}

@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import QuantityInput from '../../../../components/QuantityInput'
 import SearchableSelect from '../../../../components/SearchableSelect'
 import DatePicker from '../../../../components/DatePicker'
-import { createId, getNumberError, getRequiredError, getToday } from '../../../../utils/helpers'
+import { compareDateOnly, createId, getNumberError, getRequiredError, getToday } from '../../../../utils/helpers'
 
 function createLineItem() {
   return {
@@ -82,7 +82,9 @@ export default function PurchaseIndentForm({
 
   const duplicateErrors = getDuplicateProductErrors(formData.lineItems)
   const errors = {
-    indentDate: getRequiredError(formData.indentDate, 'Request date'),
+    indentDate:
+      getRequiredError(formData.indentDate, 'Request date') ||
+      (!initialValues && compareDateOnly(formData.indentDate, getToday()) < 0 ? 'Request date cannot be in the past.' : ''),
     priority: getRequiredError(formData.priority, 'Priority'),
     lineItems: formData.lineItems.map((lineItem, index) => ({
       productId: getRequiredError(lineItem.productId, 'Product') || duplicateErrors[index],
@@ -235,6 +237,7 @@ export default function PurchaseIndentForm({
               onChange={handleChange}
               onBlur={handleBlur}
               disabled={isSubmitting}
+              minDate={initialValues ? undefined : getToday()}
               className="indent-details-date-picker"
             />
             {touched.indentDate && errors.indentDate && (
@@ -296,9 +299,9 @@ export default function PurchaseIndentForm({
             <thead>
               <tr>
                 <th style={{ width: '55px', textAlign: 'center' }}>S.No</th>
-                <th>Product *</th>
+                <th>Product <span className="required-asterisk">*</span></th>
                 <th style={{ width: '140px', textAlign: 'center' }}>Available Stock</th>
-                <th style={{ width: '140px', textAlign: 'center' }}>Quantity *</th>
+                <th style={{ width: '140px', textAlign: 'center' }}>Quantity <span className="required-asterisk">*</span></th>
                 <th style={{ width: '70px', textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>

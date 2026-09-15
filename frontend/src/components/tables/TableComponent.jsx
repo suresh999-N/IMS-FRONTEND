@@ -1031,15 +1031,13 @@ export default function TableComponent({
               <thead>
                 <tr>
                   {shouldShowSelection ? (
-                    <th scope="col" className="table-component__selection-cell">
-                      <input
+                    <th scope="col" className="table-component__selection-cell"><input
                         ref={selectAllCheckboxRef}
                         type="checkbox"
                         checked={isPageSelected}
                         onChange={handleTogglePageSelection}
                         aria-label="Select all rows on this page"
-                      />
-                    </th>
+                      /></th>
                   ) : null}
                   {displayColumns.map((column) => (
                     <th
@@ -1107,15 +1105,13 @@ export default function TableComponent({
                     aria-selected={shouldShowSelection && selectedKeySet.has(String(rowKey)) ? 'true' : undefined}
                   >
                     {shouldShowSelection ? (
-                      <td className="table-component__selection-cell" data-column="selection" data-label="Select">
-                        <input
+                      <td className="table-component__selection-cell" data-column="selection"><input
                           type="checkbox"
                           checked={selectedKeySet.has(String(rowKey))}
                           onClick={(event) => event.stopPropagation()}
                           onChange={() => handleToggleRowSelection(rowKey)}
                           aria-label={`Select ${renderPlainText(renderCellContent(getMobilePrimaryColumn(displayColumns), row)) || 'row'}`}
-                        />
-                      </td>
+                        /></td>
                     ) : null}
                     {displayColumns.map((column) => {
                       const sNo = (currentPage - 1) * pageSize + index + 1

@@ -1,4 +1,4 @@
-﻿import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import InputField from './InputField'
 
@@ -59,12 +59,6 @@ function isSameDay(firstDate, secondDate) {
   return Boolean(firstDate && secondDate) && toIsoDate(firstDate) === toIsoDate(secondDate)
 }
 
-// Returns true if date is on or before minDate
-function isBeforeMin(date, minDate) {
-  if (!minDate) return false
-  return toIsoDate(date) <= toIsoDate(minDate)
-}
-
 export default function DatePicker(props) {
   const {
     value,
@@ -76,6 +70,9 @@ export default function DatePicker(props) {
     className = '',
     icon = CalendarDays,
     minDate,
+    min,
+    maxDate,
+    max,
     ...restProps
   } = props
 
@@ -87,7 +84,19 @@ export default function DatePicker(props) {
   const [popoverStyle, setPopoverStyle] = useState({})
   const selectedDate = parseIsoDate(value)
   const today = new Date()
-  const minDateParsed = parseIsoDate(minDate) || null
+
+  const rawMin = minDate || min
+  const rawMax = maxDate || max
+  const minDateIso = rawMin ? (parseDisplayDate(rawMin) || String(rawMin).slice(0, 10)) : ''
+  const maxDateIso = rawMax ? (parseDisplayDate(rawMax) || String(rawMax).slice(0, 10)) : ''
+
+  function isDateDisabled(date) {
+    if (!date) return false
+    const iso = toIsoDate(date)
+    if (minDateIso && iso < minDateIso) return true
+    if (maxDateIso && iso > maxDateIso) return true
+    return false
+  }
 
   useEffect(() => {
     setDisplayValue(formatDisplayDate(value))
@@ -147,15 +156,26 @@ export default function DatePicker(props) {
   function handleBlur() {
     const parsedValue = parseDisplayDate(displayValue)
     if (parsedValue) {
-      if (minDateParsed && parsedValue <= toIsoDate(minDateParsed)) {
-        setDisplayValue('')
-        emitChange('')
+      if (minDateIso && parsedValue < minDateIso) {
+        setDisplayValue(formatDisplayDate(minDateIso))
+        emitChange(minDateIso)
+      } else if (maxDateIso && parsedValue > maxDateIso) {
+        setDisplayValue(formatDisplayDate(maxDateIso))
+        emitChange(maxDateIso)
       } else {
         setDisplayValue(formatDisplayDate(parsedValue))
         emitChange(parsedValue)
       }
     }
-    onBlur?.({ target: { name, value: parsedValue || displayValue } })
+
+    onBlur?.({
+      target: {
+        name,
+        value: (minDateIso && parsedValue && parsedValue < minDateIso)
+          ? minDateIso
+          : ((maxDateIso && parsedValue && parsedValue > maxDateIso) ? maxDateIso : (parsedValue || displayValue)),
+      },
+    })
   }
 
   function openCalendar() {
@@ -169,7 +189,9 @@ export default function DatePicker(props) {
   }
 
   function selectDate(date) {
-    if (minDateParsed && isBeforeMin(date, minDateParsed)) return
+    if (isDateDisabled(date)) {
+      return
+    }
     const nextValue = toIsoDate(date)
     setDisplayValue(formatDisplayDate(nextValue))
     emitChange(nextValue)
@@ -223,12 +245,13 @@ export default function DatePicker(props) {
               const isMuted = date.getMonth() !== viewDate.getMonth()
               const isSelected = isSameDay(date, selectedDate)
               const isToday = isSameDay(date, today)
-              const isDisabled = minDateParsed ? isBeforeMin(date, minDateParsed) : false
+              const isDisabled = isDateDisabled(date)
 
               return (
                 <button
                   key={isoValue}
                   type="button"
+                  disabled={isDisabled}
                   className={[
                     'date-picker-popover__day',
                     isMuted ? 'is-muted' : '',
@@ -246,7 +269,7 @@ export default function DatePicker(props) {
             })}
           </div>
           <div className="date-picker-popover__footer">
-            <button type="button" onClick={() => selectDate(today)}>Today</button>
+            <button type="button" disabled={isDateDisabled(today)} onClick={() => selectDate(today)}>Today</button>
             <button
               type="button"
               onClick={() => {

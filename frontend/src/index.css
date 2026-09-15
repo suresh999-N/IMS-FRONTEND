@@ -380,17 +380,33 @@ form > * {
 
 .required-asterisk,
 .required,
+.required-star,
 .erp-form-control__required,
 label .required,
 label span.required,
+label .required-asterisk,
+label .required-star,
 .field label span.required,
 .field label span.required-asterisk,
+.field label span.required-star,
+.field span.required-asterisk,
+.field span.required-star,
+.field > span .required-asterisk,
+.field > span .required-star,
+th .required-asterisk,
+th .required,
+th .required-star,
 label .text-red-500,
 label .text-red-600 {
   color: #dc2626 !important;
   font-weight: 700 !important;
   margin-left: 2px !important;
   display: inline-block !important;
+}
+
+:where(th, td).table-component__selection-cell {
+  text-overflow: clip !important;
+  white-space: nowrap !important;
 }
 
 input,
@@ -690,6 +706,17 @@ select:focus {
   background: #0f9f8f;
   color: #ffffff;
   box-shadow: 0 6px 14px rgba(15, 159, 143, 0.22);
+}
+
+.date-picker-popover__day:disabled,
+.date-picker-popover__day.is-disabled {
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  background: transparent !important;
+  pointer-events: none !important;
+  opacity: 0.35 !important;
+  box-shadow: none !important;
+  text-decoration: line-through;
 }
 
 .date-picker-popover__footer {
@@ -1167,17 +1194,16 @@ button.status-badge:disabled,
 .status-out,
 .status-failed,
 .status-cancelled,
-.status-blocked,
-.status-disabled {
-  color: var(--danger);
-  background: var(--color-danger-50);
-  border-color: var(--color-danger-200);
+.status-blocked {
+  color: var(--status-danger-color, #b91c1c) !important;
+  background: var(--status-danger-bg, #fef2f2) !important;
+  border-color: var(--status-danger-border, #fecaca) !important;
 }
 
 .status-critical {
-  color: var(--danger);
-  background: #fef2f2;
-  border-color: #fecaca;
+  color: var(--status-danger-color, #b91c1c) !important;
+  background: var(--status-danger-bg, #fef2f2) !important;
+  border-color: var(--status-danger-border, #fecaca) !important;
 }
 
 .status-active,
@@ -1191,27 +1217,24 @@ button.status-badge:disabled,
   border-color: var(--status-success-border, #a7f3d0) !important;
 }
 
+.status-pending,
+.status-prospect,
 .status-ordered,
 .status-warning,
 .status-partial {
-  color: var(--warning);
-  background: var(--color-warning-50);
-  border-color: var(--color-warning-200);
+  color: var(--status-warning-color, #c2410c) !important;
+  background: var(--status-warning-bg, #fff7ed) !important;
+  border-color: var(--status-warning-border, #fed7aa) !important;
 }
 
-.status-pending,
 .status-draft,
 .status-archived,
-.status-unpaid {
-  color: #475569 !important;
-  background: var(--color-neutral-100, #f1f5f9) !important;
-  border-color: var(--color-neutral-300, #cbd5e1) !important;
-}
-
-.status-inactive {
-  color: #b91c1c !important;
-  background: #fef2f2 !important;
-  border-color: #fecaca !important;
+.status-unpaid,
+.status-inactive,
+.status-disabled {
+  color: var(--status-inactive-color, #475569) !important;
+  background: var(--status-inactive-bg, #f1f5f9) !important;
+  border-color: var(--status-inactive-border, #cbd5e1) !important;
 }
 
 .status-info {
@@ -1310,23 +1333,38 @@ button.status-badge:disabled,
 
 .message-box {
   border: 1px solid var(--border);
-  padding: 8px 10px;
+  padding: 8px 12px;
+  min-height: 44px;
   border-radius: var(--radius-button);
   background: var(--surface-muted);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
+  box-sizing: border-box;
 }
 
 .message-box--error {
-  border-color: var(--danger);
-  color: var(--danger);
+  border-color: #fca5a5;
+  background: #fef2f2;
+  color: #991b1b;
 }
 
 .message-box--success {
   border-color: var(--success);
   color: var(--success);
+}
+
+.message-box :where(.button, button) {
+  flex: 0 0 auto;
+  min-height: 30px;
+  height: 30px;
+  max-height: 30px;
+  padding: 0 12px;
+  font-size: 12px;
+  line-height: 1;
+  margin: 0;
+  transform: none !important;
 }
 
 /*

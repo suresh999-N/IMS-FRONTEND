@@ -93,6 +93,7 @@ export const KNOWN_DESCRIPTIVE_VARIANT_NAMES = {
   '4': '0.25 HP / 240 V',
   '5': '0.5 HP / 72 ft Head',
   '6': 'Telescopic Extension',
+  '7': '1 HP / Single Phase',
   'SD-DAP-20230947': '24 Inch',
   'SD-HGT-2021475': 'silver',
   'FS-TLP-16521': '7 to 24 feet',
@@ -111,7 +112,7 @@ export const KNOWN_DESCRIPTIVE_VARIANT_NAMES = {
  */
 export function getDescriptiveVariantName(variant = null, product = null, mappedAttributes = []) {
   const rawVariantName = String(
-    variant?.variantName ?? variant?.name ?? variant?.title ?? ''
+    variant?.variantName ?? variant?.VariantName ?? variant?.name ?? variant?.title ?? ''
   ).trim()
 
   const isGeneric =
@@ -151,12 +152,21 @@ export function getDescriptiveVariantName(variant = null, product = null, mapped
   if (pColor && !/^default$/i.test(pColor)) return pColor
 
   // 3. Match against known product SKU, product ID, or variant ID
-  const sku = String(variant?.sku ?? product?.sku ?? '').trim()
-  const pId = String(variant?.productId ?? variant?.product_id ?? product?.productId ?? product?.id ?? '').trim()
-  const vId = String(variant?.variantId ?? variant?.id ?? '').trim()
+  const sku = String(variant?.sku ?? variant?.SKU ?? product?.sku ?? product?.SKU ?? '').trim().toUpperCase()
+  const pId = String(variant?.productId ?? variant?.ProductId ?? variant?.product_id ?? product?.productId ?? product?.id ?? '').trim()
+  const vId = String(variant?.variantId ?? variant?.VariantId ?? variant?.id ?? '').trim()
 
-  if (sku && KNOWN_DESCRIPTIVE_VARIANT_NAMES[sku]) {
-    return KNOWN_DESCRIPTIVE_VARIANT_NAMES[sku]
+  if (sku) {
+    if (KNOWN_DESCRIPTIVE_VARIANT_NAMES[sku]) {
+      return KNOWN_DESCRIPTIVE_VARIANT_NAMES[sku]
+    }
+    if (sku.startsWith('SD-DAP')) return '24 Inch'
+    if (sku.startsWith('SD-HGT')) return 'silver'
+    if (sku.startsWith('FS-TLP') || sku.startsWith('TI-F7')) return '7 to 24 feet'
+    if (sku.startsWith('AD-IN')) return '0.25 HP / 240 V'
+    if (sku.startsWith('PH-SK')) return '0.5 HP / 72 ft Head'
+    if (sku.startsWith('FS-FPN') || sku.startsWith('JJHDKJ')) return 'Telescopic Extension'
+    if (sku.startsWith('KIR-PMP')) return '1 HP / Single Phase'
   }
   if (pId && KNOWN_DESCRIPTIVE_VARIANT_NAMES[pId]) {
     return KNOWN_DESCRIPTIVE_VARIANT_NAMES[pId]
@@ -168,6 +178,10 @@ export function getDescriptiveVariantName(variant = null, product = null, mapped
   // 4. Extract size, power, or range from product name
   const prodName = String(product?.name ?? product?.productName ?? variant?.productName ?? '').trim()
   if (prodName) {
+    if (/kirloskar|water\s*pump/i.test(prodName)) {
+      return '1 HP / Single Phase'
+    }
+
     // Range pattern: e.g. "7 to 24 feet"
     const rangeMatch = prodName.match(/(\d+\s*to\s*\d+\s*(?:feet|ft|inch|cm|m))/i)
     if (rangeMatch) return rangeMatch[1]

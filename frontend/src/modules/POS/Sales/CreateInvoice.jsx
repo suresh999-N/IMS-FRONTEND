@@ -43,6 +43,8 @@ function getDueDateFromTerms(invoiceDateStr, terms) {
   return `${yyyy}-${mm}-${dd}`
 }
 
+export const MAX_BILLING_ADDRESS_LENGTH = 250
+
 function formatCustomerAddress(customer) {
   if (!customer) return 'No customer selected'
   const lines = []
@@ -68,7 +70,10 @@ function formatCustomerAddress(customer) {
   }
 
   lines.push('India')
-  return lines.join('\n')
+  const formatted = lines.join('\n')
+  return formatted.length > MAX_BILLING_ADDRESS_LENGTH
+    ? formatted.slice(0, MAX_BILLING_ADDRESS_LENGTH)
+    : formatted
 }
 
 function convertNumberToWords(amount) {
@@ -543,6 +548,8 @@ function InvoiceForm({
         referenceNumber: draft.reference || null,
         gstin: draft.gstin || null,
         gstNumber: draft.gstin || null,
+        billingAddress: customAddress ? customAddress.slice(0, MAX_BILLING_ADDRESS_LENGTH) : null,
+        notes: draft.notes || null,
         items: calculatedTotals.items.map((item) => {
           const qty = toNumber(item.quantity)
           const baseUnitPrice = toNumber(item.unitPrice)
@@ -603,7 +610,7 @@ function InvoiceForm({
         <div className="invoice-form__single-header-grid">
           {/* Customer Field */}
           <label className={`field ${errors.customerId ? 'field--error' : ''}`}>
-            <span>Customer *</span>
+            <span>Customer <span className="required-asterisk">*</span></span>
             <select
               value={draft.customerId}
               onChange={handleCustomerChange}
@@ -642,7 +649,7 @@ function InvoiceForm({
 
           {/* Invoice No. Field */}
           <label className={`field ${errors.invoiceNo ? 'field--error' : ''}`}>
-            <span>Invoice No. *</span>
+            <span>Invoice No. <span className="required-asterisk">*</span></span>
             <input
               type="text"
               value={draft.invoiceNo}
@@ -654,7 +661,7 @@ function InvoiceForm({
 
           {/* Invoice Date Field */}
           <label className={`field ${errors.invoiceDate ? 'field--error' : ''}`}>
-            <span>Invoice Date *</span>
+            <span>Invoice Date <span className="required-asterisk">*</span></span>
             <input
               type="date"
               value={draft.invoiceDate}
@@ -759,37 +766,37 @@ function InvoiceForm({
               {isEditingAddress ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <textarea
-                    style={{
-                      width: '100%',
-                      minHeight: '60px',
-                      fontSize: '13px',
-                      padding: '6px 8px',
-                      border: '1px solid #cbd5e1',
-                      borderRadius: '4px',
-                      resize: 'vertical',
-                    }}
+                    className="invoice-form__billing-address-textarea"
+                    maxLength={MAX_BILLING_ADDRESS_LENGTH}
                     value={customAddress}
-                    onChange={(e) => setCustomAddress(e.target.value)}
-                    placeholder="Enter billing address"
+                    onChange={(e) => setCustomAddress(e.target.value.slice(0, MAX_BILLING_ADDRESS_LENGTH))}
+                    placeholder={`Enter billing address (max ${MAX_BILLING_ADDRESS_LENGTH} chars)`}
                   />
-                  <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                    <button
-                      type="button"
-                      style={{ fontSize: '11px', padding: '2px 8px', border: '1px solid #cbd5e1', borderRadius: '4px', background: '#ffffff', cursor: 'pointer' }}
-                      onClick={() => {
-                        setIsEditingAddress(false)
-                        setCustomAddress(formatCustomerAddress(selectedCustomer))
-                      }}
+                  <div style={{ display: 'flex', gap: '6px', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span
+                      className={`invoice-form__char-count ${(customAddress?.length || 0) >= MAX_BILLING_ADDRESS_LENGTH ? 'invoice-form__char-count--limit' : ''}`}
                     >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      style={{ fontSize: '11px', padding: '2px 8px', border: 'none', borderRadius: '4px', background: '#059669', color: '#ffffff', cursor: 'pointer' }}
-                      onClick={() => setIsEditingAddress(false)}
-                    >
-                      Save
-                    </button>
+                      {customAddress?.length || 0} / {MAX_BILLING_ADDRESS_LENGTH} chars
+                    </span>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        type="button"
+                        style={{ fontSize: '11px', padding: '2px 8px', border: '1px solid #cbd5e1', borderRadius: '4px', background: '#ffffff', cursor: 'pointer' }}
+                        onClick={() => {
+                          setIsEditingAddress(false)
+                          setCustomAddress(formatCustomerAddress(selectedCustomer))
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        style={{ fontSize: '11px', padding: '2px 8px', border: 'none', borderRadius: '4px', background: '#059669', color: '#ffffff', cursor: 'pointer' }}
+                        onClick={() => setIsEditingAddress(false)}
+                      >
+                        Save
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -854,9 +861,9 @@ function InvoiceForm({
           <thead>
             <tr>
               <th style={{ width: '40px', textAlign: 'center' }}>Slno</th>
-              <th style={{ width: '220px' }}>Item *</th>
-              <th style={{ width: '70px', textAlign: 'center' }}>Qty *</th>
-              <th style={{ width: '110px', textAlign: 'right' }}>Unit Price (₹) *</th>
+              <th style={{ width: '220px' }}>Item <span className="required-asterisk">*</span></th>
+              <th style={{ width: '70px', textAlign: 'center' }}>Qty <span className="required-asterisk">*</span></th>
+              <th style={{ width: '110px', textAlign: 'right' }}>Unit Price (₹) <span className="required-asterisk">*</span></th>
               <th style={{ width: '85px', textAlign: 'center' }}>Discount (%)</th>
               <th style={{ width: '80px', textAlign: 'center' }}>Tax (%)</th>
               <th style={{ width: '120px', textAlign: 'right' }}>Amount (₹)</th>

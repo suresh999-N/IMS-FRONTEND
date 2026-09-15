@@ -35,6 +35,18 @@
   --status-success-bg: #ecfdf5;
   --status-success-border: #a7f3d0;
 
+  --status-warning-color: #c2410c;
+  --status-warning-bg: #fff7ed;
+  --status-warning-border: #fed7aa;
+
+  --status-danger-color: #b91c1c;
+  --status-danger-bg: #fef2f2;
+  --status-danger-border: #fecaca;
+
+  --status-inactive-color: #475569;
+  --status-inactive-bg: #f1f5f9;
+  --status-inactive-border: #cbd5e1;
+
   --color-warning-50: #fff7ed;
   --color-warning-100: #ffedd5;
   --color-warning-200: #fed7aa;

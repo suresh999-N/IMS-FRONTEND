@@ -445,8 +445,6 @@ function PurchaseIndentForm({
       : buildInitialDraft(initialIndentNo)
   ))
 
-
-
   useEffect(() => {
     if (users.length === 0) {
       return
@@ -532,6 +530,11 @@ function PurchaseIndentForm({
   const balanceDue = Math.max(0, calculatedTotals.grandTotal - amountPaid)
 
   function updateField(name, value) {
+    let errorToSet = ''
+    if (name === 'indentDate' && !isEdit && value && compareDateOnly(value, getToday()) < 0) {
+      errorToSet = 'Indent date cannot be in the past.'
+    }
+
     setDraft((currentValue) => {
       const nextDraft = {
         ...currentValue,
@@ -549,7 +552,7 @@ function PurchaseIndentForm({
 
     setErrors((currentValue) => ({
       ...currentValue,
-      [name]: '',
+      [name]: errorToSet,
     }))
     setFormError('')
   }
@@ -673,6 +676,8 @@ function PurchaseIndentForm({
 
     if (!draft.indentDate) {
       setError('indentDate', 'Indent date is required.')
+    } else if (!isEdit && compareDateOnly(draft.indentDate, getToday()) < 0) {
+      setError('indentDate', 'Indent date cannot be in the past.')
     }
 
     if (!draft.expectedDeliveryDate) {
@@ -837,6 +842,7 @@ function PurchaseIndentForm({
               value={draft.indentDate}
               onChange={(e) => updateField('indentDate', e.target.value)}
               disabled={isSubmitting}
+              minDate={isEdit ? undefined : getToday()}
               className="indent-details-date-picker"
             />
             {errors.indentDate && <span className="indent-field-error">{errors.indentDate}</span>}
@@ -851,6 +857,7 @@ function PurchaseIndentForm({
               value={draft.expectedDeliveryDate}
               onChange={(e) => updateField('expectedDeliveryDate', e.target.value)}
               disabled={isSubmitting}
+              minDate={draft.indentDate || (!isEdit ? getToday() : undefined)}
               className="indent-details-date-picker"
               minDate={draft.indentDate}
             />
@@ -869,7 +876,7 @@ function PurchaseIndentForm({
               onChange={(event) => updateField('requestedBy', event.target.value)}
               disabled={isSubmitting}
             >
-              <option value="" disabled>Select option</option>
+              <option value="">Select</option>
               {users.map((user) => (
                 <option key={getUserId(user)} value={getUserId(user)}>
                   {getUserDisplayName(user)}
@@ -989,8 +996,8 @@ function PurchaseIndentForm({
             <thead>
               <tr>
                 <th style={{ width: '50px', textAlign: 'center' }}>S.No</th>
-                <th style={{ width: '22%' }}>Item Name *</th>
-                <th style={{ width: '10%', textAlign: 'center' }}>Required Qty *</th>
+                <th style={{ width: '22%' }}>Item Name <span className="required-asterisk">*</span></th>
+                <th style={{ width: '10%', textAlign: 'center' }}>Required Qty <span className="required-asterisk">*</span></th>
                 <th style={{ width: '8%', textAlign: 'center' }}>Unit</th>
                 <th style={{ width: '11%', textAlign: 'center' }}>Unit Price (₹)</th>
                 <th style={{ width: '13%', textAlign: 'center' }}>Available Stock</th>
@@ -1187,6 +1194,7 @@ function PurchaseIndentForm({
                         value={item.requiredDate || draft.expectedDeliveryDate || getToday()}
                         onChange={(e) => handleItemFieldChange(index, 'requiredDate', e.target.value)}
                         disabled={isSubmitting}
+                        minDate={draft.indentDate || (!isEdit ? getToday() : undefined)}
                         className="indent-table-date-picker"
                         minDate={draft.indentDate}
                       />

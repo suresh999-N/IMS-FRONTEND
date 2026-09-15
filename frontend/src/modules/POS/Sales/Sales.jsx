@@ -4,9 +4,11 @@ import { useNavigate } from 'react-router-dom'
 import {
   AlertCircle,
   Check,
-  ChevronRight,
+  CheckCircle2,
+  Clock,
   Download,
   Eye,
+  FileText,
   LoaderCircle,
   Mail,
   Plus,
@@ -15,6 +17,7 @@ import {
   RefreshCw,
   SlidersHorizontal,
   Trash2,
+  TrendingUp,
   UserRound,
 } from 'lucide-react'
 import {
@@ -397,21 +400,20 @@ export default function Sales({ customers = [] }) {
         const id = invoice.invoiceId || invoice.id
 
         return (
-          <div className="catalog-page__tree-cell">
-            <button
-              type="button"
-              className="catalog-page__tree-toggle"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleViewDetails(invoice)
-              }}
-              title="View Invoice Details"
-            >
-              <ChevronRight size={16} />
-            </button>
-            <ReceiptText size={16} className="catalog-page__tree-icon" />
-            <div className="catalog-page__entity">
-              <strong>{invoice.invoiceNumber || `INV-${id}`}</strong>
+          <div className="sales-page__invoice-cell">
+            <ReceiptText size={16} className="sales-page__invoice-icon" />
+            <div>
+              <button
+                type="button"
+                className="sales-page__invoice-link"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleViewDetails(invoice)
+                }}
+                title="View Invoice Details"
+              >
+                {invoice.invoiceNumber || `INV-${id}`}
+              </button>
               {invoice.dueDate ? <span>Due {formatDate(invoice.dueDate)}</span> : null}
             </div>
           </div>
@@ -507,9 +509,9 @@ export default function Sales({ customers = [] }) {
       label: 'Status',
       sortable: true,
       mobileStatus: true,
-      tableWidth: 100,
-      style: { width: 100, minWidth: 90 },
-      headerStyle: { width: 100, minWidth: 90 },
+      tableWidth: 110,
+      style: { width: 110, minWidth: 100 },
+      headerStyle: { width: 110, minWidth: 100 },
       render: (invoice) => (
         <InvoiceStatusBadge
           status={invoice.status}
@@ -584,15 +586,19 @@ export default function Sales({ customers = [] }) {
           <h1>Sales</h1>
           <div className="sales-page__metrics" aria-label="Invoice metrics">
             <span className="sales-page__metric sales-page__metric--success">
+              <FileText size={13} className="sales-page__metric-icon" aria-hidden="true" />
               {summary.total} Invoices
             </span>
             <span className="sales-page__metric sales-page__metric--info">
+              <TrendingUp size={13} className="sales-page__metric-icon" aria-hidden="true" />
               {formatCurrency(summary.totalValue)} Sales
             </span>
-            <span className="sales-page__metric sales-page__metric--warning">
+            <span className="sales-page__metric sales-page__metric--warning" title="Outstanding Balance">
+              <Clock size={13} className="sales-page__metric-icon" aria-hidden="true" />
               {formatCurrency(summary.balanceValue)} Outstanding
             </span>
             <span className="sales-page__metric sales-page__metric--value">
+              <CheckCircle2 size={13} className="sales-page__metric-icon" aria-hidden="true" />
               {formatCurrency(summary.paidValue)} Paid
             </span>
           </div>
@@ -610,15 +616,18 @@ export default function Sales({ customers = [] }) {
       </header>
 
       {error ? (
-        <div className="message-box message-box--error page-error-banner" role="alert">
-          <span>{error}</span>
+        <div className="message-box message-box--error page-error-banner sales-page__error-banner" role="alert">
+          <div className="sales-page__error-content">
+            <AlertCircle size={18} className="sales-page__error-icon" aria-hidden="true" />
+            <span className="sales-page__error-text">{error}</span>
+          </div>
           <button
             type="button"
-            className="button button-secondary"
+            className="button button-secondary sales-page__error-retry-button"
             onClick={() => loadInvoiceWorkspace()}
             disabled={isLoading}
           >
-            <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+            <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
             Retry
           </button>
         </div>
@@ -634,6 +643,7 @@ export default function Sales({ customers = [] }) {
           defaultSortKey="invoiceDate"
           defaultSortDirection="desc"
           splitToolbar
+          onRowClick={(invoice) => handleViewDetails(invoice)}
           showSearch={selectedInvoices.length === 0}
           searchPlaceholder="Search sales by invoice, customer, or status"
           toolbarContent={selectedInvoices.length === 0 ? (
@@ -715,6 +725,7 @@ export default function Sales({ customers = [] }) {
           defaultVisibleColumnKeys={['invoiceNumber', 'customerName', 'invoiceDate', 'itemCount', 'totalAmount', 'paidAmount', 'paymentMethod', 'status', 'actions']}
           fitExplicitColumnsToContainer
           enableRowSelection
+          hideSelectionSummary
           selectedRowKeys={selectedInvoiceIds}
           onSelectionChange={setSelectedInvoiceIds}
           keyField="__rowKey"

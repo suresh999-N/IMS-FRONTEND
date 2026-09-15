@@ -17,7 +17,7 @@
   flex-wrap: wrap;
   min-width: 0;
   margin: 0;
-  padding: 0 0 2px;
+  padding: 0 0 6px;
   border-bottom: 0;
 }
 
@@ -153,11 +153,16 @@
   cursor: pointer;
 }
 
-.table-component__selection-cell {
+.table-component__selection-cell,
+.table-container td.table-component__selection-cell,
+.table-container th.table-component__selection-cell {
   width: 34px;
   min-width: 34px;
   max-width: 34px;
   text-align: center;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
 }
 
 .table-component__selection-cell :where(input[type='checkbox']) {
@@ -169,8 +174,8 @@
   position: fixed;
   z-index: 10000;
   width: max-content;
-  padding: 4px 8px;
-  border: 1px solid rgba(15, 118, 110, 0.3);
+  padding: 5px 9px;
+  border: 1px solid rgba(51, 65, 85, 0.85);
   border-radius: 6px;
   background: #0f172a;
   color: #f8fafc;
@@ -179,14 +184,24 @@
   line-height: 1.4;
   overflow-wrap: anywhere;
   white-space: normal;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.35);
   pointer-events: none;
+}
+
+.table-truncated-tooltip--above {
+  transform: translateY(-100%);
+}
+
+.table-truncated-tooltip--below {
+  transform: translateY(0);
+}
+
+.table-truncated-tooltip--overlay {
   transform: none;
 }
 
-.table-truncated-tooltip--above,
-.table-truncated-tooltip--overlay {
-  transform: none;
+.table-component .erp-action-menu__trigger--icon[data-tooltip]::after {
+  display: none !important;
 }
 
 /* Categories selection theme shared by every selectable DataTable. */

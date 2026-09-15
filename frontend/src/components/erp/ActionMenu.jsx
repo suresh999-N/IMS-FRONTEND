@@ -14,7 +14,7 @@ export default function ActionMenu({
   disabled = false,
   menuKey = '',
   tooltip = null,
-  showTooltip = false,
+  showTooltip = true,
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [popoverStyle, setPopoverStyle] = useState(null)
@@ -166,9 +166,13 @@ export default function ActionMenu({
     </div>
   ) : null
 
-  const tooltipText = !isOpen && iconOnly && (tooltip || showTooltip)
-    ? tooltip || (label && label.startsWith('Actions for') ? 'Actions' : label || 'Actions')
+  const tooltipText = !isOpen && iconOnly && showTooltip
+    ? tooltip || 'More Options'
     : undefined
+
+  if (enabledActions.length === 0) {
+    return null
+  }
 
   return (
     <div
@@ -183,7 +187,8 @@ export default function ActionMenu({
         disabled={isDisabled}
         aria-haspopup="menu"
         aria-expanded={isOpen}
-        aria-label={label || 'Actions'}
+        aria-label={label || tooltipText || 'More Options'}
+        title={tooltipText}
         data-tooltip={tooltipText}
         onPointerDown={(event) => {
           event.stopPropagation()

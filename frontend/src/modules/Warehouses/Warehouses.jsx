@@ -1986,7 +1986,7 @@ export default function Warehouses({
         >
           <form className="warehouses-page__storage-form" onSubmit={handleRackSubmit}>
             <label className="field">
-              <span>Rack Code *</span>
+              <span>Rack Code <span className="required-asterisk">*</span></span>
               <input
                 name="rackCode"
                 value={rackForm.rackCode}
@@ -2028,7 +2028,7 @@ export default function Warehouses({
         >
           <form className="warehouses-page__storage-form" onSubmit={handleBinSubmit}>
             <label className="field">
-              <span>Rack *</span>
+              <span>Rack <span className="required-asterisk">*</span></span>
               <select
                 name="rackId"
                 value={binForm.rackId}
@@ -2042,7 +2042,7 @@ export default function Warehouses({
               </select>
             </label>
             <label className="field">
-              <span>Bin Code *</span>
+              <span>Bin Code <span className="required-asterisk">*</span></span>
               <input
                 name="binCode"
                 value={binForm.binCode}
@@ -2052,7 +2052,7 @@ export default function Warehouses({
               />
             </label>
             <label className="field">
-              <span>Capacity *</span>
+              <span>Capacity <span className="required-asterisk">*</span></span>
               <input
                 name="capacity"
                 type="number"
@@ -2122,7 +2122,7 @@ export default function Warehouses({
         >
           <form className="warehouses-page__storage-form" onSubmit={handlePutawaySubmit}>
             <label className="field">
-              <span>Product *</span>
+              <span>Product <span className="required-asterisk">*</span></span>
               <select
                 name="productKey"
                 value={putawayForm.productKey}
@@ -2139,7 +2139,7 @@ export default function Warehouses({
             </label>
 
             <label className="field">
-              <span>Warehouse *</span>
+              <span>Warehouse <span className="required-asterisk">*</span></span>
               <input
                 value={warehouseDetails?.warehouseName || detailsWarehouse?.name || ''}
                 disabled
@@ -2148,7 +2148,7 @@ export default function Warehouses({
             </label>
 
             <label className="field">
-              <span>Rack *</span>
+              <span>Rack <span className="required-asterisk">*</span></span>
               <select
                 name="rackId"
                 value={putawayForm.rackId}
@@ -2163,7 +2163,7 @@ export default function Warehouses({
             </label>
 
             <label className="field">
-              <span>Bin *</span>
+              <span>Bin <span className="required-asterisk">*</span></span>
               <select
                 name="binId"
                 value={putawayForm.binId}
@@ -2178,7 +2178,7 @@ export default function Warehouses({
             </label>
 
             <label className="field">
-              <span>Quantity *</span>
+              <span>Quantity <span className="required-asterisk">*</span></span>
               <input
                 name="quantity"
                 type="number"

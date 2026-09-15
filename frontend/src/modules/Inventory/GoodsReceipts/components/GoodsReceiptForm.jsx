@@ -1058,12 +1058,12 @@ export default function GoodsReceiptForm({
             <thead>
               <tr>
                 <th style={{ width: '52px', textAlign: 'center' }}>S.No.</th>
-                <th style={{ width: '420px' }}>Product *</th>
+                <th style={{ width: '420px' }}>Product <span className="required-asterisk">*</span></th>
                 <th style={{ width: '180px' }}>Variant</th>
                 <th style={{ width: '90px', textAlign: 'center' }}>Ordered Qty</th>
-                <th style={{ width: '95px', textAlign: 'center' }}>Received *</th>
+                <th style={{ width: '95px', textAlign: 'center' }}>Received <span className="required-asterisk">*</span></th>
                 <th style={{ width: '110px', textAlign: 'center' }}>Remaining Qty</th>
-                <th style={{ width: '115px', textAlign: 'right' }}>Unit price *</th>
+                <th style={{ width: '115px', textAlign: 'right' }}>Unit price <span className="required-asterisk">*</span></th>
                 <th style={{ width: '95px', textAlign: 'center' }}>Discount (%)</th>
                 <th style={{ width: '85px', textAlign: 'center' }}>Tax (%)</th>
                 <th style={{ width: '125px', textAlign: 'right' }}>Line total</th>

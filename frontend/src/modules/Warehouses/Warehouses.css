@@ -1070,6 +1070,12 @@
   min-width: 260px !important;
 }
 
+.warehouses-page__table-card :where(th, td).warehouses-col-products {
+  width: 200px !important;
+  min-width: 200px !important;
+  max-width: 200px !important;
+}
+
 .warehouses-page__table-card :where(th, td).warehouses-col-location {
   width: 170px !important;
   min-width: 170px !important;
@@ -1221,12 +1227,20 @@
   min-width: 44px !important;
   max-width: 44px !important;
   padding-inline: 8px !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
 }
 
 .warehouses-page__table-card :where(th, td).warehouses-col-name {
   width: 250px !important;
   min-width: 250px !important;
   max-width: 250px !important;
+}
+
+.warehouses-page__table-card :where(th, td).warehouses-col-products {
+  width: 200px !important;
+  min-width: 200px !important;
+  max-width: 200px !important;
 }
 
 .warehouses-page__table-card :where(th, td).warehouses-col-location {
@@ -1273,6 +1287,8 @@
   text-align: center !important;
   vertical-align: middle !important;
   overflow: hidden !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
 }
 
 .warehouses-page__table-card :where(th, td).table-component__selection-cell input {
@@ -1586,12 +1602,20 @@
   text-align: center !important;
   vertical-align: middle !important;
   overflow: hidden !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
 }
 
 .warehouses-page .warehouses-data-table--compact :where(th, td).warehouses-col-name {
   width: 250px !important;
   min-width: 250px !important;
   max-width: 250px !important;
+}
+
+.warehouses-page .warehouses-data-table--compact :where(th, td).warehouses-col-products {
+  width: 200px !important;
+  min-width: 200px !important;
+  max-width: 200px !important;
 }
 
 .warehouses-page .warehouses-data-table--compact :where(th, td).warehouses-col-location {
@@ -1701,6 +1725,8 @@
   width: 44px !important;
   min-width: 44px !important;
   max-width: 44px !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
 }
 
 /* Warehouses layout redesign overrides matching Goods Receipts exactly */
@@ -1817,7 +1843,8 @@
   font-size: var(--font-size-sm);
   color: var(--text);
   line-height: 1.3;
-  max-width: 180px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .warehouses-products-list.flex-row {
@@ -1840,10 +1867,12 @@
 }
 
 .warehouses-product-item {
+  display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  cursor: default;
 }
 
 .warehouses-more-link {

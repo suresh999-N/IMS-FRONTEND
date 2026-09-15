@@ -397,10 +397,10 @@ export default function PurchaseForm({
             <thead>
               <tr>
                 <th style={{ width: '55px', textAlign: 'center' }}>S.No</th>
-                <th style={{ width: '35%' }}>Product *</th>
+                <th style={{ width: '35%' }}>Product <span className="required-asterisk">*</span></th>
                 <th style={{ width: '15%', textAlign: 'center' }}>Available Stock</th>
-                <th style={{ width: '15%', textAlign: 'center' }}>Quantity *</th>
-                <th style={{ width: '15%', textAlign: 'right' }}>Unit price *</th>
+                <th style={{ width: '15%', textAlign: 'center' }}>Quantity <span className="required-asterisk">*</span></th>
+                <th style={{ width: '15%', textAlign: 'right' }}>Unit price <span className="required-asterisk">*</span></th>
                 <th style={{ width: '15%', textAlign: 'right' }}>Line total</th>
                 <th style={{ width: '70px', textAlign: 'center' }}>Actions</th>
               </tr>

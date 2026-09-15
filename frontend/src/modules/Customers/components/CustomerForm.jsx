@@ -712,6 +712,7 @@ export default function CustomerForm({
   activity = [],
   apiErrors,
   apiMessage,
+  onClearApiMessage,
   isLoadingInitial,
   isSubmitting,
   readOnly = false,
@@ -917,8 +918,30 @@ export default function CustomerForm({
 
     return allFieldMessages.includes(cleanMsg)
   }, [apiMessage, errors, paymentErrors, contactErrors, addressErrors, bankErrors, apiErrors])
+  const [isMessageDismissed, setIsMessageDismissed] = useState(false)
+
+  useEffect(() => {
+    setIsMessageDismissed(false)
+  }, [apiMessage])
+
+  const handleDismissMessage = useCallback(() => {
+    setIsMessageDismissed(true)
+    onClearApiMessage?.()
+  }, [onClearApiMessage])
+
+  // Auto-dismiss form error message after 6 seconds (within 5-7 seconds requirement)
+  useEffect(() => {
+    if (!apiMessage || isMessageDismissed) return
+
+    const timer = window.setTimeout(() => {
+      handleDismissMessage()
+    }, 6000)
+
+    return () => window.clearTimeout(timer)
+  }, [apiMessage, isMessageDismissed, handleDismissMessage])
+
   const shouldShowTopMessage = Boolean(
-    apiMessage && isValid && !hasApiErrors && !isDuplicateFieldMessage
+    apiMessage && !isMessageDismissed && isValid && !hasApiErrors && !isDuplicateFieldMessage
   )
   const isReadOnly = Boolean(readOnly)
   const isBusy = isLoadingInitial || isSubmitting
@@ -1638,6 +1661,7 @@ export default function CustomerForm({
     event.preventDefault()
     if (isReadOnly || isSubmitting) return
 
+    handleDismissMessage()
     setSubmitAttempted(true)
     markAllTouched()
 
@@ -1691,8 +1715,31 @@ export default function CustomerForm({
     >
       <div className="customer-master-shell">
         {shouldShowTopMessage ? (
-          <div className="message-box message-box--error customer-form__message page-error-banner" role="alert">
-            {apiMessage}
+          <div
+            className="message-box message-box--error customer-form__message page-error-banner"
+            role="alert"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}
+          >
+            <span>{apiMessage}</span>
+            <button
+              type="button"
+              onClick={handleDismissMessage}
+              aria-label="Dismiss error message"
+              title="Dismiss error"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                color: 'inherit',
+                opacity: 0.8,
+                flexShrink: 0,
+              }}
+            >
+              <X size={16} />
+            </button>
           </div>
         ) : null}
 
@@ -1921,7 +1968,7 @@ export default function CustomerForm({
                         <div className="customer-contact-card-form">
                           <InputField id={`customer-contact-name-${index}`} name="contactName" label="Contact Name *" icon={User} value={contact.contactName} onChange={(event) => updateInlineContact(index, event)} onBlur={(event) => blurInlineContact(index, event)} error={(submitAttempted || touched.collections) ? contactError.contactName : ''} placeholder="Enter contact name" disabled={isReadOnly} />
                           <label className="customer-form__status-field customer-contact-select-field">
-                            <span>Role *</span>
+                            <span>Role <span className="required-asterisk">*</span></span>
                             <select name="role" value={contact.role || 'Sales'} onChange={(event) => updateInlineContact(index, event)} onBlur={(event) => blurInlineContact(index, event)} aria-invalid={Boolean((submitAttempted || touched.collections) && contactError.role)} disabled={isReadOnly}>
                               {contactRoles.map((role) => <option value={role} key={role}>{role}</option>)}
                             </select>
@@ -2002,7 +2049,7 @@ export default function CustomerForm({
                       </div>
                       <div className="customer-address-card-form">
                         <label className="customer-form__status-field customer-address-select-field">
-                          <span>Address Type *</span>
+                          <span>Address Type <span className="required-asterisk">*</span></span>
                           <select name="addressType" value={address.addressType || 'Billing'} onChange={(event) => updateInlineAddress(index, event)} onBlur={(event) => blurInlineAddress(index, event)} aria-invalid={Boolean((submitAttempted || touched.collections) && addressError.addressType)} disabled={isReadOnly}>
                             <option value="Billing">Billing</option>
                             <option value="Shipping">Shipping</option>
@@ -2186,7 +2233,7 @@ export default function CustomerForm({
           ) : null}
 
           {activeTab === 'activity' ? (
-            <Section title="Activity" subtitle="Timeline of customer profile, billing, and payment events.">
+            <Section title="Activity" subtitle="Timeline of customer profile, billing, and payment events." className="customer-activity-section">
               {visibleActivity.length > 0 ? (
                 <ol className="customer-enterprise-timeline">
                   {visibleActivity.map((item, index) => (

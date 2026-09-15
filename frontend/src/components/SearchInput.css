@@ -27,6 +27,14 @@
     background-color var(--transition);
 }
 
+.search-wrapper:hover:not(:focus-within) {
+  border-color: rgba(14, 165, 183, 0.35);
+  background: #ffffff;
+  box-shadow:
+    0 0 0 2px rgba(14, 165, 183, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.03);
+}
+
 .search-wrapper:focus-within {
   border-color: rgba(14, 165, 183, 0.42);
   background: #ffffff;

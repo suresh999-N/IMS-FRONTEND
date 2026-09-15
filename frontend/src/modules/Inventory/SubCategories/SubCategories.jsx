@@ -253,7 +253,8 @@ function getStatusType(value) {
     .trim()
     .toLowerCase()
     .replace(/[_\s]+/g, '-')
-  if (norm === 'inactive' || norm === 'blocked' || norm === 'failed') return 'critical'
+  if (norm === 'inactive' || norm === 'disabled') return 'inactive'
+  if (norm === 'blocked' || norm === 'failed') return 'critical'
   return norm || 'info'
 }
 

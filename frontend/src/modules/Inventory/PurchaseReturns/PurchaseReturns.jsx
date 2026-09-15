@@ -806,7 +806,8 @@ export default function PurchaseReturns() {
                               : ''
                               }`}
                             type="button"
-                            title="Actions"
+                            title="More Options"
+                            aria-label="More Options"
                             onClick={(event) => {
                               event.stopPropagation()
 
