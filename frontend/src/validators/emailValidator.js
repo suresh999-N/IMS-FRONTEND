@@ -29,7 +29,7 @@ const VALID_MULTI_PART_TLDS = new Set([
   'com.tr', 'net.tr', 'org.tr'
 ])
 
-const TYPO_TLDS = new Set(['cm', 'c', 'coom', 'comm', 'commm', 'ccommmm', 'con', 'cmm', 'gma', 'gmai', 'gamil', 'cmo'])
+const TYPO_TLDS = new Set(['cm', 'c', 'coom', 'comm', 'commm', 'ccommmm', 'con', 'cmm', 'cmmm', 'gma', 'gmai', 'gamil', 'cmo'])
 
 const COMMON_DOMAIN_TYPOS = {
   'gmail.cm': 'gmail.com',
@@ -44,6 +44,11 @@ const COMMON_DOMAIN_TYPOS = {
   'gmial.com': 'gmail.com',
   'gmial.co': 'gmail.com',
   'gmaill.com': 'gmail.com',
+  'gemil.com': 'gmail.com',
+  'gemil.co': 'gmail.com',
+  'gemil.cmmm': 'gmail.com',
+  'gemil.cm': 'gmail.com',
+  'gemail.com': 'gmail.com',
   'yahoo.cm': 'yahoo.com',
   'yahoo.co': 'yahoo.com',
   'yaho.com': 'yahoo.com',
@@ -77,7 +82,7 @@ export function sanitizeEmailInput(value) {
 }
 
 const COMMON_LABEL_TYPOS = new Set([
-  'gmai', 'gamil', 'gmaill', 'gnail', 'gmaiil',
+  'gmai', 'gamil', 'gmaill', 'gnail', 'gmaiil', 'gemil', 'gemail', 'gmial',
   'yaho', 'yahooo', 'yahoos',
   'hotmai', 'hotmial', 'hotmailll',
   'outlok', 'outloo', 'inboxx'

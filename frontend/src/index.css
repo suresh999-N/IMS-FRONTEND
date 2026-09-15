@@ -2201,7 +2201,20 @@ input[type="password"]::-ms-clear {
   display: none !important;
 }
 
-/* Standardize search bar width & alignment across the entire application */
+/* Standardize search bar width, alignment, and border-radius across the entire application */
+.global-search,
+.global-search .app-header__search,
+.app-header__search,
+.search-input-container,
+.search-wrapper,
+.erp-search-bar,
+.table-component__toolbar :where(.erp-search-bar, .search-input-container, .search-wrapper),
+.resource-center__inventory-table :where(.erp-search-bar, .search-input-container, .search-wrapper),
+[class*='resource-center'] :where(.erp-search-bar, .search-input-container, .search-wrapper),
+[class*='-page'] :where(.erp-search-bar, .search-input-container, .search-wrapper) {
+  border-radius: 10px !important;
+}
+
 .global-search,
 .global-search .app-header__search,
 .app-header__search,

@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
+﻿import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import InputField from './InputField'
 
@@ -6,42 +6,25 @@ const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
 
 function formatDisplayDate(value) {
   const match = String(value ?? '').match(/^(\d{4})-(\d{2})-(\d{2})$/)
-
-  if (!match) {
-    return String(value ?? '')
-  }
-
+  if (!match) return String(value ?? '')
   return `${match[3]}-${match[2]}-${match[1]}`
 }
 
 function parseDisplayDate(value) {
   const trimmedValue = String(value ?? '').trim()
   const isoMatch = trimmedValue.match(/^(\d{4})-(\d{2})-(\d{2})$/)
-
-  if (isoMatch) {
-    return trimmedValue
-  }
-
+  if (isoMatch) return trimmedValue
   const displayMatch = trimmedValue.match(/^(\d{2})[\/\-](\d{2})[\/\-](\d{4})$/)
-
-  if (!displayMatch) {
-    return ''
-  }
-
+  if (!displayMatch) return ''
   const [, day, month, year] = displayMatch
   const isoValue = `${year}-${month}-${day}`
   const parsedDate = new Date(`${isoValue}T00:00:00`)
-
   return Number.isNaN(parsedDate.getTime()) ? '' : isoValue
 }
 
 function parseIsoDate(value) {
   const parsedValue = parseDisplayDate(value)
-
-  if (!parsedValue) {
-    return null
-  }
-
+  if (!parsedValue) return null
   const parsedDate = new Date(`${parsedValue}T00:00:00`)
   return Number.isNaN(parsedDate.getTime()) ? null : parsedDate
 }
@@ -54,10 +37,7 @@ function toIsoDate(date) {
 }
 
 function getMonthLabel(date) {
-  return date.toLocaleString('en-US', {
-    month: 'long',
-    year: 'numeric',
-  })
+  return date.toLocaleString('en-US', { month: 'long', year: 'numeric' })
 }
 
 function getCalendarDays(viewDate) {
@@ -68,7 +48,6 @@ function getCalendarDays(viewDate) {
   const requiredCells = mondayOffset + lastOfMonth.getDate()
   const calendarLength = requiredCells > 35 ? 42 : 35
   startDate.setDate(firstOfMonth.getDate() - mondayOffset)
-
   return Array.from({ length: calendarLength }, (_, index) => {
     const date = new Date(startDate)
     date.setDate(startDate.getDate() + index)
@@ -78,6 +57,12 @@ function getCalendarDays(viewDate) {
 
 function isSameDay(firstDate, secondDate) {
   return Boolean(firstDate && secondDate) && toIsoDate(firstDate) === toIsoDate(secondDate)
+}
+
+// Returns true if date is on or before minDate
+function isBeforeMin(date, minDate) {
+  if (!minDate) return false
+  return toIsoDate(date) <= toIsoDate(minDate)
 }
 
 export default function DatePicker(props) {
@@ -90,10 +75,11 @@ export default function DatePicker(props) {
     placeholder = 'DD-MM-YYYY',
     className = '',
     icon = CalendarDays,
+    minDate,
     ...restProps
   } = props
+
   const wrapperRef = useRef(null)
-  const popoverRef = useRef(null)
   const instanceIdRef = useRef(`datepicker-${Math.random().toString(36).substring(2, 9)}`)
   const [displayValue, setDisplayValue] = useState(() => formatDisplayDate(value))
   const [isOpen, setIsOpen] = useState(false)
@@ -101,6 +87,7 @@ export default function DatePicker(props) {
   const [popoverStyle, setPopoverStyle] = useState({})
   const selectedDate = parseIsoDate(value)
   const today = new Date()
+  const minDateParsed = parseIsoDate(minDate) || null
 
   useEffect(() => {
     setDisplayValue(formatDisplayDate(value))
@@ -108,46 +95,28 @@ export default function DatePicker(props) {
   }, [value])
 
   useEffect(() => {
-    if (!isOpen) {
-      return undefined
-    }
+    if (!isOpen) return undefined
 
     function updatePopoverPosition() {
       const rect = wrapperRef.current?.getBoundingClientRect()
-
-      if (!rect) {
-        return
-      }
-
+      if (!rect) return
       const popoverWidth = 248
       const popoverHeight = 244
       const gutter = 10
-      const left = Math.max(
-        gutter,
-        Math.min(rect.left, window.innerWidth - popoverWidth - gutter),
-      )
+      const left = Math.max(gutter, Math.min(rect.left, window.innerWidth - popoverWidth - gutter))
       let top = rect.bottom + 7
-
       if (restProps.forceDownward === false && top + popoverHeight > window.innerHeight - gutter) {
         top = Math.max(gutter, rect.top - popoverHeight - 7)
       }
-
-      setPopoverStyle({
-        left: `${left}px`,
-        top: `${top}px`,
-      })
+      setPopoverStyle({ left: `${left}px`, top: `${top}px` })
     }
 
     function handlePointerDown(event) {
-      if (!wrapperRef.current?.contains(event.target)) {
-        setIsOpen(false)
-      }
+      if (!wrapperRef.current?.contains(event.target)) setIsOpen(false)
     }
 
     function handleKeyDown(event) {
-      if (event.key === 'Escape') {
-        setIsOpen(false)
-      }
+      if (event.key === 'Escape') setIsOpen(false)
     }
 
     updatePopoverPosition()
@@ -165,12 +134,7 @@ export default function DatePicker(props) {
   }, [isOpen])
 
   function emitChange(nextValue) {
-    onChange?.({
-      target: {
-        name,
-        value: nextValue,
-      },
-    })
+    onChange?.({ target: { name, value: nextValue } })
   }
 
   function handleChange(event) {
@@ -182,18 +146,16 @@ export default function DatePicker(props) {
 
   function handleBlur() {
     const parsedValue = parseDisplayDate(displayValue)
-
     if (parsedValue) {
-      setDisplayValue(formatDisplayDate(parsedValue))
-      emitChange(parsedValue)
+      if (minDateParsed && parsedValue <= toIsoDate(minDateParsed)) {
+        setDisplayValue('')
+        emitChange('')
+      } else {
+        setDisplayValue(formatDisplayDate(parsedValue))
+        emitChange(parsedValue)
+      }
     }
-
-    onBlur?.({
-      target: {
-        name,
-        value: parsedValue || displayValue,
-      },
-    })
+    onBlur?.({ target: { name, value: parsedValue || displayValue } })
   }
 
   function openCalendar() {
@@ -203,10 +165,11 @@ export default function DatePicker(props) {
   }
 
   function shiftMonth(offset) {
-    setViewDate((currentDate) => new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1))
+    setViewDate((d) => new Date(d.getFullYear(), d.getMonth() + offset, 1))
   }
 
   function selectDate(date) {
+    if (minDateParsed && isBeforeMin(date, minDateParsed)) return
     const nextValue = toIsoDate(date)
     setDisplayValue(formatDisplayDate(nextValue))
     emitChange(nextValue)
@@ -260,6 +223,7 @@ export default function DatePicker(props) {
               const isMuted = date.getMonth() !== viewDate.getMonth()
               const isSelected = isSameDay(date, selectedDate)
               const isToday = isSameDay(date, today)
+              const isDisabled = minDateParsed ? isBeforeMin(date, minDateParsed) : false
 
               return (
                 <button
@@ -270,8 +234,11 @@ export default function DatePicker(props) {
                     isMuted ? 'is-muted' : '',
                     isSelected ? 'is-selected' : '',
                     isToday ? 'is-today' : '',
+                    isDisabled ? 'is-disabled' : '',
                   ].filter(Boolean).join(' ')}
                   onClick={() => selectDate(date)}
+                  disabled={isDisabled}
+                  aria-disabled={isDisabled}
                 >
                   {date.getDate()}
                 </button>

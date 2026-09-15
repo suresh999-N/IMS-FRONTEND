@@ -174,11 +174,12 @@ function buildInitialDraft(initialInvoiceNo) {
     warehouseId: 'all',
     invoiceNo: initialInvoiceNo || `INV-${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(Math.floor(1000 + Math.random() * 9000))}`,
     invoiceDate: today,
-    dueDate: getDueDateFromTerms(today, 'Net 15 Days'),
-    salesPerson: 'Ravi Kiran',
-    paymentTerms: 'Net 15 Days',
-    paymentMethod: 'Cash',
+    dueDate: today,
+    salesPerson: '',
+    paymentTerms: '',
+    paymentMethod: '',
     reference: '',
+    gstin: '',
     notes: '',
     paidAmount: '',
     items: [{ ...defaultItem }],
@@ -313,6 +314,7 @@ function InvoiceForm({
     setDraft((currentValue) => ({
       ...currentValue,
       customerId,
+      gstin: customer?.gstNumber || customer?.gstin || '',
     }))
     setCustomAddress(customer ? formatCustomerAddress(customer) : '')
     setErrors((currentValue) => ({
@@ -324,24 +326,58 @@ function InvoiceForm({
 
   function handleInvoiceDateChange(event) {
     const invoiceDate = event.target.value
-    setDraft((currentValue) => ({
-      ...currentValue,
-      invoiceDate,
-      dueDate: getDueDateFromTerms(invoiceDate, currentValue.paymentTerms),
-    }))
+    setDraft((currentValue) => {
+      const calculatedDueDate = getDueDateFromTerms(invoiceDate, currentValue.paymentTerms)
+      const nextDueDate = (calculatedDueDate && invoiceDate && calculatedDueDate < invoiceDate)
+        ? invoiceDate
+        : calculatedDueDate
+
+      return {
+        ...currentValue,
+        invoiceDate,
+        dueDate: nextDueDate,
+      }
+    })
     setErrors((currentValue) => ({
       ...currentValue,
       invoiceDate: '',
+      dueDate: '',
+    }))
+    setFormError('')
+  }
+
+  function handleDueDateChange(event) {
+    const dueDate = event.target.value
+    setDraft((currentValue) => ({
+      ...currentValue,
+      dueDate,
+    }))
+    setErrors((currentValue) => ({
+      ...currentValue,
+      dueDate: dueDate && currentValue.invoiceDate && dueDate < currentValue.invoiceDate
+        ? 'Due Date cannot be earlier than Invoice Date.'
+        : '',
     }))
     setFormError('')
   }
 
   function handlePaymentTermsChange(event) {
     const paymentTerms = event.target.value
-    setDraft((currentValue) => ({
+    setDraft((currentValue) => {
+      const calculatedDueDate = getDueDateFromTerms(currentValue.invoiceDate, paymentTerms)
+      const nextDueDate = (calculatedDueDate && currentValue.invoiceDate && calculatedDueDate < currentValue.invoiceDate)
+        ? currentValue.invoiceDate
+        : calculatedDueDate
+
+      return {
+        ...currentValue,
+        paymentTerms,
+        dueDate: nextDueDate,
+      }
+    })
+    setErrors((currentValue) => ({
       ...currentValue,
-      paymentTerms,
-      dueDate: getDueDateFromTerms(currentValue.invoiceDate, paymentTerms),
+      dueDate: '',
     }))
     setFormError('')
   }
@@ -444,7 +480,7 @@ function InvoiceForm({
     }
 
     if (draft.dueDate && draft.invoiceDate && draft.dueDate < draft.invoiceDate) {
-      nextErrors.dueDate = 'Due date cannot be before invoice date.'
+      nextErrors.dueDate = 'Due Date cannot be earlier than Invoice Date.'
     }
 
     const enteredPaidAmount = toNumber(draft.paidAmount)
@@ -505,6 +541,8 @@ function InvoiceForm({
         paidAmount: amountPaid,
         paymentMethod: draft.paymentMethod || 'Cash',
         referenceNumber: draft.reference || null,
+        gstin: draft.gstin || null,
+        gstNumber: draft.gstin || null,
         items: calculatedTotals.items.map((item) => {
           const qty = toNumber(item.quantity)
           const baseUnitPrice = toNumber(item.unitPrice)
@@ -631,8 +669,9 @@ function InvoiceForm({
             <span>Due Date</span>
             <input
               type="date"
+              min={draft.invoiceDate || undefined}
               value={draft.dueDate}
-              onChange={(e) => updateField('dueDate', e.target.value)}
+              onChange={handleDueDateChange}
               disabled={isSubmitting}
             />
             {errors.dueDate ? <span className="field-error">{errors.dueDate}</span> : null}
@@ -646,6 +685,7 @@ function InvoiceForm({
               onChange={(e) => updateField('salesPerson', e.target.value)}
               disabled={isSubmitting}
             >
+              <option value="">Select option</option>
               <option value="Ravi Kiran">Ravi Kiran</option>
               <option value="Anil Kumar">Anil Kumar</option>
               <option value="Suresh Raina">Suresh Raina</option>
@@ -661,6 +701,7 @@ function InvoiceForm({
               onChange={handlePaymentTermsChange}
               disabled={isSubmitting}
             >
+              <option value="">Select option</option>
               <option value="Net 15 Days">Net 15 Days</option>
               <option value="Net 30 Days">Net 30 Days</option>
               <option value="Net 60 Days">Net 60 Days</option>
@@ -676,6 +717,7 @@ function InvoiceForm({
               onChange={(e) => updateField('paymentMethod', e.target.value)}
               disabled={isSubmitting}
             >
+              <option value="">Select option</option>
               <option value="Cash">Cash</option>
               <option value="Bank Transfer">Bank Transfer</option>
               <option value="UPI">UPI</option>
@@ -701,9 +743,10 @@ function InvoiceForm({
             <span>GSTIN</span>
             <input
               type="text"
-              value={selectedCustomer?.gstNumber || 'N/A'}
-              disabled
-              style={{ background: '#f1f5f9', color: '#64748b' }}
+              placeholder="Enter GSTIN (optional)"
+              value={draft.gstin ?? ''}
+              onChange={(e) => updateField('gstin', e.target.value)}
+              disabled={isSubmitting}
             />
           </label>
 
@@ -994,8 +1037,9 @@ function InvoiceForm({
       </div>
 
       <div className="invoice-form__footer">
-        <button className="button button-cancel button-secondary"
+        <button
           type="button"
+          className="button button-cancel button-secondary"
           onClick={onCancel}
           disabled={isSubmitting}
         >
@@ -1005,7 +1049,6 @@ function InvoiceForm({
           type="submit"
           className="button button-primary"
           disabled={isSubmitting}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
         >
           Save Invoice
         </button>

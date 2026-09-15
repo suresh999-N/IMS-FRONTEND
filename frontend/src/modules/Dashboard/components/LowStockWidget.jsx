@@ -18,7 +18,7 @@ function isLowStockItem(item) {
 }
 
 export default function LowStockWidget({ items = [], isLoading }) {
-  const safeItems = Array.isArray(items) ? items : []
+  const safeItems = useMemo(() => (Array.isArray(items) ? items : []), [items])
   const [activeSection, setActiveSection] = useState('low-stock')
 
   const lowStockItems = useMemo(
@@ -67,9 +67,15 @@ export default function LowStockWidget({ items = [], isLoading }) {
         <button
           type="button"
           role="tab"
+          id="tab-low-stock"
+          aria-controls="low-stock-panel"
           aria-selected={isLowStockActive}
           className={`low-stock-widget__tab ${isLowStockActive ? 'is-active is-low-stock' : ''}`}
-          onClick={() => setActiveSection('low-stock')}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setActiveSection('low-stock')
+          }}
         >
           <AlertTriangle size={14} className="low-stock-widget__tab-icon" />
           <span>Low Stock</span>
@@ -80,9 +86,15 @@ export default function LowStockWidget({ items = [], isLoading }) {
         <button
           type="button"
           role="tab"
+          id="tab-out-of-stock"
+          aria-controls="low-stock-panel"
           aria-selected={!isLowStockActive}
           className={`low-stock-widget__tab ${!isLowStockActive ? 'is-active is-out-of-stock' : ''}`}
-          onClick={() => setActiveSection('out-of-stock')}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setActiveSection('out-of-stock')
+          }}
         >
           <XCircle size={14} className="low-stock-widget__tab-icon" />
           <span>Out of Stock</span>
@@ -93,22 +105,22 @@ export default function LowStockWidget({ items = [], isLoading }) {
       </div>
 
       {isLoading ? (
-        <div className="low-stock-widget__list">
+        <div className="low-stock-widget__list" id="low-stock-panel" role="tabpanel">
           <SkeletonCard variant="row" />
           <SkeletonCard variant="row" />
           <SkeletonCard variant="row" />
         </div>
       ) : displayItems.length > 0 ? (
-        <div className="low-stock-widget__list">
-          {displayItems.slice(0, 50).map((item) => {
+        <div className="low-stock-widget__list" id="low-stock-panel" role="tabpanel">
+          {displayItems.slice(0, 50).map((item, index) => {
             const isZeroStock = Number(item.stock) <= 0 || item.status === 'Critical' || item.status === 'Out of Stock'
             const badgeLabel = isZeroStock ? 'Out of Stock' : (item.status && item.status !== 'Critical' ? item.status : 'Low Stock')
 
             return (
               <Link
                 className="low-stock-row"
-                key={item.id || item.sku || item.name}
-                to={`/inventory/products/${item.productId || item.ProductId || item.id}`}
+                key={item.id || item.sku || item.name || `item-${index}`}
+                to={`/inventory/products/${item.productId || item.ProductId || item.id || ''}`}
                 title={item.name}
               >
                 <span className={`low-stock-row__icon ${isZeroStock ? 'is-critical' : ''}`} aria-hidden="true">

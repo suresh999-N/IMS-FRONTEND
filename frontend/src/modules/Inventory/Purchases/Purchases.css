@@ -782,7 +782,8 @@
   border: 1px solid #cbd5e1 !important;
   border-radius: 8px !important;
   background-color: #ffffff !important;
-  padding: 0 10px 0 0 !important;
+  padding: 0 10px 0 8px !important;
+  gap: 0 !important;
   box-sizing: border-box !important;
   transition: all 130ms ease !important;
 }
@@ -792,11 +793,15 @@
   box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.08) !important;
 }
 
+.indent-details-date-picker .input-with-icon svg {
+  margin-right: 0 !important;
+}
+
 .indent-details-date-picker .input-with-icon input {
   height: 38px !important;
   border: none !important;
   background: transparent !important;
-  padding: 8px 12px !important;
+  padding: 8px 4px 8px 2px !important;
   font-size: 13.5px !important;
   color: #0f172a !important;
   box-shadow: none !important;
@@ -813,6 +818,7 @@
   min-height: 0 !important;
   min-width: 0 !important;
   padding: 0 !important;
+  margin-right: 0 !important;
 }
 
 .edit-purchase-modal .form-modal__dialog {

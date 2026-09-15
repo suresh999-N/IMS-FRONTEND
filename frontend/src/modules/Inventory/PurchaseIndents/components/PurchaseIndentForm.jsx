@@ -23,7 +23,7 @@ function getProductStock(product) {
 
 const initialForm = {
   indentDate: getToday(),
-  priority: 'Medium',
+  priority: '',
   status: 'Pending',
   notes: '',
   lineItems: [createLineItem()],
@@ -70,7 +70,7 @@ export default function PurchaseIndentForm({
           }];
       return {
         indentDate: initialValues.indentDate,
-        priority: initialValues.priority || 'Medium',
+        priority: initialValues.priority || '',
         status: initialValues.status || 'Pending',
         notes: initialValues.notes || '',
         lineItems,
@@ -254,6 +254,7 @@ export default function PurchaseIndentForm({
               onBlur={handleBlur}
               disabled={isSubmitting}
             >
+              <option value="" disabled>Select priority</option>
               <option value="Low">Low</option>
               <option value="Medium">Medium</option>
               <option value="High">High</option>

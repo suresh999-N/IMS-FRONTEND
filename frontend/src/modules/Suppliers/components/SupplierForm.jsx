@@ -443,6 +443,95 @@ function getIfscError(value) {
     : 'IFSC code must follow format: SBIN0001234'
 }
 
+const IFSC_PREFIX_BANK_MAP = {
+  SBIN: ['state bank of india', 'sbi', 'state bank'],
+  UTIB: ['axis bank', 'axis'],
+  HDFC: ['hdfc bank', 'hdfc'],
+  ICIC: ['icici bank', 'icici'],
+  PUNB: ['punjab national bank', 'pnb', 'punjab national'],
+  BARB: ['bank of baroda', 'baroda', 'bob'],
+  CNRB: ['canara bank', 'canara'],
+  UBIN: ['union bank of india', 'union bank', 'union'],
+  IDIB: ['indian bank', 'indian'],
+  KKBK: ['kotak mahindra bank', 'kotak mahindra', 'kotak'],
+  INDB: ['indusind bank', 'indusind'],
+  IDFB: ['idfc first bank', 'idfc first', 'idfc'],
+  FDRL: ['federal bank', 'federal'],
+  YESB: ['yes bank', 'yes'],
+  SCBL: ['standard chartered bank', 'standard chartered'],
+  CBIN: ['central bank of india', 'central bank'],
+  IOBA: ['indian overseas bank', 'indian overseas'],
+  UCBA: ['uco bank', 'uco'],
+  PSIB: ['punjab & sind bank', 'punjab and sind bank', 'punjab & sind'],
+  BKID: ['bank of india'],
+  MAHB: ['bank of maharashtra', 'maharashtra'],
+  DBSS: ['dbs bank', 'dbs'],
+  HSBC: ['hsbc bank', 'hsbc'],
+  CITI: ['citibank', 'citi'],
+  AMDN: ['american express'],
+  TMBL: ['tamilnad mercantile bank', 'tmb'],
+  KVBL: ['karur vysya bank', 'karur vysya'],
+  CSBK: ['csb bank', 'catholic syrian bank'],
+  SIBL: ['south indian bank'],
+  KARB: ['karnataka bank'],
+  DLXB: ['dhanlaxmi bank'],
+  JAKA: ['jammu & kashmir bank', 'j&k bank', 'jammu and kashmir'],
+  RBLN: ['rbl bank', 'ratnakar bank', 'rbl'],
+  BAND: ['bandhan bank', 'bandhan'],
+  ESFB: ['equitas small finance bank', 'equitas'],
+  AUBL: ['au small finance bank', 'au bank'],
+  UJVN: ['ujjivan small finance bank', 'ujjivan'],
+  PAYT: ['paytm payments bank', 'paytm'],
+  AIRP: ['airtel payments bank', 'airtel'],
+  IPOS: ['india post payments bank', 'india post'],
+  FINO: ['fino payments bank', 'fino'],
+}
+
+export function getIfscBankMismatchError(ifscCode, bankName, fetchedBankName = null) {
+  const cleanIfsc = cleanString(ifscCode).toUpperCase()
+  const cleanBank = cleanString(bankName)
+
+  if (!cleanIfsc || !cleanBank || cleanIfsc.length < 4) {
+    return ''
+  }
+
+  const prefix = cleanIfsc.slice(0, 4)
+  const normalizedInputBank = cleanBank.toLowerCase()
+
+  if (fetchedBankName) {
+    const fetchedNormalized = String(fetchedBankName).toLowerCase()
+    const isMatch =
+      fetchedNormalized.includes(normalizedInputBank) ||
+      normalizedInputBank.includes(fetchedNormalized) ||
+      (IFSC_PREFIX_BANK_MAP[prefix] && IFSC_PREFIX_BANK_MAP[prefix].some((alias) => normalizedInputBank.includes(alias) || alias.includes(normalizedInputBank)))
+
+    if (!isMatch) {
+      return `Invalid IFSC code for ${cleanBank}. Please enter a valid ${cleanBank} IFSC.`
+    }
+    return ''
+  }
+
+  if (IFSC_PREFIX_BANK_MAP[prefix]) {
+    const validAliases = IFSC_PREFIX_BANK_MAP[prefix]
+    const matchesPrefix = validAliases.some((alias) => (
+      normalizedInputBank.includes(alias) || alias.includes(normalizedInputBank)
+    ))
+
+    if (!matchesPrefix) {
+      return `Invalid IFSC code for ${cleanBank}. Please enter a valid ${cleanBank} IFSC.`
+    }
+  } else if (/^[A-Z]{4}$/.test(prefix)) {
+    const bankWords = normalizedInputBank.split(/\s+/).filter(Boolean)
+    const acronym = bankWords.map((w) => w[0]).join('')
+    const isGenericMatch = normalizedInputBank.includes(prefix.toLowerCase()) || acronym.toLowerCase() === prefix.toLowerCase()
+    if (!isGenericMatch) {
+      return `Invalid IFSC code for ${cleanBank}. Please enter a valid ${cleanBank} IFSC.`
+    }
+  }
+
+  return ''
+}
+
 function getBranchError(value) {
   const branch = cleanString(value)
   if (!branch) return ''
@@ -454,13 +543,7 @@ function getBranchError(value) {
     : 'Branch can contain letters, numbers, spaces, periods, commas, slashes, and hyphens only.'
 }
 
-function getUpiError(value) {
-  const upiId = cleanString(value)
-  if (!upiId) return ''
-  return /^[a-zA-Z0-9._-]{2,256}@[a-zA-Z][a-zA-Z0-9.-]{2,64}$/.test(upiId)
-    ? ''
-    : 'Enter a valid UPI ID.'
-}
+
 
 function getPatternError(value, pattern, message) {
   const cleanValue = cleanString(value)
@@ -1006,14 +1089,16 @@ export default function SupplierForm({
         return {}
       }
 
+      const bankMismatchError = getIfscBankMismatchError(account.ifscCode, account.bankName)
+
       return {
         accountName: getHumanNameError(account.accountName, 'Account name'),
         accountNumber:
           getAccountNumberError(account.accountNumber) ||
           (hasDuplicate(accountNumbers, onlyDigits(account.accountNumber)) ? 'Account number is already used.' : '') ||
           (account.accountNumber && account.ifscCode && hasDuplicate(accountIfscPairs, `${onlyDigits(account.accountNumber)}|${cleanString(account.ifscCode).toUpperCase()}`) ? 'This IFSC and account number combination already exists.' : ''),
-        bankName: getBankNameError(account.bankName),
-        ifscCode: getIfscError(account.ifscCode),
+        bankName: getBankNameError(account.bankName) || bankMismatchError,
+        ifscCode: getIfscError(account.ifscCode) || bankMismatchError,
         branch: getBranchError(account.branch),
         bankCity: account.bankCity ? (getPlaceNameError(account.bankCity, 'Bank city') || getCityStateError(account.bankCity, account.bankState)) : '',
         bankState: account.bankState ? getPlaceNameError(account.bankState, 'Bank state') : '',

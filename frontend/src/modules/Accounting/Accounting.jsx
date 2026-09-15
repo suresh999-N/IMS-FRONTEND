@@ -268,7 +268,11 @@ export default function Accounting({
         ? getRequiredError(formData.paymentDate, 'Payment date')
         : '',
     date: getRequiredError(formData.date, 'Invoice date'),
-    dueDate: getRequiredError(formData.dueDate, 'Due date'),
+    dueDate:
+      getRequiredError(formData.dueDate, 'Due date') ||
+      (formData.dueDate && formData.date && formData.dueDate < formData.date
+        ? 'Due Date cannot be earlier than Invoice Date.'
+        : ''),
   }
 
   const isFormValid = Object.values(errors).every((value) => !value)
@@ -842,6 +846,7 @@ export default function Accounting({
                   id="invoice-due-date"
                   name="dueDate"
                   type="date"
+                  min={formData.date || undefined}
                   value={formData.dueDate}
                   onChange={handleChange}
                   onBlur={handleBlur}

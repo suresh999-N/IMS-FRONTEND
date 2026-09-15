@@ -157,8 +157,8 @@ function buildInitialDraft(initialIndentNo) {
     indentDate: today,
     expectedDeliveryDate: defaultRequiredDate, // Required Date (7 days lead time)
     requestedBy: '',
-    department: 'Production',
-    priority: 'Medium',
+    department: '',
+    priority: '',
     approvedBy: '',
     paymentTerms: 'Net 15 Days',
     currency: 'INR - Indian Rupee',
@@ -445,14 +445,7 @@ function PurchaseIndentForm({
       : buildInitialDraft(initialIndentNo)
   ))
 
-  useEffect(() => {
-    if (users.length > 0 && draft.requestedBy === '') {
-      setDraft(prev => ({
-        ...prev,
-        requestedBy: String(getUserId(users[0])),
-      }))
-    }
-  }, [draft.requestedBy, users])
+
 
   useEffect(() => {
     if (users.length === 0) {
@@ -690,6 +683,18 @@ function PurchaseIndentForm({
       setError('requestedBy', 'Requester is required.')
     }
 
+    if (!draft.department) {
+      setError('department', 'Department is required.')
+    }
+
+    if (!draft.priority) {
+      setError('priority', 'Priority is required.')
+    }
+
+    if (!draft.approvedBy) {
+      setError('approvedBy', 'Approver is required.')
+    }
+
     if (draft.expectedDeliveryDate && draft.indentDate && compareDateOnly(draft.expectedDeliveryDate, draft.indentDate) <= 0) {
       setError('expectedDeliveryDate', 'Required date must be later than request date.')
     }
@@ -847,6 +852,7 @@ function PurchaseIndentForm({
               onChange={(e) => updateField('expectedDeliveryDate', e.target.value)}
               disabled={isSubmitting}
               className="indent-details-date-picker"
+              minDate={draft.indentDate}
             />
             {errors.expectedDeliveryDate && <span className="indent-field-error">{errors.expectedDeliveryDate}</span>}
           </div>
@@ -863,6 +869,7 @@ function PurchaseIndentForm({
               onChange={(event) => updateField('requestedBy', event.target.value)}
               disabled={isSubmitting}
             >
+              <option value="" disabled>Select option</option>
               {users.map((user) => (
                 <option key={getUserId(user)} value={getUserId(user)}>
                   {getUserDisplayName(user)}
@@ -873,19 +880,21 @@ function PurchaseIndentForm({
           </div>
 
           {/* Department */}
-          <div className="indent-field-group">
-            <label>Department</label>
+          <div className={`indent-field-group ${errors.department ? 'indent-field-group--error' : ''}`}>
+            <label>Department <span className="required">*</span></label>
             <select
               className="indent-select"
-              data-field-key="vendorId"
+              data-field-key="department"
               value={draft.department}
               onChange={(e) => updateField('department', e.target.value)}
               disabled={isSubmitting}
             >
+              <option value="" disabled>Select option</option>
               {departmentOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
+            {errors.department && <span className="indent-field-error">{errors.department}</span>}
           </div>
 
           {/* Suggested Supplier */}
@@ -906,7 +915,9 @@ function PurchaseIndentForm({
                       ? 'No active suppliers available'
                       : 'Select supplier'}
               </option>
-              {suppliers.map((s) => (
+              {suppliers
+                .filter((s) => s.status === 'active' || String(getSupplierId(s)) === String(draft.vendorId))
+                .map((s) => (
                 <option
                   key={getSupplierId(s)}
                   value={getSupplierId(s)}
@@ -921,23 +932,27 @@ function PurchaseIndentForm({
           </div>
 
           {/* Priority */}
-          <div className="indent-field-group">
-            <label>Priority</label>
+          <div className={`indent-field-group${errors.priority ? ' indent-field-group--error' : ''}`}>
+            <label>Priority <span className="required">*</span></label>
             <select
               className="indent-select"
               value={draft.priority}
               onChange={(e) => updateField('priority', e.target.value)}
               disabled={isSubmitting}
             >
+              <option value="" disabled>Select priority</option>
               {priorityOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
+            {errors.priority && (
+              <span className="indent-field-error">{errors.priority}</span>
+            )}
           </div>
 
           {/* Approved By */}
-          <div className="indent-field-group">
-            <label>Approved By</label>
+          <div className={`indent-field-group${errors.approvedBy ? ' indent-field-group--error' : ''}`}>
+            <label>Approved By <span className="required">*</span></label>
             <SearchableSelect
               id="indent-approved-by"
               name="approvedBy"
@@ -956,6 +971,9 @@ function PurchaseIndentForm({
               showSearch={false}
               menuClassName="indent-native-select-menu"
             />
+            {errors.approvedBy && (
+              <span className="indent-field-error">{errors.approvedBy}</span>
+            )}
           </div>
         </div>
       </div>
@@ -1170,6 +1188,7 @@ function PurchaseIndentForm({
                         onChange={(e) => handleItemFieldChange(index, 'requiredDate', e.target.value)}
                         disabled={isSubmitting}
                         className="indent-table-date-picker"
+                        minDate={draft.indentDate}
                       />
                     </td>
 

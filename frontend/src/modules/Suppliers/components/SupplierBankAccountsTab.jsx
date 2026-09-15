@@ -409,7 +409,7 @@ export default function SupplierBankAccountsTab({
                       onFocus={(event) => handleBankFieldFocus(index, event)}
                       onChange={(event) => handleBankFieldChange(index, event)}
                       onBlur={(event) => handleBankFieldBlur(index, event)}
-                      error={getVisibleError({ value: account.ifscCode, error: accountErrors.ifscCode, dirty: ifscInteracted, blurred: ifscBlurred, focused: ifscFocused, submitted: showErrors, revealWhileTyping: false })}
+                      error={getVisibleError({ value: account.ifscCode, error: accountErrors.ifscCode, dirty: ifscInteracted || bankNameInteracted, blurred: ifscBlurred, focused: ifscFocused, submitted: showErrors, revealWhileTyping: false })}
                       helperText={ifscHelperText}
                       className={`supplier-bank-field supplier-bank-field--ifsc ${
                         isIfscChecking
@@ -434,7 +434,7 @@ export default function SupplierBankAccountsTab({
                       onFocus={(event) => handleBankFieldFocus(index, event)}
                       onChange={(event) => handleBankFieldChange(index, event)}
                       onBlur={(event) => handleBankFieldBlur(index, event)}
-                      error={isIfscChecking ? '' : getVisibleError({ value: account.bankName, error: accountErrors.bankName, dirty: bankNameInteracted, blurred: bankNameBlurred, focused: bankNameFocused, submitted: showErrors, revealWhileTyping: false })}
+                      error={isIfscChecking ? '' : getVisibleError({ value: account.bankName, error: accountErrors.bankName, dirty: bankNameInteracted || ifscInteracted, blurred: bankNameBlurred, focused: bankNameFocused, submitted: showErrors, revealWhileTyping: false })}
                       helperText=""
                       className={`supplier-bank-field supplier-bank-field--autofill supplier-bank-field--secondary ${getAutomationClass(account.bankNameAutoFilled && !account.bankNameManualOverride, getSuccessClass({ value: account.bankName, error: accountErrors.bankName, dirty: bankNameInteracted || account.bankNameAutoFilled, blurred: (bankNameBlurred || account.bankNameAutoFilled) && !bankNameFocused, isEmptyAccount }))}`.trim()}
                       disabled={readOnly}

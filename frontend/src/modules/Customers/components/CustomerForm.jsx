@@ -45,6 +45,7 @@ import SupplierAddressTab from '../../Suppliers/components/SupplierAddressTab'
 import SupplierBankAccountsTab from '../../Suppliers/components/SupplierBankAccountsTab'
 import SupplierContactsTab from '../../Suppliers/components/SupplierContactsTab'
 import SupplierPaymentTermsTab from '../../Suppliers/components/SupplierPaymentTermsTab'
+import { getIfscBankMismatchError } from '../../Suppliers/components/SupplierForm'
 import {
   DEPARTMENT_OPTIONS,
   IFSC_PATTERN,
@@ -640,11 +641,12 @@ function getAddressErrors(address) {
 
 function getBankErrors(bank) {
   if (isBlankBankDetail(bank) && !bank.forceValidation) return {}
+  const bankMismatchError = getIfscBankMismatchError(bank.ifscCode, bank.bankName)
   return {
     accountName: getNameError(bank.accountName, 'Account name'),
     accountNumber: getAccountNumberError(bank.accountNumber),
-    bankName: getBankNameError(bank.bankName),
-    ifscCode: bank.ifscCode && IFSC_PATTERN.test(bank.ifscCode) ? '' : 'IFSC code must follow format SBIN0001234.',
+    bankName: getBankNameError(bank.bankName) || bankMismatchError,
+    ifscCode: (bank.ifscCode && IFSC_PATTERN.test(bank.ifscCode) ? '' : 'IFSC code must follow format SBIN0001234.') || bankMismatchError,
     branch: getBranchError(bank.branch),
     upiId: '',
   }

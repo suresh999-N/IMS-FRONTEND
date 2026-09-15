@@ -3,18 +3,24 @@
   width: min(100%, 420px);
   flex: 0 1 420px;
   min-width: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .search-wrapper {
   display: flex;
   align-items: center;
+  position: relative;
   border: 1px solid rgba(203, 213, 225, 0.62);
-  border-radius: 9px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.9);
   padding: 0 8px;
   min-height: 36px;
+  height: 36px;
   min-width: 0;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.72) inset;
+  overflow: hidden;
   transition:
     border-color var(--transition),
     box-shadow var(--transition),
@@ -39,11 +45,24 @@
 }
 
 .search-input-error {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 50;
   display: block;
-  margin-top: 4px;
+  padding: 6px 12px;
   font-size: 12px;
   font-weight: 550;
-  color: #dc2626;
+  line-height: 1.35;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(185, 28, 28, 0.1);
+  white-space: normal;
+  word-break: break-word;
+  pointer-events: none;
 }
 
 .search-wrapper input {
@@ -72,24 +91,50 @@
 .search-icon {
   margin-right: 5px;
   color: #7b8797;
+  flex-shrink: 0;
 }
 
 .search-clear-button {
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #94a3b8;
-  border-radius: 4px;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  max-width: 24px !important;
+  min-height: 24px !important;
+  max-height: 24px !important;
+  padding: 0 !important;
+  margin: 0 0 0 4px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  color: #94a3b8 !important;
+  align-self: center !important;
+  line-height: 1 !important;
+  transform: none !important;
+  box-shadow: none !important;
+  transition: color 0.15s ease, background-color 0.15s ease !important;
 }
 
 .search-clear-button:hover {
-  color: #475569;
-  background: #f1f5f9;
+  color: #475569 !important;
+  background: #f1f5f9 !important;
+}
+
+.search-clear-button:focus-visible {
+  outline: 2px solid rgba(14, 165, 183, 0.4) !important;
+  outline-offset: 1px !important;
+}
+
+.search-clear-button svg {
+  display: block !important;
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0 !important;
 }
 
 .search-wrapper input::placeholder {

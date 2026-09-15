@@ -1818,16 +1818,6 @@ export default function PurchaseIndentsScreen({
                   Convert to Purchase Order
                 </button>
               ) : null}
-                <button
-                  type="button"
-                  className="button button-primary"
-                  onClick={() => {
-                    setViewTarget(null)
-                    setViewDocumentModel(null)
-                  }}
-                >
-                  Close
-                </button>
               </div>
             </div>
           ) : (
