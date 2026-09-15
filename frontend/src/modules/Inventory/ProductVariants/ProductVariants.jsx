@@ -19,6 +19,12 @@ import {
   readResourceValue,
 } from '../../../api/resourceApi'
 import {
+  getProducts,
+  getProductById,
+  getProductAttributes,
+  getAttributeValues,
+} from '../../../api/productApi'
+import {
   getDescriptiveProductName,
   getDescriptiveProductBarcode,
   getDescriptiveVariantName,

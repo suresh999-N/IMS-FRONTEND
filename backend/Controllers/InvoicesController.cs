@@ -35,6 +35,7 @@ namespace IMSBackend.Controllers
         }
 
         [HttpGet]
+        [Microsoft.AspNetCore.Authorization.AllowAnonymous]
         public async Task<IActionResult> GetInvoices(
             int page = 1,
             int pageSize = 500,
