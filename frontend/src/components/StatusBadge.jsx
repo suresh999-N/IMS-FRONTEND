@@ -21,7 +21,7 @@ const STATUS_TYPE_MAP = {
   critical: 'failed',
   disabled: 'inactive',
   failed: 'failed',
-  inactive: 'inactive',
+  inactive: 'failed',
   pending: 'warning',
   prospect: 'warning',
   unpaid: 'warning',

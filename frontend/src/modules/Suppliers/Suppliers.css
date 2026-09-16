@@ -490,10 +490,11 @@
 }
 
 .supplier-table-card .status-badge.status-inactive,
-.supplier-table-card .status-badge.status-failed.status-inactive {
-  border: 1px solid var(--status-inactive-border, #94a3b8) !important;
-  background: var(--status-inactive-bg, #e2e8f0) !important;
-  color: var(--status-inactive-color, #334155) !important;
+.supplier-table-card .status-badge.status-failed.status-inactive,
+.supplier-table-card .status-badge.status-cancelled.status-inactive {
+  border: 1px solid var(--status-danger-border, #fecaca) !important;
+  background: var(--status-danger-bg, #fef2f2) !important;
+  color: var(--status-danger-color, #b91c1c) !important;
 }
 
 .supplier-table-card .status-badge.status-blocked {
