@@ -81,6 +81,7 @@
   text-transform: none;
   letter-spacing: 0;
   background: #f8fafc;
+  text-align: left;
 }
 
 .table-container td {
@@ -544,10 +545,8 @@
   background: transparent;
   padding: 0;
   min-height: 0;
-  width: 100%;
   display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
   gap: 4px;
   font-weight: 700;
   color: inherit;

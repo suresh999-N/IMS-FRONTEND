@@ -136,6 +136,11 @@
   font-weight: 800;
 }
 
+.resource-center__page--subCategories .resource-center__inventory-metric-count {
+  color: #0f172a;
+  font-weight: 800;
+}
+
 .resource-center__page--subCategories .resource-center__inventory-header-actions .button {
   min-height: 38px;
   height: 38px;
@@ -405,9 +410,9 @@
 /* Status badges */
 .resource-center__page--subCategories .status-badge.status-inactive,
 .subcategories-col-status .status-badge.status-inactive {
-  color: var(--status-inactive-color, #475569) !important;
-  background: var(--status-inactive-bg, #f1f5f9) !important;
-  border-color: var(--status-inactive-border, #cbd5e1) !important;
+  color: var(--status-inactive-color, #334155) !important;
+  background: var(--status-inactive-bg, #e2e8f0) !important;
+  border-color: var(--status-inactive-border, #94a3b8) !important;
 }
 
 /* ─── Action menu ───────────────────────────────────────────────── */

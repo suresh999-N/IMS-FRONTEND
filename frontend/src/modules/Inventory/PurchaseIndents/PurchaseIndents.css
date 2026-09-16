@@ -1272,6 +1272,11 @@
   width: 13%;
 }
 
+.purchase-indent-document__items th.invoice-document__numeric,
+.purchase-indent-document__items td.invoice-document__numeric {
+  text-align: right !important;
+}
+
 .purchase-indent-document__col-date {
   width: 17%;
 }

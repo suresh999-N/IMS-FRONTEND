@@ -632,9 +632,9 @@ export default function ProductVariants() {
         key: 'actions',
         label: 'Actions',
         className: 'variants-col-actions',
-        tableWidth: 130,
-        style: { width: 130, minWidth: 130 },
-        headerStyle: { width: 130, minWidth: 130 },
+        tableWidth: 76,
+        style: { width: 76, minWidth: 76 },
+        headerStyle: { width: 76, minWidth: 76 },
         render: (item) => {
           const menuItems = [
             {

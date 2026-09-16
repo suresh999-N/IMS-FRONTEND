@@ -669,9 +669,9 @@ function getSubCategoryStatus(row) {
 
 function SubCategoriesHeader({ canCreate, summary, activeStatus, onFilterStatus, onAdd }) {
   const metrics = [
-    { key: 'all', label: `${summary.total} Records`, tone: 'info' },
-    { key: 'active', label: `${summary.active} Active`, tone: 'success' },
-    { key: 'inactive', label: `${summary.inactive} Inactive`, tone: 'warning' },
+    { key: 'all', count: summary.total, label: 'Records', tone: 'info' },
+    { key: 'active', count: summary.active, label: 'Active', tone: 'success' },
+    { key: 'inactive', count: summary.inactive, label: 'Inactive', tone: 'warning' },
   ]
 
   return (
@@ -696,7 +696,8 @@ function SubCategoriesHeader({ canCreate, summary, activeStatus, onFilterStatus,
               }`}
               aria-pressed={activeStatus === metric.key}
             >
-              {metric.label}
+              <span className="resource-center__inventory-metric-count">{metric.count}</span>
+              {' '}{metric.label}
             </button>
           ))}
         </div>

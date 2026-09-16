@@ -1249,9 +1249,9 @@ button.status-badge:disabled,
 .status-unpaid,
 .status-inactive,
 .status-disabled {
-  color: var(--status-inactive-color, #475569) !important;
-  background: var(--status-inactive-bg, #f1f5f9) !important;
-  border-color: var(--status-inactive-border, #cbd5e1) !important;
+  color: var(--status-inactive-color, #334155) !important;
+  background: var(--status-inactive-bg, #e2e8f0) !important;
+  border-color: var(--status-inactive-border, #94a3b8) !important;
 }
 
 .status-info {

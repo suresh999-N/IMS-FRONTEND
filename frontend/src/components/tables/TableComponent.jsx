@@ -819,7 +819,8 @@ export default function TableComponent({
       value={searchTerm}
       onChange={setSearchTerm}
       placeholder={searchPlaceholder}
-      showInlineError={false}
+      showInlineError={true}
+      errorMessage={resolvedInvalidSearchMessage || invalidSearchMessage}
     />
   ) : null
 

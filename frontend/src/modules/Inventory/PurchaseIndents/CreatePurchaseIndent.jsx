@@ -149,11 +149,10 @@ function generateIndentNumber(indents = []) {
 }
 
 function buildInitialDraft(initialIndentNo) {
-  const today = getToday()
   return {
     vendorId: '',
     indentNo: initialIndentNo || generateIndentNumber([]),
-    indentDate: today,
+    indentDate: '',
     expectedDeliveryDate: '', // Required Date remains empty until explicitly selected
     requestedBy: '',
     department: '',
@@ -848,7 +847,6 @@ function PurchaseIndentForm({
               disabled={isSubmitting}
               minDate={draft.indentDate || (!isEdit ? getToday() : undefined)}
               className="indent-details-date-picker"
-              minDate={draft.indentDate}
             />
             {errors.expectedDeliveryDate && <span className="indent-field-error">{errors.expectedDeliveryDate}</span>}
           </div>
@@ -1180,12 +1178,11 @@ function PurchaseIndentForm({
                     <td>
                       <DatePicker
                         name={`item_required_date_${index}`}
-                        value={item.requiredDate || draft.expectedDeliveryDate || ''}
+                        value={item.requiredDate}
                         onChange={(e) => handleItemFieldChange(index, 'requiredDate', e.target.value)}
                         disabled={isSubmitting}
                         minDate={draft.indentDate || (!isEdit ? getToday() : undefined)}
                         className="indent-table-date-picker"
-                        minDate={draft.indentDate}
                       />
                     </td>
 

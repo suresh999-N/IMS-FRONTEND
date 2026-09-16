@@ -43,9 +43,9 @@
   --status-danger-bg: #fef2f2;
   --status-danger-border: #fecaca;
 
-  --status-inactive-color: #475569;
-  --status-inactive-bg: #f1f5f9;
-  --status-inactive-border: #cbd5e1;
+  --status-inactive-bg: #e2e8f0;
+  --status-inactive-color: #334155;
+  --status-inactive-border: #94a3b8;
 
   --color-warning-50: #fff7ed;
   --color-warning-100: #ffedd5;
