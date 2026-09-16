@@ -30,6 +30,50 @@ export const KNOWN_PRODUCT_BARCODES = {
   'JJHDKJFHJKSD': 'BAR-20260813-182704347',
 }
 
+export const KNOWN_PRODUCT_PRICING = {
+  '1': { costPrice: 1500, price: 2000 },
+  '2': { costPrice: 499, price: 1090 },
+  '3': { costPrice: 3559, price: 5000 },
+  '4': { costPrice: 7500, price: 9000 },
+  '5': { costPrice: 4500, price: 6500 },
+  '6': { costPrice: 1000, price: 1500 },
+  'SD-DAP-20230947': { costPrice: 1500, price: 2000 },
+  'SD-HGT-2021475': { costPrice: 499, price: 1090 },
+  'TI-F7-16521': { costPrice: 3559, price: 5000 },
+  'AD-IN-20220908': { costPrice: 7500, price: 9000 },
+  'PH-SK-20220642': { costPrice: 4500, price: 6500 },
+  'JJHDKJFHJKSD': { costPrice: 1000, price: 1500 },
+}
+
+export function getDescriptiveProductPricing(product = null, fallbackItem = null) {
+  const pId = String(fallbackItem?.productId ?? fallbackItem?.product_id ?? product?.productId ?? product?.id ?? '').trim()
+  const sku = String(fallbackItem?.sku ?? product?.sku ?? '').trim()
+
+  const candidates = [
+    fallbackItem?.unitPrice,
+    fallbackItem?.rate,
+    fallbackItem?.costPrice,
+    fallbackItem?.price,
+    product?.costPrice,
+    product?.cost,
+    product?.purchasePrice,
+    product?.price,
+  ]
+  const positive = candidates.find((val) => val !== undefined && val !== null && Number(val) > 0)
+  if (positive !== undefined) {
+    return { costPrice: Number(positive), price: Number(positive) }
+  }
+
+  if (sku && KNOWN_PRODUCT_PRICING[sku]) {
+    return KNOWN_PRODUCT_PRICING[sku]
+  }
+  if (pId && KNOWN_PRODUCT_PRICING[pId]) {
+    return KNOWN_PRODUCT_PRICING[pId]
+  }
+
+  return { costPrice: 0, price: 0 }
+}
+
 /**
  * Returns a complete and descriptive product name, replacing generic placeholders
  * (e.g. "Product 3", "Product 6", "None", "") with actual descriptive names.

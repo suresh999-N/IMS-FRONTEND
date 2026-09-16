@@ -33,6 +33,7 @@ namespace IMSBackend.Models
         [Column("unit_id")]
         public int? UnitId { get; set; }
 
+        [Column("price")]
         public decimal? Price { get; set; }
 
         [Column("cost_price")]

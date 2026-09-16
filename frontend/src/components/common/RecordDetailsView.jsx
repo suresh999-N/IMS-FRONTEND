@@ -11,6 +11,7 @@ export default function RecordDetailsView({
   status,
   fields = [],
   onClose,
+  showCloseButton = false,
 }) {
   return (
     <FormModal
@@ -60,15 +61,17 @@ export default function RecordDetailsView({
         </div>
 
         {/* Footer */}
-        <div className="record-details-footer">
-          <button
-            type="button"
-            className="button button-secondary"
-            onClick={onClose}
-          >
-            Close
-          </button>
-        </div>
+        {showCloseButton ? (
+          <div className="record-details-footer">
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={onClose}
+            >
+              Close
+            </button>
+          </div>
+        ) : null}
       </div>
     </FormModal>
   )

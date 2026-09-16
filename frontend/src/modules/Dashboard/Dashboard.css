@@ -1052,6 +1052,22 @@ button.dashboard-status:active {
   outline: none;
 }
 
+.low-stock-widget__list {
+  flex: 1 1 auto;
+}
+
+.low-stock-widget__footer {
+  margin-top: 10px;
+  padding-top: 2px;
+  flex-shrink: 0;
+  display: flex;
+  width: 100%;
+}
+
+.low-stock-widget__footer .low-stock-widget__action {
+  width: 100%;
+}
+
 .low-stock-widget.is-healthy .dashboard-empty {
   grid-template-columns: auto minmax(0, 1fr);
   place-items: center start;

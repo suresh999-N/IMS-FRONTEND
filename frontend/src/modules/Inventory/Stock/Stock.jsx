@@ -3529,16 +3529,6 @@ function ResourcePage({ config, navigationContent = null }) {
                   </table>
                 </div>
               )}
-
-              <div className="button-row" style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => setViewingAdjustment(null)}
-                >
-                  Close
-                </button>
-              </div>
             </div>
           </FormModal>
         )
@@ -3625,16 +3615,6 @@ function ResourcePage({ config, navigationContent = null }) {
                   </table>
                 </div>
               )}
-
-              <div className="button-row" style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => setViewingTransfer(null)}
-                >
-                  Close
-                </button>
-              </div>
             </div>
           </FormModal>
         )
@@ -3744,16 +3724,6 @@ function ResourcePage({ config, navigationContent = null }) {
                   </table>
                 </div>
               )}
-
-              <div className="button-row" style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => setViewingAudit(null)}
-                >
-                  Close
-                </button>
-              </div>
             </div>
           </FormModal>
         )

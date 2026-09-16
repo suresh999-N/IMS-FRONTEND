@@ -273,7 +273,8 @@ function drawIndentParties(doc, model, y) {
 }
 
 function itemCurrency(available, value) {
-  return available ? formatPurchaseIndentCurrency(value) : '-'
+  const numeric = Number(value)
+  return available && Number.isFinite(numeric) && numeric > 0 ? formatPurchaseIndentCurrency(numeric) : '-'
 }
 
 function drawItemsTable(doc, model, startY) {
@@ -300,7 +301,7 @@ function drawItemsTable(doc, model, startY) {
       String(item.serialNumber),
       item.notes ? `${item.productName || '-'}\nJustification: ${item.notes}` : item.productName || '-',
       item.sku || '-',
-      item.availableStock === '' ? '-' : String(item.availableStock),
+      item.availableStock === '' ? '-' : Number(item.availableStock) === 0 ? '0 (Out of Stock)' : String(item.availableStock),
       (Number(item.quantity) || 0).toLocaleString('en-IN'),
       item.unit || '-',
       itemCurrency(item.hasUnitPrice, item.unitPrice),
@@ -384,7 +385,7 @@ function drawSummary(doc, model, startY) {
   doc.setFontSize(8.5)
   doc.text('Estimated Value', rightX + 6, y + 15)
   doc.text(
-    model.summary.hasEstimatedValue
+    model.summary.hasEstimatedValue && Number(model.summary.estimatedValue) > 0
       ? formatPurchaseIndentCurrency(model.summary.estimatedValue)
       : '-',
     rightX + rightWidth - 6,

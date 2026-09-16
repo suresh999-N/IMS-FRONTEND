@@ -167,6 +167,19 @@ function getGroupedWarehouseProducts(warehouseProducts, productsCatalog) {
   return Object.values(map)
 }
 
+function formatWarehouseProductTooltip(prod) {
+  if (!prod) return ''
+  const lines = [prod.name]
+  if (prod.sku) {
+    lines.push(`SKU: ${prod.sku}`)
+  }
+  if (prod.quantity !== undefined && prod.quantity !== null && prod.quantity !== '') {
+    const qtyStr = Number(prod.quantity).toLocaleString('en-IN')
+    lines.push(`Available: ${qtyStr} ${prod.unit || 'Units'}`.trim())
+  }
+  return lines.join('\n')
+}
+
 export default function WarehousesTable({
   warehouses,
   products = [],
@@ -272,7 +285,11 @@ export default function WarehousesTable({
           return (
             <div className="warehouses-products-list">
               {grouped.map((prod, index) => (
-                <div key={index} className="warehouses-product-item" title={prod.name}>
+                <div
+                  key={index}
+                  className="warehouses-product-item"
+                  title={formatWarehouseProductTooltip(prod)}
+                >
                   {prod.name}
                 </div>
               ))}
@@ -280,17 +297,20 @@ export default function WarehousesTable({
           )
         }
 
-        const firstThree = grouped.slice(0, 3)
-        const moreCount = grouped.length - 3
-
-        const namesString = firstThree.map((prod) => prod.name).join(', ')
+        const firstTwo = grouped.slice(0, 2)
+        const moreCount = grouped.length - 2
 
         return (
-          <div className="warehouses-products-list flex-row">
-            <span className="warehouses-products-text" title={grouped.map((prod) => prod.name).join(', ')}>
-              {namesString}
-            </span>
-            {' '}
+          <div className="warehouses-products-list">
+            {firstTwo.map((prod, index) => (
+              <div
+                key={index}
+                className="warehouses-product-item"
+                title={formatWarehouseProductTooltip(prod)}
+              >
+                {prod.name}
+              </div>
+            ))}
             <button
               type="button"
               className="warehouses-more-link"
@@ -298,8 +318,9 @@ export default function WarehousesTable({
                 event.stopPropagation()
                 setActiveProductsModalWarehouse(warehouse)
               }}
+              title={`Click to view all ${grouped.length} products in ${warehouse.name}`}
             >
-              +{moreCount} More
+              +{moreCount} more product{moreCount > 1 ? 's' : ''}
             </button>
           </div>
         )

@@ -111,35 +111,39 @@ export default function LowStockWidget({ items = [], isLoading }) {
           <SkeletonCard variant="row" />
         </div>
       ) : displayItems.length > 0 ? (
-        <div className="low-stock-widget__list" id="low-stock-panel" role="tabpanel">
-          {displayItems.slice(0, 50).map((item, index) => {
-            const isZeroStock = Number(item.stock) <= 0 || item.status === 'Critical' || item.status === 'Out of Stock'
-            const badgeLabel = isZeroStock ? 'Out of Stock' : (item.status && item.status !== 'Critical' ? item.status : 'Low Stock')
+        <>
+          <div className="low-stock-widget__list" id="low-stock-panel" role="tabpanel">
+            {displayItems.slice(0, 50).map((item, index) => {
+              const isZeroStock = Number(item.stock) <= 0 || item.status === 'Critical' || item.status === 'Out of Stock'
+              const badgeLabel = isZeroStock ? 'Out of Stock' : (item.status && item.status !== 'Critical' ? item.status : 'Low Stock')
 
-            return (
-              <Link
-                className="low-stock-row"
-                key={item.id || item.sku || item.name || `item-${index}`}
-                to={`/inventory/products/${item.productId || item.ProductId || item.id || ''}`}
-                title={item.name}
-              >
-                <span className={`low-stock-row__icon ${isZeroStock ? 'is-critical' : ''}`} aria-hidden="true">
-                  {isZeroStock ? <XCircle size={16} /> : <AlertTriangle size={16} />}
-                </span>
-                <div>
-                  <strong title={item.name}>{item.name}</strong>
-                  <span>Stock: {item.stock} - Reorder Level: {item.reorderLevel}</span>
-                </div>
-                <span className={`low-stock-row__badge ${isZeroStock ? 'is-critical' : ''}`}>
-                  {badgeLabel}
-                </span>
-              </Link>
-            )
-          })}
-          <Link className="low-stock-widget__action" to="/inventory/purchases">
-            Create Purchase Order
-          </Link>
-        </div>
+              return (
+                <Link
+                  className="low-stock-row"
+                  key={item.id || item.sku || item.name || `item-${index}`}
+                  to={`/inventory/products/${item.productId || item.ProductId || item.id || ''}`}
+                  title={item.name}
+                >
+                  <span className={`low-stock-row__icon ${isZeroStock ? 'is-critical' : ''}`} aria-hidden="true">
+                    {isZeroStock ? <XCircle size={16} /> : <AlertTriangle size={16} />}
+                  </span>
+                  <div>
+                    <strong title={item.name}>{item.name}</strong>
+                    <span>Stock: {item.stock} - Reorder Level: {item.reorderLevel}</span>
+                  </div>
+                  <span className={`low-stock-row__badge ${isZeroStock ? 'is-critical' : ''}`}>
+                    {badgeLabel}
+                  </span>
+                </Link>
+              )
+            })}
+          </div>
+          <div className="low-stock-widget__footer">
+            <Link className="low-stock-widget__action" to="/inventory/purchases">
+              Create Purchase Order
+            </Link>
+          </div>
+        </>
       ) : (
         <div className="dashboard-empty dashboard-empty--success">
           <CheckCircle2 size={18} strokeWidth={2.5} />

@@ -328,13 +328,16 @@ export default function SalesReturns() {
           <h1>Sales Returns</h1>
           <div className="purchases-page__metrics">
             <span className="purchases-page__metric purchases-page__metric--info">
-              {stats.total} Returns
+              <strong className="purchases-page__metric-count">{stats.total}</strong>
+              <span className="purchases-page__metric-label">Returns</span>
             </span>
             <span className="purchases-page__metric purchases-page__metric--warning">
-              {stats.customers} Customers
+              <strong className="purchases-page__metric-count">{stats.customers}</strong>
+              <span className="purchases-page__metric-label">Customers</span>
             </span>
             <span className="purchases-page__metric purchases-page__metric--success">
-              {formatCurrency(stats.totalAmount)} Total Returned
+              <strong className="purchases-page__metric-count">{formatCurrency(stats.totalAmount)}</strong>
+              <span className="purchases-page__metric-label">Total Returned</span>
             </span>
           </div>
         </div>

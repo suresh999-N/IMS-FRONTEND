@@ -26,6 +26,7 @@
   text-align: left;
   min-width: 0;
   height: auto;
+  font-size: 13px;
 }
 
 .searchable-select__trigger.is-open,
@@ -118,6 +119,7 @@
   padding: 7px 0;
   background: transparent;
   color: var(--text);
+  font-size: 13px;
 }
 
 .searchable-select__search input:focus {
@@ -143,6 +145,7 @@
   background: transparent;
   padding: 8px 10px;
   color: var(--text);
+  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: space-between;

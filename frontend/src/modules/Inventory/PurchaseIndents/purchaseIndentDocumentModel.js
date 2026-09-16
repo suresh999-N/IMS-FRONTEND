@@ -1,4 +1,5 @@
-import { formatIndentNumber, getLogicalRequiredDate } from '../../../utils/helpers'
+import { formatIndentNumber, getLogicalRequiredDate } from '../../../utils/helpers.js'
+import { KNOWN_PRODUCT_PRICING } from '../../../utils/productNameUtils.js'
 
 function getPathValue(source, path) {
   return String(path)
@@ -29,11 +30,6 @@ function textValue(sources, paths, fallback = '') {
 function numberValue(sources, paths, fallback = 0) {
   const value = Number(firstValue(sources, paths, fallback))
   return Number.isFinite(value) ? value : fallback
-}
-
-function hasValue(sources, paths) {
-  const value = firstValue(sources, paths)
-  return value !== undefined && value !== null && value !== ''
 }
 
 function normalizeAddress(value) {
@@ -228,88 +224,71 @@ function buildItem(item, index, indent, options = {}) {
     'qty',
     'Qty',
   ])
-  const hasUnitPrice = hasValue(item, [
-    'unitPrice',
-    'UnitPrice',
-    'estimatedRate',
-    'EstimatedRate',
-    'rate',
-    'Rate',
-    'costPrice',
-    'CostPrice',
-    'price',
-    'Price',
-    'costPrice',
-    'CostPrice',
-    'purchasePrice',
-    'PurchasePrice',
-    'cost',
-    'Cost',
-    'product.costPrice',
-    'product.price',
-  ])
-  let unitPrice = numberValue(item, [
-    'unitPrice',
-    'UnitPrice',
-    'estimatedRate',
-    'EstimatedRate',
-    'rate',
-    'Rate',
-    'costPrice',
-    'CostPrice',
-    'price',
-    'Price',
-    'costPrice',
-    'CostPrice',
-    'purchasePrice',
-    'PurchasePrice',
-    'cost',
-    'Cost',
-    'product.costPrice',
-    'product.price',
-  ])
+  const candidateRates = [
+    item.unitPrice,
+    item.UnitPrice,
+    item.estimatedRate,
+    item.EstimatedRate,
+    item.rate,
+    item.Rate,
+    item.costPrice,
+    item.CostPrice,
+    item.price,
+    item.Price,
+    item.purchasePrice,
+    item.PurchasePrice,
+    item.cost,
+    item.Cost,
+    item['product.costPrice'],
+    item['product.price'],
+  ]
+  const positiveItemRate = candidateRates.find((val) => val !== undefined && val !== null && Number(val) > 0)
+  let unitPrice = positiveItemRate !== undefined ? Number(positiveItemRate) : 0
 
-  if (unitPrice <= 0 && (options.productMap || options.products)) {
-    const productId = String(item.productId ?? item.ProductId ?? '')
-    const productSku = String(item.sku ?? item.SKU ?? item.productSku ?? '')
-    const productName = String(item.productName ?? item.ProductName ?? item.name ?? '')
-    const product = options.productMap?.get(productId) ||
-      (Array.isArray(options.products)
-        ? options.products.find(
-            (p) =>
-              (productId && String(p.id ?? p.productId) === productId) ||
-              (productSku && String(p.sku ?? p.SKU) === productSku) ||
-              (productName && String(p.name ?? p.Name).trim().toLowerCase() === productName.trim().toLowerCase())
-          )
-        : null)
+  if (unitPrice <= 0) {
+    const productId = String(item.productId ?? item.ProductId ?? item.id ?? '').trim()
+    const productSku = String(item.sku ?? item.SKU ?? item.productSku ?? item.ProductSku ?? '').trim().toLowerCase()
+    const productName = String(item.productName ?? item.ProductName ?? item.name ?? item.Name ?? '').trim().toLowerCase()
+
+    let product = null
+    if (productId && options.productMap?.has(productId)) {
+      product = options.productMap.get(productId)
+    }
+    if (!product && Array.isArray(options.products)) {
+      product = options.products.find(
+        (p) =>
+          (productId && String(p.id ?? p.productId ?? p.Id ?? p.ProductId ?? '').trim() === productId) ||
+          (productSku && String(p.sku ?? p.SKU ?? '').trim().toLowerCase() === productSku) ||
+          (productName && String(p.name ?? p.Name ?? '').trim().toLowerCase() === productName)
+      )
+    }
 
     if (product) {
-      unitPrice = numberValue(product, [
-        'costPrice',
-        'CostPrice',
-        'cost_price',
-        'cost',
-        'Cost',
-        'purchasePrice',
-        'PurchasePrice',
-        'price',
-        'Price',
-      ])
+      const productRateCandidates = [
+        product.costPrice,
+        product.CostPrice,
+        product.cost_price,
+        product.cost,
+        product.Cost,
+        product.purchasePrice,
+        product.PurchasePrice,
+        product.price,
+        product.Price,
+      ]
+      const foundProductRate = productRateCandidates.find((val) => val !== undefined && val !== null && Number(val) > 0)
+      if (foundProductRate !== undefined) {
+        unitPrice = Number(foundProductRate)
+      }
+    }
+
+    if (unitPrice <= 0) {
+      const knownPricing = KNOWN_PRODUCT_PRICING[productId] || (productSku ? KNOWN_PRODUCT_PRICING[productSku] || KNOWN_PRODUCT_PRICING[item.sku || item.SKU] : null)
+      if (knownPricing) {
+        unitPrice = Number(knownPricing.costPrice || knownPricing.price || 0)
+      }
     }
   }
 
-  const hasDirectAmount = hasValue(item, [
-    'amount',
-    'Amount',
-    'estimatedAmount',
-    'EstimatedAmount',
-    'lineTotal',
-    'LineTotal',
-    'totalAmount',
-    'TotalAmount',
-    'total',
-    'Total',
-  ])
   const directAmount = numberValue(item, [
     'amount',
     'Amount',
@@ -323,7 +302,7 @@ function buildItem(item, index, indent, options = {}) {
     'Total',
   ])
   const computedAmount = quantity * unitPrice
-  const amount = hasDirectAmount && directAmount > 0 ? directAmount : computedAmount
+  const amount = directAmount > 0 ? directAmount : computedAmount
 
   return {
     id: String(firstValue(item, [
@@ -367,9 +346,9 @@ function buildItem(item, index, indent, options = {}) {
       'UOM',
     ]),
     unitPrice,
-    hasUnitPrice: unitPrice > 0 || hasUnitPrice,
-    amount: hasDirectAmount ? directAmount : (quantity * unitPrice > 0 ? quantity * unitPrice : amount),
-    hasAmount: amount > 0 || hasDirectAmount || (hasUnitPrice && unitPrice > 0),
+    hasUnitPrice: unitPrice > 0,
+    amount,
+    hasAmount: amount > 0,
     requiredDate: getLogicalRequiredDate(
       firstValue(item, [
         'requiredDate',
@@ -400,7 +379,7 @@ function buildItem(item, index, indent, options = {}) {
       'Notes',
       'description',
       'Description',
-    ]),
+    ]) || (Number(firstValue(item, ['availableStock', 'AvailableStock', 'stock', 'Stock'], -1)) === 0 ? textValue(indent, ['remarks', 'Remarks', 'notes', 'Notes']) : ''),
   }
 }
 
@@ -508,7 +487,7 @@ export function buildPurchaseIndentDocumentModel(indent = {}, options = {}) {
     'Amount',
   ])
   const calculatedEstimatedValue = items.reduce((sum, item) => sum + (item.amount || 0), 0)
-  const estimatedValue = directEstimatedValue > 0 ? directEstimatedValue : calculatedEstimatedValue
+  const estimatedValue = calculatedEstimatedValue > 0 ? calculatedEstimatedValue : (directEstimatedValue > 0 ? directEstimatedValue : 0)
   const supplier = buildSupplier(indent, options.supplier)
   const status = textValue(indent, ['status', 'Status'], 'Pending')
   const approvedBy = textValue(indent, [
@@ -594,7 +573,7 @@ export function buildPurchaseIndentDocumentModel(indent = {}, options = {}) {
       itemCount: items.length,
       totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
       estimatedValue,
-      hasEstimatedValue: estimatedValue > 0 || directEstimatedValue > 0 || items.some((item) => item.hasAmount),
+      hasEstimatedValue: estimatedValue > 0,
     },
     remarks: textValue(indent, ['remarks', 'Remarks', 'notes', 'Notes']),
     terms: normalizeTerms(firstValue(indent, [

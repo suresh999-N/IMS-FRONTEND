@@ -587,19 +587,23 @@ export default function Sales({ customers = [] }) {
           <div className="sales-page__metrics" aria-label="Invoice metrics">
             <span className="sales-page__metric sales-page__metric--success">
               <FileText size={13} className="sales-page__metric-icon" aria-hidden="true" />
-              {summary.total} Invoices
+              <strong className="sales-page__metric-count">{summary.total}</strong>
+              <span className="sales-page__metric-label">Invoices</span>
             </span>
             <span className="sales-page__metric sales-page__metric--info">
               <TrendingUp size={13} className="sales-page__metric-icon" aria-hidden="true" />
-              {formatCurrency(summary.totalValue)} Sales
+              <strong className="sales-page__metric-count">{formatCurrency(summary.totalValue)}</strong>
+              <span className="sales-page__metric-label">Sales</span>
             </span>
             <span className="sales-page__metric sales-page__metric--warning" title="Outstanding Balance">
               <Clock size={13} className="sales-page__metric-icon" aria-hidden="true" />
-              {formatCurrency(summary.balanceValue)} Outstanding
+              <strong className="sales-page__metric-count">{formatCurrency(summary.balanceValue)}</strong>
+              <span className="sales-page__metric-label">Balance</span>
             </span>
             <span className="sales-page__metric sales-page__metric--value">
               <CheckCircle2 size={13} className="sales-page__metric-icon" aria-hidden="true" />
-              {formatCurrency(summary.paidValue)} Paid
+              <strong className="sales-page__metric-count">{formatCurrency(summary.paidValue)}</strong>
+              <span className="sales-page__metric-label">Paid</span>
             </span>
           </div>
         </div>
@@ -827,17 +831,6 @@ export default function Sales({ customers = [] }) {
                 >
                   {actionId === `email-${detailedInvoice.invoiceId || detailedInvoice.id}` ? <LoaderCircle className="animate-spin" size={15} /> : <Mail size={15} />}
                   Send Email
-                </button>
-                <button
-                  type="button"
-                  className="button button-primary"
-                  onClick={() => {
-                    setDetailsTarget(null)
-                    setDetailedInvoice(null)
-                    setDetailDocumentModel(null)
-                  }}
-                >
-                  Close
                 </button>
               </div>
             </div>

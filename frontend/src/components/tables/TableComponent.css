@@ -90,6 +90,33 @@
   text-overflow: ellipsis;
 }
 
+.table-cell-text {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-container td[data-column='name'],
+.table-container td[data-column='productName'],
+.table-container td[data-column='product'],
+.table-container td[data-column='itemName'],
+.table-container td[data-column='item'] {
+  min-width: 220px;
+  max-width: 400px;
+}
+
+.table-container td[data-column='role'],
+.table-container td[data-column='roleName'],
+.table-container td.resource-center__cell-role,
+.resource-center__role-text {
+  font-size: 13.5px;
+  font-weight: 550;
+  color: #1e293b;
+}
+
 .table-container td.is-numeric,
 .table-container td[data-column*='price'],
 .table-container td[data-column*='Price'],
@@ -182,16 +209,18 @@
   position: fixed;
   z-index: 10000;
   width: max-content;
-  padding: 5px 9px;
+  max-width: 400px;
+  padding: 6px 10px;
   border: 1px solid rgba(51, 65, 85, 0.85);
   border-radius: 6px;
   background: #0f172a;
   color: #f8fafc;
   font-size: 12px;
   font-weight: 500;
-  line-height: 1.4;
-  overflow-wrap: anywhere;
-  white-space: normal;
+  line-height: 1.45;
+  overflow-wrap: break-word;
+  word-break: normal;
+  white-space: pre-line;
   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.35);
   pointer-events: none;
 }
@@ -204,11 +233,30 @@
   transform: translateY(0);
 }
 
+.table-truncated-tooltip--right {
+  transform: translateY(-50%);
+}
+
+.table-truncated-tooltip--left {
+  transform: translateX(-100%) translateY(-50%);
+}
+
 .table-truncated-tooltip--overlay {
   transform: none;
 }
 
-.table-component .erp-action-menu__trigger--icon[data-tooltip]::after {
+.table-truncated-tooltip--action {
+  white-space: nowrap !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.28) !important;
+}
+
+:is(.table-component, .data-table, .resource-center__inventory-table, td) .erp-action-menu__trigger--icon[data-tooltip]::after {
   display: none !important;
 }
 

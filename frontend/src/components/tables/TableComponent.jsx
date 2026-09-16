@@ -814,13 +814,22 @@ export default function TableComponent({
     </div>
   ) : null
 
+  const inlineErrorMessage = useMemo(() => {
+    if (resolvedInvalidSearchMessage) {
+      return resolvedInvalidSearchMessage.toLowerCase().startsWith('invalid search term')
+        ? resolvedInvalidSearchMessage
+        : `Invalid search term. ${resolvedInvalidSearchMessage}`
+    }
+    return 'Invalid search term. Please enter a valid search term.'
+  }, [resolvedInvalidSearchMessage])
+
   const searchControl = showSearch && !isSelectionActive ? (
     <SearchBar
       value={searchTerm}
       onChange={setSearchTerm}
       placeholder={searchPlaceholder}
       showInlineError={true}
-      errorMessage={resolvedInvalidSearchMessage || invalidSearchMessage}
+      errorMessage={inlineErrorMessage}
     />
   ) : null
 
@@ -1116,6 +1125,12 @@ export default function TableComponent({
                     ) : null}
                     {displayColumns.map((column) => {
                       const sNo = (currentPage - 1) * pageSize + index + 1
+                      const cellContent = typeof column.render === 'function'
+                        ? column.render(row, index, sNo)
+                        : row[column.key]
+                      const isPlainText = typeof cellContent === 'string' || typeof cellContent === 'number'
+                      const textValue = isPlainText ? String(cellContent) : undefined
+
                       return (
                         <td
                           key={column.key || column.label}
@@ -1123,10 +1138,15 @@ export default function TableComponent({
                           data-column={column.key || getColumnLabel(column)}
                           className={column.className || ''}
                           style={column.style}
+                          title={isPlainText ? textValue : undefined}
                         >
-                          {typeof column.render === 'function'
-                            ? column.render(row, index, sNo)
-                            : row[column.key]}
+                          {isPlainText ? (
+                            <span className="table-cell-text" title={textValue}>
+                              {cellContent}
+                            </span>
+                          ) : (
+                            cellContent
+                          )}
                         </td>
                       )
                     })}

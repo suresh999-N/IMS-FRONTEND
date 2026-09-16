@@ -12,12 +12,12 @@ export function validateSearchQuery(term, hasResults = true) {
     return { isValid: true, isInvalid: false, errorMessage: '' }
   }
 
-  // 1. Minimum search length check (if length is 1 non-alphanumeric char)
-  if (trimmed.length === 1 && !/[a-zA-Z0-9]/.test(trimmed)) {
+  // 1. Minimum search length check (if length is 1 non-alphanumeric char) or pure non-alphanumeric check
+  if (!/[a-zA-Z0-9]/.test(trimmed)) {
     return {
       isValid: false,
       isInvalid: true,
-      errorMessage: 'Please enter a valid search term.',
+      errorMessage: 'Invalid search term. Please enter a valid search term.',
     }
   }
 
@@ -26,7 +26,7 @@ export function validateSearchQuery(term, hasResults = true) {
     return {
       isValid: false,
       isInvalid: true,
-      errorMessage: 'Please enter a valid search term.',
+      errorMessage: 'Invalid search term. Please enter a valid search term.',
     }
   }
 
@@ -35,7 +35,7 @@ export function validateSearchQuery(term, hasResults = true) {
     return {
       isValid: false,
       isInvalid: true,
-      errorMessage: 'Please enter a valid search term.',
+      errorMessage: 'Invalid search term. Please enter a valid search term.',
     }
   }
 
@@ -60,7 +60,7 @@ export function validateSearchQuery(term, hasResults = true) {
       return {
         isValid: false,
         isInvalid: true,
-        errorMessage: 'Please enter a valid search term.',
+        errorMessage: 'Invalid search term. Please enter a valid search term.',
       }
     }
 
@@ -69,7 +69,7 @@ export function validateSearchQuery(term, hasResults = true) {
       return {
         isValid: false,
         isInvalid: true,
-        errorMessage: 'Please enter a valid search term.',
+        errorMessage: 'Invalid search term. Please enter a valid search term.',
       }
     }
 
@@ -78,7 +78,7 @@ export function validateSearchQuery(term, hasResults = true) {
       return {
         isValid: false,
         isInvalid: true,
-        errorMessage: 'Please enter a valid search term.',
+        errorMessage: 'Invalid search term. Please enter a valid search term.',
       }
     }
 
@@ -88,7 +88,7 @@ export function validateSearchQuery(term, hasResults = true) {
       return {
         isValid: false,
         isInvalid: true,
-        errorMessage: 'Please enter a valid search term.',
+        errorMessage: 'Invalid search term. Please enter a valid search term.',
       }
     }
 
@@ -102,7 +102,7 @@ export function validateSearchQuery(term, hasResults = true) {
       return {
         isValid: false,
         isInvalid: true,
-        errorMessage: 'Please enter a valid search term.',
+        errorMessage: 'Invalid search term. Please enter a valid search term.',
       }
     }
   }
@@ -112,7 +112,7 @@ export function validateSearchQuery(term, hasResults = true) {
     return {
       isValid: false,
       isInvalid: true,
-      errorMessage: 'Please enter a valid search term.',
+      errorMessage: 'Invalid search term. Please enter a valid search term.',
     }
   }
 
@@ -121,7 +121,7 @@ export function validateSearchQuery(term, hasResults = true) {
     return {
       isValid: false,
       isInvalid: true,
-      errorMessage: 'Please enter a valid search term.',
+      errorMessage: 'Invalid search term. Please enter a valid search term.',
     }
   }
 

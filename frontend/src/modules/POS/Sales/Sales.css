@@ -302,9 +302,25 @@
 }
 
 .sales-page__metric-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   width: 13px;
   height: 13px;
+  margin-right: 1px;
+}
+
+.sales-page__metric strong,
+.sales-page__metric .sales-page__metric-count,
+.sales-page__metric-count {
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+.sales-page__metric-label {
+  color: inherit;
+  font-weight: 600;
 }
 
 .sales-page__metric--success {
@@ -1173,14 +1189,14 @@
 
 .invoice-form__payment-input-section input {
   width: 100%;
-  height: 46px;
-  padding: 0 16px;
+  height: 36px;
+  padding: 6px 12px;
   border: 1px solid #cbd5e1;
-  border-radius: 8px;
+  border-radius: 6px;
   background: #ffffff;
-  color: #334155;
-  font-size: 18px;
-  font-weight: 600;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 500;
   text-align: right;
   font-variant-numeric: tabular-nums;
   outline: none;
@@ -1205,7 +1221,7 @@
 
 .invoice-form__payment-divider {
   width: 1px;
-  height: 52px;
+  height: 36px;
   background: #dbe3ee;
 }
 
@@ -1221,7 +1237,7 @@
 .invoice-form__payment-metric strong {
   display: block;
   color: #0f172a;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
@@ -1838,6 +1854,34 @@
   font-size: 11.5px !important;
   line-height: normal !important;
   overflow: visible !important;
+}
+
+.sales-page__metric::before,
+.sales-page__metric::after {
+  display: none !important;
+  content: none !important;
+}
+
+.sales-page__metric-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  width: 13px !important;
+  height: 13px !important;
+  margin-right: 1px !important;
+}
+
+.sales-page__metric strong,
+.sales-page__metric .sales-page__metric-count,
+.sales-page__metric-count {
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+.sales-page__metric-label {
+  color: inherit !important;
+  font-weight: 600 !important;
 }
 
 .sales-page__table-card {

@@ -1352,6 +1352,47 @@
   color: #0f172a;
 }
 
+.resource-center__page--stockMovements .table-container :where(th, td)[data-column='productName'],
+.resource-center__page--stock .table-container :where(th, td)[data-column='productName'],
+.resource-center__page--stockLedger .table-container :where(th, td)[data-column='productName'] {
+  width: 320px;
+  min-width: 280px;
+}
+
+.resource-center__page--stockMovements .table-container :where(th, td)[data-column='warehouseName'],
+.resource-center__page--stock .table-container :where(th, td)[data-column='warehouseName'],
+.resource-center__page--stockLedger .table-container :where(th, td)[data-column='warehouseName'] {
+  width: 220px;
+  min-width: 200px;
+}
+
+.resource-center__page--stockMovements .table-container :where(th, td)[data-column='variantName'],
+.resource-center__page--stock .table-container :where(th, td)[data-column='variantName'],
+.resource-center__page--stockLedger .table-container :where(th, td)[data-column='variantName'] {
+  width: 140px;
+  min-width: 130px;
+}
+
+.resource-center__page--stockMovements .table-container :where(th, td)[data-column='movementTypeLabel'] {
+  width: 140px;
+  min-width: 130px;
+}
+
+.resource-center__page--stockMovements .table-container :where(th, td)[data-column='quantity'] {
+  width: 100px;
+  min-width: 90px;
+}
+
+.resource-center__page--stockMovements .table-container :where(th, td)[data-column='referenceDisplay'] {
+  width: 140px;
+  min-width: 130px;
+}
+
+.resource-center__page--stockMovements .table-container :where(th, td)[data-column='createdAt'] {
+  width: 120px;
+  min-width: 110px;
+}
+
 .resource-form {
   display: grid;
   gap: 12px;

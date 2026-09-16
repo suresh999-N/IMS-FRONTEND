@@ -27,7 +27,7 @@ import { autoCapitalizeWords } from '../../validators/nameValidator'
 import { getDescriptiveProductName } from '../../utils/productNameUtils'
 import { getStandardizedSku } from '../../utils/skuUtils'
 
-const activeStatusOptions = [
+const _activeStatusOptions = [
   { value: 'active', label: 'Active' },
   { value: 'inactive', label: 'Inactive' },
 ]
@@ -67,9 +67,9 @@ const stockIdentityFields = [
 ]
 
 const stockQuantityColumns = [
-  { key: 'productName', label: 'Product Name', sortable: true },
-  { key: 'warehouseName', label: 'Warehouse Name', sortable: true },
-  { key: 'variantName', label: 'Variant Name', sortable: true },
+  { key: 'productName', label: 'Product Name', tableWidth: 320, sortable: true },
+  { key: 'warehouseName', label: 'Warehouse Name', tableWidth: 220, sortable: true },
+  { key: 'variantName', label: 'Variant Name', tableWidth: 140, sortable: true },
 ]
 
 function getDisplayValue(row, valueKeys, fallback = '') {
@@ -84,7 +84,7 @@ function getDisplayValue(row, valueKeys, fallback = '') {
   return fallback
 }
 
-function formatIdName(row, idKey, nameKeys, fallbackLabel) {
+function _formatIdName(row, idKey, nameKeys, fallbackLabel) {
   const id = readResourceValue(row, idKey, '')
   const name = getDisplayValue(row, nameKeys, '')
 
@@ -421,10 +421,10 @@ export const RESOURCE_CONFIGS = {
     ],
     columns: [
       ...stockQuantityColumns,
-      { key: 'movementTypeLabel', label: 'Movement Type', format: 'status', sortable: true },
-      { key: 'quantity', label: 'Quantity', sortable: true },
-      { key: 'referenceDisplay', label: 'Reference', sortable: true },
-      { key: 'createdAt', label: 'Created Date', format: 'date', sortable: true },
+      { key: 'movementTypeLabel', label: 'Movement Type', format: 'status', tableWidth: 140, sortable: true },
+      { key: 'quantity', label: 'Quantity', tableWidth: 100, sortable: true },
+      { key: 'referenceDisplay', label: 'Reference', tableWidth: 140, sortable: true },
+      { key: 'createdAt', label: 'Created Date', format: 'date', tableWidth: 120, sortable: true },
     ],
   },
   stockLedger: {

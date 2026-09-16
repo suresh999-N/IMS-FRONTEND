@@ -89,11 +89,14 @@
 }
 
 .warehouses-page__table-card .table-component {
-  gap: 6px;
+  gap: 0;
 }
 
 .warehouses-page__table-card .table-component__header {
-  gap: 6px;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border-bottom: 0;
 }
 
 
@@ -1025,6 +1028,13 @@
   white-space: nowrap !important;
 }
 
+.warehouses-metric-badge strong,
+.warehouses-metric-badge .warehouses-metric-count {
+  color: #000000 !important;
+  font-weight: 760 !important;
+  font-size: inherit !important;
+}
+
 .warehouses-metric-badge--success {
   border-color: #a7f3d0 !important;
   background: #ecfdf5 !important;
@@ -1802,6 +1812,7 @@
 .warehouses-page .warehouses-data-table--compact > .table-component {
   display: grid !important;
   grid-template-rows: auto minmax(0, 1fr) auto !important;
+  gap: 0 !important;
   flex: 1 1 auto !important;
   width: 100% !important;
   height: 100% !important;
@@ -1809,8 +1820,16 @@
   overflow: hidden !important;
 }
 
+.warehouses-page .warehouses-data-table--compact .table-component__header {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  gap: 0 !important;
+}
+
 .warehouses-page .warehouses-data-table--compact .table-component__toolbar {
-  padding: 8px 10px !important;
+  padding: 6px 12px !important;
+  border: 0 !important;
   border-bottom: 1px solid #e2e8f0 !important;
   background: #ffffff !important;
   flex-shrink: 0 !important;
@@ -1819,7 +1838,16 @@
 .warehouses-page .warehouses-data-table--compact .table-container {
   min-height: 0 !important;
   height: 100% !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
   overflow: auto !important;
+}
+
+.warehouses-page .warehouses-data-table--compact .table-container table,
+.warehouses-page .warehouses-data-table--compact .table-component__table {
+  border: 0 !important;
+  border-top: 0 !important;
 }
 
 .warehouses-page .warehouses-data-table--compact .table-component__pagination {
@@ -1840,11 +1868,13 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: var(--font-size-sm);
-  color: var(--text);
-  line-height: 1.3;
+  font-size: var(--font-size-sm, 12.5px);
+  color: var(--text, #334155);
+  line-height: 1.35;
   width: 100%;
   max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .warehouses-products-list.flex-row {
@@ -1863,7 +1893,8 @@
 }
 
 .warehouses-products-list .text-muted {
-  color: var(--muted);
+  color: var(--muted, #64748b);
+  font-size: 12.5px;
 }
 
 .warehouses-product-item {
@@ -1871,26 +1902,39 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  width: 100%;
   max-width: 100%;
+  min-width: 0;
   cursor: default;
+  color: #1e293b;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.warehouses-product-item:hover {
+  color: #0f172a;
 }
 
 .warehouses-more-link {
-  color: var(--primary);
+  color: var(--primary, #059669);
   background: transparent;
   border: none;
   padding: 0;
-  margin: 0;
+  margin: 1px 0 0;
   cursor: pointer;
   font-weight: 700;
-  text-decoration: underline;
+  text-align: left;
   display: inline-block;
-  font-size: var(--font-size-sm);
+  font-size: 11.5px;
+  line-height: 1.2;
   flex-shrink: 0;
+  width: fit-content;
+  transition: color 0.15s ease;
 }
 
 .warehouses-more-link:hover {
-  color: var(--primary-hover);
+  color: var(--primary-hover, #047857);
+  text-decoration: underline;
 }
 
 .warehouses-products-modal-content {

@@ -636,16 +636,20 @@ export default function Purchases({
           <h1>Purchases</h1>
           <div className="purchases-page__metrics" aria-label="Purchase order metrics">
             <span className="purchases-page__metric purchases-page__metric--success">
-              {summary.total} Orders
+              <strong className="purchases-page__metric-count">{summary.total}</strong>
+              <span className="purchases-page__metric-label">Orders</span>
             </span>
             <span className="purchases-page__metric purchases-page__metric--warning">
-              {summary.open} Open
+              <strong className="purchases-page__metric-count">{summary.open}</strong>
+              <span className="purchases-page__metric-label">Open</span>
             </span>
             <span className="purchases-page__metric purchases-page__metric--info">
-              {summary.received} Received
+              <strong className="purchases-page__metric-count">{summary.received}</strong>
+              <span className="purchases-page__metric-label">Received</span>
             </span>
             <span className="purchases-page__metric purchases-page__metric--value">
-              {formatCurrency(summary.totalValue)} Value
+              <strong className="purchases-page__metric-count">{formatCurrency(summary.totalValue)}</strong>
+              <span className="purchases-page__metric-label">Value</span>
             </span>
           </div>
         </div>

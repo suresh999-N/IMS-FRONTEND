@@ -36,6 +36,7 @@
 .purchases-page__metric {
   display: inline-flex;
   align-items: center;
+  gap: 5px;
   min-height: 28px;
   padding: 3px 11px;
   border: 1px solid #dbe5ef;
@@ -45,6 +46,20 @@
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.purchases-page__metric strong,
+.purchases-page__metric .purchases-page__metric-count,
+.purchases-page__metric-count {
+  color: #000000 !important;
+  font-weight: 700;
+  font-size: inherit;
+}
+
+.purchases-page__metric-label {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
 }
 
 .purchases-page__metric--success {

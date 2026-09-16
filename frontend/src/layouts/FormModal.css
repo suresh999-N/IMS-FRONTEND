@@ -166,9 +166,10 @@
   margin-bottom: 3px;
 }
 
-.form-modal :where(.input-with-icon, input, textarea, select, .searchable-select__trigger) {
+.form-modal :where(.input-with-icon input, input, textarea, select, .searchable-select__trigger) {
   border-color: rgba(203, 213, 225, 0.68);
   border-radius: 9px;
+  font-size: 13px;
 }
 
 /* Ensure field validation errors are always prominently visible in modals */

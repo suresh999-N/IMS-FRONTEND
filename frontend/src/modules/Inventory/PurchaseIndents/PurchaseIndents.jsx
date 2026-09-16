@@ -34,6 +34,7 @@ import {
   getEmailError,
   sanitizeEmailInput,
 } from '../../../validators/emailValidator'
+import { getDescriptiveProductPricing } from '../../../utils/productNameUtils'
 import PurchaseIndentsTable from './components/PurchaseIndentsTable'
 import PurchaseIndentDocument from './PurchaseIndentDocument'
 import {
@@ -959,6 +960,28 @@ export default function PurchaseIndentsScreen({
         .map((p) => [String(p.id ?? p.productId ?? p.Id ?? p.ProductId), p])
     )
 
+    const findProduct = (item) => {
+      const pid = String(item.productId ?? item.ProductId ?? item.id ?? '').trim()
+      if (pid && productMap.has(pid)) {
+        return productMap.get(pid)
+      }
+
+      const sku = String(item.sku ?? item.SKU ?? item.productSku ?? item.ProductSku ?? '').trim().toLowerCase()
+      const name = String(item.productName ?? item.ProductName ?? item.name ?? item.Name ?? '').trim().toLowerCase()
+
+      if (sku || name || pid) {
+        const matched = products.find((p) => {
+          const pId = String(p.id ?? p.productId ?? p.Id ?? p.ProductId ?? '').trim()
+          const pSku = String(p.sku ?? p.SKU ?? '').trim().toLowerCase()
+          const pName = String(p.name ?? p.Name ?? '').trim().toLowerCase()
+          return (pid && pId === pid) || (sku && pSku === sku) || (name && pName === name)
+        })
+        if (matched) return matched
+      }
+
+      return null
+    }
+
     const responseIndent = indentResponse.data?.data || indentResponse.data
     const rawItems = Array.isArray(responseIndent?.items) && responseIndent.items.length > 0
       ? responseIndent.items
@@ -967,30 +990,54 @@ export default function PurchaseIndentsScreen({
         : []
 
     const enrichedItems = rawItems.filter(Boolean).map((item) => {
-      const product = productMap.get(String(item.productId ?? item.ProductId))
-      const rate = Number(
-        item.unitPrice ??
-        item.rate ??
-        item.costPrice ??
-        item.price ??
-        product?.costPrice ??
-        product?.cost ??
-        product?.purchasePrice ??
-        product?.price ??
-        0
-      )
-      const qty = Number(item.requiredQty ?? item.quantity ?? 1)
-      const amount = Number(
-        item.amount ??
-        (rate * qty)
-      )
+      const product = findProduct(item)
+      const candidateRates = [
+        item.unitPrice,
+        item.UnitPrice,
+        item.rate,
+        item.Rate,
+        item.costPrice,
+        item.CostPrice,
+        item.price,
+        item.Price,
+        item.estimatedRate,
+        item.EstimatedRate,
+        product?.costPrice,
+        product?.CostPrice,
+        product?.cost_price,
+        product?.cost,
+        product?.purchasePrice,
+        product?.price,
+      ]
+      const foundRate = candidateRates.find((val) => val !== undefined && val !== null && Number(val) > 0)
+      let rate = foundRate !== undefined ? Number(foundRate) : 0
+
+      if (rate <= 0) {
+        const fallbackPricing = getDescriptiveProductPricing(product, item)
+        rate = Number(fallbackPricing.costPrice || fallbackPricing.price || 0)
+      }
+
+      const qty = Number(item.requiredQty ?? item.quantity ?? item.qty ?? 1) || 1
+      const candidateAmounts = [
+        item.amount,
+        item.Amount,
+        item.totalAmount,
+        item.TotalAmount,
+        item.lineTotal,
+        item.LineTotal,
+      ]
+      const foundAmount = candidateAmounts.find((val) => val !== undefined && val !== null && Number(val) > 0)
+      const amount = foundAmount !== undefined ? Number(foundAmount) : (rate * qty)
 
       return {
         ...item,
         unitPrice: rate,
         rate,
         costPrice: product?.costPrice ?? rate,
+        price: product?.price ?? rate,
         amount,
+        quantity: qty,
+        requiredQty: qty,
       }
     })
 
@@ -1601,24 +1648,30 @@ export default function PurchaseIndentsScreen({
           <h1>Purchase Indents</h1>
           <div className="purchases-page__metrics" aria-label="Purchase indent metrics">
             <span className="purchases-page__metric purchases-page__metric--success">
-              {summary.total} Indents
+              <strong className="purchases-page__metric-count">{summary.total}</strong>
+              <span className="purchases-page__metric-label">Indents</span>
             </span>
             <span className="purchases-page__metric purchases-page__metric--warning">
-              {summary.pending} Pending
+              <strong className="purchases-page__metric-count">{summary.pending}</strong>
+              <span className="purchases-page__metric-label">Pending</span>
             </span>
             <span className="purchases-page__metric purchases-page__metric--info">
-              {summary.approved} Approved
+              <strong className="purchases-page__metric-count">{summary.approved}</strong>
+              <span className="purchases-page__metric-label">Approved</span>
             </span>
             <span className="purchases-page__metric purchases-page__metric--converted">
-              {summary.converted} Converted
+              <strong className="purchases-page__metric-count">{summary.converted}</strong>
+              <span className="purchases-page__metric-label">Converted</span>
             </span>
             {summary.rejected > 0 ? (
               <span className="purchases-page__metric purchases-page__metric--danger">
-                {summary.rejected} Rejected
+                <strong className="purchases-page__metric-count">{summary.rejected}</strong>
+                <span className="purchases-page__metric-label">Rejected</span>
               </span>
             ) : null}
             <span className="purchases-page__metric purchases-page__metric--value">
-              {summary.totalQty} Items Requested
+              <strong className="purchases-page__metric-count">{summary.totalQty}</strong>
+              <span className="purchases-page__metric-label">Items Requested</span>
             </span>
           </div>
         </div>

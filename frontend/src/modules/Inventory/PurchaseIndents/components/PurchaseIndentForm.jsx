@@ -260,7 +260,7 @@ export default function PurchaseIndentForm({
               onBlur={handleBlur}
               disabled={isSubmitting}
             >
-              <option value="" disabled>Select priority</option>
+              <option value="">Select priority</option>
               <option value="Low">Low</option>
               <option value="Medium">Medium</option>
               <option value="High">High</option>

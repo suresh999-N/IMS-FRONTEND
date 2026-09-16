@@ -135,7 +135,8 @@ function SummaryRow({ label, value, strong = false }) {
 }
 
 function ItemCurrency({ available, value }) {
-  return available ? formatPurchaseIndentCurrency(value) : '-'
+  const numeric = Number(value)
+  return available && Number.isFinite(numeric) && numeric > 0 ? formatPurchaseIndentCurrency(numeric) : '-'
 }
 
 function displayNumericValue(value) {
@@ -249,12 +250,16 @@ export default function PurchaseIndentDocument({ model, printRoot = false }) {
                     <small className="purchase-indent-document__item-note">
                       <strong>Justification:</strong> {item.notes}
                     </small>
+                  ) : Number(item.availableStock) === 0 ? (
+                    <small className="purchase-indent-document__item-note" style={{ color: '#b45309' }}>
+                      <em>(Zero stock requisition)</em>
+                    </small>
                   ) : null}
                 </td>
                 <td>{item.sku || '-'}</td>
                 <td className="invoice-document__numeric">
                   {item.availableStock !== '' && item.availableStock !== null && Number(item.availableStock) === 0 ? (
-                    <span style={{ color: '#dc2626', fontWeight: 600 }}>0</span>
+                    <span style={{ color: '#dc2626', fontWeight: 600 }}>0 (Out of Stock)</span>
                   ) : (
                     displayNumericValue(item.availableStock)
                   )}
@@ -292,7 +297,7 @@ export default function PurchaseIndentDocument({ model, printRoot = false }) {
         <section className="invoice-document__summary" aria-label="Purchase Indent totals">
           <SummaryRow
             label="Estimated Value"
-            value={summary.hasEstimatedValue ? formatPurchaseIndentCurrency(summary.estimatedValue) : '-'}
+            value={summary.hasEstimatedValue && Number(summary.estimatedValue) > 0 ? formatPurchaseIndentCurrency(summary.estimatedValue) : '-'}
             strong
           />
         </section>

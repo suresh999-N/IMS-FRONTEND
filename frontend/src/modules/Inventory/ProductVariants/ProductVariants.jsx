@@ -683,7 +683,7 @@ export default function ProductVariants() {
   // ── Search & Filter toolbar content ─────────────────────────────────────────
   const filterContent = useMemo(
     () => (
-      <>
+      <div className="variants__filters">
         <div className="variants__filter-item variants__filter-item--product">
           <select
             value={productFilter}
@@ -699,7 +699,7 @@ export default function ProductVariants() {
           </select>
         </div>
 
-        <div className="variants__filter-item">
+        <div className="variants__filter-item variants__filter-item--attribute">
           <select
             value={attributeFilter}
             onChange={(e) => setAttributeFilter(e.target.value)}
@@ -714,7 +714,7 @@ export default function ProductVariants() {
           </select>
         </div>
 
-        <div className="variants__filter-item">
+        <div className="variants__filter-item variants__filter-item--status">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -726,7 +726,7 @@ export default function ProductVariants() {
             <option value="low stock">Low Stock</option>
           </select>
         </div>
-      </>
+      </div>
     ),
     [productFilter, attributeFilter, statusFilter, products, attributes]
   )

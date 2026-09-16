@@ -527,6 +527,16 @@ function PurchaseIndentForm({
   )
   const balanceDue = Math.max(0, calculatedTotals.grandTotal - amountPaid)
 
+  const hasUnavailableItems = useMemo(() => {
+    return draft.items.some((item) => {
+      if (!item.productId) return false
+      const product = productOptions.find(
+        (p) => String(getProductId(p)) === String(item.productId)
+      )
+      return product && getProductStock(product) <= 0
+    })
+  }, [draft.items, productOptions])
+
   function updateField(name, value) {
     let errorToSet = ''
     if (name === 'indentDate' && !isEdit && value && compareDateOnly(value, getToday()) < 0) {
@@ -585,7 +595,6 @@ function PurchaseIndentForm({
       ...currentValue,
       [`item_${index}_productId`]: '',
       [`item_${index}_quantity`]: '',
-      [`item_${index}_remarks`]: '',
     }))
     setFormError('')
   }
@@ -708,6 +717,7 @@ function PurchaseIndentForm({
     }
 
     const duplicateIndexes = getDuplicateProductIndexes(draft.items)
+    const unavailableItems = []
 
     draft.items.forEach((item, index) => {
       if (!item.productId) {
@@ -720,26 +730,52 @@ function PurchaseIndentForm({
         setError(`item_${index}_quantity`, 'Quantity must be greater than zero.')
       }
 
-      // Stock validation: If available stock is 0, justification is required
-      if (item.productId) {
-        const matchedProduct = productOptions.find(
-          (p) => String(getProductId(p)) === String(item.productId)
-        )
-        if (matchedProduct) {
-          const availableStock = getProductStock(matchedProduct)
-          if (availableStock <= 0 && (!item.remarks || !item.remarks.trim())) {
-            setError(`item_${index}_remarks`, 'Justification is required for items with 0 available stock.')
-          }
+      // Stock availability validation
+      const product = productOptions.find(
+        (p) => String(getProductId(p)) === String(item.productId)
+      )
+      if (product) {
+        const available = getProductStock(product)
+        if (available <= 0) {
+          unavailableItems.push({
+            index,
+            name: product.name || `Item ${index + 1}`,
+            stock: available,
+          })
         }
       }
     })
 
+    // Validate that unavailable items have proper justification
+    if (unavailableItems.length > 0 && !draft.remarks?.trim()) {
+      setError('remarks', 'Justification in Remarks is required when raising an indent for unavailable / out-of-stock items.')
+      unavailableItems.forEach(({ index }) => {
+        setError(`item_${index}_available`, 'Item has 0 available stock. Justification is required in Remarks.')
+      })
+      if (!firstErrorKey) {
+        firstErrorKey = 'remarks'
+      }
+    }
+
     setErrors(nextErrors)
     const isValid = Object.keys(nextErrors).length === 0
     if (!isValid) {
-      setFormError('Please correct the validation errors in the fields and items table.')
+      if (unavailableItems.length > 0 && !draft.remarks?.trim()) {
+        setFormError(
+          `Stock validation error: ${
+            unavailableItems.length === 1
+              ? `"${unavailableItems[0].name}" is unavailable (Available: 0)`
+              : `${unavailableItems.length} items are unavailable (Available: 0)`
+          }. Indents cannot be raised for unavailable items without proper justification. Please enter a justification in Remarks.`
+        )
+      } else {
+        setFormError('Please correct the validation errors in the fields and items table.')
+      }
       window.requestAnimationFrame(() => {
-        formRef.current?.querySelector(`[data-field-key="${firstErrorKey}"]`)?.focus()
+        const targetEl =
+          formRef.current?.querySelector(`[data-field-key="${firstErrorKey}"]`) ||
+          (firstErrorKey === 'remarks' ? formRef.current?.querySelector('.indent-remarks-textarea') : null)
+        targetEl?.focus()
       })
     }
     return isValid
@@ -883,7 +919,7 @@ function PurchaseIndentForm({
               onChange={(e) => updateField('department', e.target.value)}
               disabled={isSubmitting}
             >
-              <option value="" disabled>Select option</option>
+              <option value="">Select option</option>
               {departmentOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
@@ -934,7 +970,7 @@ function PurchaseIndentForm({
               onChange={(e) => updateField('priority', e.target.value)}
               disabled={isSubmitting}
             >
-              <option value="" disabled>Select priority</option>
+              <option value="">Select priority</option>
               {priorityOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
@@ -982,15 +1018,14 @@ function PurchaseIndentForm({
           <table className="indent-items-table" style={{ tableLayout: 'fixed', minWidth: '1150px' }}>
             <thead>
               <tr>
-                <th style={{ width: '50px', minWidth: '50px', textAlign: 'center' }}>S.No</th>
-                <th style={{ width: '20%', minWidth: '190px' }}>Item Name *</th>
-                <th style={{ width: '9%', minWidth: '95px', textAlign: 'center' }}>Required Qty *</th>
-                <th style={{ width: '7%', minWidth: '70px', textAlign: 'center' }}>Unit</th>
-                <th style={{ width: '10%', minWidth: '105px', textAlign: 'center' }}>Unit Price (₹)</th>
-                <th style={{ width: '11%', minWidth: '115px', textAlign: 'center' }}>Available Stock</th>
-                <th style={{ width: '16%', minWidth: '155px' }}>Justification / Remarks</th>
-                <th style={{ width: '17%', minWidth: '160px' }}>Required Date</th>
-                <th style={{ width: '60px', minWidth: '60px', textAlign: 'center' }}>Actions</th>
+                <th style={{ width: '50px', textAlign: 'center' }}>S.No</th>
+                <th style={{ width: '32%' }}>Item Name <span className="required-asterisk">*</span></th>
+                <th style={{ width: '12%', textAlign: 'center' }}>Required Qty <span className="required-asterisk">*</span></th>
+                <th style={{ width: '10%', textAlign: 'center' }}>Unit</th>
+                <th style={{ width: '14%', textAlign: 'center' }}>Unit Price (₹)</th>
+                <th style={{ width: '14%', textAlign: 'center' }}>Available Stock</th>
+                <th style={{ width: '18%' }}>Required Date</th>
+                <th style={{ width: '60px', textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -1116,10 +1151,19 @@ function PurchaseIndentForm({
                                 color: '#dc2626',
                                 border: '1px solid #fecaca',
                               }}
-                              title="Available stock is 0 in warehouse - justification required"
+                              title="Available stock is 0 in warehouse - justification required in Remarks"
                             >
                               0 (Out of Stock)
                             </span>
+                            {draft.remarks?.trim() ? (
+                              <span style={{ fontSize: '10px', color: '#059669', fontWeight: 600 }}>
+                                ✓ Justified
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: '10px', color: '#dc2626', fontWeight: 600 }}>
+                                Justification required
+                              </span>
+                            )}
                           </div>
                         ) : (
                           <input
@@ -1143,36 +1187,6 @@ function PurchaseIndentForm({
                       )}
                     </td>
 
-                    {/* Justification / Remarks */}
-                    <td>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <input
-                          type="text"
-                          className="indent-table-input"
-                          data-field-key={`item_${index}_remarks`}
-                          placeholder={isUnavailable ? 'Justification required *' : 'Optional remarks'}
-                          value={item.remarks || ''}
-                          onChange={(e) => handleItemFieldChange(index, 'remarks', e.target.value)}
-                          disabled={isSubmitting}
-                          style={{
-                            borderColor: errors[`item_${index}_remarks`]
-                              ? '#ef4444'
-                              : (isUnavailable && !item.remarks?.trim() ? '#f59e0b' : '#cbd5e1'),
-                            backgroundColor: errors[`item_${index}_remarks`]
-                              ? '#fef2f2'
-                              : (isUnavailable && !item.remarks?.trim() ? '#fffbeb' : '#fff'),
-                          }}
-                        />
-                        {errors[`item_${index}_remarks`] && (
-                          <span
-                            className="indent-field-error"
-                            style={{ fontSize: '11px', color: '#ef4444', lineHeight: 1.2, marginTop: '2px' }}
-                          >
-                            {errors[`item_${index}_remarks`]}
-                          </span>
-                        )}
-                      </div>
-                    </td>
 
                     {/* Required Date */}
                     <td>
@@ -1316,14 +1330,61 @@ function PurchaseIndentForm({
 
       {/* Remarks Section */}
       <div className="indent-card">
-        <h3 className="indent-card__title">Remarks / Notes</h3>
+        <h3 className="indent-card__title">
+          Remarks / Justification{' '}
+          {hasUnavailableItems ? (
+            <span style={{ color: '#dc2626', fontSize: '12px', fontWeight: 600 }}>
+              * (Required for out-of-stock items)
+            </span>
+          ) : null}
+        </h3>
+        {hasUnavailableItems ? (
+          <div
+            style={{
+              padding: '8px 12px',
+              marginBottom: '10px',
+              borderRadius: '6px',
+              backgroundColor: '#fffbeb',
+              border: '1px solid #fde68a',
+              color: '#92400e',
+              fontSize: '12px',
+              fontWeight: 500,
+              lineHeight: 1.4,
+            }}
+          >
+            ⚠️ <strong>Stock Validation Notice:</strong> One or more selected items have <strong>0 available stock</strong> in warehouse. Indents cannot be raised for unavailable items without proper justification. Please enter the requisition justification or business reason below.
+          </div>
+        ) : null}
         <textarea
           className="indent-remarks-textarea"
-          placeholder="Enter remarks or special instructions (optional)"
+          data-field-key="remarks"
+          placeholder={
+            hasUnavailableItems
+              ? 'Required: Enter business justification for requesting out-of-stock / unavailable items...'
+              : 'Enter remarks, justification, or special instructions (optional)'
+          }
           value={draft.remarks}
           onChange={(e) => updateField('remarks', e.target.value)}
           disabled={isSubmitting}
+          style={
+            errors.remarks
+              ? { borderColor: '#ef4444', outlineColor: '#ef4444' }
+              : undefined
+          }
         />
+        {errors.remarks ? (
+          <span
+            style={{
+              display: 'block',
+              color: '#ef4444',
+              fontSize: '12px',
+              fontWeight: 600,
+              marginTop: '4px',
+            }}
+          >
+            {errors.remarks}
+          </span>
+        ) : null}
       </div>
 
       {/* Actions Section */}

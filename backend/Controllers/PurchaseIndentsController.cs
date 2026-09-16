@@ -70,6 +70,29 @@ namespace IMSBackend.Controllers
                     });
                 }
 
+                // Stock availability validation: validate unavailable items have proper justification
+                var unavailableProductNames = new List<string>();
+                foreach (var item in dto.Items)
+                {
+                    var availableStock = await _context.Stocks
+                        .Where(s => s.ProductId == item.ProductId)
+                        .SumAsync(s => (decimal?)s.AvailableQuantity) ?? 0m;
+
+                    if (availableStock <= 0m)
+                    {
+                        var prod = await _context.Products.FindAsync(item.ProductId);
+                        unavailableProductNames.Add(prod?.Name ?? $"Product #{item.ProductId}");
+                    }
+                }
+
+                if (unavailableProductNames.Any() && string.IsNullOrWhiteSpace(dto.Remarks))
+                {
+                    return BadRequest(new
+                    {
+                        message = $"Stock validation failed: {string.Join(", ", unavailableProductNames)} {(unavailableProductNames.Count == 1 ? "is" : "are")} unavailable (Available Stock: 0). Justification is required in Remarks before raising an indent for unavailable items."
+                    });
+                }
+
 
 
 
@@ -350,6 +373,29 @@ namespace IMSBackend.Controllers
                     return BadRequest(new
                     {
                         message = "Indent date cannot be beyond the current date."
+                    });
+                }
+
+                // Stock availability validation: validate unavailable items have proper justification
+                var unavailableProductNames = new List<string>();
+                foreach (var item in dto.Items)
+                {
+                    var availableStock = await _context.Stocks
+                        .Where(s => s.ProductId == item.ProductId)
+                        .SumAsync(s => (decimal?)s.AvailableQuantity) ?? 0m;
+
+                    if (availableStock <= 0m)
+                    {
+                        var prod = await _context.Products.FindAsync(item.ProductId);
+                        unavailableProductNames.Add(prod?.Name ?? $"Product #{item.ProductId}");
+                    }
+                }
+
+                if (unavailableProductNames.Any() && string.IsNullOrWhiteSpace(dto.Remarks))
+                {
+                    return BadRequest(new
+                    {
+                        message = $"Stock validation failed: {string.Join(", ", unavailableProductNames)} {(unavailableProductNames.Count == 1 ? "is" : "are")} unavailable (Available Stock: 0). Justification is required in Remarks before raising an indent for unavailable items."
                     });
                 }
 
@@ -981,7 +1027,6 @@ namespace IMSBackend.Controllers
 
             var indentIds = indents.Select(x => x.PurchaseIndentId).ToList();
 
-            // 1. Bulk query PurchaseIndentItems with Product & Unit
             var allItems = await _context.PurchaseIndentItems
                 .AsNoTracking()
                 .Where(i => indentIds.Contains(i.PurchaseIndentId))
@@ -1006,6 +1051,65 @@ namespace IMSBackend.Controllers
                     Amount = i.RequiredQty * (i.Product != null ? (i.Product.CostPrice ?? i.Product.Price ?? 0m) : 0m)
                 })
                 .ToListAsync();
+
+            var itemProductIds = allItems.Select(i => i.ProductId).Distinct().ToList();
+            var productsDict = itemProductIds.Any()
+                ? await _context.Products
+                    .AsNoTracking()
+                    .Where(p => itemProductIds.Contains(p.ProductId))
+                    .ToDictionaryAsync(p => p.ProductId, p => p)
+                : new Dictionary<int, Product>();
+
+            var variantsDict = itemProductIds.Any()
+                ? (await _context.ProductVariants
+                    .AsNoTracking()
+                    .Where(pv => itemProductIds.Contains(pv.ProductId))
+                    .ToListAsync())
+                    .GroupBy(pv => pv.ProductId)
+                    .ToDictionary(g => g.Key, g => g.ToList())
+                : new Dictionary<int, List<ProductVariant>>();
+
+            foreach (var item in allItems)
+            {
+                if (item.UnitPrice <= 0m)
+                {
+                    decimal unitPrice = 0m;
+                    decimal costPrice = 0m;
+                    decimal price = 0m;
+
+                    if (productsDict.TryGetValue(item.ProductId, out var prod))
+                    {
+                        costPrice = prod.CostPrice ?? 0m;
+                        price = prod.Price ?? 0m;
+                        unitPrice = costPrice > 0m ? costPrice : price;
+                        if (string.IsNullOrWhiteSpace(item.ProductName)) item.ProductName = prod.Name;
+                        if (string.IsNullOrWhiteSpace(item.ProductSku)) item.ProductSku = prod.SKU;
+                    }
+
+                    if (unitPrice <= 0m && variantsDict.TryGetValue(item.ProductId, out var variants))
+                    {
+                        var matchVariant = variants.FirstOrDefault(v => (v.CostPrice ?? 0m) > 0m || (v.Price ?? 0m) > 0m);
+                        if (matchVariant != null)
+                        {
+                            costPrice = matchVariant.CostPrice ?? costPrice;
+                            price = matchVariant.Price ?? price;
+                            unitPrice = costPrice > 0m ? costPrice : price;
+                        }
+                    }
+
+                    if (unitPrice > 0m)
+                    {
+                        item.UnitPrice = unitPrice;
+                        item.CostPrice = costPrice > 0m ? costPrice : unitPrice;
+                        item.Price = price > 0m ? price : unitPrice;
+                        item.Amount = item.RequiredQty * unitPrice;
+                    }
+                }
+                else if (item.Amount <= 0m)
+                {
+                    item.Amount = item.RequiredQty * item.UnitPrice;
+                }
+            }
 
             var itemsByIndentId = allItems
                 .GroupBy(i => i.PurchaseIndentId)
