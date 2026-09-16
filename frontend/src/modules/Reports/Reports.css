@@ -417,8 +417,8 @@
   letter-spacing: -0.025em;
   line-height: 1.05;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .reports-page .erp-statistics-card__helper {
@@ -1454,8 +1454,8 @@
   letter-spacing: -0.02em !important;
   line-height: 1.05 !important;
   white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
 }
 
 .reports-page .erp-statistics-card__helper {
@@ -1969,8 +1969,8 @@
   font-weight: 900 !important;
   line-height: 1.05 !important;
   white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
 }
 
 .reports-page .erp-statistics-card__helper {

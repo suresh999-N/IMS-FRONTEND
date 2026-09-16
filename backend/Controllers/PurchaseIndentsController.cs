@@ -62,6 +62,14 @@ namespace IMSBackend.Controllers
                     });
                 }
 
+                if (dto.IndentDate != default && dto.IndentDate.Date > DateTime.UtcNow.Date)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Indent date cannot be beyond the current date."
+                    });
+                }
+
 
 
 
@@ -334,6 +342,14 @@ namespace IMSBackend.Controllers
                     return BadRequest(new
                     {
                         message = "At least one item is required."
+                    });
+                }
+
+                if (dto.IndentDate != default && dto.IndentDate.Date > DateTime.UtcNow.Date)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Indent date cannot be beyond the current date."
                     });
                 }
 

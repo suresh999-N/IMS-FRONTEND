@@ -236,7 +236,7 @@ function BrandsHeader({ canCreate, summary, onAdd }) {
               key={metric.key}
               className={`resource-center__inventory-metric resource-center__inventory-metric--${metric.tone}`}
             >
-              {metric.value} {metric.label}
+              <strong>{metric.value}</strong> {metric.label}
             </span>
           ))}
         </div>

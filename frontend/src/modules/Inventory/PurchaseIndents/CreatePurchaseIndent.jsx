@@ -150,12 +150,11 @@ function generateIndentNumber(indents = []) {
 
 function buildInitialDraft(initialIndentNo) {
   const today = getToday()
-  const defaultRequiredDate = addDaysToDate(today, 7)
   return {
     vendorId: '',
     indentNo: initialIndentNo || generateIndentNumber([]),
     indentDate: today,
-    expectedDeliveryDate: defaultRequiredDate, // Required Date (7 days lead time)
+    expectedDeliveryDate: '', // Required Date remains empty until explicitly selected
     requestedBy: '',
     department: '',
     priority: '',
@@ -165,7 +164,7 @@ function buildInitialDraft(initialIndentNo) {
     reference: '',
     paidAmount: '',
     remarks: '',
-    items: [{ ...defaultItem, requiredDate: defaultRequiredDate, remarks: '' }],
+    items: [{ ...defaultItem, requiredDate: '', remarks: '' }],
   }
 }
 
@@ -186,7 +185,7 @@ function buildDraftFromIndent(indent, initialIndentNo) {
 
   const indentDate = toDateInput(indent?.indentDate)
   const rawRequiredDate = indent?.requiredDate || indent?.expectedDeliveryDate || items[0]?.requiredDate
-  const expectedDeliveryDate = getLogicalRequiredDate(rawRequiredDate, indentDate, 7)
+  const expectedDeliveryDate = rawRequiredDate ? getLogicalRequiredDate(rawRequiredDate, indentDate, 7) : ''
 
   return {
     ...baseDraft,
@@ -204,7 +203,7 @@ function buildDraftFromIndent(indent, initialIndentNo) {
       ...defaultItem,
       productId: item?.productId ? String(item.productId) : '',
       quantity: String(item?.requiredQty ?? item?.quantity ?? 1),
-      requiredDate: getLogicalRequiredDate(item?.requiredDate || expectedDeliveryDate, indentDate, 7),
+      requiredDate: item?.requiredDate ? getLogicalRequiredDate(item.requiredDate, indentDate, 7) : expectedDeliveryDate,
       remarks: item?.remarks || '',
     })),
   }
@@ -535,20 +534,10 @@ function PurchaseIndentForm({
       errorToSet = 'Indent date cannot be in the past.'
     }
 
-    setDraft((currentValue) => {
-      const nextDraft = {
-        ...currentValue,
-        [name]: value,
-      }
-
-      if (name === 'indentDate' && value) {
-        if (!currentValue.expectedDeliveryDate || compareDateOnly(currentValue.expectedDeliveryDate, value) <= 0) {
-          nextDraft.expectedDeliveryDate = addDaysToDate(value, 7)
-        }
-      }
-
-      return nextDraft
-    })
+    setDraft((currentValue) => ({
+      ...currentValue,
+      [name]: value,
+    }))
 
     setErrors((currentValue) => ({
       ...currentValue,
@@ -584,7 +573,7 @@ function PurchaseIndentForm({
         uom: product?.unit || 'Nos',
         unitPrice: (product?.costPrice ?? product?.cost ?? product?.purchasePrice ?? product?.price) ? String(product?.costPrice ?? product?.cost ?? product?.purchasePrice ?? product?.price) : '0',
         hsn: product ? '84713010' : '',
-        requiredDate: updatedItems[index].requiredDate || currentValue.expectedDeliveryDate || getToday(),
+        requiredDate: updatedItems[index].requiredDate || currentValue.expectedDeliveryDate || '',
         remarks: updatedItems[index].remarks || '',
       }
       return {
@@ -635,7 +624,7 @@ function PurchaseIndentForm({
 
     setDraft((currentValue) => ({
       ...currentValue,
-      items: [...currentValue.items, { ...defaultItem, requiredDate: currentValue.expectedDeliveryDate || getToday() }],
+      items: [...currentValue.items, { ...defaultItem, requiredDate: currentValue.expectedDeliveryDate || '' }],
     }))
     setFormError('')
   }
@@ -644,7 +633,7 @@ function PurchaseIndentForm({
     setDraft((currentValue) => {
       let updatedItems = [...currentValue.items]
       if (updatedItems.length <= 1) {
-        updatedItems = [{ ...defaultItem, requiredDate: currentValue.expectedDeliveryDate || getToday() }]
+        updatedItems = [{ ...defaultItem, requiredDate: currentValue.expectedDeliveryDate || '' }]
       } else {
         updatedItems.splice(index, 1)
       }
@@ -992,18 +981,18 @@ function PurchaseIndentForm({
         </div>
 
         <div className="indent-items-table-wrapper">
-          <table className="indent-items-table" style={{ tableLayout: 'fixed' }}>
+          <table className="indent-items-table" style={{ tableLayout: 'fixed', minWidth: '1150px' }}>
             <thead>
               <tr>
-                <th style={{ width: '50px', textAlign: 'center' }}>S.No</th>
-                <th style={{ width: '22%' }}>Item Name <span className="required-asterisk">*</span></th>
-                <th style={{ width: '10%', textAlign: 'center' }}>Required Qty <span className="required-asterisk">*</span></th>
-                <th style={{ width: '8%', textAlign: 'center' }}>Unit</th>
-                <th style={{ width: '11%', textAlign: 'center' }}>Unit Price (₹)</th>
-                <th style={{ width: '13%', textAlign: 'center' }}>Available Stock</th>
-                <th style={{ width: '18%' }}>Justification / Remarks</th>
-                <th style={{ width: '14%' }}>Required Date</th>
-                <th style={{ width: '60px', textAlign: 'center' }}>Actions</th>
+                <th style={{ width: '50px', minWidth: '50px', textAlign: 'center' }}>S.No</th>
+                <th style={{ width: '20%', minWidth: '190px' }}>Item Name *</th>
+                <th style={{ width: '9%', minWidth: '95px', textAlign: 'center' }}>Required Qty *</th>
+                <th style={{ width: '7%', minWidth: '70px', textAlign: 'center' }}>Unit</th>
+                <th style={{ width: '10%', minWidth: '105px', textAlign: 'center' }}>Unit Price (₹)</th>
+                <th style={{ width: '11%', minWidth: '115px', textAlign: 'center' }}>Available Stock</th>
+                <th style={{ width: '16%', minWidth: '155px' }}>Justification / Remarks</th>
+                <th style={{ width: '17%', minWidth: '160px' }}>Required Date</th>
+                <th style={{ width: '60px', minWidth: '60px', textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -1191,7 +1180,7 @@ function PurchaseIndentForm({
                     <td>
                       <DatePicker
                         name={`item_required_date_${index}`}
-                        value={item.requiredDate || draft.expectedDeliveryDate || getToday()}
+                        value={item.requiredDate || draft.expectedDeliveryDate || ''}
                         onChange={(e) => handleItemFieldChange(index, 'requiredDate', e.target.value)}
                         disabled={isSubmitting}
                         minDate={draft.indentDate || (!isEdit ? getToday() : undefined)}

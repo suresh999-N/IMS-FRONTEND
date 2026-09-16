@@ -83,6 +83,13 @@
   border-color: #a7f3d0;
 }
 
+.resource-center__page--attributes .resource-center__inventory-metric strong {
+  color: #000000;
+  font-size: inherit;
+  font-weight: 700;
+  margin-right: 4px;
+}
+
 /* ─── Table Card & Actions ───────────────────────────────────────── */
 
 .resource-center__page--attributes .resource-center__inventory-table :where(th, td).attributes-col-actions {

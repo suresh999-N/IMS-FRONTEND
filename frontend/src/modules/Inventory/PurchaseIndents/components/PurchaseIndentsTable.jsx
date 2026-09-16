@@ -317,6 +317,7 @@ export default function PurchaseIndentsTable({
       style: { width: 140, minWidth: 140 },
       headerStyle: { width: 140, minWidth: 140 },
       sortValue: (indent) => indent?.requestedByDisplay || NOT_ASSIGNED,
+      searchValue: (indent) => indent?.requestedByDisplay || NOT_ASSIGNED,
       render: (indent) => indent?.requestedByDisplay || NOT_ASSIGNED,
     },
     {
@@ -528,8 +529,8 @@ export default function PurchaseIndentsTable({
         columnStorageKey="ims.purchase-indents.visibleColumns.compact.v6"
         defaultVisibleColumnKeys={['indentNumber', 'productName', 'priority', 'indentDate', 'quantity', 'status', 'requestedByDisplay', 'actions']}
         fitExplicitColumnsToContainer={false}
-        searchPlaceholder="Search by indent number, product name, or request date"
-        invalidSearchMessage="Please enter a valid search term (e.g., indent number, product name, request date)."
+        searchPlaceholder="Search by indent number, product name, or requested by"
+        invalidSearchMessage="Please enter a valid search term (e.g., indent number, product name, requested by)."
         emptyMessage="No purchase indents found."
       />
     </div>

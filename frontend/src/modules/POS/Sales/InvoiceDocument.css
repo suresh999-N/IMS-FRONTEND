@@ -78,8 +78,8 @@
 .invoice-document__company-details h1 {
   margin-bottom: 4px;
   color: var(--invoice-ink);
-  font-size: 20px;
-  font-weight: 750;
+  font-size: 26px;
+  font-weight: 800;
   line-height: 1.2;
   overflow-wrap: anywhere;
 }
@@ -115,6 +115,7 @@
 .invoice-document__title-block {
   min-width: 180px;
   text-align: right;
+  flex-shrink: 0;
 }
 
 .invoice-document__eyebrow {
@@ -124,15 +125,17 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .invoice-document__title-block h2 {
   margin-bottom: 8px;
   color: var(--invoice-ink);
-  font-size: 25px;
-  font-weight: 800;
+  font-size: 22px;
+  font-weight: 750;
   letter-spacing: 0.035em;
   line-height: 1.05;
+  white-space: nowrap;
 }
 
 .invoice-document__status {
@@ -148,6 +151,8 @@
   font-weight: 750;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .invoice-document__status--paid {
@@ -170,7 +175,7 @@
 
 .invoice-document__meta {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   margin: 10px 0;
   border: 1px solid var(--invoice-border);
   border-radius: 8px;
@@ -279,7 +284,7 @@
 
 .invoice-document__detail-row {
   display: grid;
-  grid-template-columns: 100px minmax(0, 1fr);
+  grid-template-columns: 115px minmax(0, 1fr);
   gap: 8px;
   align-items: baseline;
   font-size: 10.5px;
@@ -292,6 +297,7 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .invoice-document__detail-value {

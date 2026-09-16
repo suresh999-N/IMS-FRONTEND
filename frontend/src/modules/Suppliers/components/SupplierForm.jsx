@@ -1064,8 +1064,8 @@ export default function SupplierForm({
         state:
           isIndiaCountry(country)
             ? getRequiredError(state, 'State / UT') ||
-              (INDIA_STATES.includes(state) ? '' : 'Select a valid Indian state or union territory.')
-            : getPlaceNameError(state, 'State / UT'),
+              (INDIA_STATES.includes(state) ? (getCityStateError(address.city, state, country) || '') : 'Select a valid Indian state or union territory.')
+            : (getPlaceNameError(state, 'State / UT') || getCityStateError(address.city, state, country)),
         country: getRequiredError(country, 'Country'),
         pincode: getPincodeError(address.pincode, state, country, { required: false }),
       }

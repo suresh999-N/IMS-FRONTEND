@@ -285,6 +285,11 @@ export default function SupplierAddressTab({
     } else {
       clearSuppression(index, event.target.name)
       if (event.target.name === 'state') {
+        clearSuppression(index, 'city')
+        clearSuppression(index, 'pincode')
+      }
+      if (event.target.name === 'city') {
+        clearSuppression(index, 'state')
         clearSuppression(index, 'pincode')
       }
     }

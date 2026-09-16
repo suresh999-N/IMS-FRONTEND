@@ -572,13 +572,30 @@ select:focus {
   outline: none;
 }
 
-.date-picker-field .input-with-icon {
-  position: relative;
-}
-
 .date-picker-shell {
   position: relative;
   min-width: 0;
+  width: 100%;
+}
+
+.date-picker-field {
+  width: 100%;
+}
+
+.date-picker-field .input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.date-picker-field .input-with-icon input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 4px;
 }
 
 .date-picker-popover {
@@ -2112,8 +2129,10 @@ button.status-badge:disabled,
   min-height: var(--erp-toolbar-height);
 }
 
-:where(.table-component__toolbar) :where(.button, input, select, .search-wrapper, .searchable-select__trigger) {
+:where(.table-component__toolbar, [class*='__filters'], .actions-bar) :where(.button, input, select, .search-wrapper, .searchable-select__trigger) {
   min-height: 36px;
+  font-size: 13.5px;
+  font-weight: 500;
 }
 
 :where(.table-component__pagination, .supplier-mobile-pagination) {
@@ -2280,4 +2299,25 @@ input[type="password"]::-ms-clear {
     flex: 1 1 100% !important;
     width: 100% !important;
   }
+}
+
+/* Ensure price and currency amounts are visible in full without ellipsis truncation */
+[class*='__metric-value'],
+[class*='__summary-value'],
+.dashboard-stat__value,
+.analytics-card__value,
+.erp-statistics-card__value,
+.indent-totals-card__row strong,
+.purchases-page__metric,
+.reports-metric-badge strong,
+.suppliers-metric-badge strong,
+.customers-metric-badge strong,
+.products-metric-badge strong,
+.resource-center__inventory-metric strong,
+.resource-center__invoice-money,
+.table-container td.is-numeric {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+  max-width: none !important;
 }

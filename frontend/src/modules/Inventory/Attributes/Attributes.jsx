@@ -498,7 +498,7 @@ export default function Attributes() {
             <h1>Product Attributes</h1>
             <div className="resource-center__inventory-metrics" aria-label="Attributes metrics">
               <span className="resource-center__inventory-metric resource-center__inventory-metric--success">
-                {attributes.length} Attributes
+                <strong>{attributes.length}</strong> Attributes
               </span>
             </div>
           </div>

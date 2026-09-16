@@ -632,8 +632,8 @@ function getAddressErrors(address) {
     addressLine2: getAddressLineError(address.addressLine2, 'Address line 2'),
     city: getPlaceNameError(address.city, 'City') || getCityStateError(address.city, state, country),
     state: isIndiaCountry(country)
-      ? (!state ? 'State / UT is required.' : INDIA_STATES.includes(state) ? '' : 'Select a valid Indian state or union territory.')
-      : getPlaceNameError(state, 'State / UT'),
+      ? (!state ? 'State / UT is required.' : INDIA_STATES.includes(state) ? (getCityStateError(address.city, state, country) || '') : 'Select a valid Indian state or union territory.')
+      : (getPlaceNameError(state, 'State / UT') || getCityStateError(address.city, state, country)),
     country: country ? '' : 'Country is required.',
     pincode: getPincodeError(address.pincode, state, country, { required: false }),
   }

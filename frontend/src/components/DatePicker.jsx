@@ -193,6 +193,12 @@ export default function DatePicker(props) {
       return
     }
     const nextValue = toIsoDate(date)
+    if (maxIsoLimit && nextValue > maxIsoLimit) {
+      return
+    }
+    if (minIsoLimit && nextValue < minIsoLimit) {
+      return
+    }
     setDisplayValue(formatDisplayDate(nextValue))
     emitChange(nextValue)
     setIsOpen(false)
@@ -241,10 +247,6 @@ export default function DatePicker(props) {
           </div>
           <div className="date-picker-popover__grid">
             {getCalendarDays(viewDate).map((date) => {
-              const isoValue = toIsoDate(date)
-              const isMuted = date.getMonth() !== viewDate.getMonth()
-              const isSelected = isSameDay(date, selectedDate)
-              const isToday = isSameDay(date, today)
               const isDisabled = isDateDisabled(date)
 
               return (
@@ -252,6 +254,7 @@ export default function DatePicker(props) {
                   key={isoValue}
                   type="button"
                   disabled={isDisabled}
+                  aria-disabled={isDisabled}
                   className={[
                     'date-picker-popover__day',
                     isMuted ? 'is-muted' : '',
@@ -259,9 +262,7 @@ export default function DatePicker(props) {
                     isToday ? 'is-today' : '',
                     isDisabled ? 'is-disabled' : '',
                   ].filter(Boolean).join(' ')}
-                  onClick={() => selectDate(date)}
-                  disabled={isDisabled}
-                  aria-disabled={isDisabled}
+                  onClick={() => !isDisabled && selectDate(date)}
                 >
                   {date.getDate()}
                 </button>

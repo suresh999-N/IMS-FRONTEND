@@ -291,12 +291,9 @@ export function addDaysToDate(dateStr, days = 7) {
  */
 export function getLogicalRequiredDate(rawRequiredDate, indentDateStr, defaultDays = 7) {
   const reqDate = toDateInputValue(rawRequiredDate)
-  const indDate = toDateInputValue(indentDateStr) || getLocalTodayDate()
-
-  if (reqDate && compareDateOnly(reqDate, indDate) > 0) {
-    return reqDate
+  if (!reqDate) {
+    return ''
   }
-
-  return addDaysToDate(indDate, defaultDays)
+  return reqDate
 }
 

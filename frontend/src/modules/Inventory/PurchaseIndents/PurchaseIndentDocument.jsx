@@ -107,6 +107,7 @@ function SupplierBlock({ supplier }) {
 }
 
 function IndentInformationBlock({ model }) {
+  const isRejected = String(model?.status || '').toLowerCase().includes('reject')
   return (
     <section className="invoice-document__address-block">
       <h2>Indent Information</h2>
@@ -116,6 +117,9 @@ function IndentInformationBlock({ model }) {
         <DetailRow label="Priority" value={model.priority} />
         <DetailRow label="Required by" value={model.requiredDate ? displayDate(model.requiredDate) : ''} />
         <DetailRow label="Reference" value={model.reference} />
+        {isRejected && hasText(model.remarks) ? (
+          <DetailRow label="Rejection Reason" value={model.remarks} isMultiline />
+        ) : null}
       </div>
     </section>
   )

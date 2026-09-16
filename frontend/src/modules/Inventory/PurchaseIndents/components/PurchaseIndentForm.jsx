@@ -84,7 +84,9 @@ export default function PurchaseIndentForm({
   const errors = {
     indentDate:
       getRequiredError(formData.indentDate, 'Request date') ||
-      (!initialValues && compareDateOnly(formData.indentDate, getToday()) < 0 ? 'Request date cannot be in the past.' : ''),
+      (formData.indentDate && formData.indentDate > getToday()
+        ? 'Request date cannot be in the future.'
+        : ''),
     priority: getRequiredError(formData.priority, 'Priority'),
     lineItems: formData.lineItems.map((lineItem, index) => ({
       productId: getRequiredError(lineItem.productId, 'Product') || duplicateErrors[index],
@@ -234,6 +236,7 @@ export default function PurchaseIndentForm({
               id="pi-indent-date"
               name="indentDate"
               value={formData.indentDate}
+              max={getToday()}
               onChange={handleChange}
               onBlur={handleBlur}
               disabled={isSubmitting}

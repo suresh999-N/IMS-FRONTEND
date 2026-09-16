@@ -235,8 +235,19 @@
 }
 
 /* Style DatePicker inside details section to match indent-input */
+.indent-field-group .date-picker-shell {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .indent-details-date-picker.field {
   margin-bottom: 0 !important;
+  margin-top: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  gap: 0 !important;
 }
 
 .indent-details-date-picker label {
@@ -245,13 +256,17 @@
 
 .indent-details-date-picker .input-with-icon {
   height: 40px !important;
+  min-height: 40px !important;
+  max-height: 40px !important;
   border: 1px solid #cbd5e1 !important;
   border-radius: 8px !important;
   background-color: #ffffff !important;
-  padding: 0 10px 0 8px !important;
-  gap: 0 !important;
+  padding: 0 8px !important;
   box-sizing: border-box !important;
   transition: all 130ms ease !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
 }
 
 .indent-details-date-picker .input-with-icon:focus-within {
@@ -260,25 +275,23 @@
 }
 
 .indent-details-date-picker .input-with-icon .input-icon-button {
-  margin-right: 0 !important;
-}
-
-.indent-details-date-picker .input-with-icon .input-icon-button svg {
-  margin-right: 0 !important;
-}
-
-.indent-details-date-picker .input-with-icon svg {
-  margin-right: 0 !important;
+  margin-right: 4px !important;
+  margin-left: 0 !important;
+  flex-shrink: 0 !important;
 }
 
 .indent-details-date-picker .input-with-icon input {
   height: 38px !important;
   border: none !important;
   background: transparent !important;
-  padding: 8px 4px 8px 2px !important;
+  padding: 0 4px !important;
   font-size: 13.5px !important;
   color: #0f172a !important;
   box-shadow: none !important;
+  box-sizing: border-box !important;
+  line-height: 38px !important;
+  width: 100% !important;
+  min-width: 0 !important;
 }
 
 .indent-details-date-picker .input-with-icon input:focus {
@@ -292,8 +305,21 @@
 }
 
 /* Style DatePicker inside table cells */
+.indent-items-table td .date-picker-shell {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
 .indent-table-date-picker.field {
   margin-bottom: 0 !important;
+  margin-top: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  width: 100% !important;
 }
 
 .indent-table-date-picker label {
@@ -302,12 +328,16 @@
 
 .indent-table-date-picker .input-with-icon {
   height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
   border: 1px solid #cbd5e1 !important;
   border-radius: 6px !important;
   background-color: #ffffff !important;
-  padding: 0 6px 0 6px !important;
-  gap: 0 !important;
+  padding: 0 6px !important;
   box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
 }
 
 .indent-table-date-picker .input-with-icon:focus-within {
@@ -316,25 +346,21 @@
 }
 
 .indent-table-date-picker .input-with-icon .input-icon-button {
-  margin-right: 0 !important;
-}
-
-.indent-table-date-picker .input-with-icon .input-icon-button svg {
-  margin-right: 0 !important;
-}
-
-.indent-table-date-picker .input-with-icon svg {
-  margin-right: 0 !important;
+  margin-right: 4px !important;
+  margin-left: 0 !important;
+  flex-shrink: 0 !important;
 }
 
 .indent-table-date-picker .input-with-icon input {
   height: 34px !important;
   border: none !important;
   background: transparent !important;
-  padding: 6px 4px 6px 2px !important;
+  padding: 0 4px !important;
   font-size: 13px !important;
   color: #0f172a !important;
   box-shadow: none !important;
+  box-sizing: border-box !important;
+  line-height: 34px !important;
 }
 
 /* Items Card Table styling */
@@ -1186,6 +1212,18 @@
   flex-direction: column;
   gap: 16px;
   color: #0f172a;
+}
+
+.purchase-indent-details-modal .invoice-document__company-details h1 {
+  font-size: 26px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+}
+
+.purchase-indent-details-modal .invoice-document__title-block h2 {
+  font-size: 22px !important;
+  font-weight: 750 !important;
+  line-height: 1.15 !important;
 }
 
 .purchase-indent-details > .invoice-document {

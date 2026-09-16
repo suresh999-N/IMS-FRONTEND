@@ -89,27 +89,34 @@
   text-overflow: ellipsis;
 }
 
-.table-container td[data-column='name'],
-.table-container td[data-column='productName'],
-.table-container td[data-column='product'],
-.table-container td[data-column='itemName'],
-.table-container td[data-column='item'] {
-  min-width: 220px;
-  max-width: 400px;
-}
-
-.table-container td[data-column='role'],
-.table-container td[data-column='roleName'],
-.table-container td.resource-center__cell-role,
-.resource-center__role-text {
-  font-size: 13.5px;
-  font-weight: 550;
-  color: #1e293b;
-}
-
-.table-container td.is-numeric {
+.table-container td.is-numeric,
+.table-container td[data-column*='price'],
+.table-container td[data-column*='Price'],
+.table-container td[data-column*='amount'],
+.table-container td[data-column*='Amount'],
+.table-container td[data-column*='total'],
+.table-container td[data-column*='Total'],
+.table-container td[data-column*='cost'],
+.table-container td[data-column*='Cost'],
+.table-container td[data-column*='rate'],
+.table-container td[data-column*='Rate'],
+.table-container td[data-column*='value'],
+.table-container td[data-column*='Value'],
+.table-container td[data-column*='balance'],
+.table-container td[data-column*='Balance'],
+.table-container td[data-column*='payable'],
+.table-container td[data-column*='Payable'],
+.table-container td[data-column*='receivable'],
+.table-container td[data-column*='Receivable'],
+.table-container td[data-column*='subtotal'],
+.table-container td[data-column*='grandTotal'],
+.table-container td[data-column*='unitPrice'] {
   text-align: right;
   font-variant-numeric: tabular-nums;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
+  max-width: none;
 }
 
 .table-container td[data-column='actions'] {

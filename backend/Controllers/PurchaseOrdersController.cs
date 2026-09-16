@@ -127,6 +127,13 @@ namespace IMSBackend.Controllers
                     traceId: HttpContext.TraceIdentifier));
             }
 
+            if (dto.OrderDate != default && dto.OrderDate.Date > DateTime.UtcNow.Date)
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    "Order date cannot be beyond the current date.",
+                    traceId: HttpContext.TraceIdentifier));
+            }
+
             var supplierExists = await _context.Suppliers
                 .AsNoTracking()
                 .AnyAsync(item => item.SupplierId == dto.SupplierId);
@@ -723,6 +730,12 @@ namespace IMSBackend.Controllers
             {
                 if (dto.OrderDate.HasValue && dto.OrderDate.Value != default)
                 {
+                    if (dto.OrderDate.Value.Date > DateTime.UtcNow.Date)
+                    {
+                        return BadRequest(ApiResponse<object>.Fail(
+                            "Order date cannot be beyond the current date.",
+                            traceId: HttpContext.TraceIdentifier));
+                    }
                     po.OrderDate = dto.OrderDate.Value;
                 }
 

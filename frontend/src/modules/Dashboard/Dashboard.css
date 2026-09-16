@@ -329,8 +329,8 @@ button.dashboard-status:active {
   font-weight: 700;
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
+  text-overflow: clip;
   white-space: nowrap;
   text-align: left !important;
   margin-left: 0 !important;
@@ -979,8 +979,8 @@ button.dashboard-status:active {
   font-size: 13px;
   line-height: 1.24;
   font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
+  text-overflow: clip;
   white-space: nowrap;
 }
 

@@ -49,7 +49,11 @@ export default function SaleForm({
     warehouseId: getRequiredError(formData.warehouseId, 'Warehouse'),
     quantity: getNumberError(formData.quantity, 'Quantity'),
     unitPrice: getNumberError(formData.unitPrice, 'Unit price'),
-    date: getRequiredError(formData.date, 'Date'),
+    date:
+      getRequiredError(formData.date, 'Date') ||
+      (formData.date && formData.date > getToday()
+        ? 'Order date cannot be in the future.'
+        : ''),
   }
 
   const isFormValid = Object.values(errors).every((v) => !v)
@@ -120,6 +124,7 @@ export default function SaleForm({
           name="date"
           label="Order Date"
           value={formData.date}
+          max={getToday()}
           onChange={handleChange}
         />
 

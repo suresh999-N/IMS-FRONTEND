@@ -342,7 +342,7 @@ export default function Units() {
           <h1>Units</h1>
           <div className="resource-center__inventory-metrics">
             <span className="resource-center__inventory-metric resource-center__inventory-metric--success">
-              {filteredUnits.length} Units
+              <strong>{filteredUnits.length}</strong> Units
             </span>
           </div>
         </div>

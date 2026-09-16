@@ -595,20 +595,20 @@ export default function ProductVariants() {
         key: 'price',
         label: 'Selling Price',
         sortable: true,
-        tableWidth: 110,
+        tableWidth: 155,
         className: 'variants-col-numeric',
-        style: { width: 110, minWidth: 110, textAlign: 'right' },
-        headerStyle: { width: 110, minWidth: 110, textAlign: 'right' },
+        style: { width: 155, minWidth: 155, textAlign: 'right' },
+        headerStyle: { width: 155, minWidth: 155, textAlign: 'right' },
         render: (item) => <span>{formatCurrency(item.price)}</span>,
       },
       {
         key: 'costPrice',
         label: 'Purchase Price',
         sortable: true,
-        tableWidth: 110,
+        tableWidth: 155,
         className: 'variants-col-numeric',
-        style: { width: 110, minWidth: 110, textAlign: 'right' },
-        headerStyle: { width: 110, minWidth: 110, textAlign: 'right' },
+        style: { width: 155, minWidth: 155, textAlign: 'right' },
+        headerStyle: { width: 155, minWidth: 155, textAlign: 'right' },
         render: (item) => <span>{formatCurrency(item.costPrice)}</span>,
       },
       {
@@ -799,7 +799,7 @@ export default function ProductVariants() {
           <h1>Product Variants</h1>
           <div className="resource-center__inventory-metrics">
             <span className="resource-center__inventory-metric resource-center__inventory-metric--success">
-              {filteredVariants.length} Variants
+              <strong>{filteredVariants.length}</strong> Variants
             </span>
           </div>
         </div>

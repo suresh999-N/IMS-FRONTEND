@@ -497,11 +497,21 @@
 }
 
 .resource-center__invoice-identity strong,
-.resource-center__invoice-payment strong,
-.resource-center__invoice-money {
+.resource-center__invoice-payment strong {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #111827;
+  font-size: 12.75px;
+  font-weight: 760;
+  line-height: 1.18;
+}
+
+.resource-center__invoice-money {
+  min-width: 0;
+  overflow: visible;
+  text-overflow: clip;
   white-space: nowrap;
   color: #111827;
   font-size: 12.75px;

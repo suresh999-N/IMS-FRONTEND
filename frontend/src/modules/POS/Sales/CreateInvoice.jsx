@@ -482,6 +482,8 @@ function InvoiceForm({
 
     if (!draft.invoiceDate) {
       nextErrors.invoiceDate = 'Invoice date is required.'
+    } else if (draft.invoiceDate > getToday()) {
+      nextErrors.invoiceDate = 'Invoice date cannot be in the future.'
     }
 
     if (draft.dueDate && draft.invoiceDate && draft.dueDate < draft.invoiceDate) {
@@ -665,6 +667,7 @@ function InvoiceForm({
             <input
               type="date"
               value={draft.invoiceDate}
+              max={getToday()}
               onChange={handleInvoiceDateChange}
               disabled={isSubmitting}
             />

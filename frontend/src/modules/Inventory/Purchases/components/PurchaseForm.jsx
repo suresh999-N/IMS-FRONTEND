@@ -138,7 +138,11 @@ export default function PurchaseForm({
   const duplicateErrors = getDuplicateProductErrors(formData.lineItems)
   const errors = {
     supplierId: getRequiredError(formData.supplierId, 'Supplier'),
-    orderDate: getRequiredError(formData.orderDate, 'Order date'),
+    orderDate:
+      getRequiredError(formData.orderDate, 'Order date') ||
+      (formData.orderDate && formData.orderDate > getToday()
+        ? 'Order date cannot be in the future.'
+        : ''),
     expectedDate:
       formData.expectedDate && formData.expectedDate < formData.orderDate
         ? 'Expected date cannot be before the order date.'
@@ -350,6 +354,7 @@ export default function PurchaseForm({
               id="po-order-date"
               name="orderDate"
               value={formData.orderDate}
+              max={getToday()}
               onChange={handleChange}
               onBlur={handleBlur}
               error={touched.orderDate ? errors.orderDate : ''}
