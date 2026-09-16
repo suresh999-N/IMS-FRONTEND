@@ -87,6 +87,12 @@ namespace IMSBackend.Controllers
 
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
+            var rawStatus = string.IsNullOrWhiteSpace(dto.Status) ? "pending" : dto.Status.Trim();
+            if (rawStatus.Length > 20)
+            {
+                rawStatus = rawStatus.Substring(0, 20);
+            }
+
             var transfer = new StockTransfer
             {
                 FromWarehouseId = dto.FromWarehouseId,
@@ -94,7 +100,7 @@ namespace IMSBackend.Controllers
                 TransferDate = dto.TransferDate == default
         ? DateTime.UtcNow
         : dto.TransferDate,
-                Status = "pending"
+                Status = rawStatus
             };
 
             _context.StockTransfers.Add(transfer);
@@ -292,7 +298,13 @@ namespace IMSBackend.Controllers
             transfer.FromWarehouseId = dto.FromWarehouseId;
             transfer.ToWarehouseId = dto.ToWarehouseId;
             transfer.TransferDate = dto.TransferDate;
-            transfer.Status = dto.Status;
+
+            var normalizedStatus = string.IsNullOrWhiteSpace(dto.Status) ? "pending" : dto.Status.Trim();
+            if (normalizedStatus.Length > 20)
+            {
+                normalizedStatus = normalizedStatus.Substring(0, 20);
+            }
+            transfer.Status = normalizedStatus;
 
             _context.SaveChanges();
 

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IMSBackend.Models
@@ -20,6 +20,7 @@ namespace IMSBackend.Models
         public DateTime TransferDate { get; set; }
 
         [Column("status")]
+        [StringLength(20)]
         public string? Status { get; set; }
     }
 }
