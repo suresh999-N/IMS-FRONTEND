@@ -1358,7 +1358,10 @@
 }
 
 .resource-form__footer {
-  padding-top: 4px;
+  margin-top: 16px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  border-top: 1px solid #e2e8f0;
 }
 
 .resource-center__delete-dialog {

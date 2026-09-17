@@ -52,6 +52,7 @@ import { showToast } from '../../components/common/toast'
 import FormModal from '../../layouts/FormModal'
 import { useAuth } from '../../hooks/useAuth'
 import { formatCurrency, formatDate } from '../../utils/helpers'
+import { renderFormLabel } from '../../utils/labelUtils'
 import {
   emailInputProps,
   getEmailError,
@@ -685,8 +686,16 @@ function formatStatusLabel(value) {
 function getStatusType(value) {
   const normalizedValue = String(value ?? '').trim().toLowerCase().replace(/[_\s]+/g, '-')
 
-  if (normalizedValue === 'inactive' || normalizedValue === 'blocked' || normalizedValue === 'failed') {
+  if (normalizedValue === 'inactive' || normalizedValue === 'blocked' || normalizedValue === 'failed' || normalizedValue === 'decrease' || normalizedValue === 'stock-out') {
     return 'critical'
+  }
+
+  if (normalizedValue === 'active' || normalizedValue === 'completed' || normalizedValue === 'increase' || normalizedValue === 'stock-in' || normalizedValue === 'success') {
+    return 'success'
+  }
+
+  if (normalizedValue === 'recount') {
+    return 'info'
   }
 
   return normalizedValue || 'info'
@@ -1271,7 +1280,7 @@ function LineItemsField({ field, value, error, onChange }) {
 
   return (
     <div className={`field resource-form__line-field ${error ? 'field--error' : ''}`}>
-      <label>{field.label}</label>
+      <label>{renderFormLabel(field.label)}</label>
       <div className="resource-form__line-items">
         <div className="resource-form__line-heading" aria-hidden="true">
           <span>Product ID</span>
@@ -1680,7 +1689,7 @@ function ResourceForm({
           className={`field ${error ? 'field--error' : ''} ${getResourceFieldClassName(config, field)}`.trim()}
           key={field.name}
         >
-          <label htmlFor={`resource-${config.key}-${field.name}`}>{field.label}</label>
+          <label htmlFor={`resource-${config.key}-${field.name}`}>{renderFormLabel(field.label)}</label>
           <select
             id={`resource-${config.key}-${field.name}`}
             name={field.name}
@@ -1689,7 +1698,7 @@ function ResourceForm({
             onBlur={handleBlur}
             aria-invalid={Boolean(error)}
           >
-            <option value="">Select {field.label.toLowerCase()}</option>
+            <option value="">Select {getFieldLabel(field).toLowerCase()}</option>
             {(field.optionsFrom
               ? referenceRows.map((item) => ({
                   value: getReferenceOptionValue(item, field.optionValue),
@@ -1720,7 +1729,7 @@ function ResourceForm({
               onBlur={handleBlur}
               style={field.name === 'isActive' ? { accentColor: 'var(--primary)', cursor: 'pointer' } : undefined}
             />
-            <span>{field.label}</span>
+            <span>{renderFormLabel(field.label)}</span>
           </label>
         </div>
       )
@@ -3204,7 +3213,12 @@ function ResourcePage({ config, navigationContent = null }) {
                   key={metric.label}
                   className={`resource-center__inventory-metric resource-center__inventory-metric--${metric.tone}`}
                 >
-                  {metric.value} {metric.label}
+                  <strong className="resource-center__inventory-metric-count" style={{ color: '#000000', fontWeight: 700 }}>
+                    {metric.value}
+                  </strong>{' '}
+                  <span className={`resource-center__inventory-metric-label resource-center__inventory-metric-label--${metric.tone}`}>
+                    {metric.label}
+                  </span>
                 </span>
               ))}
             </div>

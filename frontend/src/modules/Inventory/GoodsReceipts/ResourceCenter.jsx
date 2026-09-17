@@ -623,8 +623,16 @@ function formatStatusLabel(value) {
 function getStatusType(value) {
   const normalizedValue = String(value ?? '').trim().toLowerCase().replace(/[_\s]+/g, '-')
 
-  if (normalizedValue === 'inactive' || normalizedValue === 'blocked' || normalizedValue === 'failed') {
+  if (normalizedValue === 'inactive' || normalizedValue === 'blocked' || normalizedValue === 'failed' || normalizedValue === 'decrease' || normalizedValue === 'stock-out') {
     return 'critical'
+  }
+
+  if (normalizedValue === 'active' || normalizedValue === 'completed' || normalizedValue === 'increase' || normalizedValue === 'stock-in' || normalizedValue === 'success') {
+    return 'success'
+  }
+
+  if (normalizedValue === 'recount') {
+    return 'info'
   }
 
   return normalizedValue || 'info'
@@ -2751,7 +2759,8 @@ function ResourcePage({ config }) {
                   key={metric.label}
                   className={`resource-center__inventory-metric resource-center__inventory-metric--${metric.tone}`}
                 >
-                  {metric.value} {metric.label}
+                  <strong className="resource-center__inventory-metric-count">{metric.value}</strong>{' '}
+                  <span className="resource-center__inventory-metric-label">{metric.label}</span>
                 </span>
               ))}
             </div>

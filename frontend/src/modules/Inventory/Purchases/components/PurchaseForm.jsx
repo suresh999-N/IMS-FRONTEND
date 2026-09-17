@@ -349,7 +349,7 @@ export default function PurchaseForm({
 
           {/* Order Date */}
           <div className={`indent-field-group ${touched.orderDate && errors.orderDate ? 'indent-field-group--error' : ''}`}>
-            <label htmlFor="po-order-date">Order date <span className="required">*</span></label>
+            <label htmlFor="po-order-date">Order Date <span className="required">*</span></label>
             <DatePicker
               id="po-order-date"
               name="orderDate"
@@ -405,8 +405,8 @@ export default function PurchaseForm({
                 <th style={{ width: '35%' }}>Product <span className="required-asterisk">*</span></th>
                 <th style={{ width: '15%', textAlign: 'center' }}>Available Stock</th>
                 <th style={{ width: '15%', textAlign: 'center' }}>Quantity <span className="required-asterisk">*</span></th>
-                <th style={{ width: '15%', textAlign: 'right' }}>Unit price <span className="required-asterisk">*</span></th>
-                <th style={{ width: '15%', textAlign: 'right' }}>Line total</th>
+                <th style={{ width: '15%', textAlign: 'right' }}>Unit Price <span className="required-asterisk">*</span></th>
+                <th style={{ width: '15%', textAlign: 'right' }}>Line Total</th>
                 <th style={{ width: '70px', textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>

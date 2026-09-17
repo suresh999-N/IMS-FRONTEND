@@ -2861,7 +2861,8 @@ function ResourcePage({ config, navigationContent = null }) {
                   key={metric.label}
                   className={`resource-center__inventory-metric resource-center__inventory-metric--${metric.tone}`}
                 >
-                  {metric.value} {metric.label}
+                  <strong className="resource-center__inventory-metric-count">{metric.value}</strong>{' '}
+                  <span className="resource-center__inventory-metric-label">{metric.label}</span>
                 </span>
               ))}
             </div>

@@ -917,9 +917,10 @@ export default function ProductVariants() {
 
                   <div className="resource-form__field">
                     <label htmlFor="sku">Variant SKU <span className="required-asterisk">*</span></label>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div className="variants-sku-row">
                       <InputField
                         id="sku"
+                        className="variants-sku-field"
                         value={formValues.sku}
                         onChange={(e) => {
                           const val = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
@@ -927,14 +928,13 @@ export default function ProductVariants() {
                         }}
                         placeholder="Variant SKU"
                         required
-                        style={{ flex: 1 }}
                       />
                       <button
                         type="button"
-                        className="button button-secondary"
-                        style={{ height: '38px', minHeight: '38px', minWidth: '38px', padding: '0 10px' }}
+                        className="button button-secondary variants-sku-button"
                         onClick={handleGenerateSku}
                         title="Auto-generate variant SKU"
+                        aria-label="Auto-generate variant SKU"
                       >
                         <Sparkles size={16} />
                       </button>

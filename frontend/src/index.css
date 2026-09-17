@@ -1212,7 +1212,10 @@ button.status-badge:disabled,
 .status-out,
 .status-failed,
 .status-cancelled,
-.status-blocked {
+.status-blocked,
+.status-decrease,
+.status-stock-out,
+.status-inactive {
   color: var(--status-danger-color, #b91c1c) !important;
   background: var(--status-danger-bg, #fef2f2) !important;
   border-color: var(--status-danger-border, #fecaca) !important;
@@ -1229,7 +1232,9 @@ button.status-badge:disabled,
 .status-in,
 .status-in-stock,
 .status-received,
-.status-success {
+.status-success,
+.status-increase,
+.status-stock-in {
   color: var(--status-success-color, #047857) !important;
   background: var(--status-success-bg, #ecfdf5) !important;
   border-color: var(--status-success-border, #a7f3d0) !important;
@@ -1248,7 +1253,6 @@ button.status-badge:disabled,
 .status-draft,
 .status-archived,
 .status-unpaid,
-.status-inactive,
 .status-disabled {
   color: var(--status-inactive-color, #334155) !important;
   background: var(--status-inactive-bg, #e2e8f0) !important;

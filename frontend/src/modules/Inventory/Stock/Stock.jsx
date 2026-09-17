@@ -53,6 +53,7 @@ import { showToast } from '../../../components/common/toast'
 import FormModal from '../../../layouts/FormModal'
 import { useAuth } from '../../../hooks/useAuth'
 import { formatCurrency, formatDate } from '../../../utils/helpers'
+import { renderFormLabel } from '../../../utils/labelUtils'
 import {
   emailInputProps,
   getEmailError,
@@ -597,8 +598,16 @@ function formatStatusLabel(value) {
 function getStatusType(value) {
   const normalizedValue = String(value ?? '').trim().toLowerCase().replace(/[_\s]+/g, '-')
 
-  if (normalizedValue === 'inactive' || normalizedValue === 'blocked' || normalizedValue === 'failed') {
+  if (normalizedValue === 'inactive' || normalizedValue === 'blocked' || normalizedValue === 'failed' || normalizedValue === 'decrease' || normalizedValue === 'stock-out') {
     return 'critical'
+  }
+
+  if (normalizedValue === 'active' || normalizedValue === 'completed' || normalizedValue === 'increase' || normalizedValue === 'stock-in' || normalizedValue === 'success') {
+    return 'success'
+  }
+
+  if (normalizedValue === 'recount') {
+    return 'info'
   }
 
   return normalizedValue || 'info'
@@ -1189,7 +1198,7 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
     const binsList = referenceData.bins ?? []
     return (
       <div className={`field resource-form__line-field ${error ? 'field--error' : ''}`}>
-        <label>{field.label}</label>
+        <label>{renderFormLabel(field.label)}</label>
         <div className="resource-form__line-items">
           <div className="resource-form__line-heading" aria-hidden="true" style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 2fr 1.2fr 1.2fr 40px', gap: '8px', marginBottom: '8px', fontWeight: 'bold' }}>
             <span>Product <span className="required-asterisk">*</span></span>
@@ -1311,7 +1320,7 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
     const productsList = referenceData.products ?? []
     return (
       <div className={`field resource-form__line-field ${error ? 'field--error' : ''}`}>
-        <label>{field.label}</label>
+        <label>{renderFormLabel(field.label)}</label>
         <div className="resource-form__line-items">
           <div className="resource-form__line-heading" aria-hidden="true" style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 40px', gap: '8px', marginBottom: '8px', fontWeight: 'bold' }}>
             <span>Product <span className="required-asterisk">*</span></span>
@@ -1408,7 +1417,7 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
 
   return (
     <div className={`field resource-form__line-field ${error ? 'field--error' : ''}`}>
-      <label>{field.label}</label>
+      <label>{renderFormLabel(field.label)}</label>
       <div className="resource-form__line-items">
         <div className="resource-form__line-heading" aria-hidden="true">
           <span>Product ID</span>
@@ -1719,7 +1728,7 @@ function ResourceForm({
           className={`field ${error ? 'field--error' : ''} ${getResourceFieldClassName(config, field)}`.trim()}
           key={field.name}
         >
-          <label htmlFor={`resource-${config.key}-${field.name}`}>{field.label}</label>
+          <label htmlFor={`resource-${config.key}-${field.name}`}>{renderFormLabel(field.label)}</label>
           <select
             id={`resource-${config.key}-${field.name}`}
             name={field.name}
@@ -1728,7 +1737,7 @@ function ResourceForm({
             onBlur={handleBlur}
             aria-invalid={Boolean(error)}
           >
-            <option value="">Select {field.label.toLowerCase()}</option>
+            <option value="">Select {getFieldLabel(field).toLowerCase()}</option>
             {(field.optionsFrom
               ? (referenceData[field.optionsFrom] ?? []).map((item) => ({
                 value: getReferenceOptionValue(item, field.optionValue),
@@ -1756,7 +1765,7 @@ function ResourceForm({
             onChange={handleChange}
             onBlur={handleBlur}
           />
-          <span>{field.label}</span>
+          <span>{renderFormLabel(field.label)}</span>
         </label>
       )
     }
@@ -3304,7 +3313,12 @@ function ResourcePage({ config, navigationContent = null }) {
                   key={metric.label}
                   className={`resource-center__inventory-metric resource-center__inventory-metric--${metric.tone}`}
                 >
-                  {metric.value} {metric.label}
+                  <strong className="resource-center__inventory-metric-count" style={{ color: '#000000', fontWeight: 700 }}>
+                    {metric.value}
+                  </strong>{' '}
+                  <span className={`resource-center__inventory-metric-label resource-center__inventory-metric-label--${metric.tone}`}>
+                    {metric.label}
+                  </span>
                 </span>
               ))}
             </div>

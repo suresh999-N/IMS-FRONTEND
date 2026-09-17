@@ -86,7 +86,7 @@ export default function InputField({
 
   return (
     <div className={`field ${error ? 'field--error' : ''} ${className}`.trim()}>
-      <label htmlFor={id}>{renderFormLabel(label)}</label>
+      {label ? <label htmlFor={id}>{renderFormLabel(label)}</label> : null}
       <div
         className={`input-with-icon ${isTextarea ? 'input-with-icon--textarea' : ''} ${
           error ? 'field--error' : ''

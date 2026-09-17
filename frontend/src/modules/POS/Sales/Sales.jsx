@@ -15,7 +15,6 @@ import {
   Printer,
   ReceiptText,
   RefreshCw,
-  SlidersHorizontal,
   Trash2,
   TrendingUp,
   UserRound,
@@ -666,7 +665,6 @@ export default function Sales({ customers = [] }) {
           filterContent={selectedInvoices.length === 0 ? (
             <div className="sales-page__filters">
               <div className="sales-page__status-filter">
-                <SlidersHorizontal size={15} />
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}

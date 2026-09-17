@@ -17,7 +17,7 @@ import { getSuppliers } from '../../../api/suppliersApi'
 import { showToast } from '../../../components/common/toast'
 import SearchableSelect from '../../../components/SearchableSelect'
 import DatePicker from '../../../components/DatePicker'
-import { addDaysToDate, compareDateOnly, getLogicalRequiredDate, getToday } from '../../../utils/helpers'
+import { compareDateOnly, getLogicalRequiredDate, getToday } from '../../../utils/helpers'
 import './PurchaseIndents.css'
 
 const defaultItem = {
@@ -62,6 +62,86 @@ const priorityOptions = [
 ]
 
 const ROLE_SEED_USER_NAMES = new Set(['Admin', 'Manager', 'Staff'])
+
+const DEPARTMENT_NAMES = new Set([
+  'production',
+  'inventory',
+  'sales',
+  'purchase',
+  'purchases',
+  'finance',
+  'admin',
+  'administration',
+  'procurement',
+  'logistics',
+  'operations',
+  'hr',
+  'human resources',
+  'compliance',
+  'legal',
+  'it',
+  'information technology',
+  'warehouse',
+  'warehouses',
+  'store',
+  'stores',
+  'accounts',
+  'accounting',
+  'vendor management',
+  'maintenance',
+  'quality',
+  'quality assurance',
+  'qa',
+  'qc',
+  'management',
+  'staff',
+  'security',
+  'r&d',
+  'research & development',
+  'research and development',
+  'support',
+  'customer support',
+  'billing',
+  'marketing',
+  'audit',
+])
+
+function isDepartmentValue(val) {
+  if (!val) return false
+  const str = String(val).trim().toLowerCase()
+  if (!str) return false
+  if (DEPARTMENT_NAMES.has(str)) return true
+  if (
+    str.endsWith(' department') ||
+    str.endsWith(' dept') ||
+    str.startsWith('department of ') ||
+    str.includes('department')
+  ) {
+    return true
+  }
+  return false
+}
+
+function isDepartmentUser(user) {
+  if (!user) return false
+  if (user.type === 'department' || user.isDepartment || user.is_department) {
+    return true
+  }
+  const name = getUserName(user)
+  if (isDepartmentValue(name)) {
+    return true
+  }
+  const displayName = getUserDisplayName(user)
+  if (isDepartmentValue(displayName)) {
+    return true
+  }
+  const role = String(user?.role || user?.Role || '').trim().toLowerCase()
+  if (DEPARTMENT_NAMES.has(role) && isDepartmentValue(name)) {
+    return true
+  }
+  return false
+}
+
 let cachedPurchaseIndentUsers = null
 let pendingPurchaseIndentUsersRequest = null
 
@@ -94,11 +174,14 @@ function isRoleSeedUser(user) {
   const email = String(user?.email || user?.Email || '').trim().toLowerCase()
   const role = String(user?.role || user?.Role || '').trim()
 
-  return ROLE_SEED_USER_NAMES.has(name) && ROLE_SEED_USER_NAMES.has(role) && email.endsWith('@test.com')
+  return (
+    (ROLE_SEED_USER_NAMES.has(name) && ROLE_SEED_USER_NAMES.has(role) && email.endsWith('@test.com')) ||
+    isDepartmentValue(name)
+  )
 }
 
 function normalizeUserList(data) {
-  return getListData(data).filter((user) => user && getUserId(user) && !isRoleSeedUser(user))
+  return getListData(data).filter((user) => user && getUserId(user) && !isRoleSeedUser(user) && !isDepartmentUser(user))
 }
 
 async function loadPurchaseIndentUsers() {
@@ -411,7 +494,15 @@ function getUserIdForDraftValue(users, value) {
     return ''
   }
 
+  if (
+    isDepartmentValue(value) ||
+    departmentOptions.some((d) => String(d.id) === String(value) || d.value.toLowerCase() === String(value).toLowerCase())
+  ) {
+    return ''
+  }
+
   const matchedUser = users.find((user) => {
+    if (isDepartmentUser(user)) return false
     const normalizedValue = String(value).trim().toLowerCase()
     return (
       String(getUserId(user)).trim().toLowerCase() === normalizedValue ||
@@ -443,14 +534,26 @@ function PurchaseIndentForm({
       : buildInitialDraft(initialIndentNo)
   ))
 
+  const cleanUsers = useMemo(
+    () =>
+      (users || []).filter(
+        (user) =>
+          user &&
+          !isDepartmentUser(user) &&
+          !isDepartmentValue(getUserName(user)) &&
+          !isDepartmentValue(getUserDisplayName(user))
+      ),
+    [users]
+  )
+
   useEffect(() => {
-    if (users.length === 0) {
+    if (cleanUsers.length === 0) {
       return
     }
 
     setDraft((prev) => {
-      const requestedBy = getUserIdForDraftValue(users, prev.requestedBy)
-      const approvedBy = getUserIdForDraftValue(users, prev.approvedBy)
+      const requestedBy = getUserIdForDraftValue(cleanUsers, prev.requestedBy)
+      const approvedBy = getUserIdForDraftValue(cleanUsers, prev.approvedBy)
 
       if (requestedBy === prev.requestedBy && approvedBy === prev.approvedBy) {
         return prev
@@ -462,7 +565,7 @@ function PurchaseIndentForm({
         approvedBy,
       }
     })
-  }, [users])
+  }, [cleanUsers])
   const [errors, setErrors] = useState({})
   const [formError, setFormError] = useState('')
   const [productTooltip, setProductTooltip] = useState(null)
@@ -900,7 +1003,7 @@ function PurchaseIndentForm({
               disabled={isSubmitting}
             >
               <option value="">Select</option>
-              {users.map((user) => (
+              {cleanUsers.map((user) => (
                 <option key={getUserId(user)} value={getUserId(user)}>
                   {getUserDisplayName(user)}
                 </option>
@@ -989,7 +1092,7 @@ function PurchaseIndentForm({
               className="indent-details-searchable-select"
               value={draft.approvedBy}
               onChange={(event) => updateField('approvedBy', event.target.value)}
-              options={users.map((user) => ({
+              options={cleanUsers.map((user) => ({
                 value: getUserId(user),
                 label: getUserDisplayName(user),
               }))}
@@ -1636,14 +1739,14 @@ export default function CreatePurchaseIndentScreen({
   const userOptions = useMemo(
     () =>
       backendUsers
-        .filter((user) => user && getUserId(user))
+        .filter((user) => user && getUserId(user) && !isDepartmentUser(user))
         .map((user) => ({
           ...user,
           id: getUserId(user),
           name: getUserName(user),
           displayName: getUserDisplayName(user),
         }))
-        .filter((user) => user.name)
+        .filter((user) => user.name && !isDepartmentValue(user.name) && !isDepartmentValue(user.displayName))
         .sort((a, b) => a.name.localeCompare(b.name)),
     [backendUsers]
   )

@@ -410,9 +410,9 @@
 /* Status badges */
 .resource-center__page--subCategories .status-badge.status-inactive,
 .subcategories-col-status .status-badge.status-inactive {
-  color: var(--status-inactive-color, #334155) !important;
-  background: var(--status-inactive-bg, #e2e8f0) !important;
-  border-color: var(--status-inactive-border, #94a3b8) !important;
+  color: var(--status-danger-color, #b91c1c) !important;
+  background: var(--status-danger-bg, #fef2f2) !important;
+  border-color: var(--status-danger-border, #fecaca) !important;
 }
 
 /* ─── Action menu ───────────────────────────────────────────────── */

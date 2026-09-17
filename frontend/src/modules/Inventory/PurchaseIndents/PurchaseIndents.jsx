@@ -40,7 +40,6 @@ import PurchaseIndentDocument from './PurchaseIndentDocument'
 import {
   buildPurchaseIndentDocumentModel,
   formatPurchaseIndentCurrency,
-  getPurchaseIndentPdfFilename,
   validatePurchaseIndentDocumentModel,
 } from './purchaseIndentDocumentModel'
 import './PurchaseIndents.css'
@@ -56,6 +55,86 @@ const DEFAULT_STATUS = 'Pending'
 const DEFAULT_PRIORITY = 'Medium'
 const LIST_PAGE_SIZE = 1000
 const ROLE_SEED_USER_NAMES = new Set(['Admin', 'Manager', 'Staff'])
+
+const DEPARTMENT_NAMES = new Set([
+  'production',
+  'inventory',
+  'sales',
+  'purchase',
+  'purchases',
+  'finance',
+  'admin',
+  'administration',
+  'procurement',
+  'logistics',
+  'operations',
+  'hr',
+  'human resources',
+  'compliance',
+  'legal',
+  'it',
+  'information technology',
+  'warehouse',
+  'warehouses',
+  'store',
+  'stores',
+  'accounts',
+  'accounting',
+  'vendor management',
+  'maintenance',
+  'quality',
+  'quality assurance',
+  'qa',
+  'qc',
+  'management',
+  'staff',
+  'security',
+  'r&d',
+  'research & development',
+  'research and development',
+  'support',
+  'customer support',
+  'billing',
+  'marketing',
+  'audit',
+])
+
+function isDepartmentValue(val) {
+  if (!val) return false
+  const str = String(val).trim().toLowerCase()
+  if (!str) return false
+  if (DEPARTMENT_NAMES.has(str)) return true
+  if (
+    str.endsWith(' department') ||
+    str.endsWith(' dept') ||
+    str.startsWith('department of ') ||
+    str.includes('department')
+  ) {
+    return true
+  }
+  return false
+}
+
+function isDepartmentUser(user) {
+  if (!user) return false
+  if (user.type === 'department' || user.isDepartment || user.is_department) {
+    return true
+  }
+  const name = getUserName(user)
+  if (isDepartmentValue(name)) {
+    return true
+  }
+  const displayName = getUserDisplayName(user)
+  if (isDepartmentValue(displayName)) {
+    return true
+  }
+  const role = String(user?.role || user?.Role || '').trim().toLowerCase()
+  if (DEPARTMENT_NAMES.has(role) && isDepartmentValue(name)) {
+    return true
+  }
+  return false
+}
+
 const DEPARTMENT_OPTIONS = [
   { id: 1, name: 'Production' },
   { id: 2, name: 'Inventory' },
@@ -170,11 +249,14 @@ function isRoleSeedUser(user) {
   const email = String(user?.email || user?.Email || '').trim().toLowerCase()
   const role = String(user?.role || user?.Role || '').trim()
 
-  return ROLE_SEED_USER_NAMES.has(name) && ROLE_SEED_USER_NAMES.has(role) && email.endsWith('@test.com')
+  return (
+    (ROLE_SEED_USER_NAMES.has(name) && ROLE_SEED_USER_NAMES.has(role) && email.endsWith('@test.com')) ||
+    isDepartmentValue(name)
+  )
 }
 
 function normalizeUserList(data) {
-  return getResponseListData(data).filter((user) => user && getUserId(user) && !isRoleSeedUser(user))
+  return getResponseListData(data).filter((user) => user && getUserId(user) && !isRoleSeedUser(user) && !isDepartmentUser(user))
 }
 
 async function loadPurchaseIndentUsers() {
@@ -285,11 +367,11 @@ function makeUserMap(users) {
   const safeUsers = Array.isArray(users) ? users : []
 
   safeUsers.forEach((user) => {
-    if (!user) return
+    if (!user || isDepartmentUser(user)) return
     const userId = getUserId(user)
     const userName = getUserDisplayName(user)
 
-    if (userId && userName) {
+    if (userId && userName && !isDepartmentValue(userName)) {
       map.set(String(userId), userName)
     }
   })
@@ -326,11 +408,11 @@ function getReadablePersonName(record, nameKeys, idKeys, userMap, fallback = NOT
   const nameValue = getFirstValue(record, nameKeys)
   const objectName = getObjectName(nameValue, getUserDisplayName)
 
-  if (objectName) {
+  if (objectName && !isDepartmentValue(objectName)) {
     return objectName
   }
 
-  if (nameValue && typeof nameValue !== 'object' && !isLikelyId(nameValue)) {
+  if (nameValue && typeof nameValue !== 'object' && !isLikelyId(nameValue) && !isDepartmentValue(nameValue)) {
     return String(nameValue)
   }
 

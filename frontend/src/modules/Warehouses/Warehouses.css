@@ -767,8 +767,36 @@
 }
 
 .warehouses-status-menu .status-badge--button {
-  border: 1px solid currentColor;
+  border-width: 1px;
+  border-style: solid;
   cursor: pointer;
+}
+
+.warehouses-status-menu .status-badge.status-inactive,
+.warehouses-page__table-card .status-badge.status-inactive,
+.warehouses-page .status-badge.status-inactive,
+.warehouses-status-menu__option .status-badge.status-inactive {
+  color: #b91c1c !important;
+  background: #fef2f2 !important;
+  border-color: #fecaca !important;
+}
+
+.warehouses-status-menu .status-badge.status-active,
+.warehouses-page__table-card .status-badge.status-active,
+.warehouses-page .status-badge.status-active,
+.warehouses-status-menu__option .status-badge.status-active {
+  color: #047857 !important;
+  background: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+}
+
+.warehouses-status-menu .status-badge.status-pending,
+.warehouses-page__table-card .status-badge.status-pending,
+.warehouses-page .status-badge.status-pending,
+.warehouses-status-menu__option .status-badge.status-pending {
+  color: #c2410c !important;
+  background: #fff7ed !important;
+  border-color: #fed7aa !important;
 }
 
 .warehouses-status-menu__popover {

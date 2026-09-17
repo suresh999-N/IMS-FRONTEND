@@ -1438,8 +1438,10 @@
 }
 
 .resource-form__footer {
-  padding-top: 4px;
-  padding-bottom: 20px;
+  margin-top: 16px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  border-top: 1px solid #e2e8f0;
 }
 
 .resource-center__delete-dialog {
@@ -6965,7 +6967,8 @@
   box-shadow: none;
 }
 
-.resource-center__products-table-card .table-component__table .status-badge.status-success {
+.resource-center__products-table-card .table-component__table .status-badge.status-success,
+.resource-center__products-table-card .table-component__table .status-badge.status-increase {
   border-color: var(--status-success-border, #a7f3d0);
   background: var(--status-success-bg, #ecfdf5);
   color: var(--status-success-color, #047857);
@@ -6978,7 +6981,8 @@
 }
 
 .resource-center__products-table-card .table-component__table .status-badge.status-failed,
-.resource-center__products-table-card .table-component__table .status-badge.status-critical {
+.resource-center__products-table-card .table-component__table .status-badge.status-critical,
+.resource-center__products-table-card .table-component__table .status-badge.status-decrease {
   border-color: rgba(239, 68, 68, 0.2);
   background: #fef2f2;
   color: #b91c1c;
@@ -7241,7 +7245,9 @@
   text-align: center !important;
 }
 
-.resource-center__page--product-style .products-data-table--compact .table-component__selection-summary {
+.resource-center__page--goodsReceipts .table-component__selection-summary,
+.resource-center__page--product-style .products-data-table--compact .table-component__selection-summary,
+.table-component__toolbar:has(.resource-center__product-style-selection-summary) .table-component__selection-summary {
   display: none !important;
 }
 
