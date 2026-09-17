@@ -11,6 +11,10 @@ import {
   phoneInputProps,
   sanitizePhoneInput,
 } from '../../../validators/phoneValidator'
+import {
+  CITY_TO_STATE_MAP,
+  INDIA_STATES,
+} from '../../Suppliers/supplierMasterData'
 import './WarehouseForm.css'
 
 const emptyForm = {
@@ -75,7 +79,7 @@ function sanitizeEmailForSubmit(value) {
   return sanitizeEmailInput(removeScriptTagText(value).replace(/[<>]/g, ''))
 }
 
-function getWarehouseNameError(value) {
+function getWarehouseNameError(value, warehouses = [], currentId = null) {
   const cleanValue = sanitizeWarehouseName(value).trim()
 
   if (!cleanValue) {
@@ -98,6 +102,14 @@ function getWarehouseNameError(value) {
     return 'Use only letters, numbers, spaces, and hyphens.'
   }
 
+  const isDuplicate = warehouses.some((w) => 
+    String(w.id) !== String(currentId) && 
+    w.name?.toLowerCase() === cleanValue.toLowerCase()
+  )
+  if (isDuplicate) {
+    return 'This warehouse name already exists.'
+  }
+
   return ''
 }
 
@@ -114,6 +126,13 @@ function getLocationError(value) {
 
   if (!/^[A-Za-z ]+$/.test(cleanValue) || !/[A-Za-z]/.test(cleanValue)) {
     return 'Use alphabetic location names only.'
+  }
+
+  const key = cleanValue.replace(/[\s\-_]/g, '').toLowerCase()
+  const isIndianState = INDIA_STATES.some(s => s.replace(/[\s\-_]/g, '').toLowerCase() === key)
+  
+  if (!CITY_TO_STATE_MAP[key] && !isIndianState) {
+    return 'Location must be a valid Indian city or state.'
   }
 
   return ''
@@ -143,6 +162,7 @@ function getManagerNameError(value) {
 
 export default function WarehouseForm({
   initialValues,
+  warehouses = [],
   canSubmit,
   isSubmitting = false,
   mode = 'create',
@@ -163,15 +183,28 @@ export default function WarehouseForm({
   const [touched, setTouched] = useState({})
   const [submitted, setSubmitted] = useState(false)
 
-  const errors = useMemo(() => ({
-    warehouseCode: '',
-    name: getWarehouseNameError(formData.name),
-    location: getLocationError(formData.location),
-    managerName: getManagerNameError(formData.managerName),
-    phone: getPhoneError(formData.phone),
-    email: getEmailError(formData.email, { required: true }),
-    status: statusOptions.includes(formData.status) ? '' : 'Choose Active or Inactive.',
-  }), [
+  const errors = useMemo(() => {
+    let emailErr = getEmailError(formData.email, { required: true })
+    if (!emailErr) {
+      const isDuplicateEmail = warehouses.some((w) => 
+        String(w.id) !== String(initialValues?.id) && 
+        w.email?.toLowerCase() === formData.email.toLowerCase()
+      )
+      if (isDuplicateEmail) {
+        emailErr = 'This email already exists in another warehouse.'
+      }
+    }
+
+    return {
+      warehouseCode: '',
+      name: getWarehouseNameError(formData.name, warehouses, initialValues?.id),
+      location: getLocationError(formData.location),
+      managerName: getManagerNameError(formData.managerName),
+      phone: getPhoneError(formData.phone),
+      email: emailErr,
+      status: statusOptions.includes(formData.status) ? '' : 'Choose Active or Inactive.',
+    }
+  }, [
     formData.email,
     formData.location,
     formData.managerName,
@@ -179,6 +212,8 @@ export default function WarehouseForm({
     formData.phone,
     formData.status,
     formData.warehouseCode,
+    warehouses,
+    initialValues?.id,
   ])
 
   const isValid = Object.values(errors).every((value) => !value)

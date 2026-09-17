@@ -1,13 +1,14 @@
 import { Plus, ScanLine } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '../../../hooks/useAuth'
 import PageHeader from '../../../components/common/PageHeader'
 import StateBlock from '../../../components/common/StateBlock'
+import { ConfirmationDialog } from '../../../components/erp'
 import { getRequiredError, getToday } from '../../../utils/helpers'
 import BarcodeForm from './components/BarcodeForm'
 import BarcodeTable from './components/BarcodeTable'
 import { getPreviewValue } from './utils/preview'
-import { getBarcodes, generateBarcode } from '../../../api/barcodeApi'
+import { getBarcodes, generateBarcode, findExistingBarcode } from '../../../api/barcodeApi'
 import './Barcode.css'
 
 const initialForm = {
@@ -29,6 +30,7 @@ export default function Barcode({
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false)
   const canCreate = hasPermission('barcode', 'create')
 
   const errors = {
@@ -37,6 +39,11 @@ export default function Barcode({
   }
   const selectedProduct = products.find((item) => String(item.id) === String(formData.productId)) ?? null
   const livePreviewValue = getPreviewValue(selectedProduct, formData.codeType)
+
+  const existingBarcode = useMemo(() => {
+    if (!formData.productId && !selectedProduct?.name) return null
+    return findExistingBarcode(formData.productId, selectedProduct?.name, barcodes)
+  }, [barcodes, formData.productId, selectedProduct])
 
   async function loadBarcodes() {
     setIsLoading(true)
@@ -86,6 +93,15 @@ export default function Barcode({
       return
     }
 
+    if (existingBarcode) {
+      setShowOverwriteConfirm(true)
+      return
+    }
+
+    await executeGenerate(false)
+  }
+
+  async function executeGenerate(isOverwrite = false) {
     setIsSaving(true)
     setMessage(null)
 
@@ -93,13 +109,25 @@ export default function Barcode({
       const response = await generateBarcode(formData.productId, products)
 
       if (response.success) {
-        setBarcodes((current) => [response.data, ...current])
+        setBarcodes((current) => {
+          if (isOverwrite) {
+            const filtered = current.filter((b) => {
+              const isMatch =
+                (formData.productId && String(b.productId) === String(formData.productId)) ||
+                (selectedProduct?.name && b.productName && b.productName.trim().toLowerCase() === selectedProduct.name.trim().toLowerCase())
+              return !isMatch
+            })
+            return [response.data, ...filtered]
+          }
+          return [response.data, ...current]
+        })
         setFormData(initialForm)
         setTouched({})
         setIsFormOpen(false)
+        setShowOverwriteConfirm(false)
         setMessage({
           success: true,
-          message: `${formData.codeType} generated successfully.`,
+          message: `${formData.codeType} ${isOverwrite ? 'regenerated and overwritten' : 'generated'} successfully.`,
         })
       } else {
         setMessage({
@@ -117,6 +145,14 @@ export default function Barcode({
     }
   }
 
+  function handleCancelOverwrite() {
+    setShowOverwriteConfirm(false)
+    setMessage({
+      success: false,
+      message: 'Barcode already exists for this product.',
+    })
+  }
+
   function handleQuickAddProduct(values) {
     const result = onQuickAddProduct(values)
     setMessage(result)
@@ -127,6 +163,7 @@ export default function Barcode({
     setFormData(initialForm)
     setTouched({})
     setIsFormOpen(false)
+    setShowOverwriteConfirm(false)
   }
 
   return (
@@ -159,6 +196,19 @@ export default function Barcode({
         </div>
       ) : null}
 
+      {showOverwriteConfirm ? (
+        <ConfirmationDialog
+          title="Barcode Already Exists"
+          message={`A barcode already exists for "${selectedProduct?.name || 'this product'}". Do you want to regenerate and overwrite the existing barcode?`}
+          confirmLabel="Overwrite & Regenerate"
+          cancelLabel="Cancel"
+          tone="warning"
+          isSubmitting={isSaving}
+          onConfirm={() => executeGenerate(true)}
+          onCancel={handleCancelOverwrite}
+        />
+      ) : null}
+
       {isFormOpen ? (
         <BarcodeForm
           formData={formData}
@@ -166,6 +216,7 @@ export default function Barcode({
           errors={errors}
           products={products}
           livePreviewValue={livePreviewValue}
+          existingBarcode={existingBarcode}
           onChange={handleChange}
           onBlur={handleBlur}
           onSubmit={handleSubmit}

@@ -967,15 +967,15 @@ export default function Accounting({
               <div className="accounting-page__detail-grid">
                 <div>
                   <span>Final Total</span>
-                  <strong>{formatCurrency(selectedInvoice.finalTotal)}</strong>
+                  <strong style={{ color: '#0f172a' }}>{formatCurrency(selectedInvoice.finalTotal)}</strong>
                 </div>
                 <div>
                   <span>Paid Amount</span>
-                  <strong>{formatCurrency(selectedInvoice.paidAmount)}</strong>
+                  <strong style={{ color: '#0f172a' }}>{formatCurrency(selectedInvoice.paidAmount)}</strong>
                 </div>
                 <div>
                   <span>Balance</span>
-                  <strong>{formatCurrency(selectedInvoice.balanceAmount)}</strong>
+                  <strong style={{ color: '#0f172a' }}>{formatCurrency(selectedInvoice.balanceAmount)}</strong>
                 </div>
                 <div>
                   <span>Due Date</span>

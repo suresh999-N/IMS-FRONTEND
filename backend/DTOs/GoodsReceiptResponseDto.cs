@@ -1,4 +1,4 @@
-﻿namespace IMSBackend.DTOs
+namespace IMSBackend.DTOs
 {
     public class GoodsReceiptResponseDto
     {
@@ -19,6 +19,10 @@
         public string? WarehouseName { get; set; }
 
         public DateTime? ReceiptDate { get; set; }
+
+        public string? SupplierInvoice { get; set; }
+
+        public DateTime? SupplierInvoiceDate { get; set; }
 
         public decimal TotalAmount { get; set; }
 

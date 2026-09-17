@@ -13,7 +13,7 @@ export default function NotificationsHeader({ summary }) {
             aria-label="Notification summary"
           >
             <span className="resource-center__metric-badge resource-center__metric-badge--total">
-              <strong>{summary.total}</strong>
+              <strong style={{ color: '#0f172a' }}>{summary.total}</strong>
               Notifications
             </span>
             <span className="resource-center__metric-badge resource-center__metric-badge--warning">

@@ -2319,6 +2319,7 @@ input[type="password"]::-ms-clear {
 .customers-metric-badge strong,
 .products-metric-badge strong,
 .resource-center__inventory-metric strong,
+.resource-center__inventory-metric .resource-center__inventory-metric-count,
 .resource-center__invoice-money,
 .table-container td.is-numeric {
   overflow: visible !important;
@@ -2326,3 +2327,9 @@ input[type="password"]::-ms-clear {
   white-space: nowrap !important;
   max-width: none !important;
 }
+
+.resource-center__inventory-metric strong,
+.resource-center__inventory-metric .resource-center__inventory-metric-count {
+  color: #0f172a !important;
+}
+

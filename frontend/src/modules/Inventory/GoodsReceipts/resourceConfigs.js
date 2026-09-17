@@ -319,7 +319,7 @@ export const RESOURCE_CONFIGS = {
         maxMessage: 'Quantity Received cannot exceed remaining PO quantity.',
       },
       { name: 'price', label: 'Unit Price', type: 'currency', required: true, min: 0, readOnly: false },
-      { name: 'receiptDate', label: 'Receipt Date', type: 'date', required: true, defaultValue: getToday },
+      { name: 'receiptDate', label: 'Receipt Date', type: 'date', required: true, defaultValue: getToday, min: getToday },
       { name: 'notes', label: 'Notes', type: 'textarea' },
     ],
     columns: [
@@ -639,7 +639,7 @@ export const RESOURCE_CONFIGS = {
         required: true,
         min: 1,
         optionsFrom: 'warehouses',
-        optionValue: ['fromWarehouseId', 'id', 'warehouseId'],
+        optionValue: ['warehouseId', 'id'],
         optionLabel: ['name', 'warehouseName', 'title'],
         placeholder: 'Select warehouse',
         searchPlaceholder: 'Search warehouses',
@@ -652,7 +652,7 @@ export const RESOURCE_CONFIGS = {
         required: true,
         min: 1,
         optionsFrom: 'warehouses',
-        optionValue: ['toWarehouseId', 'id', 'warehouseId'],
+        optionValue: ['warehouseId', 'id'],
         optionLabel: ['name', 'warehouseName', 'title'],
         placeholder: 'Select warehouse',
         searchPlaceholder: 'Search warehouses',
@@ -679,7 +679,7 @@ export const RESOURCE_CONFIGS = {
         defaultValue: 1,
         placeholder: 'Enter quantity',
       },
-      { name: 'transferDate', label: 'Transfer Date *', type: 'date', required: true, defaultValue: getToday },
+      { name: 'transferDate', label: 'Transfer Date *', type: 'date', required: true, defaultValue: getToday, min: getToday },
       { name: 'status', label: 'Status *', type: 'select', options: documentStatusOptions, defaultValue: 'pending' },
     ],
     columns: [
@@ -834,7 +834,7 @@ export const RESOURCE_CONFIGS = {
     idFields: ['auditId'],
     fields: [
       { name: 'warehouseId', label: 'Warehouse ID', type: 'number', required: true, min: 1 },
-      { name: 'auditDate', label: 'Audit Date', type: 'date', required: true, defaultValue: getToday },
+      { name: 'auditDate', label: 'Audit Date', type: 'date', required: true, defaultValue: getToday, min: getToday },
       {
         name: 'auditType',
         label: 'Audit Type',
@@ -1004,8 +1004,8 @@ export const RESOURCE_CONFIGS = {
     fields: [
       { name: 'soId', label: 'Sales Order ID', type: 'number', min: 1 },
       { name: 'customerId', label: 'Customer ID', type: 'number', required: true, min: 1 },
-      { name: 'invoiceDate', label: 'Invoice Date', type: 'date', required: true, defaultValue: getToday },
-      { name: 'dueDate', label: 'Due Date', type: 'date', defaultValue: getToday },
+      { name: 'invoiceDate', label: 'Invoice Date', type: 'date', required: true, defaultValue: getToday, min: getToday },
+      { name: 'dueDate', label: 'Due Date', type: 'date', defaultValue: getToday, min: getToday },
       { name: 'paidAmount', label: 'Paid Amount', type: 'currency', defaultValue: '0', min: 0 },
       { name: 'items', label: 'Invoice Items', type: 'lineItems', required: true },
     ],
@@ -1219,7 +1219,7 @@ export const RESOURCE_CONFIGS = {
           { value: 'Ordered', label: 'Ordered' },
         ],
       },
-      { name: 'indentDate', label: 'Request Date', type: 'date', required: true, defaultValue: getToday },
+      { name: 'indentDate', label: 'Request Date', type: 'date', required: true, defaultValue: getToday, min: getToday },
       { name: 'notes', label: 'Notes', type: 'textarea' },
     ],
     columns: [

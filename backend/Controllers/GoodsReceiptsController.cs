@@ -69,6 +69,8 @@ namespace IMSBackend.Controllers
                     WarehouseName = warehouse != null ? warehouse.Name : null,
 
                     receipt.ReceiptDate,
+                    receipt.SupplierInvoice,
+                    receipt.SupplierInvoiceDate,
                     receipt.Status,
                     receipt.Notes,
 
@@ -113,6 +115,8 @@ namespace IMSBackend.Controllers
                     WarehouseName = grn.First().WarehouseName,
 
                     ReceiptDate = grn.First().ReceiptDate,
+                    SupplierInvoice = grn.First().SupplierInvoice,
+                    SupplierInvoiceDate = grn.First().SupplierInvoiceDate,
                     Status = grn.First().Status,
                     Notes = grn.First().Notes,
 
@@ -162,11 +166,13 @@ namespace IMSBackend.Controllers
             if (dto.PoId <= 0 ||
     dto.SupplierId <= 0 ||
     dto.WarehouseId <= 0 ||
+    string.IsNullOrWhiteSpace(dto.SupplierInvoice) ||
+    !dto.SupplierInvoiceDate.HasValue ||
     dto.Items == null ||
     !dto.Items.Any())
             {
                 return BadRequest(ApiResponse<object>.Fail(
-                    "Purchase order, supplier, warehouse and at least one item are required.",
+                    "Purchase order, supplier, warehouse, supplier invoice number, supplier invoice date, and at least one item are required.",
                     traceId: HttpContext.TraceIdentifier));
             }
 
@@ -1198,6 +1204,8 @@ namespace IMSBackend.Controllers
                 WarehouseId = grn.WarehouseId,
                 WarehouseName = warehouse?.Name,
                 ReceiptDate = grn.ReceiptDate,
+                SupplierInvoice = grn.SupplierInvoice,
+                SupplierInvoiceDate = grn.SupplierInvoiceDate,
                 Status = grn.Status,
                 Notes = grn.Notes,
                 Items = items

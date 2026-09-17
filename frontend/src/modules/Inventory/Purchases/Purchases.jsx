@@ -402,6 +402,7 @@ export default function Purchases({
   const [viewTarget, setViewTarget] = useState(null)
   const [prefilledData, setPrefilledData] = useState(null)
   const [editingItem, setEditingItem] = useState(null)
+  const [selectedRowKeys, setSelectedRowKeys] = useState([])
 
   const canCreate = hasPermission('purchases', 'create')
   const canDelete = hasPermission('purchases', 'delete')
@@ -629,6 +630,59 @@ export default function Purchases({
     })
   }
 
+  const handleBulkDelete = async () => {
+    if (!canDelete || selectedRowKeys.length === 0) return
+    if (!window.confirm(`Are you sure you want to delete ${selectedRowKeys.length} purchase orders?`)) return
+    
+    setIsLoading(true)
+    for (const key of selectedRowKeys) {
+       await deletePurchaseOrder(key)
+    }
+    setSelectedRowKeys([])
+    await loadPurchaseOrders()
+  }
+
+  const handleBulkStatusUpdate = async (newStatus) => {
+    if (selectedRowKeys.length === 0) return
+    setIsLoading(true)
+    for (const key of selectedRowKeys) {
+       const po = purchaseOrders.find(p => String(p.id) === String(key))
+       if (po) {
+         await updatePurchaseOrder(key, { ...po, status: newStatus })
+       }
+    }
+    setSelectedRowKeys([])
+    await loadPurchaseOrders()
+  }
+
+  const handleBulkExport = () => {
+    if (selectedRowKeys.length === 0) return
+    
+    const selectedOrders = purchaseOrders.filter(p => selectedRowKeys.includes(String(p.id)))
+    const headers = ['PO Number', 'Supplier', 'Order Date', 'Quantity', 'Total Amount', 'Status']
+    const csvContent = [
+      headers.join(','),
+      ...selectedOrders.map(p => [
+        `"${p.poNumber || p.poId}"`,
+        `"${p.supplierName || p.supplier || ''}"`,
+        `"${formatDate(p.orderDate) || ''}"`,
+        getPurchaseQuantity(p) || 0,
+        getPurchaseTotal(p) || 0,
+        `"${getPurchaseOrderStatus(p.status)}"`
+      ].join(','))
+    ].join('\n')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `purchase_orders_export_${formatDate(new Date())}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   return (
     <div className="page purchases-page">
       <header className="purchases-page__compact-header" aria-label="Purchases summary">
@@ -687,6 +741,11 @@ export default function Purchases({
         onEdit={handleOpenEdit}
         onRefresh={loadPurchaseOrders}
         loading={isLoading}
+        selectedRowKeys={selectedRowKeys}
+        onSelectionChange={setSelectedRowKeys}
+        onBulkDelete={handleBulkDelete}
+        onBulkStatusUpdate={handleBulkStatusUpdate}
+        onBulkExport={handleBulkExport}
       />
 
       {isFormOpen ? (
@@ -703,6 +762,7 @@ export default function Purchases({
             suppliers={suppliers}
             products={products}
             initialData={prefilledData}
+              mode={editingItem ? 'edit' : 'create'}
             onSubmit={handleSave}
             onCancel={() => {
               setIsFormOpen(false)

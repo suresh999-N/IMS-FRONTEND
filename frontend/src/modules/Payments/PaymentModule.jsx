@@ -1207,7 +1207,7 @@ function PaymentDetailsDrawer({ payment, invoice, allPayments = [], onClose, onP
                 <span>{formatDate(activePayment.paymentDate)}</span>
               </div>
             </div>
-            <strong>{formatCurrency(activePayment.amount)}</strong>
+            <strong style={{ color: '#0f172a' }}>{formatCurrency(activePayment.amount)}</strong>
           </div>
           <div className="payment-drawer__summary-customer">
             <span>Customer</span>
@@ -1230,8 +1230,8 @@ function PaymentDetailsDrawer({ payment, invoice, allPayments = [], onClose, onP
                 <span style={{ width: `${progressPercent}%` }} />
               </div>
               <div className="payment-drawer__progress-values">
-                <span>Paid <strong>{formatCurrency(paidAmount)}</strong></span>
-                <span>Remaining <strong>{formatCurrency(metrics.outstandingAfter)}</strong></span>
+                <span>Paid <strong style={{ color: '#0f172a' }}>{formatCurrency(paidAmount)}</strong></span>
+                <span>Remaining <strong style={{ color: '#0f172a' }}>{formatCurrency(metrics.outstandingAfter)}</strong></span>
               </div>
             </div>
 
@@ -1377,7 +1377,7 @@ function LegacyPaymentDetailsDrawer({ payment, invoice, onClose, onPrint, onExpo
 
         <div className="payment-drawer__amount">
           <span>Payment amount</span>
-          <strong>{formatCurrency(payment.amount)}</strong>
+          <strong style={{ color: '#0f172a' }}>{formatCurrency(payment.amount)}</strong>
           <PaymentStatusBadge status={status} />
         </div>
 
@@ -2825,7 +2825,7 @@ export default function CustomerPaymentModule({
               <strong>{summary.reconciled}</strong> Success
             </span>
             <span className="resource-center__inventory-metric resource-center__inventory-metric--warning">
-              <strong>{summary.pending}</strong> Pending
+              <strong style={{ color: '#0f172a' }}>{summary.pending}</strong> Pending
             </span>
             <span className="resource-center__inventory-metric resource-center__inventory-metric--info">
               <strong>{formatCompactPaymentCurrency(summary.totalAmount)}</strong> Collected
@@ -2941,7 +2941,7 @@ export default function CustomerPaymentModule({
               <h3>{deleteTarget.deleteMode === 'void' ? 'Void this payment?' : 'Delete this payment?'}</h3>
               <p>
                 Payment <strong>{paymentNumberFrom(deleteTarget)}</strong> for <strong>{deleteTarget.partyName}</strong> worth{' '}
-                <strong>{formatCurrency(deleteTarget.amount)}</strong> will be cancelled and the ledger balances will be reversed.
+                <strong style={{ color: '#0f172a' }}>{formatCurrency(deleteTarget.amount)}</strong> will be cancelled and the ledger balances will be reversed.
               </p>
             </div>
             <div className="button-row payment-delete-dialog__actions">

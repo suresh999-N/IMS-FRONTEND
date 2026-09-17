@@ -178,11 +178,11 @@ export default function CustomerDetailsPanel({
         <div className="customers-workspace__financial-strip" aria-label="Customer financial snapshot">
           <div>
             <span>Total value</span>
-            <strong>{formatCurrency(totalAmount)}</strong>
+            <strong style={{ color: '#0f172a' }}>{formatCurrency(totalAmount)}</strong>
           </div>
           <div>
             <span>Outstanding</span>
-            <strong>{formatCurrency(customer.outstandingBalance || 0)}</strong>
+            <strong style={{ color: '#0f172a' }}>{formatCurrency(customer.outstandingBalance || 0)}</strong>
           </div>
           <div>
             <span>Orders</span>

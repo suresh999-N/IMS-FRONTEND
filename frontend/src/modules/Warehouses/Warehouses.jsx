@@ -1627,6 +1627,7 @@ export default function Warehouses({
           <WarehouseForm
             key={editingWarehouse?.id ?? 'new'}
             initialValues={editingWarehouse}
+            warehouses={warehouses}
             canSubmit={editingWarehouse ? canEdit : canCreate}
             isSubmitting={isSaving}
             mode={editingWarehouse ? 'edit' : 'create'}

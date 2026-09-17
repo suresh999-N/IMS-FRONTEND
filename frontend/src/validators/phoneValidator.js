@@ -85,6 +85,7 @@ export const phoneInputProps = {
   type: 'tel',
   inputMode: 'numeric',
   pattern: '[0-9]*',
+  minLength: PHONE_MAX_LENGTH,
   maxLength: PHONE_MAX_LENGTH,
   onKeyDown: blockInvalidPhoneKey,
 }

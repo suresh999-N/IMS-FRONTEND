@@ -783,6 +783,7 @@ export default function GoodsReceiptForm({
     warehouseId: getRequiredError(formData.warehouseId, 'Warehouse'),
     receiptDate: getRequiredError(formData.receiptDate, 'Receipt date'),
     supplierInvoiceNo: getRequiredError(formData.supplierInvoiceNo, 'Supplier Invoice No'),
+    supplierInvoiceDate: getRequiredError(formData.supplierInvoiceDate, 'Supplier Invoice Date'),
     lineItems: formData.lineItems.map(item => {
       const ordQty = Number(item.orderedQuantity || 0)
       const prevRx = Number(item.previouslyReceivedQuantity || 0)
@@ -813,6 +814,7 @@ export default function GoodsReceiptForm({
     !errors.warehouseId &&
     !errors.receiptDate &&
     !errors.supplierInvoiceNo &&
+    !errors.supplierInvoiceDate &&
     errors.lineItems.every(line => !line.productId && !line.receivedQuantity && !line.unitPrice)
 
   const summary = useMemo(() => {
@@ -898,6 +900,7 @@ export default function GoodsReceiptForm({
       receiptDate: formData.receiptDate,
       supplierInvoiceNo: formData.supplierInvoiceNo,
       supplierInvoiceNumber: formData.supplierInvoiceNo,
+      supplierInvoice: formData.supplierInvoiceNo,
       invoiceNumber: formData.supplierInvoiceNo,
       invoiceNo: formData.supplierInvoiceNo,
       supplierInvoiceDate: formData.supplierInvoiceDate || null,

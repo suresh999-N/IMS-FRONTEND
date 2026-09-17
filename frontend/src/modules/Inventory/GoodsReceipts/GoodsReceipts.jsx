@@ -1752,12 +1752,19 @@ function exportResourceRowsCsv(config, rows) {
 function printResourceRows(config, rows) {
   const columns = getResourceExportColumns(config)
   const title = escapeHtml(config.title || 'Records')
+  
+  const getAlignClass = (column) => {
+    const isNumeric = column.format === 'currency' || column.format === 'number' || ['quantityReceived', 'quantity', 'totalAmount', 'price', 'Received'].includes(column.key) || column.label === 'Received' || column.label === 'Price' || column.label === 'Qty' || column.label === 'Total'
+    const isDate = column.format === 'date' || column.key === 'receiptDate' || column.label === 'Date'
+    return (isNumeric ? 'align-right' : 'align-left') + (isDate ? ' no-wrap' : '')
+  }
+
   const tableHeaders = columns
-    .map((column) => `<th>${escapeHtml(column.label ?? column.key)}</th>`)
+    .map((column) => `<th class="${getAlignClass(column)}">${escapeHtml(column.label ?? column.key)}</th>`)
     .join('')
   const tableRows = rows.map((row) => `
     <tr>
-      ${columns.map((column) => `<td>${escapeHtml(getResourceExportValue(row, column))}</td>`).join('')}
+      ${columns.map((column) => `<td class="${getAlignClass(column)}">${escapeHtml(getResourceExportValue(row, column))}</td>`).join('')}
     </tr>
   `).join('')
   const printWindow = window.open('', '_blank')
@@ -1767,11 +1774,20 @@ function printResourceRows(config, rows) {
   }
 
   printWindow.document.write(`<!doctype html><html><head><title>${title}</title><style>
+    @page { size: auto; }
     body { margin: 28px; color: #111827; font: 13px Arial, sans-serif; }
     h1 { margin: 0 0 16px; font-size: 20px; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 8px 10px; border: 1px solid #dbe4f0; text-align: left; vertical-align: top; }
-    th { background: #f8fafc; color: #475569; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; table-layout: auto; }
+    th, td { padding: 8px 10px; border: 1px solid #dbe4f0; vertical-align: top; word-break: normal; overflow-wrap: break-word; }
+    th { background: #f8fafc; color: #475569; font-size: 12px; white-space: nowrap; }
+    .align-right { text-align: right !important; white-space: nowrap; }
+    .align-left { text-align: left !important; }
+    .no-wrap { white-space: nowrap !important; }
+    @media print {
+      body { margin: 10mm; }
+      table { width: 100%; page-break-inside: auto; }
+      tr { page-break-inside: avoid; page-break-after: auto; }
+    }
   </style></head><body>
     <h1>${title}</h1>
     <table>
@@ -4418,7 +4434,7 @@ function ResourcePage({ config, navigationContent = null }) {
             className: 'resource-center__invoices-col-payment',
             render: (row) => (
               <div className="resource-center__invoice-payment">
-                <strong>{formatCurrency(readResourceValue(row, 'paidAmount', 0))}</strong>
+                <strong style={{ color: '#0f172a' }}>{formatCurrency(readResourceValue(row, 'paidAmount', 0))}</strong>
                 <span>Balance {formatCurrency(readResourceValue(row, 'balanceAmount', 0))}</span>
               </div>
             ),
@@ -4928,13 +4944,13 @@ function ResourcePage({ config, navigationContent = null }) {
             <h1>{config.title}</h1>
             <div className="products-workspace-header__metrics" aria-label={`${config.title} metrics`}>
               <span className="products-metric-badge products-metric-badge--total">
-                <strong>{summary.total}</strong> Records
+                <strong style={{ color: '#0f172a' }}>{summary.total}</strong> Records
               </span>
               <span className="products-metric-badge products-metric-badge--value">
-                <strong>{summary.unread ?? summary.active}</strong> {summary.unread !== null ? 'Unread' : 'Active'}
+                <strong style={{ color: '#0f172a' }}>{summary.unread ?? summary.active}</strong> {summary.unread !== null ? 'Unread' : 'Active'}
               </span>
               <span className="products-metric-badge products-metric-badge--warning">
-                <strong>{summary.pending}</strong> Pending
+                <strong style={{ color: '#0f172a' }}>{summary.pending}</strong> Pending
               </span>
             </div>
           </div>
@@ -4945,13 +4961,13 @@ function ResourcePage({ config, navigationContent = null }) {
             <h1>{config.title}</h1>
             <div className="resource-center__subcategories-metrics" aria-label="SubCategory metrics">
               <span className="resource-center__subcategories-metric resource-center__subcategories-metric--success">
-                {summary.total} Records
+                <strong style={{ color: '#0f172a' }}>{summary.total}</strong> Records
               </span>
               <span className="resource-center__subcategories-metric resource-center__subcategories-metric--info">
-                {summary.active} Active
+                <strong style={{ color: '#0f172a' }}>{summary.active}</strong> Active
               </span>
               <span className="resource-center__subcategories-metric resource-center__subcategories-metric--warning">
-                {summary.pending} Draft
+                <strong style={{ color: '#0f172a' }}>{summary.pending}</strong> Draft
               </span>
             </div>
           </div>
@@ -5000,38 +5016,38 @@ function ResourcePage({ config, navigationContent = null }) {
             {isNotificationsPage ? (
               <div className="resource-center__compact-metrics" aria-label="Notification summary">
                 <span className="resource-center__metric-badge resource-center__metric-badge--total">
-                  <strong>{notificationSummary.total}</strong>
+                  <strong style={{ color: '#0f172a' }}>{notificationSummary.total}</strong>
                   Notifications
                 </span>
                 <span className="resource-center__metric-badge resource-center__metric-badge--warning">
-                  <strong>{notificationSummary.unread}</strong>
+                  <strong style={{ color: '#0f172a' }}>{notificationSummary.unread}</strong>
                   Unread
                 </span>
                 <span className="resource-center__metric-badge resource-center__metric-badge--success">
-                  <strong>{notificationSummary.read}</strong>
+                  <strong style={{ color: '#0f172a' }}>{notificationSummary.read}</strong>
                   Read
                 </span>
                 <span className="resource-center__metric-badge resource-center__metric-badge--danger">
-                  <strong>{notificationSummary.critical}</strong>
+                  <strong style={{ color: '#0f172a' }}>{notificationSummary.critical}</strong>
                   Critical
                 </span>
               </div>
             ) : (
               <div className="resource-center__compact-metrics" aria-label="Invoice summary">
                 <span className="resource-center__metric-badge resource-center__metric-badge--total">
-                  <strong>{invoiceSummary.total}</strong>
+                  <strong style={{ color: '#0f172a' }}>{invoiceSummary.total}</strong>
                   Invoices
                 </span>
                 <span className="resource-center__metric-badge resource-center__metric-badge--success">
-                  <strong>{invoiceSummary.paid}</strong>
+                  <strong style={{ color: '#0f172a' }}>{invoiceSummary.paid}</strong>
                   Paid
                 </span>
                 <span className="resource-center__metric-badge resource-center__metric-badge--warning">
-                  <strong>{invoiceSummary.open}</strong>
+                  <strong style={{ color: '#0f172a' }}>{invoiceSummary.open}</strong>
                   Open
                 </span>
                 <span className="resource-center__metric-badge resource-center__metric-badge--info">
-                  <strong>{formatCurrency(invoiceSummary.balance)}</strong>
+                  <strong style={{ color: '#0f172a' }}>{formatCurrency(invoiceSummary.balance)}</strong>
                   Balance
                 </span>
               </div>
@@ -5342,7 +5358,7 @@ function ResourcePage({ config, navigationContent = null }) {
                             <td style={{ textAlign: 'right', padding: '10px 12px', color: '#334155' }}>{formatCurrency(unitPrice)}</td>
                             <td style={{ textAlign: 'right', padding: '10px 12px', color: discountPct > 0 ? '#dc2626' : '#64748b' }}>{discountPct > 0 ? `${discountPct}%` : '—'}</td>
                             <td style={{ textAlign: 'right', padding: '10px 12px', color: '#64748b' }}>{taxPct > 0 ? `${taxPct}%` : '—'}</td>
-                            <td style={{ textAlign: 'right', padding: '10px 12px', color: '#0f172a' }}><strong>{formatCurrency(lineTotal)}</strong></td>
+                            <td style={{ textAlign: 'right', padding: '10px 12px', color: '#0f172a' }}><strong style={{ color: '#0f172a' }}>{formatCurrency(lineTotal)}</strong></td>
                           </tr>
                         )
                       })

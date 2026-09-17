@@ -1032,17 +1032,17 @@ function InvoiceForm({
         <div className="invoice-form__payment-divider" aria-hidden="true" />
         <div className="invoice-form__payment-metric">
           <span>Total Amount</span>
-          <strong>{formatCurrency(calculatedTotals.grandTotal)}</strong>
+          <strong style={{ color: '#0f172a' }}>{formatCurrency(calculatedTotals.grandTotal)}</strong>
         </div>
         <span className="invoice-form__payment-dot" aria-hidden="true">•</span>
         <div className="invoice-form__payment-metric invoice-form__payment-metric--paid">
           <span>Amount Paid</span>
-          <strong>{formatCurrency(amountPaid)}</strong>
+          <strong style={{ color: '#0f172a' }}>{formatCurrency(amountPaid)}</strong>
         </div>
         <span className="invoice-form__payment-dot" aria-hidden="true">•</span>
         <div className="invoice-form__payment-metric invoice-form__payment-metric--balance">
           <span>Balance Due</span>
-          <strong>{formatCurrency(balanceDue)}</strong>
+          <strong style={{ color: '#0f172a' }}>{formatCurrency(balanceDue)}</strong>
         </div>
       </div>
 

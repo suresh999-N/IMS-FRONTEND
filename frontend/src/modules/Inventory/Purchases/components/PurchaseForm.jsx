@@ -93,6 +93,7 @@ export default function PurchaseForm({
   onCancel,
   isSubmitting = false,
   initialData = null,
+  mode = 'create',
 }) {
   const [formData, setFormData] = useState(initialData || initialForm)
   const [touched, setTouched] = useState({})
@@ -320,7 +321,7 @@ export default function PurchaseForm({
       {/* Header */}
       <div className="indent-create-header">
         <div className="indent-create-header__title">
-          <h1>Create Purchase Order</h1>
+          <h1>{mode === 'edit' ? 'Update Purchase Order' : 'Create Purchase Order'}</h1>
         </div>
       </div>
 
@@ -530,7 +531,7 @@ export default function PurchaseForm({
             Lines: <strong>{summary.lines}</strong>
           </div>
           <div className="indent-summary-item">
-            Total amount: <strong>{formatCurrency(summary.total)}</strong>
+            Total amount: <strong style={{ color: '#0f172a' }}>{formatCurrency(summary.total)}</strong>
           </div>
         </div>
       </div>
@@ -549,7 +550,7 @@ export default function PurchaseForm({
           className="indent-btn indent-btn--submit"
           disabled={!isFormValid || isSubmitting}
         >
-          {isSubmitting ? 'Saving...' : 'Create Purchase Order'}
+          {isSubmitting ? 'Saving...' : mode === 'edit' ? 'Save Changes' : 'Create Purchase Order'}
         </button>
       </div>
     </form>

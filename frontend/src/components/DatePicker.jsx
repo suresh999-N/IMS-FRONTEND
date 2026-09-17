@@ -193,10 +193,10 @@ export default function DatePicker(props) {
       return
     }
     const nextValue = toIsoDate(date)
-    if (maxIsoLimit && nextValue > maxIsoLimit) {
+    if (maxDateIso && nextValue > maxDateIso) {
       return
     }
-    if (minIsoLimit && nextValue < minIsoLimit) {
+    if (minDateIso && nextValue < minDateIso) {
       return
     }
     setDisplayValue(formatDisplayDate(nextValue))
@@ -247,6 +247,10 @@ export default function DatePicker(props) {
           </div>
           <div className="date-picker-popover__grid">
             {getCalendarDays(viewDate).map((date) => {
+              const isoValue = toIsoDate(date)
+              const isMuted = date.getMonth() !== viewDate.getMonth()
+              const isSelected = isSameDay(date, selectedDate)
+              const isToday = isSameDay(date, today)
               const isDisabled = isDateDisabled(date)
 
               return (

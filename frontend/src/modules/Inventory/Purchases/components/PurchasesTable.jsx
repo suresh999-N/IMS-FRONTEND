@@ -1,4 +1,4 @@
-import { Eye, Pencil, RefreshCw, Trash2 } from 'lucide-react'
+import { Download, Eye, Pencil, RefreshCw, Trash2 } from 'lucide-react'
 import { ActionMenu, DataTable, FilterBar, StatusBadge } from '../../../../components/erp'
 import { formatCurrency, formatDate } from '../../../../utils/helpers'
 
@@ -60,6 +60,11 @@ export default function PurchasesTable({
   onEdit,
   onRefresh,
   loading,
+  selectedRowKeys,
+  onSelectionChange,
+  onBulkDelete,
+  onBulkStatusUpdate,
+  onBulkExport,
 }) {
   const columns = [
     {
@@ -173,25 +178,61 @@ export default function PurchasesTable({
         defaultPageSize={20}
         defaultSortKey=""
         splitToolbar
-        toolbarContent={(
-          <FilterBar className="purchases-page__table-actions">
-            <button
-              type="button"
-              className="button button-secondary"
-              onClick={onRefresh}
-              disabled={loading}
-            >
-              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-              Refresh
-            </button>
-          </FilterBar>
-        )}
+        toolbarContent={
+          selectedRowKeys && selectedRowKeys.length > 0 ? (
+            <FilterBar className="purchases-page__table-actions purchases-page__table-actions--bulk">
+              <ActionMenu
+                label="Update Status"
+                actions={[
+                  { key: 'ordered', label: 'Mark as Ordered', onClick: () => onBulkStatusUpdate?.('Ordered') },
+                  { key: 'partially-received', label: 'Mark as Partially Received', onClick: () => onBulkStatusUpdate?.('Partially Received') },
+                  { key: 'received', label: 'Mark as Received', onClick: () => onBulkStatusUpdate?.('Received') },
+                  { key: 'cancelled', label: 'Mark as Cancelled', onClick: () => onBulkStatusUpdate?.('Cancelled') },
+                ]}
+              />
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={onBulkExport}
+              >
+                <Download size={16} />
+                Export
+              </button>
+              {canDelete ? (
+                <button
+                  type="button"
+                  className="button button-secondary button-danger"
+                  onClick={onBulkDelete}
+                >
+                  <Trash2 size={16} />
+                  Delete
+                </button>
+              ) : null}
+            </FilterBar>
+          ) : (
+            <FilterBar className="purchases-page__table-actions">
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={onRefresh}
+                disabled={loading}
+              >
+                <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+                Refresh
+              </button>
+            </FilterBar>
+          )
+        }
         columnStorageKey="ims.purchases.visibleColumns.compact.v2"
         defaultVisibleColumnKeys={['poNumber', 'supplier', 'orderDate', 'quantity', 'totalAmount', 'status', 'actions']}
         fitExplicitColumnsToContainer
         searchPlaceholder="Search purchase orders by supplier, PO number, or status"
         emptyMessage="No purchase orders found."
+        enableRowSelection={true}
+        selectedRowKeys={selectedRowKeys}
+        onSelectionChange={onSelectionChange}
       />
     </div>
   )
 }
+
