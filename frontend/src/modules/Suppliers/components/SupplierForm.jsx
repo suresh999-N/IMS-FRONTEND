@@ -763,7 +763,7 @@ function getInitialPaymentTerm(initialValues) {
     creditDays: initialValues?.creditDays || paymentTerm.creditDays || '30',
     creditLimit: initialValues?.creditLimit || paymentTerm.creditLimit || '',
     preferredPaymentMethod: paymentTerm.preferredPaymentMethod || paymentTerm.paymentMethod || '',
-    currency: paymentTerm.currency || 'INR',
+    currency: paymentTerm.currency || '',
     taxType: paymentTerm.taxType || '',
     notes: paymentTerm.notes || '',
   }

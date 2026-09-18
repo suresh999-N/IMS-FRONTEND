@@ -1523,7 +1523,7 @@ export default function CustomerForm({
     creditDays: formData.paymentTerms.creditDays,
     creditLimit: formData.paymentTerms.creditLimit,
     preferredPaymentMethod: formData.paymentTerms.paymentMode,
-    currency: formData.paymentTerms.currency || 'INR',
+    currency: formData.paymentTerms.currency || '',
     taxType: formData.paymentTerms.taxType || '',
     notes: formData.paymentTerms.notes,
   }), [formData.paymentTerms])
