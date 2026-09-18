@@ -1197,7 +1197,6 @@ export default function TableComponent({
                           data-column={column.key || getColumnLabel(column)}
                           className={column.className || ''}
                           style={column.style}
-                          title={isPlainText ? textValue : undefined}
                         >
                           {isPlainText ? (
                             <span className="table-cell-text" title={textValue}>

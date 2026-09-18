@@ -162,6 +162,7 @@ function getTooltipPosition(element, cell) {
 export default function TruncatedCellTooltip({ containerRef }) {
   const timerRef = useRef(null)
   const activeElementRef = useRef(null)
+  const activeCellRef = useRef(null)
   const tooltipRef = useRef(null)
   const [tooltip, setTooltip] = useState(null)
 
@@ -292,14 +293,24 @@ export default function TruncatedCellTooltip({ containerRef }) {
 
     function restoreTitle(element) {
       if (!element) return
-      if (element.hasAttribute('data-tooltip-title')) {
+      if (element.hasAttribute?.('data-tooltip-title')) {
         element.setAttribute('title', element.getAttribute('data-tooltip-title'))
         element.removeAttribute('data-tooltip-title')
+      }
+      if (element.querySelectorAll) {
+        element.querySelectorAll('[data-tooltip-title]').forEach((child) => {
+          child.setAttribute('title', child.getAttribute('data-tooltip-title'))
+          child.removeAttribute('data-tooltip-title')
+        })
       }
     }
 
     function hideTooltip() {
       clearTimer()
+      if (activeCellRef.current) {
+        restoreTitle(activeCellRef.current)
+        activeCellRef.current = null
+      }
       if (activeElementRef.current) {
         restoreTitle(activeElementRef.current)
         activeElementRef.current = null
@@ -343,6 +354,7 @@ export default function TruncatedCellTooltip({ containerRef }) {
 
       hideTooltip()
       activeElementRef.current = truncatedElement
+      activeCellRef.current = cell
 
       timerRef.current = window.setTimeout(() => {
         if (activeElementRef.current !== truncatedElement) return
@@ -362,10 +374,13 @@ export default function TruncatedCellTooltip({ containerRef }) {
 
         if (!text) return
 
-        if (truncatedElement.hasAttribute('title')) {
-          truncatedElement.setAttribute('data-tooltip-title', rawTitle)
-          truncatedElement.removeAttribute('title')
-        }
+        const elementsToStrip = cell ? [cell, ...cell.querySelectorAll('[title]')] : [truncatedElement]
+        elementsToStrip.forEach((el) => {
+          if (el?.hasAttribute?.('title')) {
+            el.setAttribute('data-tooltip-title', el.getAttribute('title'))
+            el.removeAttribute('title')
+          }
+        })
 
         setTooltip({
           text,
