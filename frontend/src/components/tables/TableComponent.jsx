@@ -146,22 +146,22 @@ function getValueFromColumn(column, row) {
   if (!column || !row) return ''
 
   if (typeof column.sortValue === 'function') {
-    try {
-      const val = column.sortValue(row)
-      if (val !== undefined && val !== null && val !== '') return val
-    } catch {
-      // Ignore sortValue error
-    }
+    return column.sortValue(row)
   }
 
-  if (typeof column.searchValue === 'function') {
-    try {
-      const searched = column.searchValue(row)
-      if (typeof searched === 'string' || typeof searched === 'number') {
-        return searched
+  if (column.key) {
+    let value
+    if (typeof column.key === 'string' && column.key.includes('.')) {
+      value = column.key.split('.').reduce((acc, part) => acc?.[part], row)
+    } else {
+      value = row[column.key]
+    }
+
+    if (value !== undefined && value !== null && value !== '') {
+      if (typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
+        return value.name ?? value.label ?? value.title ?? value.code ?? value.value ?? value.id ?? String(value)
       }
-    } catch {
-      // Ignore search errors
+      return value
     }
   }
 
@@ -180,19 +180,14 @@ function getValueFromColumn(column, row) {
     }
   }
 
-  if (column.key) {
-    let value
-    if (typeof column.key === 'string' && column.key.includes('.')) {
-      value = column.key.split('.').reduce((acc, part) => acc?.[part], row)
-    } else {
-      value = row[column.key]
-    }
-
-    if (value !== undefined && value !== null && value !== '') {
-      if (typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
-        return value.name ?? value.label ?? value.title ?? value.code ?? value.value ?? value.id ?? String(value)
+  if (typeof column.searchValue === 'function') {
+    try {
+      const searched = column.searchValue(row)
+      if (typeof searched === 'string' || typeof searched === 'number') {
+        return searched
       }
-      return value
+    } catch {
+      // Ignore search errors
     }
   }
 

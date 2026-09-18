@@ -400,20 +400,14 @@ export const RESOURCE_CONFIGS = {
         label: 'Adjustment No.',
         sortable: true,
         searchValue: (row) => {
-          const id = row.adjustmentId ?? row.id ?? row.stockAdjustmentId ?? row.adjustmentNumber;
+          const id = row.adjustmentId;
           if (id === undefined || id === null || id === '') return '';
-          const strId = String(id);
-          if (strId.toUpperCase().startsWith('SA-')) {
-            return `${strId} ${strId.replace(/^SA-/i, '')}`;
-          }
-          return `SA-${strId.padStart(6, '0')} ${strId}`;
+          return `SA-${String(id).padStart(6, '0')} ${id}`;
         },
         render: (row) => {
-          const id = row.adjustmentId ?? row.id ?? row.stockAdjustmentId ?? row.adjustmentNumber;
+          const id = row.adjustmentId;
           if (id === undefined || id === null || id === '') return '';
-          const strId = String(id);
-          if (strId.toUpperCase().startsWith('SA-')) return strId;
-          return `SA-${strId.padStart(6, '0')}`;
+          return `SA-${String(id).padStart(6, '0')}`;
         }
       },
       {

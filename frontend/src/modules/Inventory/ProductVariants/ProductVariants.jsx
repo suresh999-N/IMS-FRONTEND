@@ -268,6 +268,35 @@ export default function ProductVariants() {
           mappedAttrs
         )
 
+        const parentSellingPrice = Number(
+          readResourceValue(product, 'price', readResourceValue(product, 'sellingPrice', readResourceValue(product, 'unitPrice', 0)))
+        )
+        const parentCostPrice = Number(
+          readResourceValue(product, 'costPrice', readResourceValue(product, 'purchasePrice', readResourceValue(product, 'buyingPrice', 0)))
+        )
+
+        const rawVariantPrice = readResourceValue(variant, 'price', readResourceValue(variant, 'sellingPrice', readResourceValue(variant, 'unitPrice', null)))
+        const rawVariantCostPrice = readResourceValue(variant, 'costPrice', readResourceValue(variant, 'purchasePrice', readResourceValue(variant, 'buyingPrice', null)))
+        const priceDelta = Number(readResourceValue(variant, 'priceDelta', 0))
+
+        let resolvedPrice = 0
+        if (rawVariantPrice !== null && rawVariantPrice !== undefined && Number(rawVariantPrice) > 0) {
+          resolvedPrice = Number(rawVariantPrice)
+        } else if (parentSellingPrice > 0) {
+          resolvedPrice = parentSellingPrice + priceDelta
+        } else if (rawVariantPrice !== null && rawVariantPrice !== undefined && !isNaN(Number(rawVariantPrice))) {
+          resolvedPrice = Number(rawVariantPrice)
+        }
+
+        let resolvedCostPrice = 0
+        if (rawVariantCostPrice !== null && rawVariantCostPrice !== undefined && Number(rawVariantCostPrice) > 0) {
+          resolvedCostPrice = Number(rawVariantCostPrice)
+        } else if (parentCostPrice > 0) {
+          resolvedCostPrice = parentCostPrice
+        } else if (rawVariantCostPrice !== null && rawVariantCostPrice !== undefined && !isNaN(Number(rawVariantCostPrice))) {
+          resolvedCostPrice = Number(rawVariantCostPrice)
+        }
+
         return {
           ...variant,
           id: variantId,
@@ -281,8 +310,8 @@ export default function ProductVariants() {
           reorderLevel: product ? product.reorderLevel : 0,
           stock: totalStock,
           mappedAttributes: mappedAttrs,
-          price: variant.price ?? (product ? product.price : 0),
-          costPrice: variant.costPrice ?? (product ? product.costPrice : 0),
+          price: resolvedPrice,
+          costPrice: resolvedCostPrice,
         }
       })
 
@@ -599,7 +628,17 @@ export default function ProductVariants() {
         className: 'variants-col-numeric',
         style: { width: 155, minWidth: 155, textAlign: 'right' },
         headerStyle: { width: 155, minWidth: 155, textAlign: 'right' },
-        render: (item) => <span>{formatCurrency(item.price)}</span>,
+        render: (item) => {
+          const val = Number(item.price || 0)
+          if (val > 0) {
+            return <span>{formatCurrency(val)}</span>
+          }
+          return (
+            <span className="price-missing-badge" title="Selling price missing or not configured">
+              Missing Pricing
+            </span>
+          )
+        },
       },
       {
         key: 'costPrice',
@@ -609,7 +648,17 @@ export default function ProductVariants() {
         className: 'variants-col-numeric',
         style: { width: 155, minWidth: 155, textAlign: 'right' },
         headerStyle: { width: 155, minWidth: 155, textAlign: 'right' },
-        render: (item) => <span>{formatCurrency(item.costPrice)}</span>,
+        render: (item) => {
+          const val = Number(item.costPrice || 0)
+          if (val > 0) {
+            return <span>{formatCurrency(val)}</span>
+          }
+          return (
+            <span className="price-missing-badge" title="Purchase price missing or not configured">
+              Missing Pricing
+            </span>
+          )
+        },
       },
       {
         key: 'status',
@@ -1197,8 +1246,8 @@ export default function ProductVariants() {
               { label: 'Product Name', value: viewingItem.productName },
               { label: 'Variant Name', value: displayVariant },
             { label: 'SKU', render: () => <code>{getStandardizedSku(viewingItem.sku, viewingItem)}</code> },
-            { label: 'Selling Price', value: formatCurrency(viewingItem.price) },
-            { label: 'Purchase Price', value: formatCurrency(viewingItem.costPrice) },
+            { label: 'Selling Price', value: Number(viewingItem.price || 0) > 0 ? formatCurrency(viewingItem.price) : 'Missing Pricing' },
+            { label: 'Purchase Price', value: Number(viewingItem.costPrice || 0) > 0 ? formatCurrency(viewingItem.costPrice) : 'Missing Pricing' },
             { label: 'Status', render: () => <StatusBadge status={viewingItem.status || 'Active'}>{viewingItem.status || 'Active'}</StatusBadge> },
             {
               label: 'Attributes',
