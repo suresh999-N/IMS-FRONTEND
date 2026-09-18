@@ -204,15 +204,27 @@ function getSearchableText(row, columns, searchKeys) {
   return columns
     .filter((column) => column.searchable !== false)
     .map((column) => {
+      const parts = []
+
       if (typeof column.searchValue === 'function') {
-        return String(column.searchValue(row) ?? '').toLowerCase()
+        const val = column.searchValue(row)
+        if (val !== undefined && val !== null && val !== '') {
+          parts.push(String(val).toLowerCase())
+        }
       }
 
-      if (column.key) {
-        return String(row[column.key] ?? '').toLowerCase()
+      if (column.key && row[column.key] !== undefined && row[column.key] !== null) {
+        parts.push(String(row[column.key]).toLowerCase())
       }
 
-      return ''
+      if (typeof column.render === 'function') {
+        const rawValue = getRawCellValue(row, column)
+        if (rawValue !== null && rawValue !== undefined && rawValue !== '') {
+          parts.push(String(rawValue).toLowerCase())
+        }
+      }
+
+      return parts.join(' ')
     })
     .join(' ')
 }

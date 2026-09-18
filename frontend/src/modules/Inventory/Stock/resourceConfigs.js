@@ -401,6 +401,11 @@ export const RESOURCE_CONFIGS = {
         key: 'adjustmentId',
         label: 'Adjustment No.',
         sortable: true,
+        searchValue: (row) => {
+          const id = row.adjustmentId;
+          if (id === undefined || id === null || id === '') return '';
+          return `SA-${String(id).padStart(6, '0')} ${id}`;
+        },
         render: (row) => {
           const id = row.adjustmentId;
           if (id === undefined || id === null || id === '') return '';

@@ -21,8 +21,8 @@ export function validateSearchQuery(term, hasResults = true) {
     }
   }
 
-  // 2. Check for 3 or more identical consecutive characters (e.g., "aaaa", "sssss", "hhh")
-  if (/(.)\1{2,}/.test(trimmed.toLowerCase())) {
+  // 2. Check for 3 or more identical consecutive alphabetic characters (e.g., "aaaa", "sssss", "hhh")
+  if (/[a-z]\1{2,}/i.test(trimmed)) {
     return {
       isValid: false,
       isInvalid: true,
