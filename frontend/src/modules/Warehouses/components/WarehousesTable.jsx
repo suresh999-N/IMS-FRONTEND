@@ -67,27 +67,44 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;')
 }
 
-function exportWarehousesCsv(warehouses) {
+function exportWarehousesCsv(warehouses, productsCatalog = []) {
   const headers = [
-    'Warehouse',
-    'Code',
+    'Warehouse Name',
+    'Warehouse Code',
+    'Products',
     'Location',
-    'Status',
+    'Capacity',
     'Stock Units',
     'Racks',
     'Bins',
+    'Manager Name',
+    'Manager Contact',
+    'Status',
     'Last Updated',
   ]
-  const rows = warehouses.map((warehouse) => [
-    warehouse.name,
-    warehouse.warehouseCode,
-    warehouse.location,
-    normalizeStatus(warehouse.status),
-    warehouse.stockUnits ?? '',
-    warehouse.rackCount ?? '',
-    warehouse.binCount ?? '',
-    warehouse.updatedAt || warehouse.createdAt || '',
-  ])
+  const rows = warehouses.map((warehouse) => {
+    const grouped = getGroupedWarehouseProducts(warehouse.products, productsCatalog)
+    const prodsSummary = grouped.length > 0
+      ? grouped.map((p) => `${p.name}${p.sku ? ` [${p.sku}]` : ''} (${p.quantity}${p.unit ? ` ${p.unit}` : ''})`).join('; ')
+      : 'No Products'
+
+    const contactInfo = [warehouse.contactPhone, warehouse.contactEmail].filter(Boolean).join(' | ')
+
+    return [
+      warehouse.name || '',
+      warehouse.warehouseCode || '',
+      prodsSummary,
+      warehouse.location || '',
+      warehouse.capacity ? `${warehouse.capacity} sq ft` : '',
+      warehouse.stockUnits ?? 0,
+      warehouse.rackCount ?? 0,
+      warehouse.binCount ?? 0,
+      warehouse.managerName || '',
+      contactInfo,
+      normalizeStatus(warehouse.status),
+      formatDate(warehouse.updatedAt || warehouse.createdAt),
+    ]
+  })
   const csv = [headers, ...rows]
     .map((row) => row.map(escapeCsvValue).join(','))
     .join('\n')
@@ -100,40 +117,80 @@ function exportWarehousesCsv(warehouses) {
   URL.revokeObjectURL(url)
 }
 
-function printWarehouses(warehouses) {
-  const rows = warehouses.map((warehouse) => `
-    <tr>
-      <td><strong>${escapeHtml(warehouse.name || 'Unnamed warehouse')}</strong><span>${escapeHtml(warehouse.warehouseCode || 'Code not set')}</span></td>
-      <td>${escapeHtml(warehouse.location || 'Location not set')}</td>
-      <td>${escapeHtml(normalizeStatus(warehouse.status))}</td>
-      <td>${escapeHtml(Number(warehouse.stockUnits || 0).toLocaleString('en-IN'))}</td>
-      <td>${escapeHtml(Number(warehouse.rackCount || 0))} / ${escapeHtml(Number(warehouse.binCount || 0))}</td>
-      <td>${escapeHtml(formatDate(warehouse.updatedAt || warehouse.createdAt))}</td>
-    </tr>
-  `).join('')
+function printWarehouses(warehouses, productsCatalog = []) {
+  if (!warehouses || warehouses.length === 0) return
+
+  const rows = warehouses.map((warehouse) => {
+    const grouped = getGroupedWarehouseProducts(warehouse.products, productsCatalog)
+    const prodsSummary = grouped.length > 0
+      ? grouped.map((p) => `${escapeHtml(p.name)}${p.sku ? ` <small style="color:#64748b">[${escapeHtml(p.sku)}]</small>` : ''} (${p.quantity}${p.unit ? ` ${escapeHtml(p.unit)}` : ''})`).join('<br/>')
+      : '<span style="color:#94a3b8">No Products</span>'
+
+    const contactInfo = [warehouse.contactPhone, warehouse.contactEmail].filter(Boolean).join(' | ')
+    const managerDisplay = warehouse.managerName
+      ? `<strong>${escapeHtml(warehouse.managerName)}</strong>${contactInfo ? `<span>${escapeHtml(contactInfo)}</span>` : ''}`
+      : '<span style="color:#94a3b8">Not assigned</span>'
+
+    return `
+      <tr>
+        <td><strong>${escapeHtml(warehouse.name || 'Unnamed warehouse')}</strong><span>${escapeHtml(warehouse.warehouseCode || 'Code not set')}</span></td>
+        <td>${prodsSummary}</td>
+        <td>${escapeHtml(warehouse.location || 'Location not set')}</td>
+        <td>${escapeHtml(warehouse.capacity ? `${warehouse.capacity} sq ft` : 'Not set')}</td>
+        <td>${escapeHtml(Number(warehouse.stockUnits || 0).toLocaleString('en-IN'))}</td>
+        <td>${escapeHtml(Number(warehouse.rackCount || 0))} / ${escapeHtml(Number(warehouse.binCount || 0))}</td>
+        <td>${managerDisplay}</td>
+        <td>${escapeHtml(normalizeStatus(warehouse.status))}</td>
+        <td>${escapeHtml(formatDate(warehouse.updatedAt || warehouse.createdAt))}</td>
+      </tr>
+    `
+  }).join('')
+
   const printWindow = window.open('', '_blank')
 
   if (!printWindow) {
     return
   }
 
-  printWindow.document.write(`<!doctype html><html><head><title>Warehouses</title><style>
-    body { margin: 28px; color: #111827; font: 13px Arial, sans-serif; }
-    h1 { margin: 0 0 16px; font-size: 20px; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 8px 10px; border: 1px solid #dbe4f0; text-align: left; vertical-align: top; }
-    th { background: #f8fafc; color: #475569; font-size: 12px; }
-    td span { display: block; color: #64748b; margin-top: 2px; }
+  printWindow.document.write(`<!doctype html><html><head><title>Warehouses Report</title><style>
+    @page { size: auto; margin: 12mm; }
+    body { margin: 16px; color: #0f172a; font: 12px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .header { margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #e2e8f0; }
+    h1 { margin: 0 0 4px; font-size: 20px; font-weight: 700; color: #0f172a; }
+    p.meta { margin: 0; color: #64748b; font-size: 11px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { padding: 8px 10px; border: 1px solid #cbd5e1; text-align: left; vertical-align: top; word-break: break-word; font-size: 11px; }
+    th { background: #f8fafc; color: #334155; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    td strong { font-weight: 600; color: #0f172a; }
+    td span { display: block; color: #64748b; font-size: 10px; margin-top: 2px; }
+    tr { page-break-inside: avoid; }
   </style></head><body>
-    <h1>Warehouses</h1>
+    <div class="header">
+      <h1>Warehouses Report</h1>
+      <p class="meta">Printed on ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} • Total Records: ${warehouses.length}</p>
+    </div>
     <table>
-      <thead><tr><th>Warehouse</th><th>Location</th><th>Status</th><th>Stock Units</th><th>Rack / Bin</th><th>Last Updated</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Warehouse</th>
+          <th>Products</th>
+          <th>Location</th>
+          <th>Capacity</th>
+          <th>Stock Units</th>
+          <th>Rack / Bin</th>
+          <th>Manager</th>
+          <th>Status</th>
+          <th>Last Updated</th>
+        </tr>
+      </thead>
       <tbody>${rows}</tbody>
     </table>
   </body></html>`)
   printWindow.document.close()
   printWindow.focus()
-  printWindow.print()
+  setTimeout(() => {
+    printWindow.print()
+  }, 250)
 }
 
 function getGroupedWarehouseProducts(warehouseProducts, productsCatalog) {
@@ -557,7 +614,7 @@ export default function WarehousesTable({
       <button
         type="button"
         className="button button-secondary warehouses-table__selection-button"
-        onClick={() => exportWarehousesCsv(selectedWarehouses)}
+        onClick={() => exportWarehousesCsv(selectedWarehouses, products)}
       >
         <Download size={15} />
         Export
@@ -565,7 +622,7 @@ export default function WarehousesTable({
       <button
         type="button"
         className="button button-secondary warehouses-table__selection-button"
-        onClick={() => printWarehouses(selectedWarehouses)}
+        onClick={() => printWarehouses(selectedWarehouses, products)}
       >
         <Printer size={15} />
         Print
