@@ -73,12 +73,12 @@ function exportWarehousesCsv(warehouses, productsCatalog = []) {
     'Warehouse Code',
     'Products',
     'Location',
+    'Contact',
     'Capacity',
     'Stock Units',
     'Racks',
     'Bins',
     'Manager Name',
-    'Manager Contact',
     'Status',
     'Last Updated',
   ]
@@ -88,19 +88,25 @@ function exportWarehousesCsv(warehouses, productsCatalog = []) {
       ? grouped.map((p) => `${p.name}${p.sku ? ` [${p.sku}]` : ''} (${p.quantity}${p.unit ? ` ${p.unit}` : ''})`).join('; ')
       : 'No Products'
 
-    const contactInfo = [warehouse.contactPhone, warehouse.contactEmail].filter(Boolean).join(' | ')
+    const contactInfo = Array.from(new Set([
+      warehouse.phone,
+      warehouse.contactPhone,
+      warehouse.email,
+      warehouse.contactEmail,
+      warehouse.contact,
+    ].filter(Boolean))).join(' | ') || '-'
 
     return [
       warehouse.name || '',
       warehouse.warehouseCode || '',
       prodsSummary,
       warehouse.location || '',
+      contactInfo,
       warehouse.capacity ? `${warehouse.capacity} sq ft` : '',
       warehouse.stockUnits ?? 0,
       warehouse.rackCount ?? 0,
       warehouse.binCount ?? 0,
       warehouse.managerName || '',
-      contactInfo,
       normalizeStatus(warehouse.status),
       formatDate(warehouse.updatedAt || warehouse.createdAt),
     ]
@@ -126,9 +132,16 @@ function printWarehouses(warehouses, productsCatalog = []) {
       ? grouped.map((p) => `${escapeHtml(p.name)}${p.sku ? ` <small style="color:#64748b">[${escapeHtml(p.sku)}]</small>` : ''} (${p.quantity}${p.unit ? ` ${escapeHtml(p.unit)}` : ''})`).join('<br/>')
       : '<span style="color:#94a3b8">No Products</span>'
 
-    const contactInfo = [warehouse.contactPhone, warehouse.contactEmail].filter(Boolean).join(' | ')
+    const contactInfo = Array.from(new Set([
+      warehouse.phone,
+      warehouse.contactPhone,
+      warehouse.email,
+      warehouse.contactEmail,
+      warehouse.contact,
+    ].filter(Boolean))).join(' | ') || '-'
+
     const managerDisplay = warehouse.managerName
-      ? `<strong>${escapeHtml(warehouse.managerName)}</strong>${contactInfo ? `<span>${escapeHtml(contactInfo)}</span>` : ''}`
+      ? `<strong>${escapeHtml(warehouse.managerName)}</strong>`
       : '<span style="color:#94a3b8">Not assigned</span>'
 
     return `
@@ -136,6 +149,7 @@ function printWarehouses(warehouses, productsCatalog = []) {
         <td><strong>${escapeHtml(warehouse.name || 'Unnamed warehouse')}</strong><span>${escapeHtml(warehouse.warehouseCode || 'Code not set')}</span></td>
         <td>${prodsSummary}</td>
         <td>${escapeHtml(warehouse.location || 'Location not set')}</td>
+        <td>${escapeHtml(contactInfo)}</td>
         <td>${escapeHtml(warehouse.capacity ? `${warehouse.capacity} sq ft` : 'Not set')}</td>
         <td>${escapeHtml(Number(warehouse.stockUnits || 0).toLocaleString('en-IN'))}</td>
         <td>${escapeHtml(Number(warehouse.rackCount || 0))} / ${escapeHtml(Number(warehouse.binCount || 0))}</td>
@@ -175,6 +189,7 @@ function printWarehouses(warehouses, productsCatalog = []) {
           <th>Warehouse</th>
           <th>Products</th>
           <th>Location</th>
+          <th>Contact</th>
           <th>Capacity</th>
           <th>Stock Units</th>
           <th>Rack / Bin</th>
