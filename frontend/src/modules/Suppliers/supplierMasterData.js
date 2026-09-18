@@ -244,13 +244,55 @@ export function getBankNameForIfscPrefix(ifscCode) {
 }
 
 export const FOREIGN_STATES_AND_COUNTRIES = [
-  'California', 'Texas', 'Florida', 'New York', 'Newyork', 'Dallas', 'Houston', 'Chicago', 'Los Angeles',
-  'San Francisco', 'Miami', 'Seattle', 'Boston', 'Austin', 'Washington', 'Illinois', 'Pennsylvania', 'Ohio',
-  'Georgia', 'North Carolina', 'Michigan', 'New Jersey', 'Virginia', 'Massachusetts', 'Arizona',
-  'Tennessee', 'Indiana', 'Maryland', 'Missouri', 'Wisconsin', 'Colorado', 'Minnesota', 'South Carolina',
-  'Alabama', 'Louisiana', 'Kentucky', 'Oregon', 'Oklahoma', 'Connecticut', 'Utah', 'Nevada',
-  'London', 'Ontario', 'Quebec', 'Tokyo', 'Paris', 'Dubai', 'Sydney', 'Melbourne', 'Toronto', 'Vancouver',
+  // USA — states
+  'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut',
+  'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa',
+  'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan',
+  'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire',
+  'New Jersey', 'New Mexico', 'New York', 'Newyork', 'North Carolina', 'North Dakota',
+  'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina',
+  'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington',
+  'West Virginia', 'Wisconsin', 'Wyoming',
+  // USA — major cities
+  'Dallas', 'Houston', 'Chicago', 'Los Angeles', 'San Francisco', 'San Jose', 'San Diego',
+  'San Antonio', 'Miami', 'Seattle', 'Boston', 'Austin', 'Denver', 'Phoenix', 'Philadelphia',
+  'Atlanta', 'Nashville', 'Portland', 'Las Vegas', 'Minneapolis', 'New Orleans', 'Detroit',
+  'Baltimore', 'Memphis', 'Louisville', 'Milwaukee', 'Albuquerque', 'Tucson', 'Fresno',
+  'Sacramento', 'Kansas City', 'Mesa', 'Omaha', 'Colorado Springs', 'Raleigh', 'Arlington',
+  'Long Beach', 'Tampa', 'Honolulu', 'Anaheim',
+  // UK
+  'London', 'Manchester', 'Birmingham', 'Leeds', 'Glasgow', 'Sheffield', 'Bradford',
+  'Edinburgh', 'Liverpool', 'Bristol', 'Cardiff', 'Belfast', 'Leicester', 'Coventry',
+  'Nottingham', 'Newcastle', 'Southampton', 'Brighton', 'Plymouth', 'Oxford', 'Cambridge',
+  // Europe
+  'Paris', 'Berlin', 'Madrid', 'Rome', 'Barcelona', 'Amsterdam', 'Brussels', 'Vienna',
+  'Warsaw', 'Budapest', 'Prague', 'Lisbon', 'Athens', 'Stockholm', 'Copenhagen', 'Helsinki',
+  'Oslo', 'Zurich', 'Geneva', 'Milan', 'Naples', 'Munich', 'Hamburg', 'Frankfurt',
+  'Lyon', 'Marseille', 'Bordeaux', 'Rotterdam', 'Antwerp', 'Cologne', 'Stuttgart', 'Krakow',
+  // Middle East & Africa
+  'Dubai', 'Abu Dhabi', 'Riyadh', 'Jeddah', 'Muscat', 'Doha', 'Manama',
+  'Cairo', 'Lagos', 'Nairobi', 'Casablanca', 'Accra', 'Johannesburg', 'Cape Town',
+  'Addis Ababa', 'Beirut', 'Amman', 'Baghdad', 'Tehran', 'Tel Aviv', 'Jerusalem',
+  // Asia Pacific
+  'Tokyo', 'Osaka', 'Kyoto', 'Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 'Chengdu',
+  'Hong Kong', 'Singapore', 'Seoul', 'Busan', 'Taipei', 'Bangkok', 'Jakarta', 'Kuala Lumpur',
+  'Manila', 'Ho Chi Minh City', 'Hanoi', 'Yangon', 'Colombo', 'Dhaka', 'Karachi',
+  'Lahore', 'Islamabad', 'Kathmandu', 'Ulaanbaatar',
+  // Canada & Australia
+  'Toronto', 'Vancouver', 'Montreal', 'Calgary', 'Edmonton', 'Ottawa', 'Winnipeg', 'Quebec',
+  'Ontario', 'Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 'Auckland', 'Wellington',
+  // Latin America
+  'Mexico City', 'Sao Paulo', 'Rio de Janeiro', 'Buenos Aires', 'Lima', 'Bogota', 'Santiago',
+  'Caracas', 'Quito', 'La Paz', 'Montevideo', 'Havana',
+  // Russia & Central Asia
+  'Moscow', 'Saint Petersburg', 'Novosibirsk', 'Yekaterinburg', 'Tashkent', 'Almaty', 'Baku',
 ]
+
+// Pre-computed Set for O(1) lookup — normalised (no spaces/hyphens, lowercase)
+const FOREIGN_CITY_KEYS = new Set(
+  FOREIGN_STATES_AND_COUNTRIES.map((s) => s.replace(/[\s\-_]/g, '').toLowerCase())
+)
+
 
 export const MAJOR_CITIES_BY_STATE = {
   'Andhra Pradesh': ['Visakhapatnam', 'Vijayawada', 'Guntur', 'Nellore', 'Kurnool', 'Kakinada', 'Rajahmundry', 'Rajamahendravaram', 'Tirupati', 'Anantapur', 'Kadapa', 'Eluru', 'Vizianagaram', 'Machilipatnam', 'Tenali', 'Ongole', 'Nandyal', 'Chittoor', 'Devanakonda'],
@@ -291,13 +333,16 @@ Object.entries(MAJOR_CITIES_BY_STATE).forEach(([state, cities]) => {
 export function getCityStateError(city, state, country = 'India') {
   const cleanCity = String(city ?? '').trim()
   const cleanState = String(state ?? '').trim()
+  const cleanCountry = String(country ?? 'India').trim()
 
   if (!cleanCity || !cleanState) return ''
 
   const normalizeKey = (str) => String(str ?? '').replace(/[\s\-_]/g, '').toLowerCase()
   const keyCity = normalizeKey(cleanCity)
   const keyState = normalizeKey(cleanState)
+  const isIndia = cleanCountry.toLowerCase() === 'india'
 
+  // Rule 1: City typed is actually an Indian state name
   const matchedIndianState = INDIA_STATES.find((s) => normalizeKey(s) === keyCity)
   if (matchedIndianState) {
     if (normalizeKey(matchedIndianState) !== keyState) {
@@ -305,15 +350,20 @@ export function getCityStateError(city, state, country = 'India') {
     }
   }
 
-  const matchedForeignState = FOREIGN_STATES_AND_COUNTRIES.find((s) => normalizeKey(s) === keyCity)
-  if (matchedForeignState) {
-    return `'${cleanCity}' is not a valid city in ${cleanState}.`
-  }
+  // Rules 2 & 3 only apply when the country is India
+  if (isIndia) {
+    // Rule 2: City is a well-known foreign city/state/country
+    if (FOREIGN_CITY_KEYS.has(keyCity)) {
+      return `'${cleanCity}' is not a valid city in ${cleanState}, India. Please enter a valid Indian city.`
+    }
 
-  const registeredState = CITY_TO_STATE_MAP[keyCity]
-  if (registeredState && normalizeKey(registeredState) !== keyState) {
-    return `${cleanCity} belongs to ${registeredState}, not ${cleanState}.`
+    // Rule 3: City is registered in our India map but belongs to a different Indian state
+    const registeredState = CITY_TO_STATE_MAP[keyCity]
+    if (registeredState && normalizeKey(registeredState) !== keyState) {
+      return `${cleanCity} belongs to ${registeredState}, not ${cleanState}.`
+    }
   }
 
   return ''
 }
+
