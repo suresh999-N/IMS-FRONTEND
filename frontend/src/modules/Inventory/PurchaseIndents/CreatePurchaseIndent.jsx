@@ -1002,7 +1002,7 @@ function PurchaseIndentForm({
               onChange={(event) => updateField('requestedBy', event.target.value)}
               disabled={isSubmitting}
             >
-              <option value="">Select</option>
+              <option value="">Select requester</option>
               {cleanUsers.map((user) => (
                 <option key={getUserId(user)} value={getUserId(user)}>
                   {getUserDisplayName(user)}
@@ -1084,26 +1084,24 @@ function PurchaseIndentForm({
           </div>
 
           {/* Approved By */}
-          <div className={`indent-field-group${errors.approvedBy ? ' indent-field-group--error' : ''}`}>
+          <div className={`indent-field-group ${errors.approvedBy ? 'indent-field-group--error' : ''}`}>
             <label>Approved By <span className="required">*</span></label>
-            <SearchableSelect
+            <select
               id="indent-approved-by"
               name="approvedBy"
-              className="indent-details-searchable-select"
+              className="indent-select"
+              data-field-key="approvedBy"
               value={draft.approvedBy}
               onChange={(event) => updateField('approvedBy', event.target.value)}
-              options={cleanUsers.map((user) => ({
-                value: getUserId(user),
-                label: getUserDisplayName(user),
-              }))}
-              placeholder="Select approver"
-              searchPlaceholder="Search approver"
-              hideLabel
               disabled={isSubmitting}
-              menuPlacement="bottom"
-              showSearch={false}
-              menuClassName="indent-native-select-menu"
-            />
+            >
+              <option value="">Select approver</option>
+              {cleanUsers.map((user) => (
+                <option key={getUserId(user)} value={getUserId(user)}>
+                  {getUserDisplayName(user)}
+                </option>
+              ))}
+            </select>
             {errors.approvedBy && (
               <span className="indent-field-error">{errors.approvedBy}</span>
             )}
