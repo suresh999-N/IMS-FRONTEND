@@ -1,6 +1,6 @@
-import { Printer } from 'lucide-react'
+import { Printer, RefreshCw } from 'lucide-react'
 import CodePreview from './CodePreview'
-import { DataTable, ActionMenu } from '../../../../components/erp'
+import { DataTable, ActionMenu, FilterBar } from '../../../../components/erp'
 import { getBarcodeBars, getQrCells } from '../utils/preview'
 
 function escapeHtml(value) {
@@ -149,7 +149,21 @@ function handlePrintBarcode(item) {
   printWindow.print()
 }
 
-export default function BarcodeTable({ barcodes }) {
+export default function BarcodeTable({ barcodes, onRefresh, isLoading }) {
+  const toolbarContent = (
+    <FilterBar className="barcode-page__toolbar-actions" ariaLabel="Barcode table refresh actions">
+      <button
+        type="button"
+        className="button button-secondary"
+        onClick={() => onRefresh?.()}
+        disabled={isLoading}
+      >
+        <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+        Refresh
+      </button>
+    </FilterBar>
+  )
+
   const columns = [
     { key: 'date', label: 'Date', sortable: true },
     {
@@ -204,6 +218,10 @@ export default function BarcodeTable({ barcodes }) {
         columns={columns}
         defaultPageSize={8}
         splitToolbar
+        showColumnControls={true}
+        columnStorageKey="ims.barcode.table.visibleColumns.v1"
+        defaultVisibleColumnKeys={['date', 'productName', 'codeType', 'value', 'preview', 'actions']}
+        toolbarContent={toolbarContent}
         searchPlaceholder="Search product or code"
         emptyMessage="No barcode or QR records available."
       />

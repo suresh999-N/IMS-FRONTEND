@@ -241,7 +241,7 @@ export default function Barcode({
           onAction={loadBarcodes}
         />
       ) : (
-        <BarcodeTable barcodes={barcodes} />
+        <BarcodeTable barcodes={barcodes} onRefresh={loadBarcodes} isLoading={isLoading} />
       )}
     </div>
   )
