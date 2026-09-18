@@ -462,6 +462,55 @@
   justify-content: flex-end;
 }
 
+/* Cancel button interaction styling (hover, active, transition, shadow lift, cursor pointer) */
+.form-modal--product-variants .button-cancel,
+.form-modal--product-variants .button.button-cancel,
+.form-modal--product-variants .button-secondary.button-cancel {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  min-height: 38px !important;
+  height: 38px !important;
+  padding: 0 16px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(239, 68, 68, 0.35) !important;
+  background-color: #fef2f2 !important;
+  color: #dc2626 !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.form-modal--product-variants .button-cancel:hover:not(:disabled),
+.form-modal--product-variants .button.button-cancel:hover:not(:disabled),
+.form-modal--product-variants .button-secondary.button-cancel:hover:not(:disabled) {
+  cursor: pointer !important;
+  background-color: #fee2e2 !important;
+  border-color: #f87171 !important;
+  color: #b91c1c !important;
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.18), 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  transform: translateY(-1px) !important;
+}
+
+.form-modal--product-variants .button-cancel:active:not(:disabled),
+.form-modal--product-variants .button.button-cancel:active:not(:disabled),
+.form-modal--product-variants .button-secondary.button-cancel:active:not(:disabled) {
+  cursor: pointer !important;
+  background-color: #fecaca !important;
+  border-color: #ef4444 !important;
+  color: #991b1b !important;
+  box-shadow: none !important;
+  transform: translateY(0) !important;
+}
+
+.form-modal--product-variants .button-cancel:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 .resource-form__section {
   display: grid;
   gap: 16px;

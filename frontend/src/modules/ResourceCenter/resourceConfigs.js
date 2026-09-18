@@ -67,7 +67,7 @@ const stockIdentityFields = [
 ]
 
 const stockQuantityColumns = [
-  { key: 'productName', label: 'Product Name', tableWidth: 320, sortable: true },
+  { key: 'productName', label: 'Product Name', tableWidth: 340, sortable: true },
   { key: 'warehouseName', label: 'Warehouse Name', tableWidth: 220, sortable: true },
   { key: 'variantName', label: 'Variant Name', tableWidth: 140, sortable: true },
 ]
@@ -381,6 +381,10 @@ export const RESOURCE_CONFIGS = {
       { key: 'quantity', label: 'On Hand', sortable: true },
       { key: 'availableQuantity', label: 'Available', sortable: true },
     ],
+    referenceEndpoints: {
+      products: API_ENDPOINTS.products.list,
+      warehouses: API_ENDPOINTS.warehouses.list,
+    },
   },
   stockMovements: {
     key: 'stockMovements',
@@ -396,6 +400,10 @@ export const RESOURCE_CONFIGS = {
     canDelete: false,
     statuslessRowsAreActive: true,
     idFields: ['movementId'],
+    referenceEndpoints: {
+      products: API_ENDPOINTS.products.list,
+      warehouses: API_ENDPOINTS.warehouses.list,
+    },
     fields: [
       ...stockIdentityFields,
       {
@@ -441,6 +449,10 @@ export const RESOURCE_CONFIGS = {
     canDelete: false,
     statuslessRowsAreActive: true,
     idFields: ['ledgerId'],
+    referenceEndpoints: {
+      products: API_ENDPOINTS.products.list,
+      warehouses: API_ENDPOINTS.warehouses.list,
+    },
     fields: [
       ...stockIdentityFields,
       { name: 'openingQty', label: 'Opening Qty', type: 'number', required: true, min: 0 },

@@ -630,13 +630,28 @@
 }
 
 .payments-column-filter__menu-header button {
-  border: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
   background: transparent;
   color: #2563eb;
   min-height: 0;
-  padding: 0;
+  padding: 3px 8px;
+  margin: -3px -4px;
   font-size: 12px;
   font-weight: 700;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.payments-column-filter__menu-header button:hover {
+  color: #1d4ed8;
+  background-color: #eff6ff;
+  border-color: rgba(37, 99, 235, 0.15);
+}
+
+.payments-column-filter__menu-header button:active {
+  color: #1e40af;
+  background-color: #dbeafe;
 }
 
 .payments-column-filter__options {

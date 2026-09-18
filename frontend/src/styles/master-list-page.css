@@ -32,14 +32,14 @@
   line-height: 1.25;
 }
 
-:is(.catalog-workspace-header__metrics, .reference-compact-header__metrics, .products-workspace-header__metrics, .suppliers-workspace-header__metrics, .resource-center__inventory-metrics) {
+:is(.catalog-workspace-header__metrics, .reference-compact-header__metrics, .products-workspace-header__metrics, .suppliers-workspace-header__metrics, .resource-center__inventory-metrics, .warehouses-workspace-header__metrics) {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-:is(.catalog-metric-badge, .reference-compact-metric, .products-metric-badge, .suppliers-metric-badge, .customers-metric-badge, .resource-center__inventory-metric) {
+:is(.catalog-metric-badge, .reference-compact-metric, .products-metric-badge, .suppliers-metric-badge, .customers-metric-badge, .resource-center__inventory-metric, .warehouses-metric-badge) {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -49,6 +49,7 @@
   font-size: 12px;
   font-weight: 600;
   line-height: 1;
+  letter-spacing: 0;
   white-space: nowrap;
 }
 
@@ -92,16 +93,18 @@
   color: #0f766e !important;
 }
 
-:is(.catalog-metric-badge, .reference-compact-metric, .products-metric-badge, .suppliers-metric-badge, .customers-metric-badge, .resource-center__inventory-metric) :is(strong, .resource-center__inventory-metric-count) {
+:is(.catalog-metric-badge, .reference-compact-metric, .products-metric-badge, .suppliers-metric-badge, .customers-metric-badge, .resource-center__inventory-metric, .warehouses-metric-badge) :is(strong, .resource-center__inventory-metric-count, .warehouses-metric-count) {
   color: #000000 !important;
   font-size: inherit;
   font-weight: 700;
+  letter-spacing: 0;
 }
 
-:is(.catalog-metric-badge, .reference-compact-metric, .products-metric-badge, .suppliers-metric-badge, .customers-metric-badge, .resource-center__inventory-metric) .resource-center__inventory-metric-label {
+:is(.catalog-metric-badge, .reference-compact-metric, .products-metric-badge, .suppliers-metric-badge, .customers-metric-badge, .resource-center__inventory-metric, .warehouses-metric-badge) :is(.resource-center__inventory-metric-label, .warehouses-metric-label) {
   color: inherit !important;
   font-size: inherit;
   font-weight: inherit;
+  letter-spacing: 0;
 }
 
 .resource-center__inventory-metric-label--success {
@@ -144,6 +147,8 @@
   background-color: var(--color-danger-50, #fef2f2) !important;
   border-color: rgba(239, 68, 68, 0.3) !important;
   color: #dc2626 !important;
+  cursor: pointer !important;
+  transition: color 0.18s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.18s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1), transform 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .button-cancel:hover:not(:disabled),
@@ -152,6 +157,17 @@
   background-color: var(--color-danger-100, #fee2e2) !important;
   border-color: rgba(239, 68, 68, 0.5) !important;
   color: #b91c1c !important;
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.18), 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  transform: translateY(-1px) !important;
+  cursor: pointer !important;
+}
+
+.button-cancel:active:not(:disabled),
+.master-list-page__cancel-button:active:not(:disabled) {
+  transform: translateY(0) !important;
+  box-shadow: none !important;
+  background-color: #fecaca !important;
+  border-color: #ef4444 !important;
 }
 
 :is(.catalog-page__table-card, .reference-compact-table-card, .products-table-card, .supplier-table-card, .customers-page__directory-card, .resource-center__inventory-table-card, .resource-center__products-table-card) {

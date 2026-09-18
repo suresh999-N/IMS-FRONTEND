@@ -909,7 +909,12 @@ export default function TableComponent({
         <div className="table-component__columns-popover" role="menu">
           <div className="table-component__columns-header">
             <strong>Visible columns</strong>
-            <button type="button" onClick={handleResetColumns}>
+            <button
+              type="button"
+              className="table-component__columns-reset"
+              onClick={handleResetColumns}
+              title="Reset to default columns"
+            >
               Reset
             </button>
           </div>

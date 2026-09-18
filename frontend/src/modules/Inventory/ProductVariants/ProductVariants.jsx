@@ -1133,7 +1133,8 @@ export default function ProductVariants() {
                 <Save size={16} />
                 {isSaving ? 'Saving...' : 'Save Variant'}
               </button>
-              <button className="button button-cancel"
+              <button
+                className="button button-secondary button-cancel"
                 type="button"
                 onClick={handleCloseModal}
                 disabled={isSaving}
@@ -1168,8 +1169,9 @@ export default function ProductVariants() {
               <p className="delete-confirmation__warning">This action cannot be undone.</p>
             </div>
             <div className="button-row">
-              <button className="button button-cancel button-secondary"
+              <button
                 type="button"
+                className="button button-secondary button-cancel"
                 onClick={() => setDeleteTarget(null)}
                 disabled={isDeleting}
               >

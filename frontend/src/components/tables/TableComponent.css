@@ -256,7 +256,44 @@
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.28) !important;
 }
 
-:is(.table-component, .data-table, .resource-center__inventory-table, td) .erp-action-menu__trigger--icon[data-tooltip]::after {
+.table-truncated-tooltip--product {
+  padding: 7px 11px !important;
+  background: #0f172a !important;
+  border: 1px solid rgba(51, 65, 85, 0.85) !important;
+  border-radius: 6px !important;
+  color: #f8fafc !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 1.45 !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.35) !important;
+}
+
+.table-product-tooltip-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.table-product-tooltip-line {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.table-product-tooltip-line--title {
+  font-weight: 600;
+  color: #f8fafc;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.table-product-tooltip-line--meta {
+  font-size: 11.5px;
+  color: #cbd5e1;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+:is(.table-component, .data-table, .resource-center__inventory-table, td) :is(.erp-action-menu__trigger--icon, .warehouses-action-button)[data-tooltip]::after {
   display: none !important;
 }
 
@@ -501,14 +538,41 @@
   font-size: 12px;
 }
 
-.table-component__columns-header button {
+.table-component__columns-header button,
+.table-component__columns-reset {
   min-height: 0;
-  padding: 0;
-  border: 0;
+  padding: 3px 8px;
+  margin: -3px -4px;
+  border: 1px solid transparent;
+  border-radius: 4px;
   background: transparent;
-  color: var(--primary);
+  color: var(--primary, #059669);
   font-size: 11.5px;
-  font-weight: 800;
+  font-weight: 700;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.table-component__columns-header button:hover,
+.table-component__columns-reset:hover {
+  color: var(--primary-hover, #047857) !important;
+  background-color: var(--primary-50, #ecfdf5) !important;
+  border-color: rgba(5, 150, 105, 0.2) !important;
+  text-decoration: none !important;
+}
+
+.table-component__columns-header button:active,
+.table-component__columns-reset:active {
+  color: #065f46 !important;
+  background-color: #d1fae5 !important;
+  transform: translateY(0.5px);
+}
+
+.table-component__columns-header button:focus-visible,
+.table-component__columns-reset:focus-visible {
+  outline: 2px solid var(--primary, #059669);
+  outline-offset: 1px;
 }
 
 .table-component__columns-options {

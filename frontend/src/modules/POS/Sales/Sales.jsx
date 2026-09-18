@@ -594,15 +594,15 @@ export default function Sales({ customers = [] }) {
               <strong className="sales-page__metric-count">{formatCurrency(summary.totalValue)}</strong>
               <span className="sales-page__metric-label">Sales</span>
             </span>
-            <span className="sales-page__metric sales-page__metric--warning" title="Outstanding Balance">
-              <Clock size={13} className="sales-page__metric-icon" aria-hidden="true" />
-              <strong className="sales-page__metric-count">{formatCurrency(summary.balanceValue)}</strong>
-              <span className="sales-page__metric-label">Balance</span>
-            </span>
             <span className="sales-page__metric sales-page__metric--value">
               <CheckCircle2 size={13} className="sales-page__metric-icon" aria-hidden="true" />
               <strong className="sales-page__metric-count">{formatCurrency(summary.paidValue)}</strong>
               <span className="sales-page__metric-label">Paid</span>
+            </span>
+            <span className="sales-page__metric sales-page__metric--warning" title="Balance">
+              <Clock size={13} className="sales-page__metric-icon" aria-hidden="true" />
+              <strong className="sales-page__metric-count">{formatCurrency(summary.balanceValue)}</strong>
+              <span className="sales-page__metric-label">Balance</span>
             </span>
           </div>
         </div>

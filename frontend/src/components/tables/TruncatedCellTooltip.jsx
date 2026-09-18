@@ -40,16 +40,45 @@ function isTruncated(element) {
   return false
 }
 
+function isActionElement(element, cell) {
+  const cellEl = cell || element?.closest?.('td') || element
+  return Boolean(
+    element?.closest?.('button, a, .erp-action-menu__trigger, .warehouses-action-button') ||
+    cellEl?.classList?.contains('table-component__actions-cell') ||
+    cellEl?.getAttribute?.('data-column-id') === 'actions'
+  )
+}
+
+function isProductElement(element) {
+  return Boolean(
+    element?.closest?.('.warehouses-product-item, .warehouses-products-list, [data-product-tooltip], [data-warehouse-product]')
+  )
+}
+
+function shouldShowTooltip(element, cell) {
+  if (!element) return false
+
+  const titleVal = (element.getAttribute('data-tooltip-title') || element.getAttribute('title') || element.getAttribute('data-tooltip'))?.trim()
+  if (!titleVal) return false
+
+  if (isActionElement(element, cell)) return true
+  if (isProductElement(element)) return true
+  if (element.hasAttribute('data-tooltip') || element.hasAttribute('data-product-tooltip')) return true
+  if (titleVal.includes('\n')) return true
+
+  const visibleText = String(element.innerText || element.textContent || '').trim()
+  if (visibleText && titleVal !== visibleText) return true
+
+  if (isTruncated(element) || (cell && isTruncated(cell))) return true
+
+  return false
+}
+
 function findTruncatedElement(cell, target) {
   if (target && cell.contains(target)) {
-    const titledTarget = target.closest?.('[title], [data-tooltip-title]')
+    const titledTarget = target.closest?.('[data-tooltip-title], [title], [data-product-tooltip], [data-tooltip]')
     if (titledTarget && cell.contains(titledTarget)) {
-      const titleVal = (titledTarget.getAttribute('title') || titledTarget.getAttribute('data-tooltip-title'))?.trim()
-      if (isActionElement(titledTarget, cell)) {
-        if (titleVal || isTruncated(titledTarget)) {
-          return titledTarget
-        }
-      } else if (isTruncated(titledTarget) || (titleVal && isTruncated(cell))) {
+      if (shouldShowTooltip(titledTarget, cell)) {
         return titledTarget
       }
     }
@@ -60,8 +89,8 @@ function findTruncatedElement(cell, target) {
     }
   }
 
-  const titleElement = cell.querySelector('[title], [data-tooltip-title]')
-  if (titleElement && (isTruncated(titleElement) || isTruncated(cell))) {
+  const titleElement = cell.querySelector('[data-tooltip-title], [title], [data-product-tooltip], [data-tooltip]')
+  if (titleElement && shouldShowTooltip(titleElement, cell)) {
     return titleElement
   }
 
@@ -72,15 +101,6 @@ function findTruncatedElement(cell, target) {
   if (isTruncated(cell)) return cell
 
   return null
-}
-
-function isActionElement(element, cell) {
-  const cellEl = cell || element?.closest?.('td') || element
-  return Boolean(
-    element?.closest?.('button, a, .erp-action-menu__trigger, .warehouses-action-button') ||
-    cellEl?.classList?.contains('table-component__actions-cell') ||
-    cellEl?.getAttribute?.('data-column-id') === 'actions'
-  )
 }
 
 function getTooltipPosition(element, cell) {
@@ -303,6 +323,11 @@ export default function TruncatedCellTooltip({ containerRef }) {
           child.removeAttribute('data-tooltip-title')
         })
       }
+      const cell = element.closest?.('td')
+      if (cell && cell.hasAttribute?.('data-tooltip-title')) {
+        cell.setAttribute('title', cell.getAttribute('data-tooltip-title'))
+        cell.removeAttribute('data-tooltip-title')
+      }
     }
 
     function hideTooltip() {
@@ -338,10 +363,28 @@ export default function TruncatedCellTooltip({ containerRef }) {
         isAction &&
         !isAction.hasAttribute('title') &&
         !isAction.hasAttribute('data-tooltip-title') &&
+        !isAction.hasAttribute('data-tooltip') &&
         !isTruncated(isAction)
       ) {
         hideTooltip()
         return
+      }
+
+      // Proactively strip native title on hovered element or descendants to prevent browser native tooltips
+      const titledDescendants = cell.querySelectorAll('[title]')
+      titledDescendants.forEach((el) => {
+        const t = el.getAttribute('title')
+        if (t) {
+          el.setAttribute('data-tooltip-title', t)
+          el.removeAttribute('title')
+        }
+      })
+      if (cell.hasAttribute('title')) {
+        const ct = cell.getAttribute('title')
+        if (ct) {
+          cell.setAttribute('data-tooltip-title', ct)
+          cell.removeAttribute('title')
+        }
       }
 
       const truncatedElement = findTruncatedElement(cell, event.target)
@@ -369,7 +412,9 @@ export default function TruncatedCellTooltip({ containerRef }) {
         }
 
         const rawTitle =
-          truncatedElement.getAttribute('title') || truncatedElement.getAttribute('data-tooltip-title')
+          truncatedElement.getAttribute('data-tooltip-title') ||
+          truncatedElement.getAttribute('title') ||
+          truncatedElement.getAttribute('data-tooltip')
         const text = String(rawTitle || truncatedElement.innerText || truncatedElement.textContent || '').trim()
 
         if (!text) return
@@ -382,8 +427,13 @@ export default function TruncatedCellTooltip({ containerRef }) {
           }
         })
 
+        const isActionElem = isActionElement(truncatedElement, cell)
+        const isProductElem = isProductElement(truncatedElement)
+
         setTooltip({
           text,
+          isAction: isActionElem,
+          isProduct: isProductElem,
           ...getTooltipPosition(truncatedElement, cell),
         })
       }, HOVER_DELAY_MS)
@@ -398,8 +448,8 @@ export default function TruncatedCellTooltip({ containerRef }) {
         return
       }
 
-      const currentItem = event.target.closest?.('[title], [data-tooltip-title]')
-      const nextItem = event.relatedTarget?.closest?.('[title], [data-tooltip-title]')
+      const currentItem = event.target.closest?.('[title], [data-tooltip-title], [data-product-tooltip], [data-tooltip]')
+      const nextItem = event.relatedTarget?.closest?.('[title], [data-tooltip-title], [data-product-tooltip], [data-tooltip]')
       if (currentItem && currentItem !== nextItem) {
         hideTooltip()
       }
@@ -434,7 +484,7 @@ export default function TruncatedCellTooltip({ containerRef }) {
   return createPortal(
     <div
       ref={tooltipRef}
-      className={`table-truncated-tooltip table-truncated-tooltip--${tooltip.placement} ${tooltip.isAction ? 'table-truncated-tooltip--action' : ''}`.trim()}
+      className={`table-truncated-tooltip table-truncated-tooltip--${tooltip.placement} ${tooltip.isAction ? 'table-truncated-tooltip--action' : ''} ${tooltip.isProduct ? 'table-truncated-tooltip--product' : ''}`.trim()}
       role="tooltip"
       style={{
         left: `${tooltip.left}px`,
@@ -442,7 +492,20 @@ export default function TruncatedCellTooltip({ containerRef }) {
         top: `${tooltip.top}px`,
       }}
     >
-      {tooltip.text}
+      {tooltip.isProduct ? (
+        <div className="table-product-tooltip-layout">
+          {tooltip.text.split('\n').map((line, idx) => (
+            <div
+              key={idx}
+              className={`table-product-tooltip-line ${idx === 0 ? 'table-product-tooltip-line--title' : 'table-product-tooltip-line--meta'}`}
+            >
+              {line}
+            </div>
+          ))}
+        </div>
+      ) : (
+        tooltip.text
+      )}
     </div>,
     document.body,
   )

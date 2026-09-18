@@ -738,14 +738,13 @@
   right: calc(100% + 6px);
   transform: translateY(-50%) translateX(-4px);
   z-index: 20;
-  padding: 4px 7px;
+  padding: 4px 8px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid #cbd5e1;
-  color: #0f172a;
-  font-size: 11px;
+  background: #0f172a;
+  border: 1px solid rgba(51, 65, 85, 0.85);
+  color: #f8fafc;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.28);
+  font-size: 11.5px;
   font-weight: 600;
   line-height: 1.2;
   white-space: nowrap;
@@ -1044,14 +1043,16 @@
 .warehouses-metric-badge {
   display: inline-flex !important;
   align-items: center !important;
+  gap: 5px !important;
   min-height: 24px !important;
   padding: 3px 10px !important;
   border: 1px solid #bfdbfe !important;
   border-radius: 999px !important;
   background: #eff6ff !important;
-  color: #172033 !important;
+  color: #1e40af !important;
   font-size: 12px !important;
-  font-weight: 760 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
   line-height: 1 !important;
   white-space: nowrap !important;
 }
@@ -1059,8 +1060,16 @@
 .warehouses-metric-badge strong,
 .warehouses-metric-badge .warehouses-metric-count {
   color: #000000 !important;
-  font-weight: 760 !important;
+  font-weight: 700 !important;
   font-size: inherit !important;
+  letter-spacing: 0 !important;
+}
+
+.warehouses-metric-badge .warehouses-metric-label {
+  color: inherit !important;
+  font-weight: 700 !important;
+  font-size: inherit !important;
+  letter-spacing: 0 !important;
 }
 
 .warehouses-metric-badge--success {
@@ -1072,13 +1081,13 @@
 .warehouses-metric-badge--warning {
   border-color: #fed7aa !important;
   background: #fff7ed !important;
-  color: #b45309 !important;
+  color: #c2410c !important;
 }
 
 .warehouses-metric-badge--info {
   border-color: #bfdbfe !important;
   background: #eff6ff !important;
-  color: #172033 !important;
+  color: #1e40af !important;
 }
 
 .warehouses-workspace-header__actions {
@@ -1550,11 +1559,13 @@
 }
 
 .warehouses-metric-badge {
+  gap: 5px !important;
   min-height: 24px !important;
   padding: 3px 10px !important;
   border-radius: 999px !important;
   font-size: 12px !important;
-  font-weight: 760 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
   line-height: 1 !important;
 }
 

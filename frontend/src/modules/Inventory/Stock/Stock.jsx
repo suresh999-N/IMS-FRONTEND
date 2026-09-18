@@ -54,6 +54,7 @@ import FormModal from '../../../layouts/FormModal'
 import { useAuth } from '../../../hooks/useAuth'
 import { formatCurrency, formatDate } from '../../../utils/helpers'
 import { renderFormLabel } from '../../../utils/labelUtils'
+import { getDescriptiveProductName } from '../../../utils/productNameUtils'
 import {
   emailInputProps,
   getEmailError,
@@ -643,6 +644,14 @@ function formatCellValue(row, column, referenceData) {
   }
 
   const value = readResourceValue(row, column.key)
+
+  if (column.key === 'productName') {
+    const product = (referenceData?.products ?? []).find(
+      (p) => String(p.id ?? p.productId) === String(row.productId)
+    )
+    const descriptiveName = getDescriptiveProductName(product, row)
+    return descriptiveName || String(value || (row.productId ? `Product ID ${row.productId}` : 'Not set'))
+  }
 
   if (column.format === 'currency') {
     return formatCurrency(Number(value || 0))
@@ -4051,7 +4060,7 @@ export default function Stock() {
       <ResourcePage
         key={activeConfig.key}
         config={activeConfig}
-        navigationContent={isStockOperationsHub ? tabsContent : null}
+        navigationContent={null}
       />
     </div>
   )

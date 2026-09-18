@@ -21,7 +21,7 @@ export default function WarehousesHeader({
               key={metric.key}
               className={`warehouses-metric-badge warehouses-metric-badge--${metric.tone}`}
             >
-              <strong className="warehouses-metric-count">{metric.value}</strong>{' '}
+              <strong className="warehouses-metric-count">{metric.value}</strong>
               <span className="warehouses-metric-label">{metric.label}</span>
             </span>
           ))}

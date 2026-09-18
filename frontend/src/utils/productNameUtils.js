@@ -83,8 +83,10 @@ export function getDescriptiveProductName(product, fallbackItem = null) {
   const sku = String(fallbackItem?.sku ?? product?.sku ?? '').trim()
 
   const rawName = String(product?.name ?? product?.productName ?? fallbackItem?.productName ?? '').trim()
+  const isTruncated = rawName.endsWith('...') || rawName.endsWith('…')
   const isGeneric =
     !rawName ||
+    isTruncated ||
     /^product\s*\d+$/i.test(rawName) ||
     ['none', 'null', 'undefined', 'n/a', 'unnamed product'].includes(rawName.toLowerCase())
 

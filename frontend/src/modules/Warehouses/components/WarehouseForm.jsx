@@ -15,6 +15,7 @@ import {
   CITY_TO_STATE_MAP,
   INDIA_STATES,
 } from '../../Suppliers/supplierMasterData'
+import { renderFormLabel } from '../../../utils/labelUtils'
 import './WarehouseForm.css'
 
 const emptyForm = {
@@ -448,7 +449,7 @@ export default function WarehouseForm({
 
           <div className="field warehouse-form__status-field">
             <label id="warehouse-status-label">
-              Status *
+              {renderFormLabel('Status *')}
             </label>
             <div
               className="warehouse-form__segmented"

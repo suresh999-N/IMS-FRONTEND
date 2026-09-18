@@ -554,10 +554,6 @@ export default function PurchaseReturns() {
 
         <div className="toolbar-filters">
           <div className="filter-group">
-            <label htmlFor="supplier-select">
-              Supplier:
-            </label>
-
             <select
               id="supplier-select"
               value={supplierFilter}
@@ -566,9 +562,10 @@ export default function PurchaseReturns() {
                   event.target.value
                 )
               }
+              aria-label="Filter by supplier"
             >
               <option value="">
-                All Suppliers
+                Supplier
               </option>
 
               {suppliers.map((supplier) => {
@@ -764,9 +761,7 @@ export default function PurchaseReturns() {
                       </td>
 
                       <td>
-                        <span className="grn-badge">
-                          {grnNumber}
-                        </span>
+                        {grnNumber}
                       </td>
 
                       <td>
