@@ -195,32 +195,79 @@ function getValueFromColumn(column, row) {
 }
 
 function getSearchableText(row, columns, searchKeys) {
-  if (searchKeys.length > 0) {
+  if (!row) return ''
+
+  if (Array.isArray(searchKeys) && searchKeys.length > 0) {
     return searchKeys
-      .map((key) => String(row[key] ?? '').toLowerCase())
+      .map((key) => {
+        if (!key) return ''
+        let value
+        if (typeof key === 'string' && key.includes('.')) {
+          value = key.split('.').reduce((acc, part) => acc?.[part], row)
+        } else {
+          value = row[key]
+        }
+        return value !== undefined && value !== null ? String(value).toLowerCase() : ''
+      })
+      .join(' ')
+  }
+
+  if (!Array.isArray(columns) || columns.length === 0) {
+    return Object.values(row)
+      .map((val) => (val !== undefined && val !== null ? String(val).toLowerCase() : ''))
       .join(' ')
   }
 
   return columns
-    .filter((column) => column.searchable !== false)
+    .filter((column) => column && column.searchable !== false)
     .map((column) => {
       const parts = []
 
       if (typeof column.searchValue === 'function') {
-        const val = column.searchValue(row)
-        if (val !== undefined && val !== null && val !== '') {
-          parts.push(String(val).toLowerCase())
+        try {
+          const val = column.searchValue(row)
+          if (val !== undefined && val !== null && val !== '') {
+            parts.push(String(val).toLowerCase())
+          }
+        } catch {
+          // Ignore searchValue extraction errors
         }
       }
 
-      if (column.key && row[column.key] !== undefined && row[column.key] !== null) {
-        parts.push(String(row[column.key]).toLowerCase())
+      if (column.key) {
+        let value
+        if (typeof column.key === 'string' && column.key.includes('.')) {
+          value = column.key.split('.').reduce((acc, part) => acc?.[part], row)
+        } else {
+          value = row[column.key]
+        }
+        if (value !== undefined && value !== null && value !== '') {
+          if (typeof value === 'object' && !(value instanceof Date)) {
+            const label = value.name ?? value.label ?? value.title ?? value.code ?? value.value ?? value.id
+            if (label !== undefined && label !== null) {
+              parts.push(String(label).toLowerCase())
+            }
+          } else {
+            parts.push(String(value).toLowerCase())
+          }
+        }
       }
 
       if (typeof column.render === 'function') {
-        const rawValue = getRawCellValue(row, column)
-        if (rawValue !== null && rawValue !== undefined && rawValue !== '') {
-          parts.push(String(rawValue).toLowerCase())
+        try {
+          const val = getValueFromColumn(column, row)
+          if (val !== undefined && val !== null && val !== '') {
+            if (typeof val === 'object' && !(val instanceof Date)) {
+              const label = val.name ?? val.label ?? val.title ?? val.code ?? val.value ?? val.id
+              if (label !== undefined && label !== null) {
+                parts.push(String(label).toLowerCase())
+              }
+            } else {
+              parts.push(String(val).toLowerCase())
+            }
+          }
+        } catch {
+          // Ignore render value extraction errors
         }
       }
 
