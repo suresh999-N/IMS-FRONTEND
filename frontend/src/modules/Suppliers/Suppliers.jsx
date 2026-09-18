@@ -1240,7 +1240,8 @@ export default function Suppliers({
             loading={isLoading}
             defaultPageSize={20}
             defaultSortKey=""
-            showSearch={!hasSelectedSuppliers}
+            showSearch={true}
+            hideSelectionSummary={hasSelectedSuppliers}
             searchPlaceholder="Search suppliers by name, code"
             invalidSearchMessage="Please enter a valid search term (e.g., supplier name, code, phone, email, city)."
             emptyMessage={isLoading ? 'Loading suppliers...' : 'No suppliers match the current filters.'}

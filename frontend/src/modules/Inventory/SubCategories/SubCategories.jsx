@@ -1264,7 +1264,8 @@ export default function SubCategories() {
             loading={isLoading}
             defaultPageSize={20}
             defaultSortKey=""
-            showSearch={!hasSelectedSubCategories}
+            showSearch={true}
+            hideSelectionSummary={hasSelectedSubCategories}
             searchPlaceholder="Search subcategories by name, category, or status"
             emptyMessage="No subcategories found."
             splitToolbar

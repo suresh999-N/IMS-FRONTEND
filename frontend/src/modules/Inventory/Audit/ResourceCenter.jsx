@@ -2674,7 +2674,8 @@ function ResourcePage({ config }) {
           columns={columns}
           loading={isLoading}
           defaultPageSize={isSubCategoriesPage || isInventoryCompactPage || isNotificationsPage || isInvoicesPage ? 20 : 8}
-          showSearch={isSubCategoriesPage ? !hasSelectedSubCategories : true}
+          showSearch={true}
+          hideSelectionSummary={hasSelectedSubCategories}
           searchPlaceholder={`Search ${config.title.toLowerCase()}`}
           emptyMessage={`No ${config.title.toLowerCase()} records found.`}
           splitToolbar={isSubCategoriesPage || isInventoryCompactPage || isNotificationsPage || isInvoicesPage}

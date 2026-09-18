@@ -690,7 +690,8 @@ export default function ProductTable({
         onSearchChange={(value) => onFilterChange?.('search', value)}
         emptyMessage={emptyMessage}
         loading={loading}
-        showSearch={!hasSelectedProducts}
+        showSearch={true}
+        hideSelectionSummary={hasSelectedProducts}
         splitToolbar
         fitExplicitColumnsToContainer
         filterContent={hasSelectedProducts ? selectedToolbarContent : primaryToolbarContent}

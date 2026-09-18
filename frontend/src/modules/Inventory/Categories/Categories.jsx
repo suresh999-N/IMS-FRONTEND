@@ -1409,7 +1409,8 @@ export default function Categories() {
           loading={isLoading}
           defaultPageSize={20}
           defaultSortKey=""
-          showSearch={!hasSelectedCategories}
+          showSearch={true}
+          hideSelectionSummary={hasSelectedCategories}
           defaultVisibleColumnKeys={CATEGORY_DEFAULT_COLUMNS}
           columnStorageKey={CATEGORY_COLUMNS_STORAGE_KEY}
           fitExplicitColumnsToContainer

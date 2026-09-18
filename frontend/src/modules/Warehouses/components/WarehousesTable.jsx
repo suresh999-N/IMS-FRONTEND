@@ -608,7 +608,8 @@ export default function WarehousesTable({
         emptyMessage={emptyMessage}
         defaultPageSize={20}
         defaultSortKey=""
-        showSearch={!hasSelectedWarehouses}
+        showSearch={true}
+        hideSelectionSummary={hasSelectedWarehouses}
         fitExplicitColumnsToContainer
         splitToolbar
         filterContent={selectedToolbarContent}

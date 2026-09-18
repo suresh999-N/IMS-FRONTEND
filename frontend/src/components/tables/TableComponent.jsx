@@ -823,7 +823,7 @@ export default function TableComponent({
     return 'Invalid search term. Please enter a valid search term.'
   }, [resolvedInvalidSearchMessage])
 
-  const searchControl = showSearch && !isSelectionActive ? (
+  const searchControl = showSearch ? (
     <SearchBar
       value={searchTerm}
       onChange={setSearchTerm}

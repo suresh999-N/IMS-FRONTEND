@@ -524,8 +524,8 @@ export default function PurchaseIndentsTable({
         selectedRowKeys={selectedIndentIds}
         onSelectionChange={onSelectionChange}
         keyField="purchaseIndentId"
-        showSearch={!hasSelection}
-        showColumnControls={!hasSelection}
+        showSearch={true}
+        showColumnControls={true}
         columnStorageKey="ims.purchase-indents.visibleColumns.compact.v6"
         defaultVisibleColumnKeys={['indentNumber', 'productName', 'priority', 'indentDate', 'quantity', 'status', 'requestedByDisplay', 'actions']}
         fitExplicitColumnsToContainer={false}

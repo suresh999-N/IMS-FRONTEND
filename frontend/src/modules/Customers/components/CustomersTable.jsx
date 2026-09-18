@@ -504,7 +504,8 @@ export default function CustomersTable({
         defaultVisibleColumnKeys={DEFAULT_VISIBLE_COLUMNS}
         lockedColumnKeys={LOCKED_COLUMNS}
         fitExplicitColumnsToContainer
-        showSearch={!hasSelectedCustomers}
+        showSearch={true}
+        hideSelectionSummary={hasSelectedCustomers}
         splitToolbar
         filterContent={hasSelectedCustomers ? selectedToolbarContent : filterContent}
         toolbarContent={toolbarContent}

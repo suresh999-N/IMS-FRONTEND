@@ -2996,7 +2996,7 @@ export default function SupplierPaymentModule({
             loading={isLoading}
             defaultPageSize={20}
             allowSortReset
-            showSearch={selectedPaymentIds.length === 0}
+            showSearch={true}
             searchKeys={['paymentNumber', 'partyName', 'referenceNumber']}
             searchPlaceholder="Search payments"
             emptyMessage="No supplier payments available."

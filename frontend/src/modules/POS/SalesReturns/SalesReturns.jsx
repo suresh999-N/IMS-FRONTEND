@@ -369,8 +369,8 @@ export default function SalesReturns() {
           selectedRowKeys={selectedRowKeys}
           onSelectionChange={setSelectedRowKeys}
           keyField="salesReturnId"
-          showSearch={!hasSelection}
-          showColumnControls={!hasSelection}
+          showSearch={true}
+          showColumnControls={true}
           columnStorageKey="ims.sales-returns.visibleColumns.v1"
           defaultVisibleColumnKeys={['returnNumber', 'invoiceNumber', 'customerName', 'returnDate', 'totalAmount', 'reason', 'actions']}
           fitExplicitColumnsToContainer={false}

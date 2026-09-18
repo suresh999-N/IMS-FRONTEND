@@ -2868,7 +2868,7 @@ export default function CustomerPaymentModule({
             loading={isLoading}
             defaultPageSize={20}
             allowSortReset
-            showSearch={selectedPaymentIds.length === 0}
+            showSearch={true}
             searchKeys={['paymentNumber', 'partyName', 'invoiceNumber', 'invoiceStatus', 'referenceNumber']}
             searchPlaceholder="Search payments"
             emptyMessage="No customer payments available."
