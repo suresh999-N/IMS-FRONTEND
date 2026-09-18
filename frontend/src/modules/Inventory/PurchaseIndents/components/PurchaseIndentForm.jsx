@@ -236,11 +236,10 @@ export default function PurchaseIndentForm({
               id="pi-indent-date"
               name="indentDate"
               value={formData.indentDate}
-              max={getToday()}
               onChange={handleChange}
               onBlur={handleBlur}
               disabled={isSubmitting}
-              minDate={initialValues ? undefined : getToday()}
+              maxDate={getToday()}
               className="indent-details-date-picker"
             />
             {touched.indentDate && errors.indentDate && (

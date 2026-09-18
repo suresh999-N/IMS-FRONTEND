@@ -642,8 +642,8 @@ function PurchaseIndentForm({
 
   function updateField(name, value) {
     let errorToSet = ''
-    if (name === 'indentDate' && !isEdit && value && compareDateOnly(value, getToday()) < 0) {
-      errorToSet = 'Indent date cannot be in the past.'
+    if (name === 'indentDate' && value && compareDateOnly(value, getToday()) > 0) {
+      errorToSet = 'Indent date cannot be in the future.'
     }
 
     setDraft((currentValue) => ({
@@ -776,8 +776,8 @@ function PurchaseIndentForm({
 
     if (!draft.indentDate) {
       setError('indentDate', 'Indent date is required.')
-    } else if (!isEdit && compareDateOnly(draft.indentDate, getToday()) < 0) {
-      setError('indentDate', 'Indent date cannot be in the past.')
+    } else if (compareDateOnly(draft.indentDate, getToday()) > 0) {
+      setError('indentDate', 'Indent date cannot be in the future.')
     }
 
     if (!draft.expectedDeliveryDate) {
@@ -969,7 +969,7 @@ function PurchaseIndentForm({
               value={draft.indentDate}
               onChange={(e) => updateField('indentDate', e.target.value)}
               disabled={isSubmitting}
-              minDate={isEdit ? undefined : getToday()}
+              maxDate={getToday()}
               className="indent-details-date-picker"
             />
             {errors.indentDate && <span className="indent-field-error">{errors.indentDate}</span>}
