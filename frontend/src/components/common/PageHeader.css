@@ -1,11 +1,14 @@
 .app-page-header {
   position: relative;
   padding: 4px 0 6px;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-3);
 }
 
 .app-page-header__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   flex: 1 1 360px;
 }
 

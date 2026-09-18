@@ -269,13 +269,15 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
+  height: 36px;
+  padding: 0 12px;
   border: 1px solid #a7f3d0;
-  border-radius: 6px;
+  border-radius: 8px;
   background: #ecfdf5;
   color: #047857;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 500;
+  box-sizing: border-box;
 }
 
 .resource-center__page--productVariants .resource-center__inventory-table .table-component__pagination {
@@ -289,17 +291,23 @@
   background: #f8fafc;
 }
 
-.resource-center__page--productVariants .table-component__toolbar .button {
-  height: 38px;
-  min-height: 38px;
-  padding: 0 16px;
+.resource-center__page--productVariants .table-component__toolbar .button,
+.variants__toolbar-actions .button,
+.variants-table__selection-actions .button {
+  height: 36px;
+  min-height: 36px;
+  max-height: 36px;
+  padding: 0 14px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 6px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
+  line-height: 1;
   border-radius: 8px;
   box-sizing: border-box;
+  white-space: nowrap;
 }
 
 /* ─── Identity & Badges ────────────────────────────────────────── */

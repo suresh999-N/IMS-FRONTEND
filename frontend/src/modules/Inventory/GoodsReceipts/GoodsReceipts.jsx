@@ -1805,6 +1805,8 @@ function handlePrintGoodsReceipt(row, referenceData = {}, viewingPoItems = []) {
 
   const detailItems = getGoodsReceiptDetailItems(row)
   const status = detailItems.find((item) => item.key === 'status')?.value || 'Recorded'
+  const normalizedStatus = String(status || '').trim().toLowerCase().replace(/[_\s]+/g, '-')
+  const statusType = getStatusType(status)
   const grnNumber = detailItems.find((item) => item.key === 'receiptId')?.value || getGoodsReceiptNumber(row) || 'N/A'
   const purchaseOrder = detailItems.find((item) => item.key === 'purchaseOrder')?.value || 'Purchase Order'
   const bodyItems = detailItems.filter((item) =>
@@ -1974,16 +1976,82 @@ function handlePrintGoodsReceipt(row, referenceData = {}, viewingPoItems = []) {
       color: rgba(236, 253, 245, 0.88);
       font-size: 12.5px;
     }
+    .status-badge,
     .hero-badge {
-      display: inline-block;
-      padding: 5px 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      min-height: 28px;
+      padding: 5px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.32);
       border-radius: 9999px;
-      font-size: 12px;
-      font-weight: 600;
-      background: rgba(255, 255, 255, 0.2) !important;
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      font-size: 10.5px;
+      font-weight: 680;
+      line-height: 1.25;
+      white-space: nowrap;
+      box-shadow: none;
+      background: rgba(255, 255, 255, 0.15);
       color: #ffffff;
-      backdrop-filter: blur(4px);
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .status-active,
+    .status-completed,
+    .status-in,
+    .status-in-stock,
+    .status-received,
+    .status-success {
+      color: #047857 !important;
+      background-color: #ecfdf5 !important;
+      background: #ecfdf5 !important;
+      border: 1px solid #a7f3d0 !important;
+      border-color: #a7f3d0 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .status-pending,
+    .status-prospect,
+    .status-ordered,
+    .status-warning,
+    .status-partial {
+      color: #c2410c !important;
+      background-color: #fff7ed !important;
+      background: #fff7ed !important;
+      border: 1px solid #fed7aa !important;
+      border-color: #fed7aa !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .status-low,
+    .status-overdue,
+    .status-out,
+    .status-failed,
+    .status-cancelled,
+    .status-canceled,
+    .status-blocked,
+    .status-critical {
+      color: #b91c1c !important;
+      background-color: #fef2f2 !important;
+      background: #fef2f2 !important;
+      border: 1px solid #fecaca !important;
+      border-color: #fecaca !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .status-draft,
+    .status-archived,
+    .status-unpaid,
+    .status-inactive,
+    .status-disabled,
+    .status-reversed {
+      color: #334155 !important;
+      background-color: #e2e8f0 !important;
+      background: #e2e8f0 !important;
+      border: 1px solid #94a3b8 !important;
+      border-color: #94a3b8 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
     .goods-receipt-details__section {
       padding: 22px 24px;
@@ -2103,7 +2171,7 @@ function handlePrintGoodsReceipt(row, referenceData = {}, viewingPoItems = []) {
         <h3>${escapeHtml(purchaseOrder)}</h3>
         <p>GRN Number: ${escapeHtml(grnNumber)}</p>
       </div>
-      <div class="hero-badge">
+      <div class="status-badge status-${escapeHtml(statusType)} status-${escapeHtml(normalizedStatus)} hero-badge">
         ${escapeHtml(formatStatusLabel(status))}
       </div>
     </div>

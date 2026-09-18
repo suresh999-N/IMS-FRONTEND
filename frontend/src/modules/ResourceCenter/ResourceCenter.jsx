@@ -1902,6 +1902,7 @@ function ResourcePage({ config, navigationContent = null }) {
   const [selectedSubCategoryIds, setSelectedSubCategoryIds] = useState([])
   const [viewingRecord, setViewingRecord] = useState(null)
   const [selectedProductStyleRowIds, setSelectedProductStyleRowIds] = useState([])
+  const [selectedStockAdjustmentIds, setSelectedStockAdjustmentIds] = useState([])
 
   const canCreate = (config.canCreate ?? true) && hasPermission(config.permissionKey, 'create')
   const canUpdate = (config.canUpdate ?? true) && hasPermission(config.permissionKey, 'edit')
@@ -1913,6 +1914,7 @@ function ResourcePage({ config, navigationContent = null }) {
   const isInventoryCompactPage = INVENTORY_COMPACT_KEYS.has(config.key)
   const isAuditLogsPage = config.key === 'auditLogs'
   const isProductStylePage = PRODUCT_STYLE_RESOURCE_KEYS.has(config.key)
+  const isStockAdjustmentsPage = config.key === 'stockAdjustments'
   const usesCompactActionMenu = ACTION_MENU_RESOURCE_KEYS.has(config.key)
   const isNotificationsPage = config.key === 'notifications'
   const isInvoicesPage = config.key === 'invoices'
@@ -2186,6 +2188,12 @@ function ResourcePage({ config, navigationContent = null }) {
   }, [rows, selectedProductStyleRowIds])
   const hasSelectedProductStyleRows = selectedProductStyleRows.length > 0
 
+  const selectedStockAdjustments = useMemo(() => {
+    const selectedIdSet = new Set(selectedStockAdjustmentIds.map(String))
+    return rows.filter((row) => selectedIdSet.has(String(row.adjustmentId ?? row.id ?? '')))
+  }, [rows, selectedStockAdjustmentIds])
+  const hasSelectedStockAdjustments = selectedStockAdjustments.length > 0
+
   useEffect(() => {
     if (!isSubCategoriesPage) {
       return
@@ -2203,6 +2211,15 @@ function ResourcePage({ config, navigationContent = null }) {
     const visibleIdSet = new Set(rows.map((row, index) => getSelectionRowKey(row, index)))
     setSelectedProductStyleRowIds((currentValue) => currentValue.filter((id) => visibleIdSet.has(String(id))))
   }, [isProductStylePage, rows])
+
+  useEffect(() => {
+    if (!isStockAdjustmentsPage) {
+      return
+    }
+
+    const visibleIdSet = new Set(rows.map((row) => String(row.adjustmentId ?? row.id ?? '')))
+    setSelectedStockAdjustmentIds((currentValue) => currentValue.filter((id) => visibleIdSet.has(String(id))))
+  }, [isStockAdjustmentsPage, rows])
 
   async function handleSave({ payload, changedPayload }) {
     setIsSaving(true)
@@ -2364,6 +2381,79 @@ function ResourcePage({ config, navigationContent = null }) {
       })
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  async function handleBulkStockAdjustmentDelete() {
+    if (!canDelete || selectedStockAdjustments.length === 0) {
+      return
+    }
+
+    setIsDeleting(true)
+
+    try {
+      for (const row of selectedStockAdjustments) {
+        const id = row.adjustmentId ?? row.id
+        const response = await deleteResource(config, id)
+
+        if (!response.success) {
+          throw new Error(getDeleteErrorMessage(config, response.error))
+        }
+      }
+
+      setSelectedStockAdjustmentIds([])
+      showToast({
+        type: 'success',
+        title: config.title,
+        message: `${selectedStockAdjustments.length} ${config.entityName} record${selectedStockAdjustments.length === 1 ? '' : 's'} deleted successfully.`,
+      })
+      notifyCatalogStructureUpdate(config, 'deleted')
+      await loadRows({ force: true })
+    } catch (deleteError) {
+      showToast({
+        type: 'error',
+        title: config.title,
+        message:
+          deleteError instanceof Error
+            ? deleteError.message
+            : `Unable to delete ${config.entityName.toLowerCase()}.`,
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  async function handleBulkStockAdjustmentApprove() {
+    if (selectedStockAdjustments.length === 0) {
+      return
+    }
+
+    setIsSaving(true)
+
+    try {
+      for (const row of selectedStockAdjustments) {
+        const id = row.adjustmentId ?? row.id
+        await updateResource(config, id, { status: 'approved' }, { status: 'approved' })
+      }
+
+      setSelectedStockAdjustmentIds([])
+      showToast({
+        type: 'success',
+        title: config.title,
+        message: `${selectedStockAdjustments.length} ${config.entityName} record${selectedStockAdjustments.length === 1 ? '' : 's'} approved successfully.`,
+      })
+      await loadRows({ force: true })
+    } catch (approveError) {
+      showToast({
+        type: 'error',
+        title: config.title,
+        message:
+          approveError instanceof Error
+            ? approveError.message
+            : `Unable to approve ${config.entityName.toLowerCase()}.`,
+      })
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -3143,10 +3233,56 @@ function ResourcePage({ config, navigationContent = null }) {
       </select>
     </FilterBar>
   ) : null
+  const stockAdjustmentsSelectedToolbarContent = hasSelectedStockAdjustments ? (
+    <FilterBar className="resource-center__subcategories-selection-actions" ariaLabel="Selected Stock Adjustment actions">
+      <div className="resource-center__subcategories-selection-summary" aria-live="polite">
+        <Check size={15} />
+        <strong>{selectedStockAdjustments.length} selected</strong>
+      </div>
+      <button
+        type="button"
+        className="button button-secondary resource-center__subcategories-selection-button"
+        onClick={handleBulkStockAdjustmentApprove}
+        disabled={isSaving}
+      >
+        <CheckCircle2 size={15} />
+        Approve
+      </button>
+      <button
+        type="button"
+        className="button button-secondary resource-center__subcategories-selection-button"
+        onClick={() => exportResourceRowsCsv(config, selectedStockAdjustments)}
+      >
+        <Download size={15} />
+        Export
+      </button>
+      <button
+        type="button"
+        className="button button-secondary resource-center__subcategories-selection-button"
+        onClick={() => printResourceRows(config, selectedStockAdjustments)}
+      >
+        <Printer size={15} />
+        Print
+      </button>
+      {canDelete ? (
+        <button
+          type="button"
+          className="button button-secondary resource-center__subcategories-selection-button resource-center__subcategories-selection-button--danger"
+          onClick={handleBulkStockAdjustmentDelete}
+          disabled={isDeleting}
+        >
+          <Trash2 size={15} />
+          Delete
+        </button>
+      ) : null}
+    </FilterBar>
+  ) : null
   const resolvedFilterContent = isSubCategoriesPage
     ? subCategorySelectedToolbarContent
     : isProductStylePage && hasSelectedProductStyleRows
     ? productStyleSelectedToolbarContent
+    : isStockAdjustmentsPage && hasSelectedStockAdjustments
+    ? stockAdjustmentsSelectedToolbarContent
     : notificationFilterContent
   const resolvedToolbarContent = isProductStylePage && hasSelectedProductStyleRows
     ? productStyleSelectedRightContent
@@ -3205,42 +3341,37 @@ function ResourcePage({ config, navigationContent = null }) {
         </header>
       ) : isInventoryCompactPage ? (
         <header className="resource-center__inventory-header" aria-label={`${config.title} summary`}>
-          <div className="resource-center__inventory-header-main">
-            <h1>{config.title}</h1>
-            <div className="resource-center__inventory-metrics">
-              {inventoryMetrics.map((metric) => (
-                <span
-                  key={metric.label}
-                  className={`resource-center__inventory-metric resource-center__inventory-metric--${metric.tone}`}
-                >
-                  <strong className="resource-center__inventory-metric-count" style={{ color: '#000000', fontWeight: 700 }}>
-                    {metric.value}
-                  </strong>{' '}
-                  <span className={`resource-center__inventory-metric-label resource-center__inventory-metric-label--${metric.tone}`}>
-                    {metric.label}
-                  </span>
-                </span>
-              ))}
-            </div>
+          <div className="resource-center__inventory-title-group">
+            <h1 className="resource-center__title">
+              <Icon size={20} />
+              {config.title}
+            </h1>
+            <p className="resource-center__subtitle">{config.subtitle}</p>
           </div>
-          <div className="resource-center__inventory-header-actions">
-            {canCreate ? (
-              <button type="button" className="button button-primary" onClick={openCreate}>
-                <Plus size={16} />
-                Add {config.entityName}
-              </button>
-            ) : null}
+          <div className="resource-center__inventory-metrics">
+            {inventoryMetrics.map((item) => (
+              <div key={item.label} className="resource-center__inventory-metric-chip">
+                <span className="resource-center__inventory-metric-label">{item.label}</span>
+                <span className="resource-center__inventory-metric-value">{item.value}</span>
+              </div>
+            ))}
           </div>
         </header>
       ) : isNotificationsPage || isInvoicesPage ? (
-        <header className="resource-center__compact-header" aria-label={`${config.title} workspace summary`}>
-          <div className="resource-center__compact-title-row">
-            <h1>{config.title}</h1>
+        <header className="resource-center__notifications-header" aria-label={`${config.title} summary`}>
+          <div className="resource-center__notifications-title-group">
+            <h1 className="resource-center__title">
+              <Icon size={20} />
+              {config.title}
+            </h1>
+            <p className="resource-center__subtitle">{config.subtitle}</p>
+          </div>
+          <div className="resource-center__notifications-header-actions">
             {isNotificationsPage ? (
-              <div className="resource-center__compact-metrics" aria-label="Notification summary">
+              <div className="resource-center__notifications-metrics" aria-label="Notification summary">
                 <span className="resource-center__metric-badge resource-center__metric-badge--total">
                   <strong>{notificationSummary.total}</strong>
-                  Notifications
+                  Total
                 </span>
                 <span className="resource-center__metric-badge resource-center__metric-badge--warning">
                   <strong>{notificationSummary.unread}</strong>
@@ -3339,11 +3470,11 @@ function ResourcePage({ config, navigationContent = null }) {
           columns={columns}
           loading={isLoading}
           defaultPageSize={isProductStylePage || isSubCategoriesPage || isInventoryCompactPage || isNotificationsPage || isInvoicesPage ? 20 : 8}
-          showSearch={isSubCategoriesPage ? !hasSelectedSubCategories : isProductStylePage ? !hasSelectedProductStyleRows : true}
+          showSearch={isSubCategoriesPage ? !hasSelectedSubCategories : isProductStylePage ? !hasSelectedProductStyleRows : isStockAdjustmentsPage ? !hasSelectedStockAdjustments : true}
           searchPlaceholder={`Search ${config.title.toLowerCase()}`}
           emptyMessage={`No ${config.title.toLowerCase()} records found.`}
           splitToolbar={isProductStylePage || isSubCategoriesPage || isInventoryCompactPage || isNotificationsPage || isInvoicesPage}
-          showColumnControls={!(isProductStylePage && hasSelectedProductStyleRows)}
+          showColumnControls={!(isProductStylePage && hasSelectedProductStyleRows) && !(isStockAdjustmentsPage && hasSelectedStockAdjustments)}
           filterContent={resolvedFilterContent}
           toolbarContent={resolvedToolbarContent}
           columnStorageKey={isProductStylePage ? `ims.${config.key}.visibleColumns.productsStyle.v1` : isSubCategoriesPage ? 'ims.subCategories.visibleColumns.warehouseParity.v1' : isNotificationsPage ? 'ims.notifications.visibleColumns.v2' : isInvoicesPage ? 'ims.invoices.visibleColumns.v2' : ''}
@@ -3357,10 +3488,10 @@ function ResourcePage({ config, navigationContent = null }) {
           rowClassName={isNotificationsPage ? (row) => (getNotificationReadState(row) ? 'is-read' : 'is-unread') : undefined}
           defaultSortKey={isProductStylePage ? config.columns?.[0]?.key || '' : isSubCategoriesPage ? 'name' : isInventoryCompactPage ? config.columns?.[0]?.key || '' : isNotificationsPage ? 'createdAt' : isInvoicesPage ? 'invoiceDate' : ''}
           defaultSortDirection={isNotificationsPage || isInvoicesPage ? 'desc' : 'asc'}
-          enableRowSelection={isSubCategoriesPage || isProductStylePage}
-          selectedRowKeys={isSubCategoriesPage ? selectedSubCategoryIds : isProductStylePage ? selectedProductStyleRowIds : undefined}
-          onSelectionChange={isSubCategoriesPage ? setSelectedSubCategoryIds : isProductStylePage ? setSelectedProductStyleRowIds : undefined}
-          keyField={isProductStylePage ? '__resourceSelectionKey' : 'id'}
+          enableRowSelection={isSubCategoriesPage || isProductStylePage || isStockAdjustmentsPage}
+          selectedRowKeys={isStockAdjustmentsPage ? selectedStockAdjustmentIds : isSubCategoriesPage ? selectedSubCategoryIds : isProductStylePage ? selectedProductStyleRowIds : undefined}
+          onSelectionChange={isStockAdjustmentsPage ? setSelectedStockAdjustmentIds : isSubCategoriesPage ? setSelectedSubCategoryIds : isProductStylePage ? setSelectedProductStyleRowIds : undefined}
+          keyField={isStockAdjustmentsPage ? 'adjustmentId' : isProductStylePage ? '__resourceSelectionKey' : 'id'}
         />
       </div>
 

@@ -94,9 +94,11 @@ export default function PurchaseForm({
   isSubmitting = false,
   initialData = null,
   mode = 'create',
+  isEditing = false,
 }) {
   const [formData, setFormData] = useState(initialData || initialForm)
   const [touched, setTouched] = useState({})
+  const isEditingMode = mode === 'edit' || isEditing || Boolean(initialData?.id || initialData?.poId || initialData?.poNumber)
 
   useEffect(() => {
     if (initialData) {
@@ -321,7 +323,7 @@ export default function PurchaseForm({
       {/* Header */}
       <div className="indent-create-header">
         <div className="indent-create-header__title">
-          <h1>{mode === 'edit' ? 'Update Purchase Order' : 'Create Purchase Order'}</h1>
+          <h1>{isEditingMode ? 'Update Purchase Order' : 'Create Purchase Order'}</h1>
         </div>
       </div>
 
@@ -550,7 +552,7 @@ export default function PurchaseForm({
           className="indent-btn indent-btn--submit"
           disabled={!isFormValid || isSubmitting}
         >
-          {isSubmitting ? 'Saving...' : mode === 'edit' ? 'Save Changes' : 'Create Purchase Order'}
+          {isSubmitting ? 'Saving...' : isEditingMode ? 'Save Changes' : 'Create Purchase Order'}
         </button>
       </div>
     </form>

@@ -1882,6 +1882,7 @@ function ResourcePage({ config, navigationContent = null }) {
   const [notificationFilters, setNotificationFilters] = useState({ read: 'all', type: 'all' })
   const [selectedSubCategoryIds, setSelectedSubCategoryIds] = useState([])
   const [selectedProductStyleRowIds, setSelectedProductStyleRowIds] = useState([])
+  const [selectedStockAdjustmentIds, setSelectedStockAdjustmentIds] = useState([])
 
   const canCreate = (config.canCreate ?? true) && hasPermission(config.permissionKey, 'create')
   const canUpdate = (config.canUpdate ?? true) && hasPermission(config.permissionKey, 'edit')
@@ -1893,6 +1894,7 @@ function ResourcePage({ config, navigationContent = null }) {
   const isInventoryCompactPage = INVENTORY_COMPACT_KEYS.has(config.key)
   const isAuditLogsPage = config.key === 'auditLogs'
   const isProductStylePage = PRODUCT_STYLE_RESOURCE_KEYS.has(config.key)
+  const isStockAdjustmentsPage = config.key === 'stockAdjustments'
   const usesCompactActionMenu = ACTION_MENU_RESOURCE_KEYS.has(config.key)
   const isNotificationsPage = config.key === 'notifications'
   const isInvoicesPage = config.key === 'invoices'
@@ -2162,6 +2164,12 @@ function ResourcePage({ config, navigationContent = null }) {
   }, [rows, selectedProductStyleRowIds])
   const hasSelectedProductStyleRows = selectedProductStyleRows.length > 0
 
+  const selectedStockAdjustments = useMemo(() => {
+    const selectedIdSet = new Set(selectedStockAdjustmentIds.map(String))
+    return rows.filter((row) => selectedIdSet.has(String(row.adjustmentId ?? row.id ?? '')))
+  }, [rows, selectedStockAdjustmentIds])
+  const hasSelectedStockAdjustments = selectedStockAdjustments.length > 0
+
   useEffect(() => {
     if (!isSubCategoriesPage) {
       return
@@ -2179,6 +2187,15 @@ function ResourcePage({ config, navigationContent = null }) {
     const visibleIdSet = new Set(rows.map((row, index) => getSelectionRowKey(row, index)))
     setSelectedProductStyleRowIds((currentValue) => currentValue.filter((id) => visibleIdSet.has(String(id))))
   }, [isProductStylePage, rows])
+
+  useEffect(() => {
+    if (!isStockAdjustmentsPage) {
+      return
+    }
+
+    const visibleIdSet = new Set(rows.map((row) => String(row.adjustmentId ?? row.id ?? '')))
+    setSelectedStockAdjustmentIds((currentValue) => currentValue.filter((id) => visibleIdSet.has(String(id))))
+  }, [isStockAdjustmentsPage, rows])
 
   async function handleSave({ payload, changedPayload }) {
     setIsSaving(true)
@@ -2479,6 +2496,79 @@ function ResourcePage({ config, navigationContent = null }) {
       })
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  async function handleBulkStockAdjustmentDelete() {
+    if (!canDelete || selectedStockAdjustments.length === 0) {
+      return
+    }
+
+    setIsDeleting(true)
+
+    try {
+      for (const row of selectedStockAdjustments) {
+        const id = row.adjustmentId ?? row.id
+        const response = await deleteResource(config, id)
+
+        if (!response.success) {
+          throw new Error(getDeleteErrorMessage(config, response.error))
+        }
+      }
+
+      setSelectedStockAdjustmentIds([])
+      showToast({
+        type: 'success',
+        title: config.title,
+        message: `${selectedStockAdjustments.length} ${config.entityName} record${selectedStockAdjustments.length === 1 ? '' : 's'} deleted successfully.`,
+      })
+      notifyCatalogStructureUpdate(config, 'deleted')
+      await loadRows({ force: true })
+    } catch (deleteError) {
+      showToast({
+        type: 'error',
+        title: config.title,
+        message:
+          deleteError instanceof Error
+            ? deleteError.message
+            : `Unable to delete ${config.entityName.toLowerCase()}.`,
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  async function handleBulkStockAdjustmentApprove() {
+    if (selectedStockAdjustments.length === 0) {
+      return
+    }
+
+    setIsSaving(true)
+
+    try {
+      for (const row of selectedStockAdjustments) {
+        const id = row.adjustmentId ?? row.id
+        await updateResource(config, id, { status: 'approved' }, { status: 'approved' })
+      }
+
+      setSelectedStockAdjustmentIds([])
+      showToast({
+        type: 'success',
+        title: config.title,
+        message: `${selectedStockAdjustments.length} ${config.entityName} record${selectedStockAdjustments.length === 1 ? '' : 's'} approved successfully.`,
+      })
+      await loadRows({ force: true })
+    } catch (approveError) {
+      showToast({
+        type: 'error',
+        title: config.title,
+        message:
+          approveError instanceof Error
+            ? approveError.message
+            : `Unable to approve ${config.entityName.toLowerCase()}.`,
+      })
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -3423,9 +3513,9 @@ function ResourcePage({ config, navigationContent = null }) {
 
       {error ? (
         <StateBlock
-          type="server"
-          title="We could not load this workspace"
-          message={error}
+          type="error"
+          title={`Unable to load ${config.title.toLowerCase()}`}
+          description={error}
           actionLabel="Retry"
           onAction={() => loadRows({ force: true })}
           compact
@@ -3439,11 +3529,11 @@ function ResourcePage({ config, navigationContent = null }) {
           columns={columns}
           loading={isLoading}
           defaultPageSize={isProductStylePage || isSubCategoriesPage || isInventoryCompactPage || isNotificationsPage || isInvoicesPage ? 20 : 8}
-          showSearch={isSubCategoriesPage ? !hasSelectedSubCategories : isProductStylePage ? !hasSelectedProductStyleRows : true}
+          showSearch={isSubCategoriesPage ? !hasSelectedSubCategories : isProductStylePage ? !hasSelectedProductStyleRows : isStockAdjustmentsPage ? !hasSelectedStockAdjustments : true}
           searchPlaceholder={`Search ${config.title.toLowerCase()}`}
           emptyMessage={`No ${config.title.toLowerCase()} records found.`}
           splitToolbar={isProductStylePage || isSubCategoriesPage || isInventoryCompactPage || isNotificationsPage || isInvoicesPage}
-          showColumnControls={!(isProductStylePage && hasSelectedProductStyleRows)}
+          showColumnControls={!(isProductStylePage && hasSelectedProductStyleRows) && !(isStockAdjustmentsPage && hasSelectedStockAdjustments)}
           filterContent={resolvedFilterContent}
           toolbarContent={resolvedToolbarContent}
           columnStorageKey={isProductStylePage ? `ims.${config.key}.visibleColumns.productsStyle.v1` : isSubCategoriesPage ? 'ims.subCategories.visibleColumns.warehouseParity.v1' : isNotificationsPage ? 'ims.notifications.visibleColumns.v2' : isInvoicesPage ? 'ims.invoices.visibleColumns.v2' : ''}
@@ -3457,10 +3547,10 @@ function ResourcePage({ config, navigationContent = null }) {
           rowClassName={isNotificationsPage ? (row) => (getNotificationReadState(row) ? 'is-read' : 'is-unread') : undefined}
           defaultSortKey={isProductStylePage ? config.columns?.[0]?.key || '' : isSubCategoriesPage ? 'name' : isInventoryCompactPage ? config.columns?.[0]?.key || '' : isNotificationsPage ? 'createdAt' : isInvoicesPage ? 'invoiceDate' : ''}
           defaultSortDirection={isNotificationsPage || isInvoicesPage ? 'desc' : 'asc'}
-          enableRowSelection={isSubCategoriesPage || isProductStylePage}
-          selectedRowKeys={isSubCategoriesPage ? selectedSubCategoryIds : isProductStylePage ? selectedProductStyleRowIds : undefined}
-          onSelectionChange={isSubCategoriesPage ? setSelectedSubCategoryIds : isProductStylePage ? setSelectedProductStyleRowIds : undefined}
-          keyField={isProductStylePage ? '__resourceSelectionKey' : 'id'}
+          enableRowSelection={isSubCategoriesPage || isProductStylePage || isStockAdjustmentsPage}
+          selectedRowKeys={isStockAdjustmentsPage ? selectedStockAdjustmentIds : isSubCategoriesPage ? selectedSubCategoryIds : isProductStylePage ? selectedProductStyleRowIds : undefined}
+          onSelectionChange={isStockAdjustmentsPage ? setSelectedStockAdjustmentIds : isSubCategoriesPage ? setSelectedSubCategoryIds : isProductStylePage ? setSelectedProductStyleRowIds : undefined}
+          keyField={isStockAdjustmentsPage ? 'adjustmentId' : isProductStylePage ? '__resourceSelectionKey' : 'id'}
         />
       </div>
 

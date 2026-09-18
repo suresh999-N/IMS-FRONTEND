@@ -753,7 +753,7 @@ export default function ProductVariants() {
                 onClick={() => setIsBulkDeleteModalOpen(true)}
               >
                 <Trash2 size={15} />
-                Delete Selected ({selectedVariantIds.length})
+                Delete
               </button>
             )}
           </div>

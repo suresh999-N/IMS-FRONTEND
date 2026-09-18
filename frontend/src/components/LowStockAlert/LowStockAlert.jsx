@@ -298,7 +298,7 @@ export default function LowStockAlert({ lowStockProducts = [], onClose }) {
                       return (
                         <tr key={itemIdx}>
                           <td className="product-name-cell">
-                            <strong>{item.productName}</strong>
+                            <strong title={item.productName}>{item.productName}</strong>
                           </td>
                           <td className="sku-cell">{item.sku}</td>
                           <td className="available-cell">

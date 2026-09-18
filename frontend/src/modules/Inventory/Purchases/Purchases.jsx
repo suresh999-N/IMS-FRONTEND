@@ -762,7 +762,8 @@ export default function Purchases({
             suppliers={suppliers}
             products={products}
             initialData={prefilledData}
-              mode={editingItem ? 'edit' : 'create'}
+            mode={editingItem ? 'edit' : 'create'}
+            isEditing={Boolean(editingItem)}
             onSubmit={handleSave}
             onCancel={() => {
               setIsFormOpen(false)
@@ -875,12 +876,6 @@ export default function Purchases({
                 </table>
               </div>
             </section>
-
-            <div className="button-row purchase-details__footer">
-              <button type="button" className="button button-primary" onClick={() => setViewTarget(null)}>
-                Close
-              </button>
-            </div>
           </div>
         </FormModal>
       ) : null}

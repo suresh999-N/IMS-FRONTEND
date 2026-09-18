@@ -973,7 +973,21 @@ button.dashboard-status:active {
 
 .low-stock-row strong,
 .compact-list__row strong,
-.top-product-row strong,
+.top-product-row strong {
+  color: var(--dashboard-text);
+  font-size: 13px;
+  line-height: 1.3;
+  font-weight: 600;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
 .insight-item strong {
   color: var(--dashboard-text);
   font-size: 13px;

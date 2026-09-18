@@ -165,7 +165,7 @@ input:focus {
 .page-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 7px;
   flex-wrap: wrap;
   min-width: 0;
@@ -194,7 +194,7 @@ input:focus {
 
 .page-title {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   min-width: 0;
   max-width: 100%;

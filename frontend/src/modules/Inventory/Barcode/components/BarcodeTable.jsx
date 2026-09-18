@@ -63,28 +63,38 @@ function handlePrintBarcode(item) {
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
     .label-header {
-      border-bottom: 1.5px solid #e2e8f0;
-      padding-bottom: 14px;
       margin-bottom: 18px;
     }
     .product-title {
       font-size: 19px;
       font-weight: 800;
       color: #0f172a;
-      margin: 0 0 6px;
+      margin: 0 0 14px;
       letter-spacing: -0.01em;
+      line-height: 1.35;
     }
-    .code-type-tag {
-      display: inline-block;
-      font-size: 11px;
-      font-weight: 750;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #047857;
-      background: #ecfdf5;
-      padding: 4px 12px;
-      border-radius: 9999px;
-      border: 1px solid #a7f3d0;
+    .code-type-divider {
+      position: relative;
+      text-align: center;
+      margin: 14px 0 0;
+    }
+    .code-type-divider::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      border-top: 1px solid #cbd5e1;
+      z-index: 1;
+    }
+    .code-type-divider span {
+      position: relative;
+      z-index: 2;
+      background: #ffffff;
+      padding: 0 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
     }
     .visual-wrapper {
       margin: 18px 0;
@@ -118,7 +128,9 @@ function handlePrintBarcode(item) {
   <div class="label-card">
     <div class="label-header">
       <h2 class="product-title">${escapeHtml(item.productName || 'Product')}</h2>
-      <span class="code-type-tag">${escapeHtml(item.codeType || 'Barcode')}</span>
+      <div class="code-type-divider">
+        <span>${escapeHtml(item.codeType || 'Barcode')}:</span>
+      </div>
     </div>
     <div class="visual-wrapper">
       ${visualHtml}
