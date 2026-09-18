@@ -11,6 +11,7 @@ import {
 import { createInvoice, getInvoices } from '../../../api/businessApi'
 import { getWarehouses } from '../../../api/warehousesApi'
 import { showToast } from '../../../components/common/toast'
+import DatePicker from '../../../components/DatePicker'
 import { DEFAULT_WAREHOUSES, formatCurrency, getToday } from '../../../utils/helpers'
 
 const defaultItem = {
@@ -662,30 +663,28 @@ function InvoiceForm({
           </label>
 
           {/* Invoice Date Field */}
-          <label className={`field ${errors.invoiceDate ? 'field--error' : ''}`}>
-            <span>Invoice Date <span className="required-asterisk">*</span></span>
-            <input
-              type="date"
-              value={draft.invoiceDate}
-              max={getToday()}
-              onChange={handleInvoiceDateChange}
-              disabled={isSubmitting}
-            />
-            {errors.invoiceDate ? <span className="field-error">{errors.invoiceDate}</span> : null}
-          </label>
+          <DatePicker
+            id="invoice-date"
+            name="invoiceDate"
+            label="Invoice Date *"
+            value={draft.invoiceDate}
+            maxDate={getToday()}
+            onChange={handleInvoiceDateChange}
+            disabled={isSubmitting}
+            error={errors.invoiceDate}
+          />
 
           {/* Due Date Field */}
-          <label className={`field ${errors.dueDate ? 'field--error' : ''}`}>
-            <span>Due Date</span>
-            <input
-              type="date"
-              min={draft.invoiceDate || undefined}
-              value={draft.dueDate}
-              onChange={handleDueDateChange}
-              disabled={isSubmitting}
-            />
-            {errors.dueDate ? <span className="field-error">{errors.dueDate}</span> : null}
-          </label>
+          <DatePicker
+            id="due-date"
+            name="dueDate"
+            label="Due Date"
+            value={draft.dueDate}
+            minDate={draft.invoiceDate || undefined}
+            onChange={handleDueDateChange}
+            disabled={isSubmitting}
+            error={errors.dueDate}
+          />
 
           {/* Sales Person Field */}
           <label className="field">

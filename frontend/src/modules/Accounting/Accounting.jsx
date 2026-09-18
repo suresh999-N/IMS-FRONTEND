@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import CurrencyInput from '../../components/CurrencyInput'
+import DatePicker from '../../components/DatePicker'
 import NumberInput from '../../components/NumberInput'
 import QuantityInput from '../../components/QuantityInput'
 import SearchableSelect from '../../components/SearchableSelect'
@@ -820,60 +821,36 @@ export default function Accounting({
               error={touched.paidAmount ? errors.paidAmount : ''}
             />
 
-            <div className="field">
-              <label htmlFor="invoice-date">Invoice Date</label>
-              <div className="input-with-icon">
-                <CalendarDays size={16} />
-                <input
-                  id="invoice-date"
-                  name="date"
-                  type="date"
-                  value={formData.date}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                />
-              </div>
-              {touched.date && errors.date ? (
-                <span className="field-error">{errors.date}</span>
-              ) : null}
-            </div>
+            <DatePicker
+              id="invoice-date"
+              name="date"
+              label="Invoice Date"
+              value={formData.date}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={touched.date ? errors.date : ''}
+            />
 
-            <div className="field">
-              <label htmlFor="invoice-due-date">Due Date</label>
-              <div className="input-with-icon">
-                <CalendarDays size={16} />
-                <input
-                  id="invoice-due-date"
-                  name="dueDate"
-                  type="date"
-                  min={formData.date || undefined}
-                  value={formData.dueDate}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                />
-              </div>
-              {touched.dueDate && errors.dueDate ? (
-                <span className="field-error">{errors.dueDate}</span>
-              ) : null}
-            </div>
+            <DatePicker
+              id="invoice-due-date"
+              name="dueDate"
+              label="Due Date"
+              value={formData.dueDate}
+              minDate={formData.date || undefined}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={touched.dueDate ? errors.dueDate : ''}
+            />
 
-            <div className="field">
-              <label htmlFor="invoice-payment-date">Payment Date</label>
-              <div className="input-with-icon">
-                <CalendarDays size={16} />
-                <input
-                  id="invoice-payment-date"
-                  name="paymentDate"
-                  type="date"
-                  value={formData.paymentDate}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                />
-              </div>
-              {touched.paymentDate && errors.paymentDate ? (
-                <span className="field-error">{errors.paymentDate}</span>
-              ) : null}
-            </div>
+            <DatePicker
+              id="invoice-payment-date"
+              name="paymentDate"
+              label="Payment Date"
+              value={formData.paymentDate}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={touched.paymentDate ? errors.paymentDate : ''}
+            />
 
             <div className="accounting-page__summary-panel">
               <h3>Tax Summary</h3>

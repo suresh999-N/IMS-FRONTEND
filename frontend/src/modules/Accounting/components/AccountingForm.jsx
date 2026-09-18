@@ -1,5 +1,6 @@
 import { Boxes, CalendarDays, DollarSign, Save, Warehouse, X } from 'lucide-react'
 import CurrencyInput from '../../../components/CurrencyInput'
+import DatePicker from '../../../components/DatePicker'
 import QuantityInput from '../../../components/QuantityInput'
 import SearchableSelect from '../../../components/SearchableSelect'
 import SelectWithAdd from '../../../components/SelectWithAdd'
@@ -124,21 +125,15 @@ export default function AccountingForm({
           error={touched.amount ? errors.amount : ''}
         />
 
-        <div className="field">
-          <label htmlFor="invoice-date">Date</label>
-          <div className="input-with-icon">
-            <CalendarDays size={16} />
-            <input
-              id="invoice-date"
-              name="date"
-              type="date"
-              value={formData.date}
-              onChange={onChange}
-              onBlur={onBlur}
-            />
-          </div>
-          {touched.date && errors.date ? <span className="field-error">{errors.date}</span> : null}
-        </div>
+        <DatePicker
+          id="invoice-date"
+          name="date"
+          label="Date"
+          value={formData.date}
+          onChange={onChange}
+          onBlur={onBlur}
+          error={touched.date ? errors.date : ''}
+        />
 
         <div className="button-row field--full">
           <button type="submit" className="button button-primary" disabled={!isFormValid}>
