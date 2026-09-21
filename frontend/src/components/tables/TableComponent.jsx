@@ -721,10 +721,10 @@ export default function TableComponent({
 
   useEffect(() => {
     if (selectAllCheckboxRef.current) {
-      selectAllCheckboxRef.current.indeterminate = false
+      selectAllCheckboxRef.current.indeterminate = isPagePartiallySelected
       selectAllCheckboxRef.current.checked = isPageSelected
     }
-  }, [isPageSelected])
+  }, [isPageSelected, isPagePartiallySelected])
   const hideableColumns = columns.filter((column, index) =>
     typeof column.label === 'string' &&
     !effectiveLockedColumnKeys.includes(getColumnKey(column, index)))
@@ -826,12 +826,13 @@ export default function TableComponent({
   }
 
   function handleTogglePageSelection() {
-    if (isPageSelected || isPagePartiallySelected) {
+    if (isPageSelected) {
       updateSelection(selectedKeys.filter((key) => !pageRowKeys.includes(String(key))))
       return
     }
 
-    updateSelection([...selectedKeys, ...pageRowKeys])
+    const unselectedPageKeys = pageRowKeys.filter((key) => !selectedKeySet.has(key))
+    updateSelection([...selectedKeys, ...unselectedPageKeys])
   }
 
   function handleToggleColumn(columnKey) {
@@ -1110,7 +1111,7 @@ export default function TableComponent({
                         type="checkbox"
                         checked={isPageSelected}
                         onChange={handleTogglePageSelection}
-                        aria-label="Select all rows on this page"
+                        aria-label={isPageSelected ? 'Deselect all rows on this page' : 'Select all rows on this page'}
                       /></th>
                   ) : null}
                   {displayColumns.map((column) => (

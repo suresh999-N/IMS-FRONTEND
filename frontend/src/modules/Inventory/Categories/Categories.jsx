@@ -1361,7 +1361,6 @@ export default function Categories() {
     <FilterBar className="categories-list-page__filters" ariaLabel="Category filters">
       <label className="categories-list-page__status-filter">
         <SlidersHorizontal size={15} aria-hidden="true" />
-        <span className="sr-only">Filter categories by status</span>
         <select
           value={statusFilter}
           onChange={(event) => setStatusFilter(event.target.value)}

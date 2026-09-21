@@ -8,6 +8,7 @@ import {
   updatePurchaseOrder,
 } from '../../../api/businessApi'
 import { getPurchaseIndents, updatePurchaseIndent } from '../../../api/purchaseIndentsApi'
+import { getWarehouses } from '../../../api/warehousesApi'
 import { apiRequest } from '../../../api/apiClient'
 import { API_ENDPOINTS } from '../../../api/endpoints'
 import { showToast } from '../../../components/common/toast'
@@ -215,7 +216,7 @@ function calculatePOStatus(purchase, matchingGrns) {
   return 'Partially Received'
 }
 
-function enrichPurchaseOrders(orders, productsCatalog = [], goodsReceipts = [], purchaseIndents = []) {
+function enrichPurchaseOrders(orders, productsCatalog = [], goodsReceipts = [], purchaseIndents = [], warehousesCatalog = []) {
   if (!Array.isArray(orders)) return []
 
   return orders.map((purchase) => {
@@ -262,6 +263,79 @@ function enrichPurchaseOrders(orders, productsCatalog = [], goodsReceipts = [], 
       if (textVal && textVal !== '-' && textVal.toLowerCase() !== 'undefined' && textVal.toLowerCase() !== 'null') {
         resolvedDepartment = textVal
         break
+      }
+    }
+
+    // Resolve Warehouse
+    const warehouseCandidates = [
+      purchase.warehouseName,
+      purchase.warehouse,
+      purchase.WarehouseName,
+      purchase.Warehouse,
+      matchingGrns[0]?.warehouseName,
+      matchingGrns[0]?.warehouse,
+      matchingGrns[0]?.WarehouseName,
+      matchingGrns[0]?.Warehouse,
+      matchingIndent?.warehouseName,
+      matchingIndent?.warehouse,
+      matchingIndent?.destinationWarehouse,
+      matchingIndent?.destinationWarehouseName,
+      matchingIndent?.DestinationWarehouse,
+      matchingIndent?.DestinationWarehouseName,
+    ]
+
+    let resolvedWarehouse = ''
+    let resolvedWarehouseId = purchase.warehouseId || purchase.WarehouseId || purchase.warehouse_id || null
+
+    for (const candidate of warehouseCandidates) {
+      const textVal = String(candidate ?? '').trim()
+      if (
+        textVal &&
+        textVal !== '-' &&
+        textVal.toLowerCase() !== 'undefined' &&
+        textVal.toLowerCase() !== 'null' &&
+        textVal.toLowerCase() !== 'warehouse not assigned' &&
+        textVal.toLowerCase() !== 'not available'
+      ) {
+        resolvedWarehouse = textVal
+        break
+      }
+    }
+
+    if (!resolvedWarehouse && resolvedWarehouseId && Array.isArray(warehousesCatalog)) {
+      const whMatch = warehousesCatalog.find(
+        (w) => String(w.id ?? w.warehouseId ?? '') === String(resolvedWarehouseId)
+      )
+      if (whMatch?.name) {
+        resolvedWarehouse = whMatch.name
+      }
+    }
+
+    if (!resolvedWarehouse) {
+      const candidateWhId =
+        matchingGrns[0]?.warehouseId ||
+        matchingGrns[0]?.WarehouseId ||
+        matchingIndent?.warehouseId ||
+        matchingIndent?.destinationWarehouseId
+      if (candidateWhId && Array.isArray(warehousesCatalog)) {
+        const whMatch = warehousesCatalog.find(
+          (w) => String(w.id ?? w.warehouseId ?? '') === String(candidateWhId)
+        )
+        if (whMatch?.name) {
+          resolvedWarehouse = whMatch.name
+          resolvedWarehouseId = candidateWhId
+        }
+      }
+    }
+
+    if (!resolvedWarehouse && Array.isArray(warehousesCatalog) && warehousesCatalog.length > 0) {
+      const activeWh =
+        warehousesCatalog.find(
+          (w) => String(w.status || 'Active').toLowerCase() === 'active'
+        ) || warehousesCatalog[0]
+      if (activeWh?.name) {
+        resolvedWarehouse = activeWh.name
+        resolvedWarehouseId = activeWh.id || activeWh.warehouseId
       }
     }
 
@@ -367,6 +441,9 @@ function enrichPurchaseOrders(orders, productsCatalog = [], goodsReceipts = [], 
 
     return {
       ...purchase,
+      warehouseId: resolvedWarehouseId || purchase.warehouseId,
+      warehouseName: resolvedWarehouse || purchase.warehouseName,
+      warehouse: resolvedWarehouse || purchase.warehouse,
       departmentName: resolvedDepartment,
       department: resolvedDepartment || purchase.department,
       items: enrichedItems,
@@ -389,11 +466,16 @@ function DetailField({ label, value, strong = false }) {
 export default function Purchases({
   products,
   suppliers,
+  warehouses: propWarehouses,
+  purchases: propPurchases,
+  onSavePurchase,
+  onDeletePurchase,
 }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { hasPermission } = useAuth()
   const [purchaseOrders, setPurchaseOrders] = useState([])
+  const [liveWarehouses, setLiveWarehouses] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
@@ -407,11 +489,33 @@ export default function Purchases({
   const canCreate = hasPermission('purchases', 'create')
   const canDelete = hasPermission('purchases', 'delete')
 
+  const warehouses = useMemo(() => {
+    if (Array.isArray(propWarehouses) && propWarehouses.length > 0) {
+      return propWarehouses
+    }
+    return liveWarehouses
+  }, [propWarehouses, liveWarehouses])
+
+  useEffect(() => {
+    let isMounted = true
+    if (!propWarehouses || propWarehouses.length === 0) {
+      getWarehouses().then((res) => {
+        if (isMounted && res?.success && Array.isArray(res.data)) {
+          setLiveWarehouses(res.data)
+        }
+      })
+    }
+    return () => {
+      isMounted = false
+    }
+  }, [propWarehouses])
+
   useEffect(() => {
     if (location.state && location.state.prefilledIndent) {
       const indent = location.state.prefilledIndent
       const prefilled = {
-        supplierId: '',
+        supplierId: String(indent.vendorId || indent.supplierId || ''),
+        warehouseId: String(indent.warehouseId || indent.warehouse_id || indent.destinationWarehouseId || (warehouses?.[0]?.id ?? '')),
         orderDate: getToday(),
         expectedDate: '',
         notes: `Imported from Indent Ref: ${indent.indentNumber || indent.indentId}`,
@@ -438,12 +542,13 @@ export default function Purchases({
       // Clear the routing state so refreshing doesn't reopen modal
       navigate(location.pathname, { replace: true, state: {} })
     }
-  }, [location, products, navigate])
+  }, [location, products, navigate, warehouses])
 
   const handleOpenEdit = (item) => {
     setEditingItem(item)
     const prefilled = {
       supplierId: String(item.supplierId || ''),
+      warehouseId: String(item.warehouseId || item.warehouse_id || ''),
       orderDate: item.orderDate ? item.orderDate.slice(0, 10) : getToday(),
       expectedDate: item.expectedDate ? item.expectedDate.slice(0, 10) : '',
       notes: item.notes || '',
@@ -463,10 +568,11 @@ export default function Purchases({
     setIsLoading(true)
     setError('')
 
-    const [poRes, grnRes, indentRes] = await Promise.all([
+    const [poRes, grnRes, indentRes, whRes] = await Promise.all([
       getPurchaseOrders(),
       apiRequest(API_ENDPOINTS.goodsReceipts.list),
       getPurchaseIndents(1, 100),
+      (!propWarehouses || propWarehouses.length === 0) ? getWarehouses() : Promise.resolve(null),
     ])
 
     if (!poRes.success) {
@@ -476,9 +582,17 @@ export default function Purchases({
       return
     }
 
+    const currentWarehouses = (propWarehouses && propWarehouses.length > 0)
+      ? propWarehouses
+      : (whRes?.success && Array.isArray(whRes.data) ? whRes.data : liveWarehouses)
+
+    if (whRes?.success && Array.isArray(whRes.data)) {
+      setLiveWarehouses(whRes.data)
+    }
+
     const goodsReceipts = grnRes?.success ? (grnRes.data ?? []) : []
     const purchaseIndents = indentRes?.success ? (indentRes.data?.items ?? indentRes.data ?? []) : []
-    setPurchaseOrders(enrichPurchaseOrders(poRes.data ?? [], products, goodsReceipts, purchaseIndents))
+    setPurchaseOrders(enrichPurchaseOrders(poRes.data ?? [], products, goodsReceipts, purchaseIndents, currentWarehouses))
     setIsLoading(false)
   }
 
@@ -489,10 +603,11 @@ export default function Purchases({
       setIsLoading(true)
       setError('')
 
-      const [poRes, grnRes, indentRes] = await Promise.all([
+      const [poRes, grnRes, indentRes, whRes] = await Promise.all([
         getPurchaseOrders(),
         apiRequest(API_ENDPOINTS.goodsReceipts.list),
         getPurchaseIndents(1, 100),
+        (!propWarehouses || propWarehouses.length === 0) ? getWarehouses() : Promise.resolve(null),
       ])
 
       if (!isMounted) {
@@ -503,9 +618,17 @@ export default function Purchases({
         setError(poRes.error || 'Unable to load purchase orders.')
         setPurchaseOrders([])
       } else {
+        const currentWarehouses = (propWarehouses && propWarehouses.length > 0)
+          ? propWarehouses
+          : (whRes?.success && Array.isArray(whRes.data) ? whRes.data : liveWarehouses)
+
+        if (whRes?.success && Array.isArray(whRes.data)) {
+          setLiveWarehouses(whRes.data)
+        }
+
         const goodsReceipts = grnRes?.success ? (grnRes.data ?? []) : []
         const purchaseIndents = indentRes?.success ? (indentRes.data?.items ?? indentRes.data ?? []) : []
-        setPurchaseOrders(enrichPurchaseOrders(poRes.data ?? [], products, goodsReceipts, purchaseIndents))
+        setPurchaseOrders(enrichPurchaseOrders(poRes.data ?? [], products, goodsReceipts, purchaseIndents, currentWarehouses))
       }
 
       setIsLoading(false)
@@ -516,7 +639,7 @@ export default function Purchases({
     return () => {
       isMounted = false
     }
-  }, [products])
+  }, [products, propWarehouses])
 
   const summary = useMemo(() => {
     const totalValue = purchaseOrders.reduce(
@@ -541,6 +664,12 @@ export default function Purchases({
 
     try {
       const supplierId = toApiId(data.supplierId, 'Supplier')
+      const warehouseId = toApiId(data.warehouseId, 'Warehouse')
+      const selectedWarehouse = (warehouses || []).find(
+        (w) => String(w.id ?? w.warehouseId ?? '') === String(data.warehouseId)
+      )
+      const warehouseName = selectedWarehouse?.name || selectedWarehouse?.warehouseName || ''
+
       const lineItems = data.lineItems.map((lineItem) => ({
         productId: toApiId(lineItem.productId, 'Product'),
         variantId: lineItem.variantId ? toApiId(lineItem.variantId, 'Variant') : null,
@@ -551,6 +680,9 @@ export default function Purchases({
       const firstLine = lineItems[0]
       const payload = {
         supplierId,
+        warehouseId,
+        warehouse: warehouseName,
+        warehouseName,
         productId: firstLine.productId,
         variantId: firstLine.variantId,
         quantity: lineItems.reduce((sum, lineItem) => sum + Number(lineItem.quantity || 0), 0),
@@ -576,6 +708,17 @@ export default function Purchases({
 
       if (!editingItem && prefilledData && prefilledData.sourceIndentId) {
         await updatePurchaseIndent(prefilledData.sourceIndentId, { status: 'Ordered' })
+      }
+
+      if (typeof onSavePurchase === 'function') {
+        try {
+          onSavePurchase({
+            ...payload,
+            id: editingItem ? editingItem.id : (response?.data?.id || undefined),
+          })
+        } catch (syncErr) {
+          console.warn('onSavePurchase store sync note:', syncErr)
+        }
       }
 
       await loadPurchaseOrders()
@@ -761,6 +904,7 @@ export default function Purchases({
           <PurchaseForm
             suppliers={suppliers}
             products={products}
+            warehouses={warehouses}
             initialData={prefilledData}
             mode={editingItem ? 'edit' : 'create'}
             isEditing={Boolean(editingItem)}

@@ -65,6 +65,12 @@
   min-height: 38px;
 }
 
+.barcode-page .erp-action-menu__trigger--icon[data-tooltip]::after,
+.barcode-page__table-card .erp-action-menu__trigger--icon[data-tooltip]::after {
+  display: none !important;
+  content: none !important;
+}
+
 .barcode-page__note,
 .barcode-page__live-preview {
   border: 1px dashed var(--border);

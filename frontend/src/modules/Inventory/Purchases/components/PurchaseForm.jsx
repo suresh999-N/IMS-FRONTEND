@@ -20,6 +20,7 @@ function createLineItem() {
 
 const initialForm = {
   supplierId: '',
+  warehouseId: '',
   orderDate: getToday(),
   expectedDate: '',
   notes: '',
@@ -88,6 +89,7 @@ function getDuplicateProductErrors(lineItems) {
 
 export default function PurchaseForm({
   suppliers,
+  warehouses = [],
   products,
   onSubmit,
   onCancel,
@@ -100,11 +102,27 @@ export default function PurchaseForm({
   const [touched, setTouched] = useState({})
   const isEditingMode = mode === 'edit' || isEditing || Boolean(initialData?.id || initialData?.poId || initialData?.poNumber)
 
+  const activeWarehouse = useMemo(() => {
+    return (warehouses || []).find((w) => String(w.status || 'Active').toLowerCase() === 'active') || warehouses?.[0]
+  }, [warehouses])
+
+  const warehouseOptions = useMemo(() => {
+    return (warehouses || []).filter((w) => {
+      const status = String(w.status || 'Active').toLowerCase()
+      return status === 'active' || String(w.id || w.warehouseId) === String(formData.warehouseId)
+    })
+  }, [warehouses, formData.warehouseId])
+
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData)
+      setFormData({
+        ...initialData,
+        warehouseId: String(initialData.warehouseId || initialData.warehouse_id || (activeWarehouse?.id ? String(activeWarehouse.id) : '')),
+      })
+    } else if (activeWarehouse?.id) {
+      setFormData((prev) => (prev.warehouseId ? prev : { ...prev, warehouseId: String(activeWarehouse.id) }))
     }
-  }, [initialData])
+  }, [initialData, activeWarehouse])
 
   useEffect(() => {
     if (!Array.isArray(products) || products.length === 0) {
@@ -141,6 +159,7 @@ export default function PurchaseForm({
   const duplicateErrors = getDuplicateProductErrors(formData.lineItems)
   const errors = {
     supplierId: getRequiredError(formData.supplierId, 'Supplier'),
+    warehouseId: getRequiredError(formData.warehouseId, 'Warehouse'),
     orderDate:
       getRequiredError(formData.orderDate, 'Order date') ||
       (formData.orderDate && formData.orderDate > getToday()
@@ -159,6 +178,7 @@ export default function PurchaseForm({
 
   const isFormValid =
     !errors.supplierId &&
+    !errors.warehouseId &&
     !errors.orderDate &&
     !errors.expectedDate &&
     errors.lineItems.every((lineItem) =>
@@ -289,6 +309,7 @@ export default function PurchaseForm({
   function markAllTouched() {
     setTouched({
       supplierId: true,
+      warehouseId: true,
       orderDate: true,
       expectedDate: true,
       ...formData.lineItems.reduce((result, lineItem) => ({
@@ -347,6 +368,25 @@ export default function PurchaseForm({
             />
             {touched.supplierId && errors.supplierId && (
               <span className="indent-field-error">{errors.supplierId}</span>
+            )}
+          </div>
+
+          {/* Warehouse */}
+          <div className={`indent-field-group ${touched.warehouseId && errors.warehouseId ? 'indent-field-group--error' : ''}`}>
+            <label htmlFor="po-warehouse">Warehouse <span className="required">*</span></label>
+            <SearchableSelect
+              id="po-warehouse"
+              name="warehouseId"
+              value={formData.warehouseId}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              options={warehouseOptions}
+              placeholder="Select warehouse"
+              hideLabel={true}
+              className="indent-details-searchable-select"
+            />
+            {touched.warehouseId && errors.warehouseId && (
+              <span className="indent-field-error">{errors.warehouseId}</span>
             )}
           </div>
 

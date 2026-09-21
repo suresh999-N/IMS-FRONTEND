@@ -685,7 +685,7 @@ export const RESOURCE_CONFIGS = {
         placeholder: 'Enter quantity',
       },
       { name: 'transferDate', label: 'Transfer Date *', type: 'date', required: true, defaultValue: getToday, min: getToday },
-      { name: 'status', label: 'Status *', type: 'select', options: documentStatusOptions, defaultValue: 'pending' },
+      { name: 'status', label: 'Status *', type: 'select', required: true, options: documentStatusOptions, placeholder: 'Select Status' },
     ],
     columns: [
       {

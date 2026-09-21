@@ -550,6 +550,57 @@ export default function ProductVariants() {
     })
   }, [variants, searchTerm, productFilter, attributeFilter, statusFilter])
 
+  // ── Summary metrics ────────────────────────────────────────────────────────
+  const summary = useMemo(() => {
+    let active = 0
+    let inactive = 0
+
+    variants.forEach((v) => {
+      const s = String(v.status || 'Active').trim().toLowerCase()
+      if (s === 'inactive') {
+        inactive += 1
+      } else {
+        active += 1
+      }
+    })
+
+    return {
+      total: variants.length,
+      active,
+      inactive,
+    }
+  }, [variants])
+
+  const metrics = useMemo(
+    () => [
+      {
+        key: 'total',
+        label: 'Variants',
+        value: summary.total,
+        tone: 'info',
+        filterValue: '',
+        title: 'Show all variants',
+      },
+      {
+        key: 'active',
+        label: 'Active',
+        value: summary.active,
+        tone: 'success',
+        filterValue: 'active',
+        title: 'Filter by Active variants',
+      },
+      {
+        key: 'inactive',
+        label: 'Inactive',
+        value: summary.inactive,
+        tone: 'danger',
+        filterValue: 'inactive',
+        title: 'Filter by Inactive variants',
+      },
+    ],
+    [summary]
+  )
+
   // ── DataTable columns ───────────────────────────────────────────────────────
   const columns = useMemo(
     () => [
@@ -790,7 +841,7 @@ export default function ProductVariants() {
             </span>
             <button
               type="button"
-              className="button button-secondary"
+              className="button button-secondary variants-table__clear-btn"
               onClick={() => setSelectedVariantIds([])}
             >
               Clear
@@ -798,11 +849,11 @@ export default function ProductVariants() {
             {canDelete && (
               <button
                 type="button"
-                className="button button-danger"
+                className="button button-danger variants-table__delete-btn"
                 onClick={() => setIsBulkDeleteModalOpen(true)}
               >
                 <Trash2 size={15} />
-                Delete
+                Delete Selected ({selectedVariantIds.length})
               </button>
             )}
           </div>
@@ -810,7 +861,7 @@ export default function ProductVariants() {
 
         <button
           type="button"
-          className="button button-secondary"
+          className="button button-secondary variants__refresh-btn"
           onClick={() => loadData({ force: true, showLoading: true })}
           disabled={isLoading}
         >
@@ -846,10 +897,23 @@ export default function ProductVariants() {
       <div className="resource-center__inventory-header">
         <div className="resource-center__inventory-header-main">
           <h1>Product Variants</h1>
-          <div className="resource-center__inventory-metrics">
-            <span className="resource-center__inventory-metric resource-center__inventory-metric--success">
-              <strong>{filteredVariants.length}</strong> Variants
-            </span>
+          <div className="resource-center__inventory-metrics" aria-label="Product variant status metrics">
+            {metrics.map((metric) => (
+              <button
+                type="button"
+                key={metric.key}
+                className={`resource-center__inventory-metric resource-center__inventory-metric--${metric.tone} ${
+                  statusFilter === metric.filterValue && metric.filterValue !== '' ? 'is-active' : ''
+                }`}
+                onClick={() => {
+                  setStatusFilter((prev) => (prev === metric.filterValue ? '' : metric.filterValue))
+                }}
+                title={metric.title}
+                aria-pressed={statusFilter === metric.filterValue}
+              >
+                <strong>{metric.value}</strong> {metric.label}
+              </button>
+            ))}
           </div>
         </div>
         {canCreate && (

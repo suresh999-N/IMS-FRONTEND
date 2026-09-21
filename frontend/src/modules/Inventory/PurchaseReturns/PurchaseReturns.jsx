@@ -9,8 +9,11 @@ import { useNavigate } from 'react-router-dom'
 
 import {
   AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   Eye,
-  MoreVertical,
   Pencil,
   Plus,
   RefreshCw,
@@ -22,6 +25,8 @@ import PageHeader from '../../../components/common/PageHeader'
 import StateBlock from '../../../components/common/StateBlock'
 import { showToast } from '../../../components/common/toast'
 import FormModal from '../../../layouts/FormModal'
+import { ActionMenu } from '../../../components/erp'
+import Pagination from '../../../components/erp/Pagination'
 
 import {
   deletePurchaseReturn,
@@ -35,7 +40,25 @@ import {
   formatDate,
 } from '../../../utils/helpers'
 
+import '../../../components/tables/TableComponent.css'
 import './PurchaseReturns.css'
+
+function getVisiblePages(currentPage, totalPages) {
+  const pages = []
+  const maxVisiblePages = 5
+  let startPage = Math.max(1, currentPage - 2)
+  const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
+
+  if (endPage - startPage + 1 < maxVisiblePages) {
+    startPage = Math.max(1, endPage - maxVisiblePages + 1)
+  }
+
+  for (let pageNumber = startPage; pageNumber <= endPage; pageNumber += 1) {
+    pages.push(pageNumber)
+  }
+
+  return pages
+}
 
 
 /**
@@ -154,30 +177,11 @@ export default function PurchaseReturns() {
   const [searchQuery, setSearchQuery] = useState('')
   const [supplierFilter, setSupplierFilter] = useState('')
 
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+
   const [deleteTargetId, setDeleteTargetId] = useState(null)
   const [deleting, setDeleting] = useState(false)
-
-  const [activeMenuId, setActiveMenuId] = useState(null)
-
-
-  // =========================================================
-  // CLOSE ACTION MENU WHEN CLICKING OUTSIDE
-  // =========================================================
-
-  useEffect(() => {
-    const handleOutsideClick = () => {
-      setActiveMenuId(null)
-    }
-
-    document.addEventListener('click', handleOutsideClick)
-
-    return () => {
-      document.removeEventListener(
-        'click',
-        handleOutsideClick
-      )
-    }
-  }, [])
 
 
   // =========================================================
@@ -365,6 +369,30 @@ export default function PurchaseReturns() {
     supplierFilter,
   ])
 
+  // Reset page when search or supplier filter changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, supplierFilter])
+
+  const totalPages = Math.max(1, Math.ceil(filteredReturns.length / pageSize))
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages)
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages)
+    }
+  }, [currentPage, totalPages])
+
+  const visiblePages = useMemo(
+    () => getVisiblePages(safeCurrentPage, totalPages),
+    [safeCurrentPage, totalPages]
+  )
+
+  const paginatedReturns = useMemo(() => {
+    const start = (safeCurrentPage - 1) * pageSize
+    return filteredReturns.slice(start, start + pageSize)
+  }, [filteredReturns, safeCurrentPage, pageSize])
+
 
   // =========================================================
   // DELETE
@@ -446,8 +474,6 @@ export default function PurchaseReturns() {
       return
     }
 
-    setActiveMenuId(null)
-
     navigate(
       `/inventory/purchase-returns/${id}`
     )
@@ -465,8 +491,6 @@ export default function PurchaseReturns() {
     ) {
       return
     }
-
-    setActiveMenuId(null)
 
     navigate(
       `/inventory/purchase-returns/edit/${id}`
@@ -486,7 +510,6 @@ export default function PurchaseReturns() {
       return
     }
 
-    setActiveMenuId(null)
     setDeleteTargetId(id)
   }
 
@@ -688,193 +711,235 @@ export default function PurchaseReturns() {
         !error &&
         filteredReturns.length > 0 && (
           <section className="card purchase-returns-table-container">
-            <table className="purchase-returns-table">
-              <thead>
-                <tr>
-                  <th>Return ID</th>
-                  <th>Supplier</th>
-                  <th>GRN</th>
-                  <th>Return Date</th>
-                  <th className="text-right">
-                    Total Amount
-                  </th>
-                  <th>Reason</th>
-                  <th className="text-right">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
+            <div className="purchase-returns-table-viewport">
+              <table className="purchase-returns-table">
+                <thead>
+                  <tr>
+                    <th>Return ID</th>
+                    <th>Supplier</th>
+                    <th>GRN</th>
+                    <th>Return Date</th>
+                    <th className="text-right">
+                      Total Amount
+                    </th>
+                    <th>Reason</th>
+                    <th className="text-center actions-header">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
 
-              <tbody>
-                {filteredReturns.map((row) => {
-                  const returnId =
-                    getReturnId(row)
+                <tbody>
+                  {paginatedReturns.map((row) => {
+                    const returnId =
+                      getReturnId(row)
 
-                  const supplierId =
-                    getReturnSupplierId(row)
+                    const supplierId =
+                      getReturnSupplierId(row)
 
-                  const grnId =
-                    getReturnGrnId(row)
+                    const grnId =
+                      getReturnGrnId(row)
 
-                  const supplierName =
-                    suppliersMap[
-                    String(supplierId ?? '')
-                    ] ??
-                    row?.supplierName ??
-                    row?.supplier_name ??
-                    (
-                      supplierId
-                        ? `Supplier #${supplierId}`
-                        : '-'
+                    const supplierName =
+                      suppliersMap[
+                      String(supplierId ?? '')
+                      ] ??
+                      row?.supplierName ??
+                      row?.supplier_name ??
+                      (
+                        supplierId
+                          ? `Supplier #${supplierId}`
+                          : '-'
+                      )
+
+                    const grnNumber =
+                      grnsMap[
+                      String(grnId ?? '')
+                      ] ??
+                      row?.grnNumber ??
+                      row?.grn_number ??
+                      (
+                        grnId
+                          ? `GRN-${grnId}`
+                          : '-'
+                      )
+
+                    const returnDate =
+                      getReturnDate(row)
+
+                    const totalAmount =
+                      getTotalAmount(row)
+
+                    const reason =
+                      row?.reason ?? ''
+
+
+                    return (
+                      <tr key={returnId}>
+                        <td className="font-semibold text-primary">
+                          {getReturnNumberDisplay(row)}
+                        </td>
+
+                        <td>
+                          {supplierName}
+                        </td>
+
+                        <td>
+                          {grnNumber}
+                        </td>
+
+                        <td>
+                          {returnDate
+                            ? formatDate(
+                              returnDate
+                            )
+                            : '-'}
+                        </td>
+
+                        <td className="text-right font-semibold">
+                          {formatCurrency(
+                            totalAmount
+                          )}
+                        </td>
+
+                        <td
+                          className="reason-cell"
+                          title={reason}
+                        >
+                          {reason
+                            ? reason.length > 50
+                              ? `${reason.slice(
+                                0,
+                                50
+                              )}...`
+                              : reason
+                            : '-'}
+                        </td>
+
+                        <td className="text-center actions-cell">
+                          <ActionMenu
+                            iconOnly
+                            label={`Actions for ${getReturnNumberDisplay(row) || returnId}`}
+                            menuKey={returnId}
+                            actions={[
+                              {
+                                key: 'view',
+                                label: 'View Details',
+                                icon: Eye,
+                                onClick: () => handleView(returnId),
+                              },
+                              {
+                                key: 'edit',
+                                label: 'Edit',
+                                icon: Pencil,
+                                onClick: () => handleEdit(returnId),
+                              },
+                              {
+                                key: 'delete',
+                                label: 'Delete',
+                                icon: Trash2,
+                                tone: 'danger',
+                                onClick: () => handleDelete(returnId),
+                              },
+                            ]}
+                          />
+                        </td>
+                      </tr>
                     )
+                  })}
+                </tbody>
+              </table>
+            </div>
 
-                  const grnNumber =
-                    grnsMap[
-                    String(grnId ?? '')
-                    ] ??
-                    row?.grnNumber ??
-                    row?.grn_number ??
-                    (
-                      grnId
-                        ? `GRN-${grnId}`
-                        : '-'
+            <Pagination className="table-component__pagination purchase-returns-pagination">
+              <div className="table-component__pagination-metrics">
+                <label className="table-component__rows-control">
+                  <span>Rows</span>
+                  <select
+                    value={pageSize}
+                    onChange={(event) => {
+                      setPageSize(Number(event.target.value))
+                      setCurrentPage(1)
+                    }}
+                  >
+                    {[8, 10, 15, 20, 25].map((size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <span className="table-component__status">
+                  Showing {filteredReturns.length === 0 ? 0 : (safeCurrentPage - 1) * pageSize + 1}-
+                  {Math.min(safeCurrentPage * pageSize, filteredReturns.length)} of {filteredReturns.length}
+                </span>
+              </div>
+
+              <div className="table-component__page-controls">
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => setCurrentPage(1)}
+                  disabled={safeCurrentPage === 1}
+                  aria-label="Go to first page"
+                >
+                  <ChevronsLeft size={16} />
+                  First
+                </button>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() =>
+                    setCurrentPage((currentValue) =>
+                      Math.max(currentValue - 1, 1)
                     )
-
-                  const returnDate =
-                    getReturnDate(row)
-
-                  const totalAmount =
-                    getTotalAmount(row)
-
-                  const reason =
-                    row?.reason ?? ''
-
-
-                  return (
-                    <tr key={returnId}>
-                      <td className="font-semibold text-primary">
-                        {getReturnNumberDisplay(row)}
-                      </td>
-
-                      <td>
-                        {supplierName}
-                      </td>
-
-                      <td>
-                        {grnNumber}
-                      </td>
-
-                      <td>
-                        {returnDate
-                          ? formatDate(
-                            returnDate
-                          )
-                          : '-'}
-                      </td>
-
-                      <td className="text-right font-semibold">
-                        {formatCurrency(
-                          totalAmount
-                        )}
-                      </td>
-
-                      <td
-                        className="reason-cell"
-                        title={reason}
-                      >
-                        {reason
-                          ? reason.length > 50
-                            ? `${reason.slice(
-                              0,
-                              50
-                            )}...`
-                            : reason
-                          : '-'}
-                      </td>
-
-                      <td className="text-right actions-cell">
-                        <div className="actions-dropdown-container">
-                          <button
-                            className={`action-menu-btn ${activeMenuId ===
-                              returnId
-                              ? 'active'
-                              : ''
-                              }`}
-                            type="button"
-                            title="More Options"
-                            aria-label="More Options"
-                            onClick={(event) => {
-                              event.stopPropagation()
-
-                              setActiveMenuId(
-                                (previous) =>
-                                  previous ===
-                                    returnId
-                                    ? null
-                                    : returnId
-                              )
-                            }}
-                          >
-                            <MoreVertical
-                              size={18}
-                            />
-                          </button>
-
-                          {activeMenuId ===
-                            returnId && (
-                              <div
-                                className="action-dropdown-menu"
-                                onClick={(event) =>
-                                  event.stopPropagation()
-                                }
-                              >
-                                <button
-                                  type="button"
-                                  className="action-dropdown-item"
-                                  onClick={() =>
-                                    handleView(
-                                      returnId
-                                    )
-                                  }
-                                >
-                                  <Eye size={15} />
-                                  View Details
-                                </button>
-
-                                <button
-                                  type="button"
-                                  className="action-dropdown-item"
-                                  onClick={() =>
-                                    handleEdit(
-                                      returnId
-                                    )
-                                  }
-                                >
-                                  <Pencil size={15} />
-                                  Edit
-                                </button>
-
-                                <button
-                                  type="button"
-                                  className="action-dropdown-item danger-item"
-                                  onClick={() =>
-                                    handleDelete(
-                                      returnId
-                                    )
-                                  }
-                                >
-                                  <Trash2 size={15} />
-                                  Delete
-                                </button>
-                              </div>
-                            )}
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                  }
+                  disabled={safeCurrentPage === 1}
+                  aria-label="Go to previous page"
+                >
+                  <ChevronLeft size={16} />
+                  Previous
+                </button>
+                {visiblePages.map((pageNumber) => (
+                  <button
+                    key={pageNumber}
+                    type="button"
+                    className={`table-component__page-number ${pageNumber === safeCurrentPage ? 'is-active' : ''}`.trim()}
+                    onClick={() => setCurrentPage(pageNumber)}
+                    aria-current={
+                      pageNumber === safeCurrentPage ? 'page' : undefined
+                    }
+                    aria-label={`Go to page ${pageNumber}`}
+                  >
+                    {pageNumber}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() =>
+                    setCurrentPage((currentValue) =>
+                      Math.min(currentValue + 1, totalPages)
+                    )
+                  }
+                  disabled={safeCurrentPage === totalPages}
+                  aria-label="Go to next page"
+                >
+                  Next
+                  <ChevronRight size={16} />
+                </button>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={safeCurrentPage === totalPages}
+                  aria-label="Go to last page"
+                >
+                  Last
+                  <ChevronsRight size={16} />
+                </button>
+              </div>
+            </Pagination>
           </section>
         )}
 
