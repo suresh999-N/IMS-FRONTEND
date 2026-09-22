@@ -67,7 +67,7 @@ const stockIdentityFields = [
 ]
 
 const stockQuantityColumns = [
-  { key: 'productName', label: 'Product Name', tableWidth: 320, sortable: true },
+  { key: 'productName', label: 'Product Name', tableWidth: 340, sortable: true },
   { key: 'warehouseName', label: 'Warehouse Name', tableWidth: 220, sortable: true },
   { key: 'variantName', label: 'Variant Name', tableWidth: 140, sortable: true },
 ]
@@ -381,6 +381,10 @@ export const RESOURCE_CONFIGS = {
       { key: 'quantity', label: 'On Hand', sortable: true },
       { key: 'availableQuantity', label: 'Available', sortable: true },
     ],
+    referenceEndpoints: {
+      products: API_ENDPOINTS.products.list,
+      warehouses: API_ENDPOINTS.warehouses.list,
+    },
   },
   stockMovements: {
     key: 'stockMovements',
@@ -396,6 +400,10 @@ export const RESOURCE_CONFIGS = {
     canDelete: false,
     statuslessRowsAreActive: true,
     idFields: ['movementId'],
+    referenceEndpoints: {
+      products: API_ENDPOINTS.products.list,
+      warehouses: API_ENDPOINTS.warehouses.list,
+    },
     fields: [
       ...stockIdentityFields,
       {
@@ -441,6 +449,10 @@ export const RESOURCE_CONFIGS = {
     canDelete: false,
     statuslessRowsAreActive: true,
     idFields: ['ledgerId'],
+    referenceEndpoints: {
+      products: API_ENDPOINTS.products.list,
+      warehouses: API_ENDPOINTS.warehouses.list,
+    },
     fields: [
       ...stockIdentityFields,
       { name: 'openingQty', label: 'Opening Qty', type: 'number', required: true, min: 0 },
@@ -695,8 +707,8 @@ export const RESOURCE_CONFIGS = {
         placeholder: 'Select warehouse',
         searchPlaceholder: 'Search warehouses',
       },
-      { name: 'transferDate', label: 'Transfer Date *', type: 'date', required: true, placeholder: 'Select Transfer Date' },
-      { name: 'status', label: 'Status *', type: 'select', options: documentStatusOptions, defaultValue: 'pending' },
+      { name: 'transferDate', label: 'Transfer Date *', type: 'date', required: true, defaultValue: getToday },
+      { name: 'status', label: 'Status *', type: 'select', required: true, options: documentStatusOptions, placeholder: 'Select Status' },
       {
         name: 'items',
         label: 'Transfer Items *',

@@ -78,7 +78,7 @@ export default function PurchasesTable({
       style: { width: 230, minWidth: 230 },
       headerStyle: { width: 230, minWidth: 230 },
       searchValue: (purchase) =>
-        `${purchase.poNumber} ${purchase.supplierName || purchase.supplier} ${purchase.status}`,
+        `${purchase.poNumber} ${purchase.supplierName || purchase.supplier} ${purchase.warehouseName || purchase.warehouse} ${purchase.status}`,
     },
     {
       key: 'supplier',
@@ -86,6 +86,13 @@ export default function PurchasesTable({
       sortable: true,
       render: (purchase) => purchase.supplierName || purchase.supplier || 'Not Available',
       sortValue: (purchase) => purchase.supplierName || purchase.supplier || '',
+    },
+    {
+      key: 'warehouse',
+      label: 'Warehouse',
+      sortable: true,
+      render: (purchase) => purchase.warehouseName || purchase.warehouse || 'Not Assigned',
+      sortValue: (purchase) => purchase.warehouseName || purchase.warehouse || '',
     },
     {
       key: 'orderDate',
@@ -223,8 +230,8 @@ export default function PurchasesTable({
             </FilterBar>
           )
         }
-        columnStorageKey="ims.purchases.visibleColumns.compact.v2"
-        defaultVisibleColumnKeys={['poNumber', 'supplier', 'orderDate', 'quantity', 'totalAmount', 'status', 'actions']}
+        columnStorageKey="ims.purchases.visibleColumns.compact.v3"
+        defaultVisibleColumnKeys={['poNumber', 'supplier', 'warehouse', 'orderDate', 'quantity', 'totalAmount', 'status', 'actions']}
         fitExplicitColumnsToContainer
         searchPlaceholder="Search purchase orders by supplier, PO number, or status"
         emptyMessage="No purchase orders found."

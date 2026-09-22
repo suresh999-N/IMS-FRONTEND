@@ -197,6 +197,7 @@ export default function BarcodeTable({ barcodes, onRefresh, isLoading }) {
       render: (item) => (
         <ActionMenu
           iconOnly
+          showTooltip={false}
           label={`Actions for ${item.productName || 'Barcode'}`}
           actions={[
             {

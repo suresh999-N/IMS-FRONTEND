@@ -55,6 +55,7 @@ import FormModal from '../../../layouts/FormModal'
 import { useAuth } from '../../../hooks/useAuth'
 import { formatCurrency, formatDate } from '../../../utils/helpers'
 import { renderFormLabel } from '../../../utils/labelUtils'
+import { getDescriptiveProductName } from '../../../utils/productNameUtils'
 import {
   emailInputProps,
   getEmailError,
@@ -644,6 +645,14 @@ function formatCellValue(row, column, referenceData) {
   }
 
   const value = readResourceValue(row, column.key)
+
+  if (column.key === 'productName') {
+    const product = (referenceData?.products ?? []).find(
+      (p) => String(p.id ?? p.productId) === String(row.productId)
+    )
+    const descriptiveName = getDescriptiveProductName(product, row)
+    return descriptiveName || String(value || (row.productId ? `Product ID ${row.productId}` : 'Not set'))
+  }
 
   if (column.format === 'currency') {
     return formatCurrency(Number(value || 0))
@@ -1745,12 +1754,12 @@ function ResourceForm({
           <select
             id={`resource-${config.key}-${field.name}`}
             name={field.name}
-            value={formData[field.name]}
+            value={formData[field.name] ?? ''}
             onChange={handleChange}
             onBlur={handleBlur}
             aria-invalid={Boolean(error)}
           >
-            <option value="">Select {getFieldLabel(field).toLowerCase()}</option>
+            <option value="">{field.placeholder || `Select ${getFieldLabel(field)}`}</option>
             {(field.optionsFrom
               ? (referenceData[field.optionsFrom] ?? []).map((item) => ({
                 value: getReferenceOptionValue(item, field.optionValue),
@@ -4084,7 +4093,7 @@ export default function Stock() {
       <ResourcePage
         key={activeConfig.key}
         config={activeConfig}
-        navigationContent={isStockOperationsHub ? tabsContent : null}
+        navigationContent={null}
       />
     </div>
   )

@@ -1607,12 +1607,12 @@ function ResourceForm({
           <select
             id={`resource-${config.key}-${field.name}`}
             name={field.name}
-            value={formData[field.name]}
+            value={formData[field.name] ?? ''}
             onChange={handleChange}
             onBlur={handleBlur}
             aria-invalid={Boolean(error)}
           >
-            <option value="">Select {field.label.toLowerCase()}</option>
+            <option value="">{field.placeholder || `Select ${getFieldLabel(field)}`}</option>
             {(field.optionsFrom
               ? (referenceData[field.optionsFrom] ?? []).map((item) => ({
                 value: getReferenceOptionValue(item, field.optionValue),

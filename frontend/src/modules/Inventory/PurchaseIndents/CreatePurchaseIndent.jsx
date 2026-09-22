@@ -244,6 +244,7 @@ function buildInitialDraft(initialIndentNo) {
     paymentTerms: 'Net 15 Days',
     currency: 'INR - Indian Rupee',
     reference: '',
+    discount: '',
     paidAmount: '',
     remarks: '',
     items: [{ ...defaultItem, requiredDate: '', remarks: '' }],
@@ -279,12 +280,16 @@ function buildDraftFromIndent(indent, initialIndentNo) {
     department: getDepartmentNameFromIndent(indent, baseDraft.department),
     priority: indent?.priority || baseDraft.priority,
     approvedBy: String(indent?.approvedById ?? indent?.ApprovedById ?? indent?.approvedByUserId ?? indent?.ApprovedByUserId ?? indent?.approvedBy ?? indent?.ApprovedBy ?? ''),
+    discount: String(indent?.discount ?? indent?.discountAmount ?? ''),
     paidAmount: String(indent?.paidAmount ?? indent?.amountPaid ?? ''),
     remarks: indent?.remarks || indent?.notes || '',
     items: items.map((item) => ({
       ...defaultItem,
       productId: item?.productId ? String(item.productId) : '',
       quantity: String(item?.requiredQty ?? item?.quantity ?? 1),
+      unitPrice: String(item?.unitPrice ?? item?.price ?? item?.rate ?? '0'),
+      discount: String(item?.discount ?? item?.discountPercentage ?? item?.discountPercent ?? '0'),
+      tax: String(item?.tax ?? item?.taxPercentage ?? item?.taxPercent ?? '18'),
       requiredDate: item?.requiredDate ? getLogicalRequiredDate(item.requiredDate, indentDate, 7) : expectedDeliveryDate,
       remarks: item?.remarks || '',
     })),
@@ -595,31 +600,51 @@ function PurchaseIndentForm({
     }
   }, [initialIndentNo, initialValues])
 
-  const calculatedTotals = useMemo(
-    () => draft.items.reduce((totals, item) => {
+  const calculatedTotals = useMemo(() => {
+    let subTotal = 0
+    let lineDiscountTotal = 0
+    let taxTotal = 0
+
+    draft.items.forEach((item) => {
       const product = productOptions.find(
         (option) => String(getProductId(option)) === String(item.productId)
       )
       const unitPrice = toNumber(item.unitPrice) || toNumber(product?.costPrice ?? product?.cost ?? product?.purchasePrice ?? product?.price)
       const baseAmount = toNumber(item.quantity) * unitPrice
-      const discountAmount = (baseAmount * toNumber(item.discount)) / 100
-      const discountedAmount = baseAmount - discountAmount
-      const taxAmount = (discountedAmount * toNumber(item.tax)) / 100
+      subTotal += baseAmount
 
-      return {
-        subTotal: totals.subTotal + baseAmount,
-        discount: totals.discount + discountAmount,
-        tax: totals.tax + taxAmount,
-        grandTotal: totals.grandTotal + discountedAmount + taxAmount,
-      }
-    }, {
-      subTotal: 0,
-      discount: 0,
-      tax: 0,
-      grandTotal: 0,
-    }),
-    [draft.items, productOptions],
-  )
+      const itemDiscountPercent = toNumber(item.discount)
+      const lineDiscount = (baseAmount * itemDiscountPercent) / 100
+      lineDiscountTotal += lineDiscount
+
+      const taxableItemAmount = Math.max(0, baseAmount - lineDiscount)
+      const itemTaxPercent = item.tax !== undefined && item.tax !== '' ? toNumber(item.tax) : 18
+      const lineTax = (taxableItemAmount * itemTaxPercent) / 100
+      taxTotal += lineTax
+    })
+
+    const orderDiscount = toNumber(draft.discount)
+    const totalDiscount = Math.min(subTotal, Math.round((lineDiscountTotal + orderDiscount) * 100) / 100)
+
+    let finalTax = taxTotal
+    if (orderDiscount > 0 && subTotal > 0 && lineDiscountTotal === 0) {
+      const effectiveTaxRate = taxTotal / subTotal
+      finalTax = Math.max(0, Math.round((subTotal - totalDiscount) * effectiveTaxRate * 100) / 100)
+    } else {
+      finalTax = Math.round(taxTotal * 100) / 100
+    }
+
+    // Grand Total = Subtotal – Discount + Tax
+    const grandTotal = Math.max(0, Math.round((subTotal - totalDiscount + finalTax) * 100) / 100)
+
+    return {
+      subTotal: Math.round(subTotal * 100) / 100,
+      discount: totalDiscount,
+      lineDiscountTotal: Math.round(lineDiscountTotal * 100) / 100,
+      tax: finalTax,
+      grandTotal,
+    }
+  }, [draft.items, draft.discount, productOptions])
   const amountInWords = useMemo(
     () => convertAmountToWords(calculatedTotals.grandTotal),
     [calculatedTotals.grandTotal],
@@ -684,6 +709,8 @@ function PurchaseIndentForm({
         description: product?.description || product?.name || '',
         uom: product?.unit || 'Nos',
         unitPrice: (product?.costPrice ?? product?.cost ?? product?.purchasePrice ?? product?.price) ? String(product?.costPrice ?? product?.cost ?? product?.purchasePrice ?? product?.price) : '0',
+        discount: updatedItems[index].discount || '0',
+        tax: updatedItems[index].tax || '18',
         hsn: product ? '84713010' : '',
         requiredDate: updatedItems[index].requiredDate || currentValue.expectedDeliveryDate || '',
         remarks: updatedItems[index].remarks || '',
@@ -902,6 +929,12 @@ function PurchaseIndentForm({
         approvedBy: draft.approvedBy ? toPayloadId(draft.approvedBy) : null,
         priority: draft.priority,
         remarks: draft.remarks,
+        subTotal: calculatedTotals.subTotal,
+        discount: calculatedTotals.discount,
+        tax: calculatedTotals.tax,
+        totalAmount: calculatedTotals.grandTotal,
+        grandTotal: calculatedTotals.grandTotal,
+        paidAmount: toNumber(draft.paidAmount),
         items: draft.items.map(item => {
           const product = productOptions.find(
             p => String(getProductId(p)) === String(item.productId)
@@ -910,6 +943,9 @@ function PurchaseIndentForm({
           return {
             productId: Number(item.productId),
             requiredQty: Number(item.quantity),
+            unitPrice: toNumber(item.unitPrice) || toNumber(product?.costPrice ?? product?.cost ?? product?.purchasePrice ?? product?.price),
+            discount: toNumber(item.discount),
+            tax: toNumber(item.tax),
             unitId: getProductUnitId(product),
             availableStock: getProductStock(product),
             requiredDate: item.requiredDate || draft.expectedDeliveryDate,
@@ -1116,17 +1152,19 @@ function PurchaseIndentForm({
         </div>
 
         <div className="indent-items-table-wrapper">
-          <table className="indent-items-table" style={{ tableLayout: 'fixed', minWidth: '1150px' }}>
+          <table className="indent-items-table" style={{ tableLayout: 'fixed', minWidth: '1200px' }}>
             <thead>
               <tr>
-                <th style={{ width: '50px', textAlign: 'center' }}>S.No</th>
-                <th style={{ width: '32%' }}>Item Name <span className="required-asterisk">*</span></th>
-                <th style={{ width: '12%', textAlign: 'center' }}>Required Qty <span className="required-asterisk">*</span></th>
-                <th style={{ width: '10%', textAlign: 'center' }}>Unit</th>
-                <th style={{ width: '14%', textAlign: 'center' }}>Unit Price (₹)</th>
-                <th style={{ width: '14%', textAlign: 'center' }}>Available Stock</th>
-                <th style={{ width: '18%' }}>Required Date</th>
-                <th style={{ width: '60px', textAlign: 'center' }}>Actions</th>
+                <th style={{ width: '48px', textAlign: 'center' }}>S.No</th>
+                <th style={{ width: '25%' }}>Item Name <span className="required-asterisk">*</span></th>
+                <th style={{ width: '10%', textAlign: 'center' }}>Required Qty <span className="required-asterisk">*</span></th>
+                <th style={{ width: '8%', textAlign: 'center' }}>Unit</th>
+                <th style={{ width: '12%', textAlign: 'center' }}>Unit Price (₹)</th>
+                <th style={{ width: '9%', textAlign: 'center' }}>Discount (%)</th>
+                <th style={{ width: '8%', textAlign: 'center' }}>Tax (%)</th>
+                <th style={{ width: '11%', textAlign: 'center' }}>Available Stock</th>
+                <th style={{ width: '13%' }}>Required Date</th>
+                <th style={{ width: '54px', textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -1232,6 +1270,52 @@ function PurchaseIndentForm({
                         })}
                         readOnly
                         aria-label={`Unit price for item ${index + 1}`}
+                      />
+                    </td>
+
+                    {/* Discount (%) */}
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        className="indent-table-input"
+                        data-field-key={`item_${index}_discount`}
+                        value={item.discount}
+                        onChange={(e) => handleItemFieldChange(index, 'discount', e.target.value)}
+                        onKeyDown={(e) => {
+                          if (['-', '+', 'e', 'E'].includes(e.key)) {
+                            e.preventDefault()
+                          }
+                        }}
+                        disabled={isSubmitting}
+                        placeholder="0"
+                        style={{ textAlign: 'center' }}
+                        aria-label={`Discount percentage for item ${index + 1}`}
+                      />
+                    </td>
+
+                    {/* Tax (%) */}
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        className="indent-table-input"
+                        data-field-key={`item_${index}_tax`}
+                        value={item.tax}
+                        onChange={(e) => handleItemFieldChange(index, 'tax', e.target.value)}
+                        onKeyDown={(e) => {
+                          if (['-', '+', 'e', 'E'].includes(e.key)) {
+                            e.preventDefault()
+                          }
+                        }}
+                        disabled={isSubmitting}
+                        placeholder="18"
+                        style={{ textAlign: 'center' }}
+                        aria-label={`Tax percentage for item ${index + 1}`}
                       />
                     </td>
 
@@ -1349,11 +1433,23 @@ function PurchaseIndentForm({
               })}</strong>
             </div>
             <div className="indent-totals-card__row indent-totals-card__row--discount">
-              <span>Discount</span>
-              <strong>- ₹{calculatedTotals.discount.toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}</strong>
+              <label htmlFor="indent-discount-input">Discount</label>
+              <div className="indent-totals-discount-container">
+                <span className="indent-totals-discount-sign">- ₹</span>
+                <input
+                  id="indent-discount-input"
+                  type="number"
+                  min="0"
+                  max={calculatedTotals.subTotal}
+                  step="0.01"
+                  className="indent-totals-discount-input"
+                  value={draft.discount || ''}
+                  onChange={(e) => updateField('discount', e.target.value)}
+                  placeholder={calculatedTotals.lineDiscountTotal > 0 ? calculatedTotals.lineDiscountTotal.toFixed(2) : '0.00'}
+                  disabled={isSubmitting}
+                  aria-label="Overall discount amount"
+                />
+              </div>
             </div>
             <div className="indent-totals-card__row">
               <span>Tax</span>

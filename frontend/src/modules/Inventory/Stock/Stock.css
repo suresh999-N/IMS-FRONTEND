@@ -79,7 +79,7 @@
 
 .resource-center--stock-operations .resource-center__page {
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 0;
   height: 100%;
   min-height: 0;
@@ -1355,8 +1355,27 @@
 .resource-center__page--stockMovements .table-container :where(th, td)[data-column='productName'],
 .resource-center__page--stock .table-container :where(th, td)[data-column='productName'],
 .resource-center__page--stockLedger .table-container :where(th, td)[data-column='productName'] {
-  width: 320px;
+  width: 340px;
   min-width: 280px;
+}
+
+.resource-center__page--stock .table-container td[data-column='productName'],
+.resource-center__page--stockMovements .table-container td[data-column='productName'],
+.resource-center__page--stockLedger .table-container td[data-column='productName'] {
+  white-space: normal !important;
+  max-width: none !important;
+  overflow: visible !important;
+}
+
+.resource-center__page--stock .table-container td[data-column='productName'] .table-cell-text,
+.resource-center__page--stockMovements .table-container td[data-column='productName'] .table-cell-text,
+.resource-center__page--stockLedger .table-container td[data-column='productName'] .table-cell-text {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  word-break: break-word;
+  line-height: 1.45;
+  display: block;
 }
 
 .resource-center__page--stockMovements .table-container :where(th, td)[data-column='warehouseName'],
@@ -6610,7 +6629,7 @@
 }
 
 .resource-center--stock-operations .resource-center__page--stockMovements {
-  --stock-table-min-width: 1180px;
+  --stock-table-min-width: 1200px;
 }
 
 .resource-center--stock-operations .resource-center__page--stockLedger {

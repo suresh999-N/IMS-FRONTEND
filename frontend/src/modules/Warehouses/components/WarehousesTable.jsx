@@ -241,15 +241,14 @@ function getGroupedWarehouseProducts(warehouseProducts, productsCatalog) {
 
 function formatWarehouseProductTooltip(prod) {
   if (!prod) return ''
-  const lines = [prod.name]
-  if (prod.sku) {
-    lines.push(`SKU: ${prod.sku}`)
-  }
-  if (prod.quantity !== undefined && prod.quantity !== null && prod.quantity !== '') {
-    const qtyStr = Number(prod.quantity).toLocaleString('en-IN')
-    lines.push(`Available: ${qtyStr} ${prod.unit || 'Units'}`.trim())
-  }
-  return lines.join('\n')
+  const name = prod.name?.trim() || 'Unnamed Product'
+  const sku = (prod.sku || prod.Sku || prod.SKU || '').trim() || 'N/A'
+  const qty = prod.quantity !== undefined && prod.quantity !== null && prod.quantity !== ''
+    ? Number(prod.quantity).toLocaleString('en-IN')
+    : '0'
+  const unit = (prod.unit || prod.Unit || '').trim() || 'Units'
+
+  return `${name}\nSKU: ${sku}\nAvailable: ${qty} ${unit}`
 }
 
 export default function WarehousesTable({
@@ -360,7 +359,8 @@ export default function WarehousesTable({
                 <div
                   key={index}
                   className="warehouses-product-item"
-                  title={formatWarehouseProductTooltip(prod)}
+                  data-product-tooltip="true"
+                  data-tooltip-title={formatWarehouseProductTooltip(prod)}
                 >
                   {prod.name}
                 </div>
@@ -378,7 +378,8 @@ export default function WarehousesTable({
               <div
                 key={index}
                 className="warehouses-product-item"
-                title={formatWarehouseProductTooltip(prod)}
+                data-product-tooltip="true"
+                data-tooltip-title={formatWarehouseProductTooltip(prod)}
               >
                 {prod.name}
               </div>
@@ -390,7 +391,7 @@ export default function WarehousesTable({
                 event.stopPropagation()
                 setActiveProductsModalWarehouse(warehouse)
               }}
-              title={`Click to view all ${grouped.length} products in ${warehouse.name}`}
+              data-tooltip-title={`Click to view all ${grouped.length} products in ${warehouse.name}`}
             >
               +{moreCount} more product{moreCount > 1 ? 's' : ''}
             </button>
