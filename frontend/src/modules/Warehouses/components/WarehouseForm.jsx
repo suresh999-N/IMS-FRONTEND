@@ -11,11 +11,45 @@ import {
   phoneInputProps,
   sanitizePhoneInput,
 } from '../../../validators/phoneValidator'
+import SearchableSelect from '../../../components/SearchableSelect'
 import {
   CITY_TO_STATE_MAP,
   INDIA_STATES,
+  MAJOR_CITIES_BY_STATE,
 } from '../../Suppliers/supplierMasterData'
 import './WarehouseForm.css'
+
+export const PREDEFINED_LOCATIONS = Array.from(
+  new Set([
+    'Bengaluru',
+    'Delhi NCR',
+    'Mumbai',
+    'Hyderabad',
+    'Chennai',
+    'Pune',
+    'Kolkata',
+    'Ahmedabad',
+    'Jaipur',
+    'Surat',
+    'Lucknow',
+    'Chandigarh',
+    'Visakhapatnam',
+    'Indore',
+    'Bhopal',
+    'Kochi',
+    'Coimbatore',
+    'Vadodara',
+    'Patna',
+    'Nagpur',
+    'Ludhiana',
+    'Agra',
+    'Nashik',
+    'Noida',
+    'Gurugram',
+    ...Object.values(MAJOR_CITIES_BY_STATE).flat(),
+    ...INDIA_STATES,
+  ])
+).sort((a, b) => a.localeCompare(b))
 
 const emptyForm = {
   name: '',
@@ -124,15 +158,16 @@ function getLocationError(value) {
     return 'Location must be at least 2 characters.'
   }
 
-  if (!/^[A-Za-z ]+$/.test(cleanValue) || !/[A-Za-z]/.test(cleanValue)) {
-    return 'Use alphabetic location names only.'
-  }
-
   const key = cleanValue.replace(/[\s\-_]/g, '').toLowerCase()
-  const isIndianState = INDIA_STATES.some(s => s.replace(/[\s\-_]/g, '').toLowerCase() === key)
-  
-  if (!CITY_TO_STATE_MAP[key] && !isIndianState) {
-    return 'Location must be a valid Indian city or state.'
+  const isPredefined = PREDEFINED_LOCATIONS.some(
+    (loc) => loc.replace(/[\s\-_]/g, '').toLowerCase() === key
+  )
+  const isIndianState = INDIA_STATES.some(
+    (s) => s.replace(/[\s\-_]/g, '').toLowerCase() === key
+  )
+
+  if (!isPredefined && !CITY_TO_STATE_MAP[key] && !isIndianState) {
+    return 'Location must be a valid geographic location.'
   }
 
   return ''
@@ -392,17 +427,25 @@ export default function WarehouseForm({
             disabled={isSubmitting}
           />
 
-          <InputField
+          <SearchableSelect
             id="warehouse-location"
             name="location"
             label="Location *"
+            icon={MapPin}
             value={formData.location}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="Mumbai"
+            onChange={(event) => {
+              const val = event.target.value
+              setFormData((prev) => ({ ...prev, location: val }))
+              setTouched((prev) => ({ ...prev, location: true }))
+            }}
+            onBlur={() => {
+              setTouched((prev) => ({ ...prev, location: true }))
+            }}
+            options={PREDEFINED_LOCATIONS}
+            placeholder="Select location"
+            searchPlaceholder="Search location..."
             error={getVisibleError('location')}
-            maxLength={maxLengths.location}
-            onKeyDown={handleRestrictedKeyDown(/^[A-Za-z ]$/)}
+            showError={Boolean(getVisibleError('location'))}
             disabled={isSubmitting}
           />
 

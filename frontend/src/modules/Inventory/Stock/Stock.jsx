@@ -44,6 +44,7 @@ import {
   updateResource,
 } from '../../../api/resourceApi'
 import CurrencyInput from '../../../components/CurrencyInput'
+import DatePicker from '../../../components/DatePicker'
 import PageHeader from '../../../components/common/PageHeader'
 import StateBlock from '../../../components/common/StateBlock'
 import InputField from '../../../components/InputField'
@@ -1245,7 +1246,13 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
                   style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #dbe4f0', padding: '0 8px' }}
                   disabled={!item.productId}
                 >
-                  <option value="">Default / No Variant</option>
+                  <option value="">
+                    {!item.productId
+                      ? 'Select Variant'
+                      : filteredVariants.length > 0
+                      ? 'Select Variant'
+                      : 'Default / No Variant'}
+                  </option>
                   {filteredVariants.map((v) => (
                     <option key={v.id ?? v.variantId} value={v.variantId ?? v.id}>
                       {v.variantName ? `${v.variantName} (${v.sku || ''})` : v.sku || 'Variant'}
@@ -1366,7 +1373,13 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
                   style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #dbe4f0', padding: '0 8px' }}
                   disabled={!item.productId}
                 >
-                  <option value="">Default / No Variant</option>
+                  <option value="">
+                    {!item.productId
+                      ? 'Select Variant'
+                      : filteredVariants.length > 0
+                      ? 'Select Variant'
+                      : 'Default / No Variant'}
+                  </option>
                   {filteredVariants.map((v) => (
                     <option key={v.id ?? v.variantId} value={v.variantId ?? v.id}>
                       {v.variantName ? `${v.variantName} (${v.sku || ''})` : v.sku || 'Variant'}
@@ -1783,6 +1796,26 @@ function ResourceForm({
           onBlur={handleBlur}
           error={error}
           readOnly={field.readOnly}
+        />
+      )
+    }
+
+    if (field.type === 'date') {
+      return (
+        <DatePicker
+          key={field.name}
+          id={`resource-${config.key}-${field.name}`}
+          name={field.name}
+          label={field.label}
+          value={formData[field.name]}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          placeholder={field.placeholder || 'Select Transfer Date'}
+          error={error}
+          minDate={field.min ? (typeof field.min === 'function' ? field.min() : field.min) : undefined}
+          maxDate={field.max ? (typeof field.max === 'function' ? field.max() : field.max) : undefined}
+          readOnly={field.readOnly}
+          className={getResourceFieldClassName(config, field)}
         />
       )
     }

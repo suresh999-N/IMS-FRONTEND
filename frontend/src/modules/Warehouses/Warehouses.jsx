@@ -86,7 +86,7 @@ const initialTransferForm = {
   fromWarehouseId: '',
   toWarehouseId: '',
   quantity: '',
-  date: getToday(),
+  date: '',
 }
 
 const initialBinTransferForm = {
@@ -1693,6 +1693,7 @@ export default function Warehouses({
                 label="Transfer Date"
                 value={transferForm.date}
                 onChange={handleTransferChange}
+                placeholder="Select Transfer Date"
               />
 
               <div className="button-row">

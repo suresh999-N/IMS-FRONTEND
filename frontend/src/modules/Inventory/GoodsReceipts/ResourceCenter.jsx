@@ -1485,7 +1485,7 @@ function ResourceForm({
             searchPlaceholder={field.searchPlaceholder || `Search ${fieldNoun}s`}
             error={fieldError}
             showError={Boolean(fieldError)}
-            disabled={field.readOnly || isReferenceLoading || Boolean(referenceError) || options.length === 0}
+            disabled={field.readOnly || isReferenceLoading || Boolean(referenceError) || options.length === 0 || (field.name === 'variantId' && !formData.productId)}
             className="resource-form__combobox"
             menuClassName={isSubCategoriesForm ? 'resource-form__combobox-menu resource-form__combobox-menu--subCategories' : ''}
           />
@@ -1582,6 +1582,7 @@ function ResourceForm({
           value={formData[field.name]}
           onChange={handleChange}
           onBlur={handleBlur}
+          placeholder={field.placeholder || 'Select Transfer Date'}
           error={error}
           readOnly={field.readOnly}
           className={getResourceFieldClassName(config, field)}

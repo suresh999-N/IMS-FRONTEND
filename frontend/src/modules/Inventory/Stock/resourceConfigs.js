@@ -573,7 +573,7 @@ export const RESOURCE_CONFIGS = {
         placeholder: 'Select warehouse',
         searchPlaceholder: 'Search warehouses',
       },
-      { name: 'transferDate', label: 'Transfer Date *', type: 'date', required: true, defaultValue: getToday, min: getToday },
+      { name: 'transferDate', label: 'Transfer Date *', type: 'date', required: true, placeholder: 'Select Transfer Date' },
       { name: 'status', label: 'Status *', type: 'select', options: documentStatusOptions, defaultValue: 'pending' },
     ],
     columns: [
