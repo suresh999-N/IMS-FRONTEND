@@ -82,6 +82,15 @@ function ProductsHeader({ canCreate, summary, activeStatusFilter, isTopSellingVi
       title: 'Filter out-of-stock products',
     },
     {
+      key: 'inactive',
+      filterValue: 'Inactive',
+      label: 'Inactive',
+      value: formatCompactCount(summary.inactive),
+      tone: 'inactive',
+      isActive: !isTopSellingView && activeStatusFilter === 'Inactive',
+      title: 'Filter inactive products',
+    },
+    {
       key: 'archived',
       filterValue: 'Archived',
       label: 'Archived',
@@ -128,6 +137,7 @@ const PRODUCT_STATUS_FILTER_OPTIONS = [
   { value: 'In Stock', label: 'In Stock' },
   { value: 'Low Stock', label: 'Low Stock' },
   { value: 'Out Of Stock', label: 'Out Of Stock' },
+  { value: 'Inactive', label: 'Inactive' },
   { value: 'Archived', label: 'Archived' },
 ]
 
@@ -1245,6 +1255,7 @@ export default function Products({
     return {
       total: activeInventoryProducts.length,
       archived: archivedProducts.length,
+      inactive: activeInventoryProducts.filter((product) => getProductDisplayStatus(product) === 'Inactive').length,
       lowStock: activeInventoryProducts.filter(isProductLowStock).length,
       outOfStock: activeInventoryProducts.filter(isProductOutOfStock).length,
       inStock: activeInventoryProducts.filter((product) => getProductDisplayStatus(product) === 'In Stock').length,

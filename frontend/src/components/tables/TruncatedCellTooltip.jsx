@@ -62,12 +62,10 @@ function shouldShowTooltip(element, cell) {
   if (!titleVal) return false
 
   if (isActionElement(element, cell)) return true
-  if (isProductElement(element)) return true
-  if (element.hasAttribute('data-tooltip') || element.hasAttribute('data-product-tooltip')) return true
   if (titleVal.includes('\n')) return true
 
   const visibleText = String(element.innerText || element.textContent || '').trim()
-  if (visibleText && titleVal !== visibleText) return true
+  if (visibleText && titleVal !== visibleText && !isProductElement(element)) return true
 
   if (isTruncated(element) || (cell && isTruncated(cell))) return true
 

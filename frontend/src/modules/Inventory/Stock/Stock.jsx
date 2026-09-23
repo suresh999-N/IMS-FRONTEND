@@ -183,7 +183,7 @@ function getDefaultValue(field) {
   }
 
   if (field.type === 'lineItems') {
-    return [{ productId: '', variantId: '', quantity: '1', price: '' }]
+    return [{ productId: '', variantId: '', quantity: '', price: '' }]
   }
 
   return ''
@@ -1183,7 +1183,7 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
   
   const defaultItem = isStockAudits
     ? { productId: '', variantId: '', binId: '', systemQuantity: '0', physicalQuantity: '0' }
-    : { productId: '', variantId: '', quantity: '1', price: '0' }
+    : { productId: '', variantId: '', quantity: '', price: '0' }
 
   const items = Array.isArray(value) && value.length > 0
     ? value

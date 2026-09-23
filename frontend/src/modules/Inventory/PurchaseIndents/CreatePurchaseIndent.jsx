@@ -25,7 +25,7 @@ const defaultItem = {
   description: '',
   hsn: '',
   uom: '',
-  quantity: '1',
+  quantity: '',
   unitPrice: '0',
   discount: '0',
   tax: '18',

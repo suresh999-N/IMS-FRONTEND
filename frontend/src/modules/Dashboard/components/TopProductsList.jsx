@@ -7,6 +7,16 @@ export default function TopProductsList({ products = [] }) {
   const topProducts = safeProducts.slice(0, 50)
   const totalRevenue = safeProducts.slice(0, 5).reduce((total, product) => total + Number(product.revenue || 0), 0)
 
+  const handleMouseEnter = (e) => {
+    const el = e.currentTarget
+    if (!el) return
+    if (el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1) {
+      el.setAttribute('title', el.textContent)
+    } else {
+      el.removeAttribute('title')
+    }
+  }
+
   return (
     <section className="dashboard-panel compact-list top-products-panel">
       <div className="dashboard-panel__header">
@@ -36,13 +46,12 @@ export default function TopProductsList({ products = [] }) {
               <article
                 className="top-product-row"
                 key={product.id || product.name || index}
-                title={productName}
               >
                 <span className="top-product-row__rank">#{index + 1}</span>
                 <div className="top-product-row__main">
-                  <div className="top-product-row__copy" title={productName}>
-                    <strong title={productName}>{productName}</strong>
-                    <small title={subText}>{subText}</small>
+                  <div className="top-product-row__copy">
+                    <strong onMouseEnter={handleMouseEnter}>{productName}</strong>
+                    <small>{subText}</small>
                   </div>
                   <div className="top-product-row__bar" aria-label={`${percent}% of top product revenue`}>
                     <span style={{ width: `${percent}%` }} />

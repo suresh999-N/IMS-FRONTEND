@@ -165,7 +165,7 @@ function getDefaultValue(field) {
   }
 
   if (field.type === 'lineItems') {
-    return [{ productId: '', variantId: '', quantity: '1', price: '' }]
+    return [{ productId: '', variantId: '', quantity: '', price: '' }]
   }
 
   return ''
@@ -1007,7 +1007,7 @@ function downloadBlob(blob, filename) {
 function LineItemsField({ field, value, error, onChange }) {
   const items = Array.isArray(value) && value.length > 0
     ? value
-    : [{ productId: '', variantId: '', quantity: '1', price: '' }]
+    : [{ productId: '', variantId: '', quantity: '', price: '' }]
 
   function updateLine(index, key, nextValue) {
     onChange(items.map((item, itemIndex) =>
@@ -1016,7 +1016,7 @@ function LineItemsField({ field, value, error, onChange }) {
   }
 
   function addLine() {
-    onChange([...items, { productId: '', variantId: '', quantity: '1', price: '' }])
+    onChange([...items, { productId: '', variantId: '', quantity: '', price: '' }])
   }
 
   function removeLine(index) {

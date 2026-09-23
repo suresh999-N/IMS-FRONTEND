@@ -186,7 +186,7 @@ function getDefaultValue(field) {
   }
 
   if (field.type === 'lineItems') {
-    return [{ productId: '', variantId: '', quantity: '1', price: '' }]
+    return [{ productId: '', variantId: '', quantity: '', price: '' }]
   }
 
   return ''
@@ -1697,6 +1697,23 @@ function getResourceExportColumns(config) {
 }
 
 function getResourceExportValue(row, column) {
+  if (typeof column.render === 'function') {
+    const rendered = column.render(row)
+    if (typeof rendered === 'string' || typeof rendered === 'number') {
+      return String(rendered)
+    }
+  }
+
+  if (column.key === 'grnNumber' || column.label === 'Receipt Number') {
+    const num = getGoodsReceiptNumber(row) || readResourceValue(row, 'grnNumber') || readResourceValue(row, 'receiptNumber')
+    if (num) return num
+  }
+
+  if (column.key === 'poNumber' || column.label === 'PO Number') {
+    const poNum = readResourceValue(row, 'poNumber') || readResourceValue(row, 'poNumberFormatted') || (row.poId ? (String(row.poId).startsWith('PO-') ? row.poId : `PO-${String(row.poId).padStart(6, '0')}`) : '')
+    if (poNum) return poNum
+  }
+
   if (column.key === 'productName' && (column.label === 'Items' || column.label === 'Product Name')) {
     return getGoodsReceiptItemCountDisplay(row)
   }
@@ -1732,6 +1749,75 @@ function getResourceExportFilename(config) {
     .replace(/^_+|_+$/g, '') || 'Records'}.csv`
 }
 
+function exportResourceRowsExcel(config, rows) {
+  const columns = getResourceExportColumns(config)
+  const title = escapeHtml(config.title || 'Goods Receipts')
+
+  const getStyleForColumn = (column) => {
+    if (column.format === 'currency' || column.key === 'totalAmount' || column.label === 'Price') {
+      return `mso-number-format:'\\#\\,\\#\\#0\\.00'; text-align: right; white-space: nowrap;`
+    }
+    if (column.format === 'number' || column.key === 'quantityReceived' || column.label === 'Received') {
+      return `mso-number-format:'0'; text-align: right; white-space: nowrap;`
+    }
+    if (column.format === 'date' || column.key === 'receiptDate' || column.label === 'Date') {
+      return `mso-number-format:'Short Date'; text-align: center; white-space: nowrap;`
+    }
+    return `mso-number-format:'\\@'; text-align: left; white-space: nowrap;`
+  }
+
+  const tableHeaders = columns
+    .map((column) => `<th style="${getStyleForColumn(column)}; background: #f8fafc; font-weight: 700; padding: 8px 12px; border: 1px solid #cbd5e1;">${escapeHtml(column.label ?? column.key)}</th>`)
+    .join('')
+
+  const tableRows = rows.map((row) => `
+    <tr>
+      ${columns.map((column) => `<td style="${getStyleForColumn(column)}; padding: 6px 12px; border: 1px solid #e2e8f0;">${escapeHtml(getResourceExportValue(row, column))}</td>`).join('')}
+    </tr>
+  `).join('')
+
+  const html = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head>
+        <meta charset="UTF-8" />
+        <!--[if gte mso 9]>
+        <xml>
+          <x:ExcelWorkbook>
+            <x:ExcelWorksheets>
+              <x:ExcelWorksheet>
+                <x:Name>${title}</x:Name>
+                <x:WorksheetOptions>
+                  <x:DisplayGridlines/>
+                  <x:DoNotCalculate/>
+                </x:WorksheetOptions>
+              </x:ExcelWorksheet>
+            </x:ExcelWorksheets>
+          </x:ExcelWorkbook>
+        </xml>
+        <![endif]-->
+        <style>
+          table { border-collapse: collapse; font-family: Segoe UI, Calibri, Arial, sans-serif; font-size: 11pt; }
+          th, td { vertical-align: middle; }
+        </style>
+      </head>
+      <body>
+        <table>
+          <thead><tr>${tableHeaders}</tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </body>
+    </html>
+  `
+
+  const blob = new Blob(['\uFEFF' + html], { type: 'application/vnd.ms-excel;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${getResourceExportFilename(config).replace(/\.csv$/i, '')}.xls`
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
 function exportResourceRowsCsv(config, rows) {
   const columns = getResourceExportColumns(config)
   const headers = columns.map((column) => String(column.label ?? column.key))
@@ -1739,7 +1825,7 @@ function exportResourceRowsCsv(config, rows) {
   const csv = [headers, ...csvRows]
     .map((row) => row.map(escapeCsvValue).join(','))
     .join('\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
 
@@ -2526,7 +2612,7 @@ function downloadBlob(blob, filename) {
 function LineItemsField({ field, value, error, onChange }) {
   const items = Array.isArray(value) && value.length > 0
     ? value
-    : [{ productId: '', variantId: '', quantity: '1', price: '' }]
+    : [{ productId: '', variantId: '', quantity: '', price: '' }]
 
   function updateLine(index, key, nextValue) {
     onChange(items.map((item, itemIndex) =>
@@ -2535,7 +2621,7 @@ function LineItemsField({ field, value, error, onChange }) {
   }
 
   function addLine() {
-    onChange([...items, { productId: '', variantId: '', quantity: '1', price: '' }])
+    onChange([...items, { productId: '', variantId: '', quantity: '', price: '' }])
   }
 
   function removeLine(index) {
@@ -4835,6 +4921,29 @@ function ResourcePage({ config, navigationContent = null }) {
         <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
         Refresh
       </button>
+      <ExportMenu
+        actions={[
+          {
+            key: 'export-excel',
+            label: 'Export Excel (.xls)',
+            icon: FileSpreadsheet,
+            onClick: () => exportResourceRowsExcel(config, rows),
+          },
+          {
+            key: 'export-csv',
+            label: 'Export CSV (.csv)',
+            icon: Download,
+            onClick: () => exportResourceRowsCsv(config, rows),
+          },
+          {
+            key: 'print-pdf',
+            label: 'Print / PDF',
+            icon: Printer,
+            onClick: () => printResourceRows(config, rows),
+          },
+        ]}
+        disabled={rows.length === 0}
+      />
       {canCreate ? (
         <button type="button" className="button button-primary" onClick={openCreate}>
           <Plus size={16} />
@@ -4961,22 +5070,28 @@ function ResourcePage({ config, navigationContent = null }) {
         <Check size={15} />
         <strong>{selectedGoodsReceipts.length} selected</strong>
       </div>
-      <button
-        type="button"
-        className="button button-secondary resource-center__product-style-selection-button"
-        onClick={() => exportResourceRowsCsv(config, selectedGoodsReceipts)}
-      >
-        <Download size={15} />
-        Export
-      </button>
-      <button
-        type="button"
-        className="button button-secondary resource-center__product-style-selection-button"
-        onClick={() => printResourceRows(config, selectedGoodsReceipts)}
-      >
-        <Printer size={15} />
-        Print
-      </button>
+      <ExportMenu
+        actions={[
+          {
+            key: 'export-selected-excel',
+            label: 'Export Excel (.xls)',
+            icon: FileSpreadsheet,
+            onClick: () => exportResourceRowsExcel(config, selectedGoodsReceipts),
+          },
+          {
+            key: 'export-selected-csv',
+            label: 'Export CSV (.csv)',
+            icon: Download,
+            onClick: () => exportResourceRowsCsv(config, selectedGoodsReceipts),
+          },
+          {
+            key: 'print-selected-pdf',
+            label: 'Print / PDF',
+            icon: Printer,
+            onClick: () => printResourceRows(config, selectedGoodsReceipts),
+          },
+        ]}
+      />
       {canDelete ? (
         <button
           type="button"

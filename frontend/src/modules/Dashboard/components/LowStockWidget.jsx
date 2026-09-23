@@ -39,6 +39,16 @@ export default function LowStockWidget({ items = [], isLoading }) {
     : '/inventory/products?filter=out-of-stock'
   const isHealthy = !isLoading && displayItems.length === 0
 
+  const handleMouseEnter = (e) => {
+    const el = e.currentTarget
+    if (!el) return
+    if (el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1) {
+      el.setAttribute('title', el.textContent)
+    } else {
+      el.removeAttribute('title')
+    }
+  }
+
   return (
     <section className={`dashboard-panel low-stock-widget ${isHealthy ? 'is-healthy' : ''}`}>
       <div className="dashboard-panel__header">
@@ -122,13 +132,12 @@ export default function LowStockWidget({ items = [], isLoading }) {
                   className="low-stock-row"
                   key={item.id || item.sku || item.name || `item-${index}`}
                   to={`/inventory/products/${item.productId || item.ProductId || item.id || ''}`}
-                  title={item.name}
                 >
                   <span className={`low-stock-row__icon ${isZeroStock ? 'is-critical' : ''}`} aria-hidden="true">
                     {isZeroStock ? <XCircle size={16} /> : <AlertTriangle size={16} />}
                   </span>
                   <div>
-                    <strong title={item.name}>{item.name}</strong>
+                    <strong onMouseEnter={handleMouseEnter}>{item.name}</strong>
                     <span>Stock: {item.stock} - Reorder Level: {item.reorderLevel}</span>
                   </div>
                   <span className={`low-stock-row__badge ${isZeroStock ? 'is-critical' : ''}`}>

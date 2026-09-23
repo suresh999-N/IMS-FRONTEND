@@ -87,12 +87,6 @@ namespace IMSBackend.Controllers
 
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
-            var rawStatus = string.IsNullOrWhiteSpace(dto.Status) ? "pending" : dto.Status.Trim();
-            if (rawStatus.Length > 20)
-            {
-                rawStatus = rawStatus.Substring(0, 20);
-            }
-
             var transfer = new StockTransfer
             {
                 FromWarehouseId = dto.FromWarehouseId,
@@ -100,7 +94,7 @@ namespace IMSBackend.Controllers
                 TransferDate = dto.TransferDate == default
         ? DateTime.UtcNow
         : dto.TransferDate,
-                Status = rawStatus
+                Status = NormalizeStatus(dto.Status)
             };
 
             _context.StockTransfers.Add(transfer);
@@ -287,6 +281,28 @@ namespace IMSBackend.Controllers
             }, "Warehouse transfer completed successfully.", HttpContext.TraceIdentifier));
         }
 
+        private static string NormalizeStatus(string? status)
+        {
+            if (string.IsNullOrWhiteSpace(status))
+                return "pending";
+
+            var trimmed = status.Trim();
+            if (trimmed.Length > 10)
+            {
+                var lower = trimmed.ToLowerInvariant();
+                if (lower.StartsWith("complete")) return "completed";
+                if (lower.StartsWith("pend")) return "pending";
+                if (lower.StartsWith("transit") || lower.Contains("transit")) return "transit";
+                if (lower.StartsWith("cancel")) return "cancelled";
+                if (lower.StartsWith("approve")) return "approved";
+                if (lower.StartsWith("draft")) return "draft";
+
+                return trimmed.Substring(0, 10);
+            }
+
+            return trimmed;
+        }
+
         [HttpPut("{id}")]
         public IActionResult Update(int id, StockTransferDto dto)
         {
@@ -298,13 +314,7 @@ namespace IMSBackend.Controllers
             transfer.FromWarehouseId = dto.FromWarehouseId;
             transfer.ToWarehouseId = dto.ToWarehouseId;
             transfer.TransferDate = dto.TransferDate;
-
-            var normalizedStatus = string.IsNullOrWhiteSpace(dto.Status) ? "pending" : dto.Status.Trim();
-            if (normalizedStatus.Length > 20)
-            {
-                normalizedStatus = normalizedStatus.Substring(0, 20);
-            }
-            transfer.Status = normalizedStatus;
+            transfer.Status = NormalizeStatus(dto.Status);
 
             _context.SaveChanges();
 

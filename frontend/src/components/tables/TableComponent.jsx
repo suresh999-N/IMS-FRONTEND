@@ -606,14 +606,14 @@ export default function TableComponent({
   const filteredRows = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase()
 
-    if (!normalizedSearch) {
+    if (!normalizedSearch || isSearchControlled) {
       return rows
     }
 
     return rows.filter((row) =>
       getSearchableText(row, columns, searchKeys).includes(normalizedSearch),
     )
-  }, [columns, rows, searchKeys, searchTerm])
+  }, [columns, isSearchControlled, rows, searchKeys, searchTerm])
 
   const sortedRows = useMemo(() => {
     if (!sortConfig.key) {

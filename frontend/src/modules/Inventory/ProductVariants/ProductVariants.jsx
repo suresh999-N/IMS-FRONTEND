@@ -509,9 +509,9 @@ export default function ProductVariants() {
   // ── Filtered Variants list ──────────────────────────────────────────────────
   const filteredVariants = useMemo(() => {
     return variants.filter((item) => {
-      // Search text matches variant name, sku, product name, or attributes list
+      // Search text matches variant name, sku, product name, barcode, attributes, or prices
       if (searchTerm) {
-        const query = searchTerm.toLowerCase()
+        const query = searchTerm.trim().toLowerCase()
         const matchesName =
           item.variantName?.toLowerCase().includes(query) ||
           item.rawVariantName?.toLowerCase().includes(query)
@@ -519,9 +519,13 @@ export default function ProductVariants() {
           item.sku?.toLowerCase().includes(query) ||
           getStandardizedSku(item.sku, item).toLowerCase().includes(query)
         const matchesProduct = item.productName?.toLowerCase().includes(query)
+        const matchesBarcode = item.barcode?.toLowerCase().includes(query)
         const matchesAttr = item.mappedAttributes?.some((a) => a.toLowerCase().includes(query))
+        const matchesPrice =
+          String(item.price || '').includes(query) ||
+          String(item.costPrice || '').includes(query)
 
-        if (!matchesName && !matchesSku && !matchesProduct && !matchesAttr) {
+        if (!matchesName && !matchesSku && !matchesProduct && !matchesBarcode && !matchesAttr && !matchesPrice) {
           return false
         }
       }
