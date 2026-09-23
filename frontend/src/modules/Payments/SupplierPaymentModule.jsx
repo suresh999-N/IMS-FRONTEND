@@ -2946,7 +2946,7 @@ export default function SupplierPaymentModule({
         <div className="resource-center__inventory-header-main">
           <h1>Supplier Payments</h1>
           <div className="resource-center__inventory-metrics">
-            <span className="resource-center__inventory-metric resource-center__inventory-metric--success">
+            <span className="resource-center__inventory-metric resource-center__inventory-metric--info">
               <strong>{summary.count}</strong> Payments
             </span>
             <span className="resource-center__inventory-metric resource-center__inventory-metric--success">

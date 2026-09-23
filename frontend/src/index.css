@@ -429,6 +429,23 @@ select {
     background-color var(--transition);
 }
 
+input:not(:disabled),
+textarea:not(:disabled) {
+  cursor: text;
+}
+
+select:not(:disabled) {
+  cursor: pointer;
+}
+
+input:hover:not(:disabled):not(:focus),
+textarea:hover:not(:disabled):not(:focus),
+select:hover:not(:disabled):not(:focus) {
+  border-color: var(--ims-success, #059669);
+  background-color: #f8fafc;
+  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.08);
+}
+
 input[autocapitalize="words"]:not(:placeholder-shown),
 textarea[autocapitalize="words"]:not(:placeholder-shown),
 input[name*="name" i]:not(:placeholder-shown),
@@ -478,6 +495,14 @@ select:focus {
   padding: 0 8px;
   min-height: 36px;
   min-width: 0;
+  cursor: text;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input-with-icon:hover:not(:focus-within) {
+  border-color: var(--ims-success, #059669);
+  background-color: #f8fafc;
+  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.08);
 }
 
 .input-with-icon:focus-within {
@@ -2361,6 +2386,28 @@ input[type="password"]::-ms-clear {
 .resource-center__inventory-metric strong,
 .resource-center__inventory-metric .resource-center__inventory-metric-count {
   color: #0f172a !important;
+}
+
+/* Informational summary header metrics (read-only stat counters) */
+.resource-center__inventory-metric,
+.warehouses-metric-badge,
+.suppliers-metric-badge,
+.customers-metric-badge,
+.products-metric-badge,
+.reports-metric-badge,
+[class*='-metric-badge'] {
+  cursor: default !important;
+  user-select: none;
+}
+
+.resource-center__inventory-metric:hover,
+.warehouses-metric-badge:hover,
+.suppliers-metric-badge:hover,
+.customers-metric-badge:hover,
+.products-metric-badge:hover,
+.reports-metric-badge:hover,
+[class*='-metric-badge']:hover {
+  transform: none !important;
 }
 
 /* Accessibility utility for screen-reader only elements */

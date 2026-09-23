@@ -90,18 +90,9 @@
   background-color: #eff6ff;
   line-height: 1.4;
   white-space: nowrap;
-  cursor: pointer;
-  transition: all 0.18s ease-in-out;
+  cursor: default;
   outline: none;
   user-select: none;
-}
-
-.resource-center__page--productVariants .resource-center__inventory-metric:hover {
-  transform: translateY(-1px);
-}
-
-.resource-center__page--productVariants .resource-center__inventory-metric:active {
-  transform: translateY(0);
 }
 
 .resource-center__page--productVariants .resource-center__inventory-metric:focus-visible {
@@ -871,6 +862,23 @@
   border-radius: 8px !important;
   align-self: center !important;
   box-sizing: border-box !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.variants-sku-button:hover:not(:disabled) {
+  border-color: #059669 !important;
+  background-color: #ecfdf5 !important;
+  color: #047857 !important;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.15) !important;
+  transform: translateY(-0.5px) !important;
+}
+
+.variants-sku-button:active:not(:disabled) {
+  border-color: #047857 !important;
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
+  transform: translateY(0) !important;
 }
 
 .variants-sku-button svg {

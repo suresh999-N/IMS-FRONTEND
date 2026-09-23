@@ -98,7 +98,23 @@ namespace IMSBackend.Controllers
             };
 
             _context.StockTransfers.Add(transfer);
-            await _context.SaveChangesAsync(cancellationToken);
+            try
+            {
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("status", StringComparison.OrdinalIgnoreCase) == true || ex.Message.Contains("status", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    await _context.Database.ExecuteSqlRawAsync("ALTER TABLE stock_transfers MODIFY COLUMN status VARCHAR(50) NULL;", cancellationToken);
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                catch
+                {
+                    transfer.Status = transfer.Status?.Length > 8 ? transfer.Status.Substring(0, 8) : transfer.Status;
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+            }
 
             var transferItem = new StockTransferItem
             {
@@ -286,21 +302,15 @@ namespace IMSBackend.Controllers
             if (string.IsNullOrWhiteSpace(status))
                 return "pending";
 
-            var trimmed = status.Trim();
-            if (trimmed.Length > 10)
-            {
-                var lower = trimmed.ToLowerInvariant();
-                if (lower.StartsWith("complete")) return "completed";
-                if (lower.StartsWith("pend")) return "pending";
-                if (lower.StartsWith("transit") || lower.Contains("transit")) return "transit";
-                if (lower.StartsWith("cancel")) return "cancelled";
-                if (lower.StartsWith("approve")) return "approved";
-                if (lower.StartsWith("draft")) return "draft";
+            var lower = status.Trim().ToLowerInvariant();
+            if (lower.StartsWith("complete") || lower.StartsWith("finish") || lower == "done") return "completed";
+            if (lower.StartsWith("pend")) return "pending";
+            if (lower.StartsWith("transit") || lower.Contains("transit")) return "transit";
+            if (lower.StartsWith("cancel")) return "cancelled";
+            if (lower.StartsWith("approve")) return "approved";
+            if (lower.StartsWith("draft")) return "draft";
 
-                return trimmed.Substring(0, 10);
-            }
-
-            return trimmed;
+            return lower.Length > 20 ? lower.Substring(0, 20) : lower;
         }
 
         [HttpPut("{id}")]
@@ -313,10 +323,29 @@ namespace IMSBackend.Controllers
 
             transfer.FromWarehouseId = dto.FromWarehouseId;
             transfer.ToWarehouseId = dto.ToWarehouseId;
-            transfer.TransferDate = dto.TransferDate;
+            if (dto.TransferDate != default)
+            {
+                transfer.TransferDate = dto.TransferDate;
+            }
             transfer.Status = NormalizeStatus(dto.Status);
 
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("status", StringComparison.OrdinalIgnoreCase) == true || ex.Message.Contains("status", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    _context.Database.ExecuteSqlRaw("ALTER TABLE stock_transfers MODIFY COLUMN status VARCHAR(50) NULL;");
+                    _context.SaveChanges();
+                }
+                catch
+                {
+                    transfer.Status = transfer.Status?.Length > 8 ? transfer.Status.Substring(0, 8) : transfer.Status;
+                    _context.SaveChanges();
+                }
+            }
 
             return Ok(transfer);
         }

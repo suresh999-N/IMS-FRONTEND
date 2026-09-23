@@ -346,11 +346,11 @@ export default function SearchableSelect(props) {
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-invalid={Boolean(showError && error)}
-        title={selectedOption?.label ?? placeholder}
+        title={props.title || (selectedOption?.label ? `Selected: ${selectedOption.label}` : `Select ${label || placeholder.toLowerCase()}`)}
       >
-        <span className="searchable-select__value" title={selectedOption?.label ?? placeholder}>
+        <span className="searchable-select__value" title={props.title || (selectedOption?.label ? `Selected: ${selectedOption.label}` : `Select ${label || placeholder.toLowerCase()}`)}>
           {Icon ? <Icon size={16} /> : null}
-          <span className={selectedOption ? '' : 'searchable-select__placeholder'} title={selectedOption?.label ?? placeholder}>
+          <span className={selectedOption ? '' : 'searchable-select__placeholder'} title={props.title || (selectedOption?.label ? `Selected: ${selectedOption.label}` : `Select ${label || placeholder.toLowerCase()}`)}>
             {selectedOption?.label ?? placeholder}
           </span>
         </span>

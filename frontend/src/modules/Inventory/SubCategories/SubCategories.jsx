@@ -683,22 +683,16 @@ function SubCategoriesHeader({ canCreate, summary, activeStatus, onFilterStatus,
         <h1>SubCategories</h1>
         <div
           className="resource-center__inventory-metrics"
-          role="region"
-          aria-label="SubCategory metrics filter controls"
+          aria-label="SubCategory metrics summary"
         >
           {metrics.map((metric) => (
-            <button
-              type="button"
+            <span
               key={metric.key}
-              onClick={() => onFilterStatus?.(metric.key)}
-              className={`resource-center__inventory-metric resource-center__inventory-metric--${metric.tone} ${
-                activeStatus === metric.key ? 'is-active' : ''
-              }`}
-              aria-pressed={activeStatus === metric.key}
+              className={`resource-center__inventory-metric resource-center__inventory-metric--${metric.tone}`}
             >
               <span className="resource-center__inventory-metric-count">{metric.count}</span>
               {' '}{metric.label}
-            </button>
+            </span>
           ))}
         </div>
       </div>

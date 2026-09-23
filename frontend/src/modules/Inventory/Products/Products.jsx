@@ -105,18 +105,14 @@ function ProductsHeader({ canCreate, summary, activeStatusFilter, isTopSellingVi
     <header className="resource-center__inventory-header" aria-label="Products summary">
       <div className="resource-center__inventory-header-main">
         <h1>Products</h1>
-        <div className="resource-center__inventory-metrics" role="region" aria-label="Inventory metrics filter controls">
+        <div className="resource-center__inventory-metrics" aria-label="Inventory metrics summary">
           {metrics.map((metric) => (
-            <button
-              type="button"
+            <span
               key={metric.key}
-              onClick={() => onFilterStatus?.(metric.filterValue)}
-              className={`resource-center__inventory-metric resource-center__inventory-metric--${metric.tone} ${metric.isActive ? 'is-active' : ''}`}
-              title={metric.title}
-              aria-pressed={metric.isActive}
+              className={`resource-center__inventory-metric resource-center__inventory-metric--${metric.tone}`}
             >
               {metric.value ? <strong>{metric.value}</strong> : null}{metric.value ? ' ' : ''}{metric.label}
-            </button>
+            </span>
           ))}
         </div>
       </div>

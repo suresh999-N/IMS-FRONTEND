@@ -901,22 +901,14 @@ export default function ProductVariants() {
       <div className="resource-center__inventory-header">
         <div className="resource-center__inventory-header-main">
           <h1>Product Variants</h1>
-          <div className="resource-center__inventory-metrics" aria-label="Product variant status metrics">
+          <div className="resource-center__inventory-metrics" aria-label="Product variant metrics summary">
             {metrics.map((metric) => (
-              <button
-                type="button"
+              <span
                 key={metric.key}
-                className={`resource-center__inventory-metric resource-center__inventory-metric--${metric.tone} ${
-                  statusFilter === metric.filterValue && metric.filterValue !== '' ? 'is-active' : ''
-                }`}
-                onClick={() => {
-                  setStatusFilter((prev) => (prev === metric.filterValue ? '' : metric.filterValue))
-                }}
-                title={metric.title}
-                aria-pressed={statusFilter === metric.filterValue}
+                className={`resource-center__inventory-metric resource-center__inventory-metric--${metric.tone}`}
               >
                 <strong>{metric.value}</strong> {metric.label}
-              </button>
+              </span>
             ))}
           </div>
         </div>
@@ -976,6 +968,7 @@ export default function ProductVariants() {
                       value={editingItem.productName}
                       disabled
                       readOnly
+                      title="Parent product name (read-only)"
                     />
                   ) : (
                     <SearchableSelect
@@ -983,6 +976,7 @@ export default function ProductVariants() {
                       name="productId"
                       placeholder="Select product"
                       searchPlaceholder="Search products by name"
+                      title="Select parent product for this variant"
                       options={products.map((p) => {
                         const pId = String(p.productId ?? p.id ?? '')
                         const pName = getDescriptiveProductName(p)
@@ -1025,6 +1019,7 @@ export default function ProductVariants() {
                         setFormValues((prev) => ({ ...prev, variantName: val }))
                       }}
                       placeholder="e.g. medium - red, 64GB"
+                      title="Enter descriptive variant name (e.g. Medium - Red, 64GB)"
                       required
                     />
                     {serverErrors.variantName && (
@@ -1044,6 +1039,7 @@ export default function ProductVariants() {
                           setFormValues((prev) => ({ ...prev, sku: val }))
                         }}
                         placeholder="Variant SKU"
+                        title="Enter or auto-generate unique variant SKU"
                         required
                       />
                       <button
@@ -1073,6 +1069,7 @@ export default function ProductVariants() {
                         setFormValues((prev) => ({ ...prev, priceDelta: val }))
                       }}
                       placeholder="e.g. 10.00 or -5.00"
+                      title="Enter price adjustment (+ or - from base price)"
                     />
                     <span className="text-muted text-xs" style={{ marginTop: '2px' }}>
                       Adds or subtracts from parent product base price.
@@ -1095,6 +1092,7 @@ export default function ProductVariants() {
                           setFormValues((prev) => ({ ...prev, stockDelta: val }))
                         }}
                         placeholder="0"
+                        title="Enter initial stock quantity"
                       />
                       {serverErrors.stockDelta && (
                         <span className="error-text">{serverErrors.stockDelta}</span>
@@ -1109,6 +1107,7 @@ export default function ProductVariants() {
                         value={editingItem.stock}
                         disabled
                         readOnly
+                        title="Current stock quantity (read-only)"
                       />
                     </div>
                   )}
@@ -1123,6 +1122,7 @@ export default function ProductVariants() {
                       className="button button-secondary"
                       onClick={handleAddAttributeRow}
                       style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}
+                      title="Add another attribute to this variant"
                     >
                       <Plus size={14} />
                       Add Attribute
@@ -1142,6 +1142,7 @@ export default function ProductVariants() {
                             onChange={(e) => handleAttributeChange(idx, e.target.value)}
                             className="input"
                             style={{ height: '38px' }}
+                            title="Select attribute for variant"
                           >
                             <option value="">Select Attribute</option>
                             {attributes.map((a) => (
@@ -1167,6 +1168,7 @@ export default function ProductVariants() {
                               disabled={!row.attributeId}
                               className="input"
                               style={{ height: '38px' }}
+                              title={row.attributeId ? "Select attribute value" : "Select an attribute first"}
                             >
                               <option value="">Select Value</option>
                               {rowValues.map((v) => (

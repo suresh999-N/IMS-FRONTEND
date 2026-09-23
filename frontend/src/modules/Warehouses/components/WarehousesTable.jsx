@@ -587,39 +587,36 @@ export default function WarehousesTable({
       style: { width: WAREHOUSE_COLUMN_WIDTHS.actions, minWidth: WAREHOUSE_COLUMN_WIDTHS.actions, maxWidth: WAREHOUSE_COLUMN_WIDTHS.actions },
       headerStyle: { width: WAREHOUSE_COLUMN_WIDTHS.actions, minWidth: WAREHOUSE_COLUMN_WIDTHS.actions, maxWidth: WAREHOUSE_COLUMN_WIDTHS.actions },
       searchable: false,
-      render: (warehouse) => {
-        if (hasSelectedWarehouses) return null
-        return (
-          <ActionMenu
-            iconOnly
-            label={`Actions for ${warehouse.name || 'warehouse'}`}
-            className="warehouses-page__row-actions"
-            actions={[
-              onViewDetails ? {
-                key: 'details',
-                label: 'Details',
-                icon: Eye,
-                onClick: () => onViewDetails(warehouse),
-              } : null,
-              canEdit ? {
-                key: 'edit',
-                label: 'Edit',
-                icon: Pencil,
-                onClick: () => onEdit(warehouse),
-              } : null,
-              canDelete ? {
-                key: 'delete',
-                label: 'Delete',
-                icon: Trash2,
-                tone: 'danger',
-                onClick: () => onDelete(warehouse.id),
-              } : null,
-            ]}
-          />
-        )
-      },
+      render: (warehouse) => (
+        <ActionMenu
+          iconOnly
+          label={`Actions for ${warehouse.name || 'warehouse'}`}
+          className="warehouses-page__row-actions"
+          actions={[
+            onViewDetails ? {
+              key: 'details',
+              label: 'Details',
+              icon: Eye,
+              onClick: () => onViewDetails(warehouse),
+            } : null,
+            canEdit ? {
+              key: 'edit',
+              label: 'Edit',
+              icon: Pencil,
+              onClick: () => onEdit(warehouse),
+            } : null,
+            canDelete ? {
+              key: 'delete',
+              label: 'Delete',
+              icon: Trash2,
+              tone: 'danger',
+              onClick: () => onDelete(warehouse.id),
+            } : null,
+          ]}
+        />
+      ),
     },
-  ], [canDelete, canEdit, hasSelectedWarehouses, onDelete, onEdit, onStatusChange, onViewDetails, openStatusMenuId, statusSavingId, products])
+  ], [canDelete, canEdit, onDelete, onEdit, onStatusChange, onViewDetails, openStatusMenuId, statusSavingId, products])
 
   const selectedToolbarContent = hasSelectedWarehouses ? (
     <FilterBar className="warehouses-table__selection-actions" ariaLabel="Selected warehouse actions">

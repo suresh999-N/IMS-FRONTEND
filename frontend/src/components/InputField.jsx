@@ -91,6 +91,7 @@ export default function InputField({
         className={`input-with-icon ${isTextarea ? 'input-with-icon--textarea' : ''} ${
           error ? 'field--error' : ''
         }`.trim()}
+        title={props.title || placeholder || label || undefined}
       >
         {Icon ? (
           onIconClick ? (
@@ -121,6 +122,7 @@ export default function InputField({
             autoComplete="off"
             autoCapitalize={isAutoCapField && hasValue ? 'words' : 'off'}
             style={isAutoCapField && hasValue ? { textTransform: 'capitalize', ...props.style } : props.style}
+            title={props.title || placeholder || label || undefined}
             {...props}
           />
         ) : (
@@ -137,6 +139,7 @@ export default function InputField({
             autoComplete="off"
             autoCapitalize={isAutoCapField && hasValue ? 'words' : 'off'}
             style={isAutoCapField && hasValue ? { textTransform: 'capitalize', ...props.style } : props.style}
+            title={props.title || placeholder || label || undefined}
             {...props}
           />
         )}
