@@ -1692,6 +1692,7 @@ export default function Warehouses({
                 name="date"
                 label="Transfer Date"
                 value={transferForm.date}
+                placeholder="Select Transfer Date"
                 onChange={handleTransferChange}
                 placeholder="Select Transfer Date"
               />

@@ -38,6 +38,7 @@ import {
   updateResource,
 } from '../../../api/resourceApi'
 import CurrencyInput from '../../../components/CurrencyInput'
+import DatePicker from '../../../components/DatePicker'
 import PageHeader from '../../../components/common/PageHeader'
 import StateBlock from '../../../components/common/StateBlock'
 import InputField from '../../../components/InputField'
@@ -364,6 +365,13 @@ function getFieldError(field, value, mode, context = {}) {
 
   if (isEmptyValue(value, field)) {
     return ''
+  }
+
+  if (typeof field.validate === 'function') {
+    const customError = field.validate(value, context)
+    if (customError) {
+      return customError
+    }
   }
 
   if (field.type === 'number' || field.type === 'currency' || field.valueType === 'number') {
@@ -1209,7 +1217,12 @@ function ResourceForm({
   }
 
   function shouldShowError(field) {
-    return touched[field.name] || submitAttempted || Boolean(getServerFieldError(serverErrors, field))
+    return (
+      touched[field.name] ||
+      submitAttempted ||
+      Boolean(getServerFieldError(serverErrors, field)) ||
+      (Boolean(formData[field.name]) && Boolean(errors[field.name]))
+    )
   }
 
   function handleSubmit(event) {
@@ -1230,9 +1243,14 @@ function ResourceForm({
   function renderField(field) {
     const error = shouldShowError(field) ? errors[field.name] : ''
     const dynamicMax = getDynamicMax(field, { formData, referenceData, rows })
-    const helperText = field.maxFrom === 'goodsReceiptRemainingQuantity' && dynamicMax !== null
+    const helperText = typeof field.helperText === 'function'
+      ? field.helperText(formData)
+      : field.maxFrom === 'goodsReceiptRemainingQuantity' && dynamicMax !== null
       ? `Remaining PO quantity: ${dynamicMax}`
       : field.helperText
+    const placeholder = typeof field.placeholder === 'function'
+      ? field.placeholder(formData)
+      : field.placeholder
 
     if (field.type === 'hidden') {
       return (
@@ -1404,7 +1422,25 @@ function ResourceForm({
       )
     }
 
-    return (
+    if (field.type === 'date') {
+      return (
+        <DatePicker
+          key={field.name}
+          id={`resource-${config.key}-${field.name}`}
+          name={field.name}
+          label={field.label}
+          value={formData[field.name]}
+          placeholder={field.placeholder || 'Select date'}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={error}
+          readOnly={field.readOnly}
+          className={getResourceFieldClassName(config, field)}
+        />
+      )
+    }
+
+    const inputElement = (
       <InputField
         key={field.name}
         id={`resource-${config.key}-${field.name}`}
@@ -1418,7 +1454,7 @@ function ResourceForm({
           ? (isSubCategoriesForm || config.key === 'stockAudits' ? 3 : 4)
           : undefined}
         value={formData[field.name]}
-        placeholder={field.placeholder}
+        placeholder={placeholder}
         onChange={handleChange}
         onBlur={handleBlur}
         error={error}
@@ -1430,6 +1466,57 @@ function ResourceForm({
         className={getResourceFieldClassName(config, field)}
       />
     )
+
+    const suggestions = typeof field.getSuggestions === 'function' ? field.getSuggestions(formData) : null
+    if (Array.isArray(suggestions) && suggestions.length > 0) {
+      return (
+        <div key={field.name} style={{ display: 'contents' }}>
+          {inputElement}
+          <div
+            className="resource-form__suggestions"
+            style={{
+              gridColumn: '1 / -1',
+              marginTop: '-4px',
+              marginBottom: '10px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 500 }}>
+              Suggested reasons:
+            </span>
+            {suggestions.map((item) => (
+              <button
+                key={item}
+                type="button"
+                className="btn-suggestion"
+                style={{
+                  fontSize: '11px',
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  border: '1px solid #cbd5e1',
+                  background: formData[field.name] === item ? '#e0f2fe' : '#ffffff',
+                  color: formData[field.name] === item ? '#0369a1' : '#475569',
+                  cursor: 'pointer',
+                  fontWeight: formData[field.name] === item ? 600 : 400,
+                  transition: 'all 0.15s ease',
+                }}
+                onClick={() => {
+                  updateField(field.name, item)
+                  setTouched((prev) => ({ ...prev, [field.name]: true }))
+                }}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    return inputElement
   }
 
   return (

@@ -1238,6 +1238,13 @@ function getFieldError(field, value, mode, context = {}) {
     return ''
   }
 
+  if (typeof field.validate === 'function') {
+    const customError = field.validate(value, context)
+    if (customError) {
+      return customError
+    }
+  }
+
   if (context.config?.key === 'goodsReceipts' && field.name === 'poId') {
     const purchaseOrderError = getGoodsReceiptPurchaseOrderError(value, context)
 

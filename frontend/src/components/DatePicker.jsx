@@ -87,8 +87,10 @@ export default function DatePicker(props) {
 
   const rawMin = minDate || min
   const rawMax = maxDate || max
-  const minDateIso = rawMin ? (parseDisplayDate(rawMin) || String(rawMin).slice(0, 10)) : ''
-  const maxDateIso = rawMax ? (parseDisplayDate(rawMax) || String(rawMax).slice(0, 10)) : ''
+  const resolvedMin = typeof rawMin === 'function' ? rawMin() : rawMin
+  const resolvedMax = typeof rawMax === 'function' ? rawMax() : rawMax
+  const minDateIso = resolvedMin ? (parseDisplayDate(resolvedMin) || String(resolvedMin).slice(0, 10)) : ''
+  const maxDateIso = resolvedMax ? (parseDisplayDate(resolvedMax) || String(resolvedMax).slice(0, 10)) : ''
 
   function isDateDisabled(date) {
     if (!date) return false

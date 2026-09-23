@@ -542,10 +542,17 @@
 }
 
 .product-form__inline-variants-header h4 {
-  margin: 0 0 10px 0 !important;
+  margin: 0 0 4px 0 !important;
   font-size: 14px !important;
   font-weight: 700 !important;
   color: #1e293b !important;
+}
+
+.product-form__inline-variants-subtitle {
+  margin: 0 0 12px 0 !important;
+  font-size: 12px !important;
+  color: #64748b !important;
+  line-height: 1.4 !important;
 }
 
 .product-form__variant-builder {

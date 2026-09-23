@@ -26,6 +26,12 @@ import { formatDate, getToday } from '../../utils/helpers'
 import { autoCapitalizeWords } from '../../validators/nameValidator'
 import { getDescriptiveProductName } from '../../utils/productNameUtils'
 import { getStandardizedSku } from '../../utils/skuUtils'
+import {
+  validateStockAdjustmentReason,
+  getSuggestedReasons,
+  getReasonHelperText,
+  getReasonPlaceholder,
+} from '../../validators/stockAdjustmentValidator'
 
 const _activeStatusOptions = [
   { value: 'active', label: 'Active' },
@@ -514,9 +520,20 @@ export const RESOURCE_CONFIGS = {
         options: [
           { value: 'increase', label: 'Increase' },
           { value: 'decrease', label: 'Decrease' },
+          { value: 'recount', label: 'Recount' },
         ],
       },
-      { name: 'reason', label: 'Reason *', type: 'textarea', required: true, minLength: 3 },
+      {
+        name: 'reason',
+        label: 'Reason *',
+        type: 'textarea',
+        required: true,
+        minLength: 3,
+        placeholder: (formData) => getReasonPlaceholder(formData?.adjustmentType),
+        helperText: (formData) => getReasonHelperText(formData?.adjustmentType),
+        getSuggestions: (formData) => getSuggestedReasons(formData?.adjustmentType),
+        validate: (value, context) => validateStockAdjustmentReason(value, context?.formData?.adjustmentType),
+      },
       {
         name: 'items',
         label: 'Adjustment Items *',
@@ -707,7 +724,13 @@ export const RESOURCE_CONFIGS = {
         placeholder: 'Select warehouse',
         searchPlaceholder: 'Search warehouses',
       },
-      { name: 'transferDate', label: 'Transfer Date *', type: 'date', required: true, defaultValue: getToday },
+      {
+        name: 'transferDate',
+        label: 'Transfer Date *',
+        type: 'date',
+        required: true,
+        placeholder: 'Select Transfer Date',
+      },
       { name: 'status', label: 'Status *', type: 'select', required: true, options: documentStatusOptions, placeholder: 'Select Status' },
       {
         name: 'items',

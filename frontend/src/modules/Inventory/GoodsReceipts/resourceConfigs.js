@@ -18,6 +18,12 @@ import {
 } from 'lucide-react'
 import { API_ENDPOINTS } from '../../../api/endpoints'
 import { getToday } from '../../../utils/helpers'
+import {
+  validateStockAdjustmentReason,
+  getSuggestedReasons,
+  getReasonHelperText,
+  getReasonPlaceholder,
+} from '../../../validators/stockAdjustmentValidator'
 import { getGoodsReceiptNumber } from './goodsReceiptHelpers'
 
 function getPurchaseOrderQuantity(item) {
@@ -481,7 +487,17 @@ export const RESOURCE_CONFIGS = {
           { value: 'recount', label: 'Recount' },
         ],
       },
-      { name: 'reason', label: 'Reason *', type: 'textarea', required: true, minLength: 3 },
+      {
+        name: 'reason',
+        label: 'Reason *',
+        type: 'textarea',
+        required: true,
+        minLength: 3,
+        placeholder: (formData) => getReasonPlaceholder(formData?.adjustmentType),
+        helperText: (formData) => getReasonHelperText(formData?.adjustmentType),
+        getSuggestions: (formData) => getSuggestedReasons(formData?.adjustmentType),
+        validate: (value, context) => validateStockAdjustmentReason(value, context?.formData?.adjustmentType),
+      },
     ],
     columns: [
       {
@@ -684,7 +700,13 @@ export const RESOURCE_CONFIGS = {
         defaultValue: 1,
         placeholder: 'Enter quantity',
       },
-      { name: 'transferDate', label: 'Transfer Date *', type: 'date', required: true, defaultValue: getToday, min: getToday },
+      {
+        name: 'transferDate',
+        label: 'Transfer Date *',
+        type: 'date',
+        required: true,
+        placeholder: 'Select Transfer Date',
+      },
       { name: 'status', label: 'Status *', type: 'select', required: true, options: documentStatusOptions, placeholder: 'Select Status' },
     ],
     columns: [

@@ -1023,11 +1023,27 @@ export default function ProductForm({
 
   function handleVariantDraftChange(event) {
     const { name, value } = event.target
-    setVariantDraft((current) => ({
-      ...current,
-      [name]: value,
-      ...(name === 'attributeId' ? { valueId: '' } : {}),
-    }))
+    setVariantDraft((current) => {
+      let nextValueId = current.valueId
+      if (name === 'attributeId') {
+        nextValueId = ''
+        const selectedAttr = attributes.find((a) => String(a.id) === String(value))
+        if (selectedAttr && /color/i.test(selectedAttr.label) && formData.variantColor) {
+          const match = attributeValues.find(
+            (v) => String(v.attributeId) === String(value) &&
+                   v.label?.toLowerCase() === formData.variantColor.trim().toLowerCase()
+          )
+          if (match) {
+            nextValueId = match.id
+          }
+        }
+      }
+      return {
+        ...current,
+        [name]: value,
+        ...(name === 'attributeId' ? { valueId: nextValueId } : {}),
+      }
+    })
   }
 
   function handleAddVariantDraft() {
@@ -1406,20 +1422,32 @@ export default function ProductForm({
           <InputField
             id="variantSize"
             name="variantSize"
-            label="Size / Specification"
+            label="Base Size / Specification"
             value={formData.variantSize || ''}
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="Example: XL, 5mm, 32GB"
+            helperText={
+              formData.variants.length > 0
+                ? 'Product variants defined below override this specification.'
+                : 'Base dimensions, volume, or specification for standalone product.'
+            }
+            disabled={formData.variants.length > 0}
           />
           <InputField
             id="variantColor"
             name="variantColor"
-            label="Attribute"
+            label="Base Color / Finish"
             value={formData.variantColor || ''}
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="Example: Black, Blue, Natural"
+            helperText={
+              formData.variants.length > 0
+                ? 'Product variants defined below override this specification.'
+                : 'Base color for standalone products without multiple variants.'
+            }
+            disabled={formData.variants.length > 0}
           />
           <InputField
             id="description"
@@ -1445,7 +1473,10 @@ export default function ProductForm({
 
           <div className="field--full product-form__inline-variants">
             <div className="product-form__inline-variants-header">
-              <h4>Product Variants</h4>
+              <h4>Product Variants (Multi-Option Products)</h4>
+              <p className="product-form__inline-variants-subtitle">
+                Define options like Color, Size, or Material when this product comes in multiple variations. For single-item products, use the base specifications above.
+              </p>
             </div>
             <div className="product-form__section-grid product-form__variant-builder">
               <InputField
@@ -1467,17 +1498,17 @@ export default function ProductForm({
               <SearchableSelect
                 id="variant-attribute-id"
                 name="attributeId"
-                label="Attribute"
+                label="Variant Attribute"
                 value={variantDraft.attributeId || ''}
                 onChange={handleVariantDraftChange}
                 onBlur={handleBlur}
                 options={attributes}
-                placeholder="Select attribute"
+                placeholder="Select attribute (e.g., Color)"
               />
               <SearchableSelect
                 id="variant-attribute-value"
                 name="valueId"
-                label="Attribute Value"
+                label="Variant Attribute Value"
                 value={variantDraft.valueId || ''}
                 onChange={handleVariantDraftChange}
                 onBlur={handleBlur}
@@ -1548,7 +1579,7 @@ export default function ProductForm({
                 })}
               </div>
             ) : (
-              <p className="product-form__empty-note">No variants added. The product will use a default sellable variant.</p>
+              <p className="product-form__empty-note">No variants added. This product will be created as a standalone item using the base specifications above.</p>
             )}
           </div>
 

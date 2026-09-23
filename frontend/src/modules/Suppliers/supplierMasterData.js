@@ -44,7 +44,7 @@ export const COUNTRY_OPTIONS = [
   'Spain',
 ]
 
-import { STATE_PINCODE_PREFIXES } from '../../validators/pincodeValidator'
+import { STATE_PINCODE_PREFIXES } from '../../validators/pincodeValidator.js'
 export { STATE_PINCODE_PREFIXES }
 
 export const DEPARTMENT_OPTIONS = [
