@@ -65,6 +65,13 @@
   color: #334155;
 }
 
+.resource-center__inventory-metric--total {
+  border: 1px solid #c7d2fe !important;
+  border-color: #c7d2fe !important;
+  background: #eef2ff !important;
+  color: #4338ca !important;
+}
+
 .resource-center__inventory-metric--success {
   border: 1px solid #86efac !important;
   border-color: #86efac !important;

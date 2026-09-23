@@ -9672,8 +9672,15 @@
 }
 
 .payments-page--customer .resource-center__inventory-metric strong {
+  color: #000000 !important;
   font-weight: 750 !important;
   margin-right: 4px !important;
+}
+
+.payments-page--customer .resource-center__inventory-metric--total {
+  border-color: #c7d2fe !important;
+  background: #eef2ff !important;
+  color: #4338ca !important;
 }
 
 .payments-page--customer .resource-center__inventory-metric--success {
@@ -9834,8 +9841,15 @@
 }
 
 .payments-page--supplier .resource-center__inventory-metric strong {
+  color: #000000 !important;
   font-weight: 750 !important;
   margin-right: 4px !important;
+}
+
+.payments-page--supplier .resource-center__inventory-metric--total {
+  border-color: #c7d2fe !important;
+  background: #eef2ff !important;
+  color: #4338ca !important;
 }
 
 .payments-page--supplier .resource-center__inventory-metric--success {

@@ -194,7 +194,7 @@
   --ims-text: var(--text);
   --ims-muted: var(--muted);
   --ims-border: var(--border);
-  --ims-sidebar-width: 260px;
+  --ims-sidebar-width: 276px;
   --ims-sidebar-collapsed-width: 72px;
   --ims-header-height: 68px;
   --ims-shell-transition: 220ms var(--ease-standard);

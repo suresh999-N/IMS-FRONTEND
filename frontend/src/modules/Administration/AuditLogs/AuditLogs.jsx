@@ -2829,13 +2829,16 @@ function ResourcePage({ config, navigationContent = null }) {
             </div>
             <div className="resource-center__inventory-metrics" aria-label="Audit Log metrics">
               <span className="resource-center__inventory-metric resource-center__inventory-metric--success">
-                {auditSummary.total} {auditSummary.total === 1 ? 'Log' : 'Logs'}
+                <strong className="resource-center__inventory-metric-count">{auditSummary.total}</strong>{' '}
+                <span className="resource-center__inventory-metric-label">{auditSummary.total === 1 ? 'Log' : 'Logs'}</span>
               </span>
               <span className="resource-center__inventory-metric resource-center__inventory-metric--info">
-                {auditSummary.modules} {auditSummary.modules === 1 ? 'Module' : 'Modules'}
+                <strong className="resource-center__inventory-metric-count">{auditSummary.modules}</strong>{' '}
+                <span className="resource-center__inventory-metric-label">{auditSummary.modules === 1 ? 'Module' : 'Modules'}</span>
               </span>
               <span className="resource-center__inventory-metric resource-center__inventory-metric--warning">
-                {auditSummary.actions} {auditSummary.actions === 1 ? 'Action' : 'Actions'}
+                <strong className="resource-center__inventory-metric-count">{auditSummary.actions}</strong>{' '}
+                <span className="resource-center__inventory-metric-label">{auditSummary.actions === 1 ? 'Action' : 'Actions'}</span>
               </span>
             </div>
           </div>

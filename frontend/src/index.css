@@ -1423,6 +1423,13 @@ button.status-badge:disabled,
   color: #991b1b;
 }
 
+.message-box--warning {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #b45309;
+  justify-content: flex-start;
+}
+
 .message-box--success {
   border-color: var(--success);
   color: var(--success);
@@ -2324,7 +2331,11 @@ input[type="password"]::-ms-clear {
 .toolbar-search,
 .toolbar-search input,
 .purchase-returns-toolbar input,
+.purchase-returns-toolbar .toolbar-search input,
+.purchase-returns-page .toolbar-search input,
 .sales-returns-toolbar input,
+.sales-returns-toolbar .toolbar-search input,
+.sales-returns-page .toolbar-search input,
 .table-component__toolbar :where(.erp-search-bar, .search-input-container, .search-wrapper),
 .resource-center__inventory-table :where(.erp-search-bar, .search-input-container, .search-wrapper),
 [class*='resource-center'] :where(.erp-search-bar, .search-input-container, .search-wrapper),
@@ -2384,8 +2395,10 @@ input[type="password"]::-ms-clear {
 }
 
 .resource-center__inventory-metric strong,
-.resource-center__inventory-metric .resource-center__inventory-metric-count {
-  color: #0f172a !important;
+.resource-center__inventory-metric .resource-center__inventory-metric-count,
+.resource-center__subcategories-metric strong,
+.resource-center__subcategories-metric .resource-center__inventory-metric-count {
+  color: #000000 !important;
 }
 
 /* Informational summary header metrics (read-only stat counters) */

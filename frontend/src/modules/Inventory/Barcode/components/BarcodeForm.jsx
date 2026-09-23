@@ -32,11 +32,12 @@ export default function BarcodeForm({
       <form className="form-grid" onSubmit={onSubmit} autoComplete="off">
         {existingBarcode ? (
           <div
-            className="message-box message-box--warning field--full"
+            className="message-box message-box--warning barcode-form__warning field--full"
             role="alert"
             style={{
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'flex-start',
               gap: '10px',
               padding: '10px 14px',
               borderRadius: '8px',
@@ -45,10 +46,11 @@ export default function BarcodeForm({
               color: '#b45309',
               fontSize: '13px',
               fontWeight: 500,
+              textAlign: 'left',
             }}
           >
             <AlertTriangle size={18} style={{ flexShrink: 0 }} />
-            <span>
+            <span style={{ textAlign: 'left', lineHeight: '1.4' }}>
               <strong>Warning:</strong> Barcode already exists for this product. Generating a new code will require explicit overwrite confirmation.
             </span>
           </div>

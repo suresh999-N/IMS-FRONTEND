@@ -256,11 +256,11 @@ function formatCompactPaymentCurrency(value) {
   const sign = amount < 0 ? '-' : ''
 
   if (absoluteAmount >= 10000000) {
-    return `${sign}₹${(absoluteAmount / 10000000).toFixed(1)} Cr`
+    return `${sign}\u20B9${(absoluteAmount / 10000000).toFixed(1)} Cr`
   }
 
   if (absoluteAmount >= 100000) {
-    return `${sign}₹${(absoluteAmount / 100000).toFixed(1)} L`
+    return `${sign}\u20B9${(absoluteAmount / 100000).toFixed(1)} Lakh`
   }
 
   return formatCurrency(amount)
@@ -535,7 +535,7 @@ function exportPaymentsToPdf(rows, isSupplier, user) {
   const pageHeight = 210
   const contentWidth = pageWidth - pageMargin * 2
 
-  const titleText = isSupplier ? 'Supplier Payments Executive Statement' : 'Customer Payments Executive Statement'
+  const titleText = isSupplier ? 'Supplier Payments Detailed Report' : 'Customer Payments Detailed Report'
   const partyHeaderLabel = isSupplier ? 'Supplier Name' : 'Customer Name'
   const referenceHeaderLabel = isSupplier ? 'PO Number' : 'Invoice Number'
 
@@ -681,7 +681,7 @@ function exportPaymentsToPdf(rows, isSupplier, user) {
   })
 
   const dateTag = new Date().toISOString().slice(0, 10)
-  const filePrefix = isSupplier ? 'Supplier-Payments-Report' : 'Customer-Payments-Report'
+  const filePrefix = isSupplier ? 'Supplier-Payments-Detailed-Report' : 'Customer-Payments-Detailed-Report'
   doc.save(`${filePrefix}-${dateTag}.pdf`)
 }
 
@@ -1121,7 +1121,7 @@ function DetailItem({ label, value, wide = false }) {
   )
 }
 
-function PaymentDetailsDrawer({ payment, invoice, allPayments = [], onClose, onPrint, onDownloadReceipt, onOpenInvoice }) {
+function PaymentDetailsDrawer({ payment, invoice, allPayments = [], onClose, onPrint, onDownloadReceipt, onExport, onOpenInvoice }) {
   const [activePayment, setActivePayment] = useState(payment)
   const [copiedKey, setCopiedKey] = useState('')
 
@@ -1333,11 +1333,29 @@ function PaymentDetailsDrawer({ payment, invoice, allPayments = [], onClose, onP
             Recorded on {formatDate(activePayment.createdAt || activePayment.paymentDate)} by {activePayment.createdBy || 'System'}
           </p>
           <div className="payment-drawer__actions">
-            <button type="button" className="button button-secondary" onClick={() => onDownloadReceipt(activePayment)}>
-              <FileText size={16} />
-              Download PDF
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={() => onDownloadReceipt(activePayment)}
+              title="Download official payment receipt PDF"
+            >
+              <ReceiptText size={16} />
+              Receipt PDF
             </button>
-            <button type="button" className="button button-primary" onClick={() => onPrint([activePayment])}>
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={() => onExport?.([activePayment])}
+              title="Download Detailed Payment Report PDF for this payment"
+            >
+              <FileText size={16} />
+              Detailed Report (PDF)
+            </button>
+            <button
+              type="button"
+              className="button button-primary"
+              onClick={() => onPrint([activePayment])}
+            >
               <Printer size={16} />
               Print Receipt
             </button>
@@ -2071,7 +2089,7 @@ export default function CustomerPaymentModule({
       return
     }
     exportPaymentsToPdf(exportRows, false, user)
-    showToast({ type: 'success', title, message: `${exportRows.length} payment${exportRows.length === 1 ? '' : 's'} exported as PDF.` })
+    showToast({ type: 'success', title, message: `${exportRows.length} payment${exportRows.length === 1 ? '' : 's'} exported as Detailed Payment Report PDF.` })
   }, [filteredPayments, title, user])
 
   const handleDownloadReceipt = useCallback(async (payment) => {
@@ -2601,14 +2619,20 @@ export default function CustomerPaymentModule({
       label: 'Cancelled At',
       className: 'payments-col-cancelled-at',
       sortable: true,
-      render: (payment) => payment.cancelledAt ? formatDate(payment.cancelledAt) : 'Not cancelled',
+      render: (payment) => payment.cancelledAt ? formatDate(payment.cancelledAt) : '-',
+      searchValue: (payment) => payment.cancelledAt ? formatDate(payment.cancelledAt) : '',
     },
     {
       key: 'cancellationReason',
       label: 'Cancellation Reason',
       className: 'payments-col-cancellation-reason',
       sortable: true,
-      render: (payment) => payment.cancellationReason || 'Not provided',
+      render: (payment) => (normalizePaymentStatus(payment) === 'Cancelled' || payment.cancelledAt)
+        ? (payment.cancellationReason || 'Not provided')
+        : 'N/A',
+      searchValue: (payment) => (normalizePaymentStatus(payment) === 'Cancelled' || payment.cancelledAt)
+        ? (payment.cancellationReason || 'Not provided')
+        : '',
     },
     {
       key: 'actions',
@@ -2633,10 +2657,16 @@ export default function CustomerPaymentModule({
               onClick: () => setEditTarget(payment),
             } : null,
             {
-              key: 'download',
-              label: 'Download receipt',
-              icon: Download,
+              key: 'receipt-pdf',
+              label: 'Receipt PDF',
+              icon: ReceiptText,
               onClick: () => handleDownloadReceipt(payment),
+            },
+            {
+              key: 'detailed-report-pdf',
+              label: 'Detailed Report (PDF)',
+              icon: FileText,
+              onClick: () => handleExport([payment]),
             },
           ]}
         />
@@ -2646,6 +2676,7 @@ export default function CustomerPaymentModule({
     canEdit,
     filteredPayments,
     handleDownloadReceipt,
+    handleExport,
     invoiceById,
     isSupplier,
     partyLabel,
@@ -2721,9 +2752,26 @@ export default function CustomerPaymentModule({
         <strong>{selectedPaymentIds.length} selected</strong>
       </div>
 
-      <button type="button" className="button button-secondary payments-toolbar-button" onClick={() => handleExport(selectedPayments)}>
-        <Download size={15} />
-        Export
+      {selectedPayments.length === 1 ? (
+        <button
+          type="button"
+          className="button button-secondary payments-toolbar-button"
+          onClick={() => handleDownloadReceipt(selectedPayments[0])}
+          title="Download Receipt PDF"
+        >
+          <ReceiptText size={15} />
+          Receipt PDF
+        </button>
+      ) : null}
+
+      <button
+        type="button"
+        className="button button-secondary payments-toolbar-button"
+        onClick={() => handleExport(selectedPayments)}
+        title="Download Detailed Payment Report PDF"
+      >
+        <FileText size={15} />
+        Detailed Report (PDF)
       </button>
 
       <button type="button" className="button button-secondary payments-toolbar-button" onClick={() => handlePrint(selectedPayments)}>
@@ -2794,9 +2842,15 @@ export default function CustomerPaymentModule({
             ) : null}
           </div>
 
-          <button type="button" className="button button-secondary payments-toolbar-button" onClick={() => handleExport(filteredPayments)} disabled={filteredPayments.length === 0}>
-            <Download size={15} />
-            Export
+          <button
+            type="button"
+            className="button button-secondary payments-toolbar-button"
+            onClick={() => handleExport(filteredPayments)}
+            disabled={filteredPayments.length === 0}
+            title="Download Detailed Payment Report PDF"
+          >
+            <FileText size={15} />
+            Detailed Report (PDF)
           </button>
 
         </>
@@ -2806,7 +2860,7 @@ export default function CustomerPaymentModule({
 
   const hasFatalError = Boolean(error) && !isLoading
   const compactMetrics = [
-    { key: 'count', label: 'Payments', value: summary.count, tone: 'success' },
+    { key: 'count', label: 'Payments', value: summary.count, tone: 'total' },
     { key: 'success', label: 'Success', value: summary.reconciled, tone: 'success' },
     { key: 'pending', label: 'Pending', value: summary.pending, tone: 'warning' },
     { key: 'collected', label: 'Collected', value: formatCompactPaymentCurrency(summary.totalAmount), tone: 'info' },
@@ -2818,16 +2872,19 @@ export default function CustomerPaymentModule({
         <div className="resource-center__inventory-header-main">
           <h1>Customer Payments</h1>
           <div className="resource-center__inventory-metrics">
-            <span className="resource-center__inventory-metric resource-center__inventory-metric--info">
+            <span className="resource-center__inventory-metric resource-center__inventory-metric--total">
               <strong>{summary.count}</strong> Payments
             </span>
             <span className="resource-center__inventory-metric resource-center__inventory-metric--success">
               <strong>{summary.reconciled}</strong> Success
             </span>
             <span className="resource-center__inventory-metric resource-center__inventory-metric--warning">
-              <strong style={{ color: '#0f172a' }}>{summary.pending}</strong> Pending
+              <strong>{summary.pending}</strong> Pending
             </span>
-            <span className="resource-center__inventory-metric resource-center__inventory-metric--info">
+            <span
+              className="resource-center__inventory-metric resource-center__inventory-metric--info"
+              title={formatCurrency(summary.totalAmount)}
+            >
               <strong>{formatCompactPaymentCurrency(summary.totalAmount)}</strong> Collected
             </span>
           </div>
@@ -2911,6 +2968,7 @@ export default function CustomerPaymentModule({
           onClose={() => setDetailTarget(null)}
           onPrint={handlePrint}
           onDownloadReceipt={handleDownloadReceipt}
+          onExport={handleExport}
           onOpenInvoice={(selectedPayment) => {
             const invoiceId = selectedPayment?.invoiceId
             navigate(invoiceId ? `/management/accounting/${invoiceId}` : '/management/accounting')

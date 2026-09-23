@@ -735,7 +735,7 @@ export default function TableComponent({
       (totalWidth, column) => totalWidth + getColumnWidthNumber(column),
       0,
     )
-    const selectionWidth = shouldShowSelection ? 44 : 0
+    const selectionWidth = shouldShowSelection ? 38 : 0
     const totalWidth = displayColumnWidth + selectionWidth
 
     return totalWidth > 0 ? totalWidth : 0
@@ -826,11 +826,21 @@ export default function TableComponent({
   }
 
   function handleTogglePageSelection() {
+    // If the current page is partially selected (e.g., all rows selected then one manually unselected),
+    // clicking "All Select" must re-select all rows on the page for consistency.
+    if (isPagePartiallySelected) {
+      const unselectedPageKeys = pageRowKeys.filter((key) => !selectedKeySet.has(key))
+      updateSelection([...selectedKeys, ...unselectedPageKeys])
+      return
+    }
+
+    // Only when all rows on this page are selected should clicking deselect all rows on this page
     if (isPageSelected) {
       updateSelection(selectedKeys.filter((key) => !pageRowKeys.includes(String(key))))
       return
     }
 
+    // Otherwise (0 rows selected on this page), select all rows on this page
     const unselectedPageKeys = pageRowKeys.filter((key) => !selectedKeySet.has(key))
     updateSelection([...selectedKeys, ...unselectedPageKeys])
   }
@@ -1090,7 +1100,7 @@ export default function TableComponent({
             <table className="table table-component__table" style={tableStyle}>
               {explicitTableWidth > 0 ? (
                 <colgroup>
-                  {shouldShowSelection ? <col style={{ width: '44px' }} /> : null}
+                  {shouldShowSelection ? <col style={{ width: '38px' }} /> : null}
                   {displayColumns.map((column, index) => {
                     const width = columnWidths[index]
 
@@ -1106,13 +1116,24 @@ export default function TableComponent({
               <thead>
                 <tr>
                   {shouldShowSelection ? (
-                    <th scope="col" className="table-component__selection-cell"><input
+                    <th
+                      scope="col"
+                      className="table-component__selection-cell"
+                      onClick={(e) => {
+                        if (e.target !== selectAllCheckboxRef.current) {
+                          handleTogglePageSelection()
+                        }
+                      }}
+                    >
+                      <input
                         ref={selectAllCheckboxRef}
                         type="checkbox"
                         checked={isPageSelected}
                         onChange={handleTogglePageSelection}
+                        title={isPageSelected ? 'Deselect all rows on this page' : 'Select all rows on this page'}
                         aria-label={isPageSelected ? 'Deselect all rows on this page' : 'Select all rows on this page'}
-                      /></th>
+                      />
+                    </th>
                   ) : null}
                   {displayColumns.map((column) => (
                     <th
@@ -1328,6 +1349,9 @@ export default function TableComponent({
               <span className="table-component__status">
                 Showing {(currentPage - 1) * pageSize + 1}-
                 {Math.min(currentPage * pageSize, sortedRows.length)} of {sortedRows.length}
+              </span>
+              <span className="table-component__page-indicator">
+                Page {currentPage} of {totalPages}
               </span>
             </div>
 

@@ -145,13 +145,16 @@ export default function Sidebar({
       onTouchMove={onTouchMove}
     >
       <div className="app-sidebar__brand">
-        <div className="app-sidebar__brand-badge">
+        <div
+          className="app-sidebar__brand-badge"
+          title="Inventory Management System"
+        >
           <div className="app-sidebar__brand-mark" aria-hidden="true">
             <img src={imsSidebarIcon} alt="IMS" />
           </div>
           <div className="app-sidebar__brand-copy">
             <strong>IMS</strong>
-            <span>Inventory Management System</span>
+            <span title="Inventory Management System">Inventory Management System</span>
           </div>
         </div>
         <button

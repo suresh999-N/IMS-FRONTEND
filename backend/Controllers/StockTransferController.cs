@@ -321,13 +321,17 @@ namespace IMSBackend.Controllers
             if (transfer == null)
                 return NotFound();
 
-            transfer.FromWarehouseId = dto.FromWarehouseId;
-            transfer.ToWarehouseId = dto.ToWarehouseId;
+            if (dto.FromWarehouseId > 0)
+                transfer.FromWarehouseId = dto.FromWarehouseId;
+
+            if (dto.ToWarehouseId > 0)
+                transfer.ToWarehouseId = dto.ToWarehouseId;
+
             if (dto.TransferDate != default)
-            {
                 transfer.TransferDate = dto.TransferDate;
-            }
-            transfer.Status = NormalizeStatus(dto.Status);
+
+            if (!string.IsNullOrWhiteSpace(dto.Status))
+                transfer.Status = NormalizeStatus(dto.Status);
 
             try
             {
@@ -347,7 +351,7 @@ namespace IMSBackend.Controllers
                 }
             }
 
-            return Ok(transfer);
+            return Ok(ApiResponse<object>.Ok(transfer, "Stock transfer updated successfully."));
         }
 
         [HttpDelete("{id}")]

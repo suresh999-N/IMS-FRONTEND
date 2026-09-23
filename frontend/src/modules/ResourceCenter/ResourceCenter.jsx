@@ -3303,12 +3303,44 @@ function ResourcePage({ config, navigationContent = null }) {
       </select>
     </FilterBar>
   ) : null
+  const stockAdjustmentsBulkActions = useMemo(() => {
+    if (!hasSelectedStockAdjustments) return []
+    return [
+      {
+        key: 'export',
+        label: 'Export',
+        icon: Download,
+        onClick: () => exportResourceRowsCsv(config, selectedStockAdjustments),
+      },
+      {
+        key: 'print',
+        label: 'Print',
+        icon: Printer,
+        onClick: () => printResourceRows(config, selectedStockAdjustments),
+      },
+      canDelete ? {
+        key: 'delete',
+        label: 'Delete',
+        icon: Trash2,
+        danger: true,
+        disabled: isDeleting,
+        onClick: handleBulkStockAdjustmentDelete,
+      } : null,
+    ].filter(Boolean)
+  }, [canDelete, config, hasSelectedStockAdjustments, isDeleting, selectedStockAdjustments])
+
   const stockAdjustmentsSelectedToolbarContent = hasSelectedStockAdjustments ? (
-    <FilterBar className="resource-center__subcategories-selection-actions" ariaLabel="Selected Stock Adjustment actions">
-      <div className="resource-center__subcategories-selection-summary" aria-live="polite">
+    <FilterBar className="resource-center__product-style-selection-actions resource-center__stock-adjustments-selection-actions" ariaLabel="Selected Stock Adjustment actions">
+      <div className="resource-center__product-style-selection-summary" aria-live="polite">
         <Check size={15} />
         <strong>{selectedStockAdjustments.length} selected</strong>
       </div>
+      <ActionMenu
+        label="Bulk Actions"
+        align="left"
+        className="resource-center__bulk-actions-menu"
+        actions={stockAdjustmentsBulkActions}
+      />
       <button
         type="button"
         className="button button-secondary resource-center__subcategories-selection-button"

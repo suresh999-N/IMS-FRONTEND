@@ -16,7 +16,6 @@ import {
   Printer,
   RefreshCw,
   Save,
-  SlidersHorizontal,
   Trash2,
 } from 'lucide-react'
 import {
@@ -1360,7 +1359,6 @@ export default function Categories() {
   const categoryFilterContent = hasSelectedCategories ? selectedToolbarContent : (
     <FilterBar className="categories-list-page__filters" ariaLabel="Category filters">
       <label className="categories-list-page__status-filter">
-        <SlidersHorizontal size={15} aria-hidden="true" />
         <select
           value={statusFilter}
           onChange={(event) => setStatusFilter(event.target.value)}

@@ -558,9 +558,15 @@ export const RESOURCE_CONFIGS = {
     idFields: ['transferId'],
     referenceEndpoints: {
       warehouses: API_ENDPOINTS.warehouses.list,
+      products: API_ENDPOINTS.products.list,
+      productVariants: API_ENDPOINTS.productVariants.list,
+      stockTransferItems: API_ENDPOINTS.stockTransferItems.list,
     },
     referenceListKeys: {
       warehouses: 'warehouses',
+      products: 'products',
+      productVariants: 'productVariants',
+      stockTransferItems: 'stockTransferItems',
     },
     fields: [
       {
@@ -597,6 +603,12 @@ export const RESOURCE_CONFIGS = {
         placeholder: 'Select Transfer Date',
       },
       { name: 'status', label: 'Status *', type: 'select', required: true, options: documentStatusOptions, placeholder: 'Select Status' },
+      {
+        name: 'items',
+        label: 'Transfer Items *',
+        type: 'lineItems',
+        required: true,
+      },
     ],
     columns: [
       {

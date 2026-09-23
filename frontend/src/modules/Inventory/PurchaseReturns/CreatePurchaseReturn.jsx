@@ -1560,6 +1560,8 @@ export default function CreatePurchaseReturn() {
                                 type="button"
                                 className="icon-action-btn delete-icon"
                                 title="Remove Line Item"
+                                aria-label="Remove Line Item"
+                                disabled={submitting}
                                 onClick={() =>
                                   handleRemoveItem(
                                     index

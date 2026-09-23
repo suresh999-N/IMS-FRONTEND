@@ -6435,6 +6435,20 @@
   white-space: nowrap;
 }
 
+.resource-center__inventory-metric strong,
+.resource-center__inventory-metric .resource-center__inventory-metric-count {
+  color: #000000 !important;
+  font-weight: 700;
+  font-size: inherit;
+  margin-right: 4px;
+}
+
+.resource-center__inventory-metric .resource-center__inventory-metric-label {
+  color: inherit !important;
+  font-weight: 700;
+  font-size: inherit;
+}
+
 .resource-center__inventory-metric--success {
   border-color: #86efac;
   background: #ecfdf5;

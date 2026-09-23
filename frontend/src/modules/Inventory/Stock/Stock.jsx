@@ -2311,7 +2311,7 @@ function ResourcePage({ config, navigationContent = null }) {
     setIsSaving(true)
     setServerErrors(null)
 
-    const id = editingRecord?.id
+    const id = editingRecord?.transferId ?? editingRecord?.adjustmentId ?? editingRecord?.auditId ?? editingRecord?.id ?? editingRecord?.transfer_id
     let response
 
     if (config.key === 'stockAdjustments') {
@@ -2378,19 +2378,20 @@ function ResourcePage({ config, navigationContent = null }) {
         const transId = id ?? responseData?.transfer?.transferId ?? responseData?.transferId ?? responseData?.id
 
         if (id) {
-          const oldItems = (referenceData.stockTransferItems ?? []).filter(
-            (item) => String(item.transferId) === String(id)
-          )
-          for (const oldItem of oldItems) {
-            const itemId = oldItem.id ?? oldItem.transferItemId
-            if (itemId) {
-              await apiRequest(API_ENDPOINTS.stockTransferItems.byId(itemId), {
-                method: 'DELETE',
-              })
+          const itemsWereModified = Boolean(changedPayload && Object.prototype.hasOwnProperty.call(changedPayload, 'items'))
+          if (itemsWereModified && Array.isArray(items)) {
+            const oldItems = (referenceData.stockTransferItems ?? []).filter(
+              (item) => String(item.transferId) === String(id)
+            )
+            for (const oldItem of oldItems) {
+              const itemId = oldItem.id ?? oldItem.transferItemId
+              if (itemId) {
+                await apiRequest(API_ENDPOINTS.stockTransferItems.byId(itemId), {
+                  method: 'DELETE',
+                })
+              }
             }
-          }
 
-          if (Array.isArray(items)) {
             for (const item of items) {
               if (!item.productId) continue
               await apiRequest(API_ENDPOINTS.stockTransferItems.list, {
@@ -3443,16 +3444,88 @@ function ResourcePage({ config, navigationContent = null }) {
       </select>
     </FilterBar>
   ) : null
+  const stockAdjustmentsBulkActions = useMemo(() => {
+    if (!hasSelectedStockAdjustments) return []
+    return [
+      {
+        key: 'export',
+        label: 'Export',
+        icon: Download,
+        onClick: () => exportResourceRowsCsv(config, selectedStockAdjustments),
+      },
+      {
+        key: 'print',
+        label: 'Print',
+        icon: Printer,
+        onClick: () => printResourceRows(config, selectedStockAdjustments),
+      },
+      canDelete ? {
+        key: 'delete',
+        label: 'Delete',
+        icon: Trash2,
+        danger: true,
+        disabled: isDeleting,
+        onClick: handleBulkStockAdjustmentDelete,
+      } : null,
+    ].filter(Boolean)
+  }, [canDelete, config, hasSelectedStockAdjustments, isDeleting, selectedStockAdjustments])
+
+  const stockAdjustmentsSelectedToolbarContent = hasSelectedStockAdjustments ? (
+    <FilterBar className="resource-center__product-style-selection-actions resource-center__stock-adjustments-selection-actions" ariaLabel="Selected Stock Adjustment actions">
+      <div className="resource-center__product-style-selection-summary" aria-live="polite">
+        <Check size={15} />
+        <strong>{selectedStockAdjustments.length} selected</strong>
+      </div>
+      <ActionMenu
+        label="Bulk Actions"
+        align="left"
+        className="resource-center__bulk-actions-menu"
+        actions={stockAdjustmentsBulkActions}
+      />
+      <button
+        type="button"
+        className="button button-secondary resource-center__product-style-selection-button"
+        onClick={() => exportResourceRowsCsv(config, selectedStockAdjustments)}
+      >
+        <Download size={15} />
+        Export
+      </button>
+      <button
+        type="button"
+        className="button button-secondary resource-center__product-style-selection-button"
+        onClick={() => printResourceRows(config, selectedStockAdjustments)}
+      >
+        <Printer size={15} />
+        Print
+      </button>
+      {canDelete ? (
+        <button
+          type="button"
+          className="button button-secondary resource-center__product-style-selection-button resource-center__product-style-selection-button--danger"
+          onClick={handleBulkStockAdjustmentDelete}
+          disabled={isDeleting}
+        >
+          <Trash2 size={15} />
+          Delete
+        </button>
+      ) : null}
+    </FilterBar>
+  ) : null
+
   const resolvedFilterContent = isSubCategoriesPage
     ? subCategorySelectedToolbarContent
     : isProductStylePage && hasSelectedProductStyleRows
       ? productStyleSelectedToolbarContent
-      : notificationFilterContent
+      : isStockAdjustmentsPage && hasSelectedStockAdjustments
+        ? stockAdjustmentsSelectedToolbarContent
+        : notificationFilterContent
   const resolvedToolbarContent = isProductStylePage && hasSelectedProductStyleRows
     ? productStyleSelectedRightContent
     : isSubCategoriesPage
       ? subCategoryToolbarContent
-      : tableToolbarContent
+      : isStockAdjustmentsPage && hasSelectedStockAdjustments
+        ? null
+        : tableToolbarContent
 
 
   return (

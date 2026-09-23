@@ -180,3 +180,27 @@
   line-height: 1.25 !important;
   letter-spacing: 0 !important;
 }
+
+/* Barcode Form Warning Alert Banner */
+.barcode-form__warning,
+.barcode-page .message-box--warning {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  gap: 10px !important;
+  padding: 10px 14px !important;
+  border-radius: 8px !important;
+  background-color: #fffbeb !important;
+  border: 1px solid #fde68a !important;
+  color: #b45309 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+
+.barcode-form__warning span,
+.barcode-page .message-box--warning span {
+  text-align: left !important;
+  line-height: 1.4 !important;
+}
+

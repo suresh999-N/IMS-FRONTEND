@@ -43,7 +43,10 @@
 }
 
 .toolbar-search input,
-.purchase-returns-toolbar .toolbar-search input {
+.purchase-returns-toolbar .toolbar-search input,
+.purchase-returns-page .toolbar-search input,
+.purchase-returns-toolbar input[type="text"],
+.purchase-returns-toolbar input[type="search"] {
   width: 100%;
   height: 38px;
   padding: 8px 32px 8px 36px;
@@ -512,3 +515,49 @@
   gap: 12px;
   padding: 12px 0;
 }
+
+/* Line Item Delete Action Button */
+.items-table .icon-action-btn.delete-icon,
+.create-purchase-return-page .delete-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid #fee2e2;
+  background-color: #fff5f5;
+  color: #dc2626;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.items-table .icon-action-btn.delete-icon:hover,
+.create-purchase-return-page .delete-icon:hover {
+  background-color: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.1);
+}
+
+.items-table .icon-action-btn.delete-icon:active,
+.create-purchase-return-page .delete-icon:active {
+  transform: translateY(0);
+  background-color: #fecaca;
+}
+
+.items-table .icon-action-btn.delete-icon:focus-visible,
+.create-purchase-return-page .delete-icon:focus-visible {
+  outline: 2px solid #dc2626;
+  outline-offset: 1px;
+}
+
+.items-table .icon-action-btn.delete-icon:disabled,
+.create-purchase-return-page .delete-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+

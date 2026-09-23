@@ -873,6 +873,9 @@ export default function PurchaseReturns() {
                   Showing {filteredReturns.length === 0 ? 0 : (safeCurrentPage - 1) * pageSize + 1}-
                   {Math.min(safeCurrentPage * pageSize, filteredReturns.length)} of {filteredReturns.length}
                 </span>
+                <span className="table-component__page-indicator">
+                  Page {safeCurrentPage} of {totalPages}
+                </span>
               </div>
 
               <div className="table-component__page-controls">

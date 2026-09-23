@@ -21,7 +21,6 @@ import {
   RefreshCw,
   ReceiptText,
   Save,
-  SlidersHorizontal,
   Tag,
   Trash2,
   UserRound,
@@ -3133,7 +3132,6 @@ function ResourcePage({ config, navigationContent = null }) {
   const usersFilterContent = isUsersPage && !hasSelectedProductStyleRows ? (
     <FilterBar className="categories-list-page__filters users-list-page__filters" ariaLabel="User filters">
       <label className="categories-list-page__status-filter users-list-page__status-filter">
-        <SlidersHorizontal size={15} aria-hidden="true" />
         <span className="sr-only">Filter users by status</span>
         <select
           value={usersStatusFilter}
@@ -3172,13 +3170,16 @@ function ResourcePage({ config, navigationContent = null }) {
             </div>
             <div className="resource-center__inventory-metrics" aria-label={`${config.title} metrics`}>
               <span className={`resource-center__inventory-metric resource-center__inventory-metric--${isUsersPage ? 'info' : 'success'}`}>
-                {isAuditLogsPage ? auditSummary.total : summary.total} Total
+                <strong className="resource-center__inventory-metric-count">{isAuditLogsPage ? auditSummary.total : summary.total}</strong>{' '}
+                <span className="resource-center__inventory-metric-label">Total</span>
               </span>
               <span className={`resource-center__inventory-metric resource-center__inventory-metric--${isUsersPage ? 'success' : 'info'}`}>
-                {isAuditLogsPage ? auditSummary.modules : summary.active} {isUsersPage ? 'Active' : isRolesPage ? 'Configured' : 'Modules'}
+                <strong className="resource-center__inventory-metric-count">{isAuditLogsPage ? auditSummary.modules : summary.active}</strong>{' '}
+                <span className="resource-center__inventory-metric-label">{isUsersPage ? 'Active' : isRolesPage ? 'Configured' : 'Modules'}</span>
               </span>
               <span className={`resource-center__inventory-metric resource-center__inventory-metric--${isUsersPage ? 'danger' : 'warning'}`}>
-                {isAuditLogsPage ? auditSummary.recorded : summary.pending} {isUsersPage ? 'Inactive' : isRolesPage ? 'Draft' : 'Recorded'}
+                <strong className="resource-center__inventory-metric-count">{isAuditLogsPage ? auditSummary.recorded : summary.pending}</strong>{' '}
+                <span className="resource-center__inventory-metric-label">{isUsersPage ? 'Inactive' : isRolesPage ? 'Draft' : 'Recorded'}</span>
               </span>
             </div>
           </div>
@@ -3214,13 +3215,16 @@ function ResourcePage({ config, navigationContent = null }) {
             <h1>{config.title}</h1>
             <div className="resource-center__subcategories-metrics" aria-label="SubCategory metrics">
               <span className="resource-center__subcategories-metric resource-center__subcategories-metric--success">
-                {summary.total} Records
+                <strong className="resource-center__inventory-metric-count">{summary.total}</strong>{' '}
+                <span className="resource-center__inventory-metric-label">Records</span>
               </span>
               <span className="resource-center__subcategories-metric resource-center__subcategories-metric--info">
-                {summary.active} Active
+                <strong className="resource-center__inventory-metric-count">{summary.active}</strong>{' '}
+                <span className="resource-center__inventory-metric-label">Active</span>
               </span>
               <span className="resource-center__subcategories-metric resource-center__subcategories-metric--warning">
-                {summary.pending} Draft
+                <strong className="resource-center__inventory-metric-count">{summary.pending}</strong>{' '}
+                <span className="resource-center__inventory-metric-label">Draft</span>
               </span>
             </div>
           </div>
