@@ -290,6 +290,18 @@
   color: #0e7490;
 }
 
+.resource-center__metric-badge--sent {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.resource-center__metric-badge--open {
+  border-color: rgba(59, 130, 246, 0.24);
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
 .resource-center__page--invoices {
   display: flex;
   flex-direction: column;

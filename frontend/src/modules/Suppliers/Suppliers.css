@@ -7597,19 +7597,25 @@ border-color: #bbf7d0; /* Changed from #d1fae5 */
   flex: 0 0 auto !important;
   height: 34px !important;
   min-height: 34px !important;
-  padding: 0 10px !important;
-  border: 1px solid #bbf7d0 !important;
+  padding: 0 12px !important;
+  border: 1px solid #6ee7b7 !important;
   border-radius: 999px !important;
-  background: #f0fdf4 !important;
-  color: #0f172a !important;
+  background: #ecfdf5 !important;
+  color: #065f46 !important;
   font-size: 12.5px !important;
-  font-weight: 620 !important;
+  font-weight: 650 !important;
   line-height: 1 !important;
-  box-shadow: none !important;
+  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.12) !important;
+}
+
+.suppliers-selection-summary strong {
+  color: #065f46 !important;
+  font-weight: 650 !important;
 }
 
 .suppliers-selection-summary svg {
   color: #059669 !important;
+  stroke-width: 2.4px !important;
 }
 
 .suppliers-page .suppliers-data-table--compact .suppliers-table__selection-button {

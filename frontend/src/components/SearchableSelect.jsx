@@ -30,6 +30,7 @@ export default function SearchableSelect(props) {
     showSearch = true,
     showPlaceholder = true,
     menuPlacement = 'auto',
+    menuMinWidth,
   } = props
 
   const rootRef = useRef(null)
@@ -97,8 +98,9 @@ export default function SearchableSelect(props) {
       (menuPlacement === 'auto' && spaceBelow < 120 && spaceAbove > spaceBelow)
     const availableSpace = Math.max(96, openAbove ? spaceAbove - 4 : spaceBelow - 4)
     const maxHeight = Math.min(preferredHeight, availableSpace)
-    const width = Math.min(rect.width, viewportWidth - gutter * 2)
-    const left = Math.min(Math.max(gutter, rect.left), viewportWidth - width - gutter)
+    const targetWidth = Math.max(rect.width, Number(menuMinWidth) || 0)
+    const width = Math.min(targetWidth, viewportWidth - gutter * 2)
+    const left = Math.min(Math.max(gutter, rect.left), Math.max(gutter, viewportWidth - width - gutter))
 
     setMenuStyle({
       position: 'fixed',
@@ -110,7 +112,7 @@ export default function SearchableSelect(props) {
       '--searchable-select-options-max-height': `${Math.max(72, maxHeight - 54)}px`,
       zIndex: SELECT_PORTAL_Z_INDEX,
     })
-  }, [menuPlacement])
+  }, [menuPlacement, menuMinWidth])
 
   useEffect(() => {
     if (typeof document === 'undefined') {

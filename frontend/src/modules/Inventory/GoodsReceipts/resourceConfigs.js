@@ -24,6 +24,7 @@ import {
   getReasonHelperText,
   getReasonPlaceholder,
 } from '../../../validators/stockAdjustmentValidator'
+import { getRoleNameError } from '../../../validators/roleValidator'
 import { getGoodsReceiptNumber } from './goodsReceiptHelpers'
 
 function getPurchaseOrderQuantity(item) {
@@ -1180,7 +1181,14 @@ export const RESOURCE_CONFIGS = {
     byId: API_ENDPOINTS.roles.byId,
     idFields: ['roleId'],
     fields: [
-      { name: 'roleName', label: 'Role Name', required: true, minLength: 2 },
+      {
+        name: 'roleName',
+        label: 'Role Name *',
+        required: true,
+        minLength: 2,
+        maxLength: 50,
+        validate: (val) => getRoleNameError(val),
+      },
       { name: 'description', label: 'Description', type: 'textarea' },
     ],
     columns: [

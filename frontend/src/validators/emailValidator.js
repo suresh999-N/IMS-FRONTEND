@@ -1,7 +1,7 @@
 export const EMAIL_MAX_LENGTH = 150
 
 const VALID_TLDS = new Set([
-  'com', 'co', 'org', 'net', 'edu', 'gov', 'mil', 'int', 'info', 'biz', 'in', 'io', 'ai',
+  'com', 'org', 'net', 'edu', 'gov', 'mil', 'int', 'info', 'biz', 'in', 'io', 'ai',
   'app', 'dev', 'tech', 'store', 'online', 'site', 'xyz', 'me', 'tv', 'cc', 'mobi', 'asia',
   'name', 'pro', 'tel', 'travel', 'museum', 'uk', 'us', 'ca', 'de', 'fr', 'jp', 'cn', 'nl',
   'se', 'no', 'fi', 'es', 'it', 'ru', 'mx', 'br', 'za', 'sg', 'hk', 'tw', 'kr', 'nz', 'ch',
@@ -29,7 +29,10 @@ const VALID_MULTI_PART_TLDS = new Set([
   'com.tr', 'net.tr', 'org.tr'
 ])
 
-const TYPO_TLDS = new Set(['cm', 'c', 'coom', 'comm', 'commm', 'ccommmm', 'con', 'cmm', 'cmmm', 'gma', 'gmai', 'gamil', 'cmo'])
+const TYPO_TLDS = new Set([
+  'cm', 'c', 'co', 'coom', 'comm', 'commm', 'ccommmm', 'con', 'cmm', 'cmmm', 'gma', 'gmai', 'gamil', 'cmo',
+  'om', 'ocm', 'comn', 'col', 'conm', 'coi', 'cin'
+])
 
 const COMMON_DOMAIN_TYPOS = {
   'gmail.cm': 'gmail.com',
@@ -99,6 +102,7 @@ export function getEmailError(value, options = {}) {
   }
 
   const INVALID_MSG = 'Please enter a valid email address.'
+  const INVALID_DOMAIN_MSG = 'Please enter a valid email address with a valid domain (e.g., .com, .in, .co.in).'
 
   if (/\s/.test(trimmed) || trimmed.length > EMAIL_MAX_LENGTH) {
     return INVALID_MSG
@@ -157,63 +161,63 @@ export function getEmailError(value, options = {}) {
   }
 
   if (domainPart.startsWith('.') || domainPart.endsWith('.') || domainPart.startsWith('-') || domainPart.endsWith('-')) {
-    return INVALID_MSG
+    return INVALID_DOMAIN_MSG
   }
 
   const domainParts = domainPart.split('.')
   if (domainParts.length < 2) {
-    return INVALID_MSG
+    return INVALID_DOMAIN_MSG
   }
 
   for (const part of domainParts) {
     if (!part || part.startsWith('-') || part.endsWith('-') || !/^[a-z0-9-]+$/i.test(part) || part.length > 63) {
-      return INVALID_MSG
+      return INVALID_DOMAIN_MSG
     }
 
     // Reject 3 or more repeated identical characters in any domain label (e.g. gmaill.com)
     if (/([a-z0-9])\1{2,}/i.test(part)) {
-      return INVALID_MSG
+      return INVALID_DOMAIN_MSG
     }
 
     // Reject digits-only domain labels (e.g. @12345.com)
     if (/^\d+$/.test(part)) {
-      return INVALID_MSG
+      return INVALID_DOMAIN_MSG
     }
 
     // Reject 4 or more consecutive digits in any domain label (e.g. @domain1234.com)
     if (/\d{4,}/.test(part)) {
-      return INVALID_MSG
+      return INVALID_DOMAIN_MSG
     }
 
     // Reject 5 or more consecutive consonants in domain label
     if (/[bcdfghjklmnpqrstvwxyz]{5,}/i.test(part)) {
-      return INVALID_MSG
+      return INVALID_DOMAIN_MSG
     }
 
     // Reject 4 or more consecutive vowels in domain label
     if (/[aeiou]{4,}/i.test(part)) {
-      return INVALID_MSG
+      return INVALID_DOMAIN_MSG
     }
   }
 
   const secondLevelDomain = domainParts[domainParts.length - 2].toLowerCase()
   if (COMMON_LABEL_TYPOS.has(secondLevelDomain)) {
-    return INVALID_MSG
+    return INVALID_DOMAIN_MSG
   }
 
   const mainDomain = domainParts[0].toLowerCase()
   if (mainDomain.length < 2) {
-    return INVALID_MSG
+    return INVALID_DOMAIN_MSG
   }
 
   const lowerDomain = domainPart.toLowerCase()
   if (COMMON_DOMAIN_TYPOS[lowerDomain]) {
-    return INVALID_MSG
+    return INVALID_DOMAIN_MSG
   }
 
   const tld = domainParts[domainParts.length - 1].toLowerCase()
   if (!tld || !/^[a-z]+$/i.test(tld) || tld.length < 2) {
-    return INVALID_MSG
+    return INVALID_DOMAIN_MSG
   }
 
   // Check multi-part TLD if domain has 3 or more parts (e.g. farmti.co.in, supplier.co.uk)
@@ -225,11 +229,11 @@ export function getEmailError(value, options = {}) {
   }
 
   if (TYPO_TLDS.has(tld)) {
-    return INVALID_MSG
+    return INVALID_DOMAIN_MSG
   }
 
   if (!VALID_TLDS.has(tld)) {
-    return INVALID_MSG
+    return INVALID_DOMAIN_MSG
   }
 
   return ''

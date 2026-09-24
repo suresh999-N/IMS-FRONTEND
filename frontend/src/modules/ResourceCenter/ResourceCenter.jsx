@@ -58,9 +58,7 @@ import {
   getEmailError,
   sanitizeEmailInput,
 } from '../../validators/emailValidator'
-import {
-  getPasswordError,
-} from '../../validators/passwordValidator'
+import { getRoleNameError, sanitizeRoleInput } from '../../validators/roleValidator'
 import { RESOURCE_CONFIGS, RESOURCE_HUBS } from './resourceConfigs'
 import './ResourceCenter.css'
 
@@ -497,6 +495,11 @@ function getFieldError(field, value, mode, context = {}) {
     if (customError) {
       return customError
     }
+  }
+
+  if (field.name === 'roleName' || (context.config?.key === 'roles' && field.name === 'name')) {
+    const roleErr = getRoleNameError(value, { required: Boolean(isRequired), label })
+    if (roleErr) return roleErr
   }
 
   if (field.pattern && !field.pattern.test(value)) {
@@ -1385,11 +1388,11 @@ function ResourceForm({
   const errors = useMemo(
     () => fields.reduce((result, field) => {
       result[field.name] =
-        getFieldError(field, formData[field.name], mode, { formData, referenceData, rows }) ||
+        getFieldError(field, formData[field.name], mode, { formData, referenceData, rows, config }) ||
         getServerFieldError(serverErrors, field)
       return result
     }, {}),
-    [fields, formData, mode, referenceData, rows, serverErrors],
+    [config, fields, formData, mode, referenceData, rows, serverErrors],
   )
   const isValid = Object.values(errors).every((value) => !value)
   const payload = useMemo(() => buildPayload(formData, fields), [fields, formData])
@@ -1529,7 +1532,14 @@ function ResourceForm({
       return
     }
 
-    updateField(name, field?.type === 'email' ? sanitizeEmailInput(value) : type === 'checkbox' ? checked : value)
+    let nextValue = type === 'checkbox' ? checked : value
+    if (field?.type === 'email') {
+      nextValue = sanitizeEmailInput(value)
+    } else if (field?.name === 'roleName') {
+      nextValue = sanitizeRoleInput(value)
+    }
+
+    updateField(name, nextValue)
   }
 
   function handleBlur(event) {

@@ -1792,20 +1792,20 @@ function ResourcePage({ config, navigationContent = null }) {
       const total = Number(readResourceValue(row, 'totalAmount', 0)) || 0
       const paid = Number(readResourceValue(row, 'paidAmount', 0)) || 0
       const balance = Number(readResourceValue(row, 'balanceAmount', 0)) || 0
-      const status = String(readResourceValue(row, 'status', '') || '').toLowerCase()
+      const rawStatus = String(readResourceValue(row, 'status', '') || '').trim().toLowerCase()
 
       result.total += 1
       result.value += total
       result.balance += balance
 
-      if (balance <= 0 || status === 'paid') {
+      if (rawStatus === 'paid' || (balance <= 0 && total > 0)) {
         result.paid += 1
+      } else if (rawStatus.includes('partial') || (paid > 0 && balance > 0)) {
+        result.partiallyPaid += 1
+      } else if (rawStatus === 'sent') {
+        result.sent += 1
       } else {
         result.open += 1
-      }
-
-      if (paid > 0 && balance > 0) {
-        result.partial += 1
       }
 
       return result
@@ -1814,8 +1814,9 @@ function ResourcePage({ config, navigationContent = null }) {
       value: 0,
       balance: 0,
       paid: 0,
+      partiallyPaid: 0,
+      sent: 0,
       open: 0,
-      partial: 0,
     })
   }, [rows])
 
@@ -2910,6 +2911,14 @@ function ResourcePage({ config, navigationContent = null }) {
                   Paid
                 </span>
                 <span className="resource-center__metric-badge resource-center__metric-badge--warning">
+                  <strong>{invoiceSummary.partiallyPaid}</strong>
+                  Partially Paid
+                </span>
+                <span className="resource-center__metric-badge resource-center__metric-badge--sent">
+                  <strong>{invoiceSummary.sent}</strong>
+                  Sent
+                </span>
+                <span className="resource-center__metric-badge resource-center__metric-badge--open">
                   <strong>{invoiceSummary.open}</strong>
                   Open
                 </span>

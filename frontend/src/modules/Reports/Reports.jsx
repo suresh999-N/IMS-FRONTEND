@@ -20,6 +20,7 @@ import {
   IndianRupee,
   PackageSearch,
   Printer,
+  RefreshCw,
   ShoppingCart,
   TrendingUp,
   Trophy,
@@ -1066,6 +1067,12 @@ export default function Reports({ data = {} }) {
     setRetryTrigger((prev) => prev + 1)
   }
 
+  function handleRefresh() {
+    setError('')
+    setCategoriesError('')
+    setRetryTrigger((prev) => prev + 1)
+  }
+
   useEffect(() => {
     if (!isPeriodMenuOpen) return undefined
 
@@ -1714,6 +1721,17 @@ export default function Reports({ data = {} }) {
           </div>
 
           <div className="reports-page__header-actions">
+            <button
+              type="button"
+              className="button button-secondary reports-page__action-refresh"
+              onClick={handleRefresh}
+              disabled={isLoading}
+              title="Refresh reports data"
+              aria-label="Refresh reports data"
+            >
+              <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+              Refresh
+            </button>
             <button type="button" className="button button-secondary" onClick={() => window.print()}>
               <Printer size={16} />
               Print

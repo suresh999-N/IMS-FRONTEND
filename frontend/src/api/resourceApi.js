@@ -11,6 +11,7 @@ import {
   hasApiCache,
   invalidateApiCache,
 } from './apiCache'
+import { getRoleNameError } from '../validators/roleValidator'
 
 const DEFAULT_LIST_QUERY = { page: 1, pageSize: 100 }
 const RESOURCE_CACHE_PREFIX = 'resource:'
@@ -242,6 +243,18 @@ export function getResource(config, id) {
 }
 
 export function createResource(config, payload) {
+  if (config?.key === 'roles') {
+    const roleName = payload?.roleName || payload?.name
+    const roleErr = getRoleNameError(roleName, { required: true })
+    if (roleErr) {
+      return Promise.resolve({
+        success: false,
+        error: roleErr,
+        errors: { roleName: roleErr, name: roleErr },
+      })
+    }
+  }
+
   const endpoint =
     typeof config.createEndpoint === 'function'
       ? config.createEndpoint(payload)
@@ -260,6 +273,20 @@ export function createResource(config, payload) {
 }
 
 export function updateResource(config, id, payload, changedPayload) {
+  if (config?.key === 'roles') {
+    const roleName = payload?.roleName || payload?.name || changedPayload?.roleName || changedPayload?.name
+    if (roleName !== undefined) {
+      const roleErr = getRoleNameError(roleName, { required: true })
+      if (roleErr) {
+        return Promise.resolve({
+          success: false,
+          error: roleErr,
+          errors: { roleName: roleErr, name: roleErr },
+        })
+      }
+    }
+  }
+
   const endpoint = config.byId ? config.byId(id) : `${config.endpoint}/${id}`
   const method = config.updateMethod || 'PUT'
 

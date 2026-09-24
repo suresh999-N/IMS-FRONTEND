@@ -7566,6 +7566,59 @@
   gap: 16px;
 }
 
+.form-modal__body--roles .resource-form__footer,
+.form-modal__dialog--roles .resource-form__footer,
+.form-modal__body--users .resource-form__footer,
+.form-modal__dialog--users .resource-form__footer {
+  position: static !important;
+  bottom: auto !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 20px 0 0 0 !important;
+  padding: 16px 0 20px 0 !important;
+  border-top: 1px solid #e2e8f0 !important;
+  background: transparent !important;
+  box-sizing: border-box !important;
+}
+
+.form-modal__body--roles .resource-form__draft-indicator,
+.form-modal__body--users .resource-form__draft-indicator {
+  margin-right: auto;
+}
+
+.form-modal__body--roles .resource-form__footer .button,
+.form-modal__dialog--roles .resource-form__footer .button,
+.form-modal__body--users .resource-form__footer .button,
+.form-modal__dialog--users .resource-form__footer .button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  min-width: 96px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 8px 18px !important;
+  border-radius: 8px !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 767px) {
+  .form-modal__body--roles .resource-form__footer,
+  .form-modal__dialog--roles .resource-form__footer,
+  .form-modal__body--users .resource-form__footer,
+  .form-modal__dialog--users .resource-form__footer {
+    margin: 16px 0 0 0 !important;
+    padding: 12px 0 calc(12px + var(--safe-bottom, 0px)) 0 !important;
+  }
+}
+
 /* Custom compact styles for Users (Staff) form dialog */
 .form-modal__dialog--users {
   width: 95%;
@@ -7583,7 +7636,47 @@
 .form-modal__body--users .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 16px 20px;
+  gap: 16px 20px !important;
+  align-items: start !important;
+}
+
+.form-modal__body--users .resource-form__field--full {
+  grid-column: 1 / -1 !important;
+}
+
+.form-modal__body--users .field {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  min-width: 0 !important;
+}
+
+.form-modal__body--users .field label {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+  color: #374151 !important;
+  line-height: 1.2 !important;
+}
+
+.form-modal__body--users :where(select, .input-with-icon) {
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+}
+
+.form-modal__body--users select {
+  padding: 0 10px !important;
+  line-height: 36px !important;
+  background-color: #fff !important;
+  color: #1e293b !important;
+  cursor: pointer;
 }
 
 /* Compact, focused confirmation dialog for destructive resource actions. */

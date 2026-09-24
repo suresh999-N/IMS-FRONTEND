@@ -2,7 +2,7 @@ import { apiRequest, buildApiHeaders, buildUrl, getResponseData, getResponseList
 import { cachedApiRequest, createApiCacheKey, hasApiCache, invalidateApiCache } from './apiCache'
 import { API_ENDPOINTS } from './endpoints'
 import { normalizeSupplierDocumentType } from '../modules/Suppliers/supplierDocumentTypes'
-import { sanitizeEmailInput } from '../validators/emailValidator'
+import { getEmailError, sanitizeEmailInput } from '../validators/emailValidator'
 import { sanitizePhoneInput } from '../validators/phoneValidator'
 
 const DEFAULT_LIST_QUERY = { page: 1, pageSize: 100 }
@@ -318,16 +318,40 @@ async function runSupplierMutation(request) {
 }
 
 export function createSupplier(data) {
+  const payload = toSupplierPayload(data)
+  const emailError = getEmailError(payload.email, { required: true, label: 'Email' })
+  if (emailError) {
+    return Promise.resolve({
+      success: false,
+      error: emailError,
+      message: emailError,
+      errors: { email: emailError },
+      status: 400,
+    })
+  }
+
   return runSupplierMutation(apiRequest(API_ENDPOINTS.suppliers.list, {
     method: 'POST',
-    body: toSupplierPayload(data),
+    body: payload,
   }))
 }
 
 export function updateSupplier(id, data) {
+  const payload = toSupplierPayload(data)
+  const emailError = getEmailError(payload.email, { required: true, label: 'Email' })
+  if (emailError) {
+    return Promise.resolve({
+      success: false,
+      error: emailError,
+      message: emailError,
+      errors: { email: emailError },
+      status: 400,
+    })
+  }
+
   return runSupplierMutation(apiRequest(API_ENDPOINTS.suppliers.byId(id), {
     method: 'PUT',
-    body: toSupplierPayload(data),
+    body: payload,
   }))
 }
 

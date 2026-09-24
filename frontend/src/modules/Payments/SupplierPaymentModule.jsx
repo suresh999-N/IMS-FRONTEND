@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   Copy,
   CreditCard,
-  Download,
   Eye,
   FileText,
   Pencil,
@@ -1398,16 +1397,7 @@ function PaymentDetailsDrawer({ payment, purchaseOrder, allPayments = [], onClos
               <ReceiptText size={16} />
               Receipt PDF
             </button>
-            <button
-              type="button"
-              className="button button-secondary"
-              onClick={() => onExport?.([activePayment])}
-              title="Download Detailed Payment Report PDF for this payment"
-            >
-              <FileText size={16} />
-              Detailed Report (PDF)
-            </button>
-            <button type="button" className="button button-primary" onClick={() => onPrint([activePayment])}>
+            <button type="button" className="button button-primary" onClick={() => onPrint([activePayment])} title="Print official payment receipt">
               <Printer size={16} />
               Print Receipt
             </button>
@@ -1418,115 +1408,6 @@ function PaymentDetailsDrawer({ payment, purchaseOrder, allPayments = [], onClos
   )
 }
 
-// Kept briefly as a rollback reference while this drawer UX is being verified.
-function LegacyPaymentDetailsDrawer({ payment, invoice, onClose, onPrint, onExport }) {
-  const status = normalizePaymentStatus(payment)
-  const invoiceStatus = normalizeInvoiceStatus(payment.invoiceStatus)
-  const metrics = getInvoiceMetrics(payment, invoice)
-  const allocationRows = [
-    { label: 'Invoice total', value: formatCurrency(metrics.invoiceTotal) },
-    { label: 'Outstanding before', value: formatCurrency(metrics.outstandingBefore) },
-    { label: 'Applied amount', value: formatCurrency(payment.amount) },
-    { label: 'Outstanding after', value: formatCurrency(metrics.outstandingAfter) },
-  ]
-
-  return (
-    <div className="payment-drawer" role="dialog" aria-modal="true" aria-labelledby="payment-drawer-title">
-      <button type="button" className="payment-drawer__backdrop" aria-label="Close payment details" onClick={onClose} />
-      <aside className="payment-drawer__panel">
-        <header className="payment-drawer__header">
-          <div>
-            <p className="payment-drawer__eyebrow">Receipt</p>
-            <h2 id="payment-drawer-title">{paymentNumberFrom(payment)}</h2>
-            <p>{payment.partyName || 'Customer'} Â· {formatDate(payment.paymentDate)}</p>
-          </div>
-          <button type="button" className="button button-secondary payment-drawer__close" onClick={onClose} aria-label="Close payment details">
-            <X size={15} />
-          </button>
-        </header>
-
-        <div className="payment-drawer__amount">
-          <span>Payment amount</span>
-          <strong style={{ color: '#0f172a' }}>{formatCurrency(payment.amount)}</strong>
-          <PaymentStatusBadge status={status} />
-        </div>
-
-        <section className="payment-drawer__section">
-          <div className="payment-drawer__section-header">
-            <h3>Payment Details</h3>
-          </div>
-          <dl className="payment-drawer__definition-list">
-            <DetailItem label="Method" value={payment.paymentMethod} />
-            <DetailItem label="Payment Status" value={getPaymentStatusMeta(status).label} />
-            <DetailItem label="Reference" value={payment.referenceNumber || (payment.id || payment.paymentId ? `REF-PAY-${String(payment.id || payment.paymentId).padStart(4, '0')}` : 'Not provided')} />
-            <DetailItem label="Created By" value={payment.createdBy || 'System'} />
-            <DetailItem label="Created Date" value={formatDate(payment.createdAt || payment.paymentDate)} />
-          </dl>
-        </section>
-
-        <section className="payment-drawer__section">
-          <div className="payment-drawer__section-header">
-            <h3>Customer Details</h3>
-          </div>
-          <dl className="payment-drawer__definition-list">
-            <DetailItem label="Customer" value={payment.partyName} />
-            <DetailItem label="Invoice" value={getInvoiceNumber(payment, invoice)} />
-            <DetailItem label="Invoice Status" value={invoiceStatus} />
-          </dl>
-        </section>
-
-        <section className="payment-drawer__section">
-          <div className="payment-drawer__section-header">
-            <h3>Invoice Allocations</h3>
-          </div>
-          <div className="payment-drawer__allocation-list">
-            {allocationRows.map((row) => (
-              <div key={row.label}>
-                <span>{row.label}</span>
-                <strong>{row.value}</strong>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="payment-drawer__section">
-          <div className="payment-drawer__section-header">
-            <h3>Audit History</h3>
-          </div>
-          <ol className="payment-drawer__timeline">
-            <li>
-              <span />
-              <div>
-                <strong>Payment recorded</strong>
-                <p>{formatDate(payment.createdAt || payment.paymentDate)} by {payment.createdBy || 'System'}</p>
-              </div>
-            </li>
-            {status === 'Cancelled' ? (
-              <li>
-                <span />
-                <div>
-                  <strong>Payment voided</strong>
-                  <p>{formatDate(payment.cancelledAt)} · {payment.cancellationReason || 'No reason recorded'}</p>
-                </div>
-              </li>
-            ) : null}
-          </ol>
-        </section>
-
-        <footer className="payment-drawer__footer">
-          <button type="button" className="button button-secondary" onClick={() => onExport([payment])}>
-            <Download size={16} />
-            Download Receipt
-          </button>
-          <button type="button" className="button button-primary" onClick={() => onPrint([payment])}>
-            <Printer size={16} />
-            Print Receipt
-          </button>
-        </footer>
-      </aside>
-    </div>
-  )
-}
 
 function PaymentEditModal({ payment, invoice, onSubmit, onClose, isSubmitting }) {
   const [formData, setFormData] = useState({
@@ -1577,8 +1458,8 @@ function PaymentEditModal({ payment, invoice, onSubmit, onClose, isSubmitting })
       <form className="payment-form payment-edit-form" onSubmit={handleSubmit}>
         <div className="payment-form__readonly-grid">
           <DetailItem label="Payment Number" value={paymentNumberFrom(payment)} />
-          <DetailItem label="Customer" value={payment.partyName} />
-          <DetailItem label="Invoice Number" value={getInvoiceNumber(payment, invoice)} />
+          <DetailItem label="Supplier" value={payment.partyName} />
+          <DetailItem label="Purchase Order" value={getInvoiceNumber(payment, invoice)} />
         </div>
 
         <div className="form-grid">
@@ -1590,11 +1471,12 @@ function PaymentEditModal({ payment, invoice, onSubmit, onClose, isSubmitting })
             onChange={handleChange}
             onBlur={handleBlur}
             error={touched.amount ? errors.amount : ''}
+            style={{ textAlign: 'left' }}
           />
           <SearchableSelect
             id="payment-edit-method"
             name="paymentMethod"
-            label="Payment method"
+            label="Payment Method"
             value={formData.paymentMethod}
             onChange={handleChange}
             options={PAYMENT_METHODS}
@@ -1602,7 +1484,7 @@ function PaymentEditModal({ payment, invoice, onSubmit, onClose, isSubmitting })
           <InputField
             id="payment-edit-reference"
             name="referenceNumber"
-            label="Reference number"
+            label="Reference Number"
             value={formData.referenceNumber}
             maxLength={100}
             onChange={handleChange}
@@ -1937,13 +1819,14 @@ function PaymentForm({
             onChange={handleChange}
             onBlur={handleBlur}
             error={touched.amount ? errors.amount : ''}
+            style={{ textAlign: 'left' }}
           />
 
           <DatePicker
             id="payment-date"
             name="paymentDate"
-            label="Payment date"
-            icon={null}
+            label="Payment Date"
+            icon={CalendarDays}
             value={formData.paymentDate}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -1953,7 +1836,7 @@ function PaymentForm({
           <SearchableSelect
             id="payment-method"
             name="paymentMethod"
-            label="Payment method"
+            label="Payment Method"
             value={formData.paymentMethod}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -1963,7 +1846,7 @@ function PaymentForm({
           <InputField
             id="payment-reference"
             name="referenceNumber"
-            label="Reference number"
+            label="Reference Number"
             value={formData.referenceNumber}
             maxLength={100}
             onChange={handleChange}
@@ -2786,12 +2669,6 @@ export default function SupplierPaymentModule({
               icon: ReceiptText,
               onClick: () => handleDownloadReceipt(payment),
             },
-            {
-              key: 'detailed-report-pdf',
-              label: 'Detailed Report (PDF)',
-              icon: FileText,
-              onClick: () => handleExport([payment]),
-            },
           ]}
         />
       ),
@@ -2800,7 +2677,6 @@ export default function SupplierPaymentModule({
     canEdit,
     filteredPayments,
     handleDownloadReceipt,
-    handleExport,
     invoiceById,
     isSupplier,
     partyLabel,
@@ -2881,22 +2757,23 @@ export default function SupplierPaymentModule({
           type="button"
           className="button button-secondary payments-toolbar-button"
           onClick={() => handleDownloadReceipt(selectedPayments[0])}
-          title="Download Receipt PDF"
+          title="Download official payment receipt PDF"
         >
           <ReceiptText size={15} />
           Receipt PDF
         </button>
-      ) : null}
-
-      <button
-        type="button"
-        className="button button-secondary payments-toolbar-button"
-        onClick={() => handleExport(selectedPayments)}
-        title="Download Detailed Payment Report PDF"
-      >
-        <FileText size={15} />
-        Detailed Report (PDF)
-      </button>
+      ) : (
+        <button
+          type="button"
+          className="button button-secondary payments-toolbar-button"
+          onClick={() => handleExport(selectedPayments)}
+          title="Download Detailed Payment Report PDF"
+          aria-label="Download Detailed Payment Report PDF"
+        >
+          <FileText size={15} />
+          Detailed Report
+        </button>
+      )}
 
       <button type="button" className="button button-secondary payments-toolbar-button" onClick={() => handlePrint(selectedPayments)}>
         <Printer size={15} />
@@ -2972,9 +2849,10 @@ export default function SupplierPaymentModule({
             onClick={() => handleExport(filteredPayments)}
             disabled={filteredPayments.length === 0}
             title="Download Detailed Payment Report PDF"
+            aria-label="Download Detailed Payment Report PDF"
           >
             <FileText size={15} />
-            Detailed Report (PDF)
+            Detailed Report
           </button>
 
         </>

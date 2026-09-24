@@ -52,6 +52,7 @@ import { showToast } from '../../../components/common/toast'
 import FormModal from '../../../layouts/FormModal'
 import { useAuth } from '../../../hooks/useAuth'
 import { formatCurrency, formatDate } from '../../../utils/helpers'
+import { renderFormLabel } from '../../../utils/labelUtils'
 import {
   emailInputProps,
   getEmailError,
@@ -70,6 +71,10 @@ import {
   getNameError,
   sanitizeNameInput,
 } from '../../../validators/nameValidator'
+import {
+  getRoleNameError,
+  sanitizeRoleInput,
+} from '../../../validators/roleValidator'
 import { RESOURCE_CONFIGS, RESOURCE_HUBS } from '../../ResourceCenter/resourceConfigs'
 import './Roles.css'
 import '../Users/Users.css'
@@ -462,6 +467,18 @@ function getFieldError(field, value, mode, context = {}) {
   if (field.type === 'email' || field.name === 'email' || String(field.name || '').toLowerCase().includes('email')) {
     const emailErr = getEmailError(value, { required: Boolean(isRequired), label })
     if (emailErr) return emailErr
+  }
+
+  if (typeof field.validate === 'function') {
+    const customError = field.validate(value, context)
+    if (customError) {
+      return customError
+    }
+  }
+
+  if (field.name === 'roleName' || (context.config?.key === 'roles' && field.name === 'name')) {
+    const roleErr = getRoleNameError(value, { required: Boolean(isRequired), label })
+    if (roleErr) return roleErr
   }
 
   if (field.name === 'name' || field.name === 'fullName') {
@@ -1378,11 +1395,11 @@ function ResourceForm({
   const errors = useMemo(
     () => fields.reduce((result, field) => {
       result[field.name] =
-        getFieldError(field, formData[field.name], mode, { formData, referenceData, rows }) ||
+        getFieldError(field, formData[field.name], mode, { formData, referenceData, rows, config }) ||
         getServerFieldError(serverErrors, field)
       return result
     }, {}),
-    [fields, formData, mode, referenceData, rows, serverErrors],
+    [config, fields, formData, mode, referenceData, rows, serverErrors],
   )
   const isValid = Object.values(errors).every((value) => !value)
   const payload = useMemo(() => buildPayload(formData, fields, record), [fields, formData, record])
@@ -1471,6 +1488,8 @@ function ResourceForm({
       nextValue = sanitizePhoneInput(value, 10)
     } else if (field?.name === 'name' || field?.name === 'fullName') {
       nextValue = sanitizeNameInput(value)
+    } else if (field?.name === 'roleName') {
+      nextValue = sanitizeRoleInput(value)
     }
     updateField(name, nextValue)
     setTouched((currentValue) => ({
@@ -1511,6 +1530,9 @@ function ResourceForm({
     const helperText = field.maxFrom === 'goodsReceiptRemainingQuantity' && dynamicMax !== null
       ? `Remaining PO quantity: ${dynamicMax}`
       : field.helperText
+    const displayLabel = field.required && typeof field.label === 'string' && !field.label.includes('*')
+      ? `${field.label} *`
+      : field.label
 
     if (field.type === 'hidden') {
       return (
@@ -1571,8 +1593,7 @@ function ResourceForm({
           <SearchableSelect
             id={`resource-${config.key}-${field.name}`}
             name={field.name}
-            label={field.label}
-
+            label={displayLabel}
             value={formData[field.name] ?? ''}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -1602,7 +1623,7 @@ function ResourceForm({
           className={`field ${error ? 'field--error' : ''} ${getResourceFieldClassName(config, field)}`.trim()}
           key={field.name}
         >
-          <label htmlFor={`resource-${config.key}-${field.name}`}>{field.label}</label>
+          <label htmlFor={`resource-${config.key}-${field.name}`}>{renderFormLabel(displayLabel)}</label>
           <select
             id={`resource-${config.key}-${field.name}`}
             name={field.name}
@@ -1639,7 +1660,7 @@ function ResourceForm({
             onChange={handleChange}
             onBlur={handleBlur}
           />
-          <span>{field.label}</span>
+          <span>{renderFormLabel(displayLabel)}</span>
         </label>
       )
     }
@@ -1650,8 +1671,7 @@ function ResourceForm({
           key={field.name}
           id={`resource-${config.key}-${field.name}`}
           name={field.name}
-          label={field.label}
-
+          label={displayLabel}
           value={formData[field.name]}
           onChange={handleChange}
           onBlur={handleBlur}
@@ -1668,8 +1688,8 @@ function ResourceForm({
         key={field.name}
         id={`resource-${config.key}-${field.name}`}
         name={field.name}
-        label={field.label}
-
+        label={displayLabel}
+        required={field.required}
         {...(field.type === 'email' ? emailInputProps : {})}
         {...(isPhoneField ? phoneInputProps : {})}
         type={field.type === 'textarea' ? 'text' : isPhoneField ? 'tel' : field.type || 'text'}
@@ -1715,12 +1735,12 @@ function ResourceForm({
         {isSubCategoriesForm && mode === 'create' && hasDraftContent ? (
           <span className="resource-form__draft-indicator">Unsaved changes</span>
         ) : null}
+        <button type="button" className="button button-cancel" onClick={onCancel} disabled={isSubmitting}>
+          Cancel
+        </button>
         <button type="submit" className="button button-primary" disabled={saveDisabled}>
           {isSubmitting ? <LoaderCircle size={16} className="animate-spin" /> : <Save size={16} />}
           {isSubmitting ? 'Saving...' : mode === 'edit' ? 'Save Changes' : 'Create'}
-        </button>
-        <button type="button" className="button button-cancel" onClick={onCancel} disabled={isSubmitting}>
-          Cancel
         </button>
       </div>
     </form>
@@ -3659,7 +3679,7 @@ function ResourcePage({ config, navigationContent = null }) {
                 if (f.type === 'textarea' && viewingRecord[f.name]) {
                   return (
                     <div className="admin-details-item admin-details-item--full" key={f.name}>
-                      <span className="admin-details-label">{f.label}</span>
+                      <span className="admin-details-label">{getFieldLabel(f)}</span>
                       <div className="admin-details-value admin-details-value--notes">
                         {viewingRecord[f.name]}
                       </div>
@@ -3747,30 +3767,6 @@ function ResourcePage({ config, navigationContent = null }) {
                 </div>
               </div>
             )}
-
-            <div className="admin-details-footer">
-              {canUpdate ? (
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => {
-                    const rec = viewingRecord
-                    setViewingRecord(null)
-                    openEdit(rec)
-                  }}
-                >
-                  <Pencil size={15} />
-                  <span>Edit {config.entityName}</span>
-                </button>
-              ) : null}
-              <button
-                type="button"
-                className="button button-primary"
-                onClick={() => setViewingRecord(null)}
-              >
-                Close
-              </button>
-            </div>
           </div>
         </FormModal>
       ) : null}

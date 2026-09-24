@@ -19420,19 +19420,25 @@
   flex: 0 0 auto !important;
   height: 34px !important;
   min-height: 34px !important;
-  padding: 0 10px !important;
-  border: 1px solid #c7d9f3 !important;
+  padding: 0 12px !important;
+  border: 1px solid #7dd3fc !important;
   border-radius: 999px !important;
-  background: #f8fbff !important;
-  color: #0f172a !important;
+  background: #f0f9ff !important;
+  color: #0369a1 !important;
   font-size: 12.5px !important;
-  font-weight: 620 !important;
+  font-weight: 650 !important;
   line-height: 1 !important;
-  box-shadow: none !important;
+  box-shadow: 0 1px 3px rgba(8, 145, 178, 0.12) !important;
+}
+
+.customers-selection-summary strong {
+  color: #0369a1 !important;
+  font-weight: 650 !important;
 }
 
 .customers-selection-summary svg {
-  color: #0891b2 !important;
+  color: #0284c7 !important;
+  stroke-width: 2.4px !important;
 }
 
 .customers-page .customers-data-table--compact.erp-data-table .customers-table__selection-button {

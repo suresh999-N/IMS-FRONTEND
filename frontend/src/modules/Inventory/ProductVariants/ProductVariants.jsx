@@ -613,6 +613,7 @@ export default function ProductVariants() {
         label: 'Product Name',
         sortable: true,
         tableWidth: 320,
+        className: 'variants-col-product',
         style: { width: 320, minWidth: 320 },
         headerStyle: { width: 320, minWidth: 320 },
         render: (item) => (
@@ -628,6 +629,7 @@ export default function ProductVariants() {
         label: 'Variant Name',
         sortable: true,
         tableWidth: 140,
+        className: 'variants-col-variant',
         style: { width: 140, minWidth: 140 },
         headerStyle: { width: 140, minWidth: 140 },
         render: (item) => {
@@ -639,7 +641,11 @@ export default function ProductVariants() {
                 productsMapRef.current?.get(String(item.productId ?? item.product_id))
               )
             : raw
-          return <span className="font-medium">{displayVariant || 'Standard'}</span>
+          return (
+            <span className="font-medium variants-table__variant-name" title={displayVariant || 'Standard'}>
+              {displayVariant || 'Standard'}
+            </span>
+          )
         },
       },
       {
@@ -647,10 +653,11 @@ export default function ProductVariants() {
         label: 'SKU',
         sortable: true,
         tableWidth: 160,
+        className: 'variants-col-sku',
         style: { width: 160, minWidth: 160 },
         headerStyle: { width: 160, minWidth: 160 },
         render: (item) => (
-          <span className="variants-table__sku font-mono text-xs">
+          <span className="variants-table__sku font-mono text-xs" title={getStandardizedSku(item.sku, item)}>
             {getStandardizedSku(item.sku, item)}
           </span>
         ),
@@ -659,6 +666,7 @@ export default function ProductVariants() {
         key: 'mappedAttributes',
         label: 'Attributes',
         tableWidth: 250,
+        className: 'variants-col-attributes',
         style: { width: 250, minWidth: 250 },
         headerStyle: { width: 250, minWidth: 250 },
         render: (item) => (
@@ -720,6 +728,7 @@ export default function ProductVariants() {
         label: 'Status',
         sortable: true,
         tableWidth: 100,
+        className: 'variants-col-status',
         style: { width: 100, minWidth: 100 },
         headerStyle: { width: 100, minWidth: 100 },
         render: (item) => {
@@ -789,46 +798,65 @@ export default function ProductVariants() {
     () => (
       <div className="variants__filters">
         <div className="variants__filter-item variants__filter-item--product">
-          <select
+          <SearchableSelect
+            id="variants-product-filter"
+            name="productFilter"
+            hideLabel
+            placeholder="All Products"
+            searchPlaceholder="Search products..."
+            menuMinWidth={320}
+            options={products.map((p) => ({
+              value: String(p.productId ?? p.id),
+              label: getDescriptiveProductName(p),
+            }))}
             value={productFilter}
-            onChange={(e) => setProductFilter(e.target.value)}
-            aria-label="Filter by Product"
-          >
-            <option value="">All Products</option>
-            {products.map((p) => (
-              <option key={p.productId ?? p.id} value={p.productId ?? p.id}>
-                {getDescriptiveProductName(p)}
-              </option>
-            ))}
-          </select>
+            onChange={(e) => {
+              const val = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
+              setProductFilter(val || '')
+            }}
+          />
         </div>
 
         <div className="variants__filter-item variants__filter-item--attribute">
-          <select
+          <SearchableSelect
+            id="variants-attribute-filter"
+            name="attributeFilter"
+            hideLabel
+            placeholder="All Attributes"
+            searchPlaceholder="Search attributes..."
+            showSearch={attributes.length > 5}
+            menuMinWidth={180}
+            options={attributes.map((a) => ({
+              value: a.name,
+              label: a.name,
+            }))}
             value={attributeFilter}
-            onChange={(e) => setAttributeFilter(e.target.value)}
-            aria-label="Filter by Attribute"
-          >
-            <option value="">All Attributes</option>
-            {attributes.map((a) => (
-              <option key={a.attributeId} value={a.name}>
-                {a.name}
-              </option>
-            ))}
-          </select>
+            onChange={(e) => {
+              const val = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
+              setAttributeFilter(val || '')
+            }}
+          />
         </div>
 
         <div className="variants__filter-item variants__filter-item--status">
-          <select
+          <SearchableSelect
+            id="variants-status-filter"
+            name="statusFilter"
+            hideLabel
+            placeholder="All Statuses"
+            showSearch={false}
+            menuMinWidth={160}
+            options={[
+              { value: 'active', label: 'Active' },
+              { value: 'inactive', label: 'Inactive' },
+              { value: 'low stock', label: 'Low Stock' },
+            ]}
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            aria-label="Filter by Status"
-          >
-            <option value="">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="low stock">Low Stock</option>
-          </select>
+            onChange={(e) => {
+              const val = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
+              setStatusFilter(val || '')
+            }}
+          />
         </div>
       </div>
     ),
@@ -1059,10 +1087,11 @@ export default function ProductVariants() {
                 {/* Pricing & Stock adjustments */}
                 <div className="resource-form__grid-2">
                   <div className="resource-form__field">
-                    <label htmlFor="priceDelta">Price Adjustment (Selling Price Delta)</label>
+                    <label htmlFor="priceDelta">Price Adjustment (Selling Price Delta) <span className="required-asterisk">*</span></label>
                     <InputField
                       id="priceDelta"
                       type="number"
+                      step="any"
                       value={formValues.priceDelta}
                       onChange={(e) => {
                         const val = typeof e === 'object' && e !== null && 'target' in e ? e.target.value : e
@@ -1070,6 +1099,7 @@ export default function ProductVariants() {
                       }}
                       placeholder="e.g. 10.00 or -5.00"
                       title="Enter price adjustment (+ or - from base price)"
+                      required
                     />
                     <span className="text-muted text-xs" style={{ marginTop: '2px' }}>
                       Adds or subtracts from parent product base price.
@@ -1081,7 +1111,7 @@ export default function ProductVariants() {
 
                   {!editingItem ? (
                     <div className="resource-form__field">
-                      <label htmlFor="stockDelta">Initial Stock Quantity</label>
+                      <label htmlFor="stockDelta">Initial Stock Quantity <span className="required-asterisk">*</span></label>
                       <InputField
                         id="stockDelta"
                         type="number"
@@ -1093,6 +1123,7 @@ export default function ProductVariants() {
                         }}
                         placeholder="0"
                         title="Enter initial stock quantity"
+                        required
                       />
                       {serverErrors.stockDelta && (
                         <span className="error-text">{serverErrors.stockDelta}</span>

@@ -486,13 +486,56 @@
 .form-modal__body--users .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 16px 20px;
+  align-items: start;
+}
+
+.form-modal__body--users .resource-form__field--full {
+  grid-column: 1 / -1;
+}
+
+.form-modal__body--users .field {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  min-width: 0 !important;
+}
+
+.form-modal__body--users .field label {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+  color: #374151 !important;
+  line-height: 1.2 !important;
+}
+
+.form-modal__body--users :where(select, .input-with-icon) {
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+}
+
+.form-modal__body--users select {
+  padding: 0 10px !important;
+  line-height: 36px !important;
+  background-color: #fff !important;
+  color: #1e293b !important;
+  cursor: pointer;
 }
 
 .form-modal__body--users .resource-form__footer {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 0;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 16px;
+  padding-top: 16px;
+  padding-bottom: 20px;
+  border-top: 1px solid #e2e8f0;
 }
 
 @media (max-width: 900px) {

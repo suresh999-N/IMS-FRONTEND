@@ -477,6 +477,113 @@
   border-top: 1px solid var(--border);
 }
 
+/* ==========================================================================
+   Payment Edit Modal Form Alignment & Field Standardization
+   ========================================================================== */
+.payment-edit-form {
+  display: grid;
+  gap: 16px;
+}
+
+.payment-edit-form .form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 20px;
+  align-items: start;
+}
+
+.payment-edit-form .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.payment-edit-form .field label,
+.payment-edit-form .searchable-select > label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #374151 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+  height: 18px;
+  min-height: 18px;
+}
+
+/* Ensure Amount (CurrencyInput), Payment Method (SearchableSelect), Reference Number have uniform geometry */
+.payment-edit-form :where(.input-with-icon, .searchable-select__trigger, input:not([type="checkbox"]):not([type="radio"]), select) {
+  min-height: 40px !important;
+  height: 40px !important;
+  box-sizing: border-box !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  background-color: #ffffff !important;
+  padding: 0 12px !important;
+  font-size: 13.5px !important;
+  color: #0f172a !important;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.payment-edit-form .input-with-icon {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.payment-edit-form .input-with-icon input {
+  height: 100% !important;
+  min-height: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  font-size: 13.5px !important;
+  color: #0f172a !important;
+  background: transparent !important;
+  text-align: left !important;
+}
+
+.payment-edit-form .searchable-select__trigger {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  cursor: pointer !important;
+}
+
+.payment-edit-form .searchable-select__value {
+  display: flex !important;
+  align-items: center !important;
+  font-size: 13.5px !important;
+  color: #0f172a !important;
+  text-align: left !important;
+}
+
+/* Uniform hover and focus styles across all controls */
+.payment-edit-form :where(.input-with-icon, .searchable-select__trigger):hover:not(:disabled) {
+  border-color: #059669 !important;
+  background-color: #f8fafc !important;
+  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.08) !important;
+}
+
+.payment-edit-form :where(.input-with-icon:focus-within, .searchable-select__trigger:focus-visible, .searchable-select__trigger.is-open) {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+  background-color: #ffffff !important;
+}
+
+/* Preserve multiline sizing for Notes textarea */
+.payment-edit-form .field:has(textarea) .input-with-icon,
+.payment-edit-form textarea {
+  min-height: 90px !important;
+  height: auto !important;
+  padding: 8px 12px !important;
+}
+
+.payment-edit-form .field--full {
+  grid-column: 1 / -1;
+}
+
 @media (max-width: 1024px) {
   .payments-page__filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -7140,17 +7247,17 @@
   align-items: center !important;
   justify-content: flex-end !important;
   flex: 1 1 auto !important;
-  gap: 7px !important;
+  gap: 8px !important;
   min-width: 0 !important;
   min-height: 34px !important;
   flex-wrap: nowrap !important;
 }
 
 .payments-toolbar-select {
-  flex: 0 0 130px !important;
-  width: 130px !important;
-  min-width: 130px !important;
-  max-width: 130px !important;
+  flex: 0 0 140px !important;
+  width: 140px !important;
+  min-width: 140px !important;
+  max-width: 140px !important;
   margin: 0 !important;
 }
 
@@ -7164,7 +7271,7 @@
   border-radius: 6px !important;
   color: #334155 !important;
   font-size: 12.5px !important;
-  font-weight: 560 !important;
+  font-weight: 600 !important;
   line-height: 1 !important;
   box-shadow: none !important;
   transform: none !important;
@@ -7184,18 +7291,94 @@
 }
 
 .payments-toolbar-select select {
-  width: 130px !important;
-  min-width: 130px !important;
-  padding: 0 26px 0 10px !important;
+  box-sizing: border-box !important;
+  width: 140px !important;
+  min-width: 140px !important;
+  max-width: 140px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  padding: 0 28px 0 12px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  background-color: #ffffff !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 10px center !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  cursor: pointer !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  transition: all 0.15s ease-in-out !important;
 }
 
-.payments-column-filter__trigger,
-.payments-toolbar-button:not(.payments-toolbar-button--primary) {
-  flex: 0 0 82px !important;
-  width: 82px !important;
-  min-width: 82px !important;
-  max-width: 82px !important;
-  padding-inline: 8px !important;
+.payments-page__toolbar-actions .payments-column-filter__trigger,
+.payments-page__toolbar-actions .payments-toolbar-button {
+  flex: 0 0 140px !important;
+  width: 140px !important;
+  min-width: 140px !important;
+  max-width: 140px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  padding: 0 12px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  background-color: #ffffff !important;
+  color: #334155 !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.payments-page__toolbar-actions :where(select, .payments-column-filter__trigger, .payments-toolbar-button):hover {
+  border-color: #059669 !important;
+  color: #047857 !important;
+  background-color: #f0fdf4 !important;
+}
+
+.payments-page__toolbar-actions :where(select, .payments-column-filter__trigger, .payments-toolbar-button):hover svg {
+  stroke: #047857 !important;
+}
+
+.payments-page__toolbar-actions .payments-column-filter__trigger[aria-expanded='true'] {
+  border-color: #059669 !important;
+  color: #047857 !important;
+  background-color: #f0fdf4 !important;
+}
+
+.payments-page__toolbar-actions .payments-toolbar-button:disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  border-color: #e2e8f0 !important;
+  color: #94a3b8 !important;
+  background-color: #f8fafc !important;
+}
+
+.payments-page__selected-actions .payments-toolbar-button {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 76px !important;
+  max-width: none !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  padding: 0 12px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
 }
 
 .payments-toolbar-button--primary {

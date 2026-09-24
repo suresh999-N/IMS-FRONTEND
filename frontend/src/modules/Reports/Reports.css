@@ -112,7 +112,7 @@
 }
 
 .reports-metric-badge strong {
-  color: inherit;
+  color: #000000 !important;
   font-size: 13px;
   font-weight: 900;
   line-height: 1;
@@ -181,6 +181,17 @@
   background: #ffffff;
   color: #0f766e;
   box-shadow: 0 6px 14px rgba(15, 23, 42, 0.055);
+}
+
+.reports-page__header-actions .button:disabled,
+.reports-page__header-actions .export-menu__trigger:disabled,
+.reports-page__header-actions button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none;
+  border-color: #dbe5f0;
+  color: #94a3b8;
 }
 
 /* Products-style compact filter toolbar */
@@ -1232,7 +1243,7 @@
 .reports-metric-badge strong {
   font-size: 14px !important;
   font-weight: 900 !important;
-  color: inherit !important;
+  color: #000000 !important;
 }
 
 .reports-metric-badge--success {

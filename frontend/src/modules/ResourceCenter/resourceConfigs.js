@@ -32,6 +32,7 @@ import {
   getReasonHelperText,
   getReasonPlaceholder,
 } from '../../validators/stockAdjustmentValidator'
+import { getRoleNameError } from '../../validators/roleValidator'
 
 const _activeStatusOptions = [
   { value: 'active', label: 'Active' },
@@ -1360,7 +1361,14 @@ export const RESOURCE_CONFIGS = {
       users: 'users',
     },
     fields: [
-      { name: 'roleName', label: 'Role Name', required: true, minLength: 2 },
+      {
+        name: 'roleName',
+        label: 'Role Name *',
+        required: true,
+        minLength: 2,
+        maxLength: 50,
+        validate: (val) => getRoleNameError(val),
+      },
       { name: 'description', label: 'Description', type: 'textarea' },
     ],
     columns: [
