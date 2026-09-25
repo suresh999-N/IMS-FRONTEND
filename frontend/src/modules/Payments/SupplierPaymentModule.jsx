@@ -1412,7 +1412,7 @@ function PaymentDetailsDrawer({ payment, purchaseOrder, allPayments = [], onClos
 function PaymentEditModal({ payment, invoice, onSubmit, onClose, isSubmitting }) {
   const [formData, setFormData] = useState({
     amount: String(payment.amount || ''),
-    paymentMethod: payment.paymentMethod || 'Bank Transfer',
+    paymentMethod: payment.paymentMethod || '',
     referenceNumber: payment.referenceNumber || '',
     notes: payment.notes || '',
   })
@@ -1424,6 +1424,7 @@ function PaymentEditModal({ payment, invoice, onSubmit, onClose, isSubmitting })
     amount:
       getNumberError(formData.amount, 'Amount', { allowZero: false }) ||
       (Number(formData.amount) > editableOutstanding ? `Amount cannot exceed ${formatCurrency(editableOutstanding)}.` : ''),
+    paymentMethod: getRequiredError(formData.paymentMethod, 'Payment method'),
     referenceNumber: formData.referenceNumber.length > 100 ? 'Reference number must be 100 characters or fewer.' : '',
     notes: formData.notes.length > 500 ? 'Notes must be 500 characters or fewer.' : '',
   }
@@ -1477,9 +1478,13 @@ function PaymentEditModal({ payment, invoice, onSubmit, onClose, isSubmitting })
             id="payment-edit-method"
             name="paymentMethod"
             label="Payment Method"
+            placeholder="Select Payment Method"
             value={formData.paymentMethod}
             onChange={handleChange}
+            onBlur={handleBlur}
             options={PAYMENT_METHODS}
+            error={touched.paymentMethod ? errors.paymentMethod : ''}
+            showError
           />
           <InputField
             id="payment-edit-reference"
@@ -1537,7 +1542,7 @@ function PaymentForm({
     poId: '',
     amount: '',
     paymentDate: getToday(),
-    paymentMethod: 'Bank Transfer',
+    paymentMethod: '',
     referenceNumber: '',
     notes: '',
   })
@@ -1574,6 +1579,7 @@ function PaymentForm({
       (formData.paymentDate && formData.paymentDate < getToday()
         ? 'Payment date cannot be in the past.'
         : ''),
+    paymentMethod: getRequiredError(formData.paymentMethod, 'Payment method'),
     referenceNumber:
       formData.referenceNumber.length > 100
         ? 'Reference number must be 100 characters or fewer.'
@@ -1842,10 +1848,13 @@ function PaymentForm({
             id="payment-method"
             name="paymentMethod"
             label="Payment Method"
+            placeholder="Select Payment Method"
             value={formData.paymentMethod}
             onChange={handleChange}
             onBlur={handleBlur}
             options={PAYMENT_METHODS}
+            error={touched.paymentMethod ? errors.paymentMethod : ''}
+            showError
           />
 
           <InputField
@@ -2757,28 +2766,16 @@ export default function SupplierPaymentModule({
         <strong>{selectedPaymentIds.length} selected</strong>
       </div>
 
-      {selectedPayments.length === 1 ? (
-        <button
-          type="button"
-          className="button button-secondary payments-toolbar-button"
-          onClick={() => handleDownloadReceipt(selectedPayments[0])}
-          title="Download official payment receipt PDF"
-        >
-          <ReceiptText size={15} />
-          Receipt PDF
-        </button>
-      ) : (
-        <button
-          type="button"
-          className="button button-secondary payments-toolbar-button"
-          onClick={() => handleExport(selectedPayments)}
-          title="Download Detailed Payment Report PDF"
-          aria-label="Download Detailed Payment Report PDF"
-        >
-          <FileText size={15} />
-          Detailed Report
-        </button>
-      )}
+      <button
+        type="button"
+        className="button button-secondary payments-toolbar-button"
+        onClick={() => handleExport(selectedPayments)}
+        title="Download Detailed Payment Report PDF"
+        aria-label="Download Detailed Payment Report PDF"
+      >
+        <FileText size={15} />
+        Detailed Report
+      </button>
 
       <button type="button" className="button button-secondary payments-toolbar-button" onClick={() => handlePrint(selectedPayments)}>
         <Printer size={15} />

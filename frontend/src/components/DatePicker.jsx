@@ -1,5 +1,6 @@
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import InputField from './InputField'
 
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
@@ -77,11 +78,13 @@ export default function DatePicker(props) {
   } = props
 
   const wrapperRef = useRef(null)
+  const popoverRef = useRef(null)
   const instanceIdRef = useRef(`datepicker-${Math.random().toString(36).substring(2, 9)}`)
   const [displayValue, setDisplayValue] = useState(() => formatDisplayDate(value))
   const [isOpen, setIsOpen] = useState(false)
   const [viewDate, setViewDate] = useState(() => parseIsoDate(value) || new Date())
   const [popoverStyle, setPopoverStyle] = useState({})
+  const [portalElement, setPortalElement] = useState(null)
   const selectedDate = parseIsoDate(value)
   const today = new Date()
 
@@ -101,6 +104,28 @@ export default function DatePicker(props) {
   }
 
   useEffect(() => {
+    if (typeof document === 'undefined') return undefined
+    const element = document.createElement('div')
+    element.className = 'date-picker-portal-root'
+    document.body.appendChild(element)
+    setPortalElement(element)
+    return () => {
+      setPortalElement(null)
+      element.remove()
+    }
+  }, [])
+
+  useEffect(() => {
+    function handleGlobalDropdownOpened(event) {
+      if (event.detail?.id !== instanceIdRef.current) {
+        setIsOpen(false)
+      }
+    }
+    window.addEventListener('ims:dropdown-opened', handleGlobalDropdownOpened)
+    return () => window.removeEventListener('ims:dropdown-opened', handleGlobalDropdownOpened)
+  }, [])
+
+  useEffect(() => {
     setDisplayValue(formatDisplayDate(value))
     setViewDate(parseIsoDate(value) || new Date())
   }, [value])
@@ -110,7 +135,7 @@ export default function DatePicker(props) {
 
     function updatePopoverPosition() {
       const rect = wrapperRef.current?.getBoundingClientRect()
-      if (!rect) return
+      if (!rect || typeof window === 'undefined') return
       const popoverWidth = 248
       const popoverHeight = 244
       const gutter = 10
@@ -119,11 +144,22 @@ export default function DatePicker(props) {
       if (restProps.forceDownward === false && top + popoverHeight > window.innerHeight - gutter) {
         top = Math.max(gutter, rect.top - popoverHeight - 7)
       }
-      setPopoverStyle({ left: `${left}px`, top: `${top}px` })
+      setPopoverStyle({
+        position: 'fixed',
+        left: `${left}px`,
+        top: `${top}px`,
+        zIndex: 2147483647,
+      })
     }
 
     function handlePointerDown(event) {
-      if (!wrapperRef.current?.contains(event.target)) setIsOpen(false)
+      if (
+        wrapperRef.current?.contains(event.target) ||
+        popoverRef.current?.contains(event.target)
+      ) {
+        return
+      }
+      setIsOpen(false)
     }
 
     function handleKeyDown(event) {
@@ -132,17 +168,19 @@ export default function DatePicker(props) {
 
     updatePopoverPosition()
     document.addEventListener('mousedown', handlePointerDown)
+    document.addEventListener('pointerdown', handlePointerDown)
     document.addEventListener('keydown', handleKeyDown)
     window.addEventListener('resize', updatePopoverPosition)
     window.addEventListener('scroll', updatePopoverPosition, true)
 
     return () => {
       document.removeEventListener('mousedown', handlePointerDown)
+      document.removeEventListener('pointerdown', handlePointerDown)
       document.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('resize', updatePopoverPosition)
       window.removeEventListener('scroll', updatePopoverPosition, true)
     }
-  }, [isOpen])
+  }, [isOpen, restProps.forceDownward])
 
   function emitChange(nextValue) {
     onChange?.({ target: { name, value: nextValue } })
@@ -206,6 +244,75 @@ export default function DatePicker(props) {
     setIsOpen(false)
   }
 
+  const popover = isOpen ? (
+    <div
+      ref={popoverRef}
+      className="date-picker-popover"
+      role="dialog"
+      aria-label={`${label || 'Date'} calendar`}
+      style={popoverStyle}
+    >
+      <div className="date-picker-popover__header">
+        <button type="button" onClick={() => shiftMonth(-1)} aria-label="Previous month">
+          <ChevronLeft size={16} />
+        </button>
+        <span>
+          <small>{label ? `${label} date` : 'Date'}</small>
+          <strong>{getMonthLabel(viewDate)}</strong>
+        </span>
+        <button type="button" onClick={() => shiftMonth(1)} aria-label="Next month">
+          <ChevronRight size={16} />
+        </button>
+      </div>
+      <div className="date-picker-popover__weekdays" aria-hidden="true">
+        {WEEKDAYS.map((day) => (
+          <span key={day}>{day}</span>
+        ))}
+      </div>
+      <div className="date-picker-popover__grid">
+        {getCalendarDays(viewDate).map((date) => {
+          const isoValue = toIsoDate(date)
+          const isMuted = date.getMonth() !== viewDate.getMonth()
+          const isSelected = isSameDay(date, selectedDate)
+          const isToday = isSameDay(date, today)
+          const isDisabled = isDateDisabled(date)
+
+          return (
+            <button
+              key={isoValue}
+              type="button"
+              disabled={isDisabled}
+              aria-disabled={isDisabled}
+              className={[
+                'date-picker-popover__day',
+                isMuted ? 'is-muted' : '',
+                isSelected ? 'is-selected' : '',
+                isToday ? 'is-today' : '',
+                isDisabled ? 'is-disabled' : '',
+              ].filter(Boolean).join(' ')}
+              onClick={() => !isDisabled && selectDate(date)}
+            >
+              {date.getDate()}
+            </button>
+          )
+        })}
+      </div>
+      <div className="date-picker-popover__footer">
+        <button type="button" disabled={isDateDisabled(today)} onClick={() => selectDate(today)}>Today</button>
+        <button
+          type="button"
+          onClick={() => {
+            setDisplayValue('')
+            emitChange('')
+            setIsOpen(false)
+          }}
+        >
+          Clear
+        </button>
+      </div>
+    </div>
+  ) : null
+
   return (
     <div className={`date-picker-shell ${isOpen ? 'is-open' : ''}`} ref={wrapperRef}>
       <InputField
@@ -223,73 +330,7 @@ export default function DatePicker(props) {
         className={`date-picker-field ${className}`.trim()}
         {...restProps}
       />
-      {isOpen ? (
-        <div
-          className="date-picker-popover"
-          role="dialog"
-          aria-label={`${label || 'Date'} calendar`}
-          style={popoverStyle}
-        >
-          <div className="date-picker-popover__header">
-            <button type="button" onClick={() => shiftMonth(-1)} aria-label="Previous month">
-              <ChevronLeft size={16} />
-            </button>
-            <span>
-              <small>{label ? `${label} date` : 'Date'}</small>
-              <strong>{getMonthLabel(viewDate)}</strong>
-            </span>
-            <button type="button" onClick={() => shiftMonth(1)} aria-label="Next month">
-              <ChevronRight size={16} />
-            </button>
-          </div>
-          <div className="date-picker-popover__weekdays" aria-hidden="true">
-            {WEEKDAYS.map((day) => (
-              <span key={day}>{day}</span>
-            ))}
-          </div>
-          <div className="date-picker-popover__grid">
-            {getCalendarDays(viewDate).map((date) => {
-              const isoValue = toIsoDate(date)
-              const isMuted = date.getMonth() !== viewDate.getMonth()
-              const isSelected = isSameDay(date, selectedDate)
-              const isToday = isSameDay(date, today)
-              const isDisabled = isDateDisabled(date)
-
-              return (
-                <button
-                  key={isoValue}
-                  type="button"
-                  disabled={isDisabled}
-                  aria-disabled={isDisabled}
-                  className={[
-                    'date-picker-popover__day',
-                    isMuted ? 'is-muted' : '',
-                    isSelected ? 'is-selected' : '',
-                    isToday ? 'is-today' : '',
-                    isDisabled ? 'is-disabled' : '',
-                  ].filter(Boolean).join(' ')}
-                  onClick={() => !isDisabled && selectDate(date)}
-                >
-                  {date.getDate()}
-                </button>
-              )
-            })}
-          </div>
-          <div className="date-picker-popover__footer">
-            <button type="button" disabled={isDateDisabled(today)} onClick={() => selectDate(today)}>Today</button>
-            <button
-              type="button"
-              onClick={() => {
-                setDisplayValue('')
-                emitChange('')
-                setIsOpen(false)
-              }}
-            >
-              Clear
-            </button>
-          </div>
-        </div>
-      ) : null}
+      {popover && portalElement ? createPortal(popover, portalElement) : null}
     </div>
   )
 }

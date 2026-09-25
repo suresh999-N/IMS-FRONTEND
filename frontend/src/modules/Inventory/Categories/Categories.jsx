@@ -16,6 +16,7 @@ import {
   Printer,
   RefreshCw,
   Save,
+  SlidersHorizontal,
   Trash2,
 } from 'lucide-react'
 import {

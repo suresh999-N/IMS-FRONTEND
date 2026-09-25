@@ -156,27 +156,28 @@
   z-index: 8;
   height: 34px;
   padding: 5px 8px;
-  border-bottom: 1px solid rgba(203, 213, 225, 0.95);
+  border-bottom: 1px solid #cbd5e1;
+  border-right: 1px solid #e2e8f0;
   background: #f8fafc;
   color: #475569;
   font-size: 11px;
   font-weight: 800;
   line-height: 1;
-  box-shadow: inset 0 -1px 0 rgba(203, 213, 225, 0.72), 0 3px 8px rgba(248, 250, 252, 0.84);
+  box-shadow: inset 0 -1px 0 #cbd5e1;
 }
 
 .warehouses-page__table-card .table-container td {
   height: 46px;
   padding: 7px 8px;
-  border-bottom: 1px solid #f0f3f7;
+  border-bottom: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
   color: #334155;
   font-size: 12.5px;
   line-height: 1.25;
 }
 
-.warehouses-page__table-card .table-container th:not(:first-child),
-.warehouses-page__table-card .table-container td:not(:first-child) {
-  box-shadow: inset 1px 0 0 rgba(241, 245, 249, 0.72);
+.warehouses-page__table-card .table-container :is(th, td):last-child {
+  border-right: none;
 }
 
 .warehouses-page__table-card .table-container tbody tr {
@@ -1620,15 +1621,18 @@
 }
 
 .warehouses-page .warehouses-data-table--compact .table-component__table thead th {
-  height: 32px !important;
+  height: 34px !important;
   padding-top: 4px !important;
   padding-bottom: 4px !important;
   background: #f8fafc !important;
-  border-bottom: 1px solid rgba(203, 213, 225, 0.95) !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+  border-right: 1px solid #e2e8f0 !important;
   color: #475569 !important;
-  box-shadow:
-    inset 0 -1px 0 rgba(203, 213, 225, 0.72),
-    0 3px 8px rgba(248, 250, 252, 0.84) !important;
+  box-shadow: inset 0 -1px 0 #cbd5e1 !important;
+}
+
+.warehouses-page .warehouses-data-table--compact .table-component__table :is(th, td):last-child {
+  border-right: none !important;
 }
 
 .warehouses-page .warehouses-data-table--compact .table-component__table > thead > tr > th,
@@ -1646,6 +1650,8 @@
   font-size: 13px !important;
   font-weight: 560 !important;
   line-height: 1.15 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-right: 1px solid #e2e8f0 !important;
 }
 
 .warehouses-page .warehouses-data-table--compact .table-component__table tbody tr:first-child td {

@@ -2325,6 +2325,8 @@ input[type="password"]::-ms-clear {
 /* Standardize search bar width, alignment, and border-radius across the entire application */
 .global-search,
 .global-search .app-header__search,
+.global-search__trigger,
+.global-search__control,
 .app-header__search,
 .search-input-container,
 .search-wrapper,
@@ -2337,6 +2339,8 @@ input[type="password"]::-ms-clear {
 .sales-returns-toolbar input,
 .sales-returns-toolbar .toolbar-search input,
 .sales-returns-page .toolbar-search input,
+.barcode-page__table-card .search-wrapper,
+.barcode-page__table-card .search-input-container,
 .table-component__toolbar :where(.erp-search-bar, .search-input-container, .search-wrapper),
 .resource-center__inventory-table :where(.erp-search-bar, .search-input-container, .search-wrapper),
 [class*='resource-center'] :where(.erp-search-bar, .search-input-container, .search-wrapper),

@@ -28,7 +28,7 @@ export default function SearchableSelect(props) {
     className = '',
     menuClassName = '',
     showSearch = true,
-    showPlaceholder = true,
+    showPlaceholder = false,
     menuPlacement = 'auto',
     menuMinWidth,
   } = props

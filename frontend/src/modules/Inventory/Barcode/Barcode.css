@@ -59,6 +59,7 @@
 
 .barcode-page__table-card .search-wrapper {
   height: 38px;
+  border-radius: 10px !important;
 }
 
 .barcode-page__table-card .table-component__columns-trigger {

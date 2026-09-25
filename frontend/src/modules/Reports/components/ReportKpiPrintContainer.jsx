@@ -364,8 +364,20 @@ export default function ReportKpiPrintContainer({
         <div className="kpi-print-highlight-label">{isAllWarehouses ? `CONSOLIDATED ${kpiTitle.toUpperCase()}` : kpiTitle.toUpperCase()}</div>
         <div className="kpi-print-highlight-value">{kpiValue}</div>
         <div className="kpi-print-highlight-meta">
-          <span>Location: <strong>{isAllWarehouses ? 'All Warehouses Consolidated' : selectedWarehouseName}</strong></span>
-          {kpiTrend ? <span className="kpi-print-trend"> | Trend: {kpiTrend} ({kpiCaption})</span> : null}
+          <span className="kpi-print-meta-item">
+            <span className="kpi-print-meta-label">Location:</span>{' '}
+            <strong className="kpi-print-meta-val">{isAllWarehouses ? 'All Warehouses Consolidated' : selectedWarehouseName}</strong>
+          </span>
+          {kpiTrend ? (
+            <>
+              <span className="kpi-print-meta-divider" aria-hidden="true">|</span>
+              <span className="kpi-print-meta-item">
+                <span className="kpi-print-meta-label">Trend:</span>{' '}
+                <strong className="kpi-print-meta-trend-val">{kpiTrend}</strong>
+                {kpiCaption ? <span className="kpi-print-meta-caption"> ({kpiCaption})</span> : null}
+              </span>
+            </>
+          ) : null}
         </div>
       </div>
 

@@ -668,7 +668,6 @@ function InvoiceForm({
             name="invoiceDate"
             label="Invoice Date *"
             value={draft.invoiceDate}
-            maxDate={getToday()}
             onChange={handleInvoiceDateChange}
             disabled={isSubmitting}
             error={errors.invoiceDate}

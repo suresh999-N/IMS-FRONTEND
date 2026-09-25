@@ -568,6 +568,8 @@ function getSelectionRowKey(row, index = 0) {
   const candidates = [
     readResourceValue(row, 'id', null),
     readResourceValue(row, '_id', null),
+    readResourceValue(row, 'invoiceId', null),
+    readResourceValue(row, 'invoiceID', null),
     readResourceValue(row, 'settingId', null),
     readResourceValue(row, 'settingID', null),
     readResourceValue(row, 'roleId', null),
@@ -1599,6 +1601,7 @@ function ResourcePage({ config, navigationContent = null }) {
   const [notificationFilters, setNotificationFilters] = useState({ read: 'all', type: 'all' })
   const [selectedSubCategoryIds, setSelectedSubCategoryIds] = useState([])
   const [selectedProductStyleRowIds, setSelectedProductStyleRowIds] = useState([])
+  const [selectedInvoiceRowIds, setSelectedInvoiceRowIds] = useState([])
 
   const canCreate = (config.canCreate ?? true) && hasPermission(config.permissionKey, 'create')
   const canUpdate = (config.canUpdate ?? true) && hasPermission(config.permissionKey, 'edit')
@@ -1862,7 +1865,7 @@ function ResourcePage({ config, navigationContent = null }) {
   }, [isNotificationsPage, notificationFilters, rows])
 
   const productStyleTableRows = useMemo(() => {
-    if (!isProductStylePage) {
+    if (!isProductStylePage && !isInvoicesPage) {
       return rows
     }
 
@@ -1870,7 +1873,7 @@ function ResourcePage({ config, navigationContent = null }) {
       ...row,
       __resourceSelectionKey: getSelectionRowKey(row, index),
     }))
-  }, [isProductStylePage, rows])
+  }, [isInvoicesPage, isProductStylePage, rows])
 
   const selectedSubCategories = useMemo(() => {
     const selectedIdSet = new Set(selectedSubCategoryIds.map(String))
@@ -1882,6 +1885,11 @@ function ResourcePage({ config, navigationContent = null }) {
     return rows.filter((row, index) => selectedIdSet.has(getSelectionRowKey(row, index)))
   }, [rows, selectedProductStyleRowIds])
   const hasSelectedProductStyleRows = selectedProductStyleRows.length > 0
+  const selectedInvoiceRows = useMemo(() => {
+    const selectedIdSet = new Set(selectedInvoiceRowIds.map(String))
+    return rows.filter((row, index) => selectedIdSet.has(getSelectionRowKey(row, index)))
+  }, [rows, selectedInvoiceRowIds])
+  const hasSelectedInvoiceRows = selectedInvoiceRows.length > 0
 
   useEffect(() => {
     if (!isSubCategoriesPage) {
@@ -1900,6 +1908,15 @@ function ResourcePage({ config, navigationContent = null }) {
     const visibleIdSet = new Set(rows.map((row, index) => getSelectionRowKey(row, index)))
     setSelectedProductStyleRowIds((currentValue) => currentValue.filter((id) => visibleIdSet.has(String(id))))
   }, [isProductStylePage, rows])
+
+  useEffect(() => {
+    if (!isInvoicesPage) {
+      return
+    }
+
+    const visibleIdSet = new Set(rows.map((row, index) => getSelectionRowKey(row, index)))
+    setSelectedInvoiceRowIds((currentValue) => currentValue.filter((id) => visibleIdSet.has(String(id))))
+  }, [isInvoicesPage, rows])
 
   async function handleSave({ payload, changedPayload }) {
     setIsSaving(true)
@@ -2033,6 +2050,77 @@ function ResourcePage({ config, navigationContent = null }) {
         message: `${selectedProductStyleRows.length} ${config.entityName} record${selectedProductStyleRows.length === 1 ? '' : 's'} deleted successfully.`,
       })
       notifyCatalogStructureUpdate(config, 'deleted')
+      await loadRows({ force: true })
+    } catch (deleteError) {
+      showToast({
+        type: 'error',
+        title: config.title,
+        message:
+          deleteError instanceof Error
+            ? deleteError.message
+            : `Unable to delete ${config.entityName.toLowerCase()}.`,
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  async function handleBulkInvoicePdf() {
+    const pdfAction = config.rowActions?.find((a) => a.key === 'pdf')
+    if (!pdfAction || selectedInvoiceRows.length === 0) {
+      return
+    }
+
+    for (const row of selectedInvoiceRows) {
+      await downloadResourceFile(config, row, pdfAction)
+    }
+  }
+
+  async function handleBulkInvoiceEmail() {
+    const emailAction = config.rowActions?.find((a) => a.key === 'email')
+    if (!emailAction || selectedInvoiceRows.length === 0) {
+      return
+    }
+
+    let successCount = 0
+    for (const row of selectedInvoiceRows) {
+      const id = readResourceValue(row, config.idFields?.[0] || 'id', row.id)
+      const response = await postResourceAction(config, id, emailAction)
+      if (response.success) {
+        successCount += 1
+      }
+    }
+
+    showToast({
+      type: 'success',
+      title: config.title,
+      message: `Email sent for ${successCount} invoice${successCount === 1 ? '' : 's'}.`,
+    })
+  }
+
+  async function handleBulkInvoiceDelete() {
+    if (!canDelete || selectedInvoiceRows.length === 0) {
+      return
+    }
+
+    setIsDeleting(true)
+
+    try {
+      for (const row of selectedInvoiceRows) {
+        const id = readResourceValue(row, config.idFields?.[0] || 'id', row.id)
+        const response = await deleteResource(config, id)
+
+        if (!response.success) {
+          throw new Error(getDeleteErrorMessage(config, response.error))
+        }
+      }
+
+      setSelectedInvoiceRowIds([])
+      showToast({
+        type: 'success',
+        title: config.title,
+        message: `${selectedInvoiceRows.length} ${config.entityName} record${selectedInvoiceRows.length === 1 ? '' : 's'} deleted successfully.`,
+      })
       await loadRows({ force: true })
     } catch (deleteError) {
       showToast({
@@ -2792,11 +2880,57 @@ function ResourcePage({ config, navigationContent = null }) {
       </select>
     </FilterBar>
   ) : null
+  const invoiceSelectedToolbarContent = hasSelectedInvoiceRows ? (
+    <FilterBar className="resource-center__product-style-selection-actions" ariaLabel="Selected Invoice actions">
+      <div className="resource-center__product-style-selection-summary" aria-live="polite">
+        <Check size={15} />
+        <strong>{selectedInvoiceRows.length} selected</strong>
+      </div>
+      <button
+        type="button"
+        className="button button-secondary resource-center__product-style-selection-button"
+        onClick={handleBulkInvoicePdf}
+      >
+        <Download size={15} />
+        PDF
+      </button>
+      <button
+        type="button"
+        className="button button-secondary resource-center__product-style-selection-button"
+        onClick={handleBulkInvoiceEmail}
+      >
+        <Mail size={15} />
+        Email
+      </button>
+      <button
+        type="button"
+        className="button button-secondary resource-center__product-style-selection-button"
+        onClick={() => exportResourceRowsCsv(config, selectedInvoiceRows)}
+      >
+        <FileSpreadsheet size={15} />
+        Export
+      </button>
+      {canDelete ? (
+        <button
+          type="button"
+          className="button button-secondary resource-center__product-style-selection-button resource-center__product-style-selection-button--danger"
+          onClick={handleBulkInvoiceDelete}
+          disabled={isDeleting}
+        >
+          <Trash2 size={15} />
+          Delete
+        </button>
+      ) : null}
+    </FilterBar>
+  ) : null
+
   const resolvedFilterContent = isSubCategoriesPage
     ? subCategorySelectedToolbarContent
     : isProductStylePage && hasSelectedProductStyleRows
       ? productStyleSelectedToolbarContent
-      : notificationFilterContent
+      : isInvoicesPage && hasSelectedInvoiceRows
+        ? invoiceSelectedToolbarContent
+        : notificationFilterContent
   const resolvedToolbarContent = isProductStylePage && hasSelectedProductStyleRows
     ? productStyleSelectedRightContent
     : isSubCategoriesPage
@@ -2988,12 +3122,12 @@ function ResourcePage({ config, navigationContent = null }) {
       <div className={`card ${isProductStylePage ? 'products-table-card resource-center__products-table-card' : ''} ${isSubCategoriesPage ? 'resource-center__table-card' : ''} ${isInventoryCompactPage ? 'resource-center__inventory-table-card' : ''} ${!isProductStylePage && isAuditLogsPage ? 'resource-center__audit-table-card' : ''} ${isNotificationsPage ? 'resource-center__notifications-table-card' : ''} ${isInvoicesPage ? 'resource-center__invoices-table-card' : ''}`}>
         <DataTable
           className={isProductStylePage ? 'products-data-table--compact resource-center__products-table' : isSubCategoriesPage ? 'resource-center__subcategories-table' : isInventoryCompactPage ? 'resource-center__inventory-table' : isNotificationsPage ? 'resource-center__notifications-table' : isInvoicesPage ? 'resource-center__invoices-table' : ''}
-          rows={isProductStylePage ? productStyleTableRows : isNotificationsPage ? filteredNotificationRows : rows}
+          rows={isProductStylePage || isInvoicesPage ? productStyleTableRows : isNotificationsPage ? filteredNotificationRows : rows}
           columns={columns}
           loading={isLoading}
           defaultPageSize={isProductStylePage || isSubCategoriesPage || isInventoryCompactPage || isNotificationsPage || isInvoicesPage ? 20 : 8}
           showSearch={true}
-          hideSelectionSummary={hasSelectedSubCategories || hasSelectedProductStyleRows}
+          hideSelectionSummary={hasSelectedSubCategories || hasSelectedProductStyleRows || hasSelectedInvoiceRows}
           searchPlaceholder={`Search ${config.title.toLowerCase()}`}
           emptyMessage={`No ${config.title.toLowerCase()} records found.`}
           splitToolbar={isProductStylePage || isSubCategoriesPage || isInventoryCompactPage || isNotificationsPage || isInvoicesPage}
@@ -3011,10 +3145,10 @@ function ResourcePage({ config, navigationContent = null }) {
           rowClassName={isNotificationsPage ? (row) => (getNotificationReadState(row) ? 'is-read' : 'is-unread') : undefined}
           defaultSortKey={isProductStylePage ? config.columns?.[0]?.key || '' : isSubCategoriesPage ? 'name' : isInventoryCompactPage ? config.columns?.[0]?.key || '' : isNotificationsPage ? 'createdAt' : isInvoicesPage ? 'invoiceDate' : ''}
           defaultSortDirection={isNotificationsPage || isInvoicesPage ? 'desc' : 'asc'}
-          enableRowSelection={isSubCategoriesPage || isProductStylePage}
-          selectedRowKeys={isSubCategoriesPage ? selectedSubCategoryIds : isProductStylePage ? selectedProductStyleRowIds : undefined}
-          onSelectionChange={isSubCategoriesPage ? setSelectedSubCategoryIds : isProductStylePage ? setSelectedProductStyleRowIds : undefined}
-          keyField={isProductStylePage ? '__resourceSelectionKey' : 'id'}
+          enableRowSelection={isSubCategoriesPage || isProductStylePage || isInvoicesPage}
+          selectedRowKeys={isSubCategoriesPage ? selectedSubCategoryIds : isProductStylePage ? selectedProductStyleRowIds : isInvoicesPage ? selectedInvoiceRowIds : undefined}
+          onSelectionChange={isSubCategoriesPage ? setSelectedSubCategoryIds : isProductStylePage ? setSelectedProductStyleRowIds : isInvoicesPage ? setSelectedInvoiceRowIds : undefined}
+          keyField={isProductStylePage || isInvoicesPage ? '__resourceSelectionKey' : 'id'}
         />
       </div>
 

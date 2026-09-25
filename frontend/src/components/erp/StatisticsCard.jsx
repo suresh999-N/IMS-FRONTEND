@@ -22,7 +22,7 @@ export default function StatisticsCard({
       ) : null}
       <div className="erp-statistics-card__body">
         <p className="erp-statistics-card__label">{label}</p>
-        <strong className="erp-statistics-card__value">{value}</strong>
+        <strong className="erp-statistics-card__value" title={typeof value === 'string' || typeof value === 'number' ? String(value) : undefined}>{value}</strong>
         {trendValue ? (
           <p className={`erp-statistics-card__trend erp-statistics-card__trend--${trendTone}`.trim()}>
             <span>{trendValue}</span>

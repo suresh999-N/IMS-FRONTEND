@@ -421,6 +421,8 @@
 }
 
 .reports-page .erp-statistics-card__value {
+  display: block;
+  max-width: 100%;
   margin-top: 3px;
   color: #0f172a;
   font-size: clamp(15px, 1.2vw, 18px);
@@ -428,8 +430,8 @@
   letter-spacing: -0.025em;
   line-height: 1.05;
   white-space: nowrap;
-  overflow: visible;
-  text-overflow: clip;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .reports-page .erp-statistics-card__helper {
@@ -1459,6 +1461,8 @@
 }
 
 .reports-page .erp-statistics-card__value {
+  display: block !important;
+  max-width: 100% !important;
   margin-top: 3px !important;
   color: #0f172a !important;
   font-size: clamp(14px, 1.05vw, 17px) !important;
@@ -1466,8 +1470,8 @@
   letter-spacing: -0.02em !important;
   line-height: 1.05 !important;
   white-space: nowrap !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .reports-page .erp-statistics-card__helper {
@@ -1744,9 +1748,14 @@
 }
 
 .reports-page .erp-statistics-card__value {
+  display: block;
+  max-width: 100%;
   font-size: clamp(14px, 1.08vw, 17px);
   font-weight: 900;
   line-height: 1.06;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .reports-page .erp-statistics-card__helper {
@@ -1976,13 +1985,15 @@
 }
 
 .reports-page .erp-statistics-card__value {
+  display: block !important;
+  max-width: 100% !important;
   margin-top: 3px !important;
   font-size: clamp(13.5px, 1.02vw, 16px) !important;
   font-weight: 900 !important;
   line-height: 1.05 !important;
   white-space: nowrap !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .reports-page .erp-statistics-card__helper {
@@ -2246,6 +2257,57 @@
 /* =========================================================
    REPORTS PRINT-ONLY STYLES (PROJECT GREEN THEME)
    ========================================================= */
+
+/* KPI Print Highlight Meta styling (screen fallback & base) */
+.kpi-print-highlight-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #475569;
+  margin-top: 4px;
+}
+
+.kpi-print-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.kpi-print-meta-label {
+  color: #64748b;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.kpi-print-meta-val {
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.kpi-print-meta-divider {
+  color: #cbd5e1;
+  font-weight: 400;
+  font-size: 13px;
+  margin: 0 2px;
+  user-select: none;
+}
+
+.kpi-print-meta-trend-val {
+  color: #047857;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.kpi-print-meta-caption {
+  color: #64748b;
+  font-weight: 500;
+  font-size: 13px;
+}
 
 /* On screen: hide print container */
 .reports-print-container {
@@ -2593,17 +2655,58 @@
   }
 
   .kpi-print-highlight-meta {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 6px 12px !important;
     font-size: 8.5pt !important;
+    line-height: 1.35 !important;
+    font-family: inherit !important;
     color: #475569 !important;
-    margin-top: 2px !important;
+    margin-top: 3px !important;
   }
 
-  .kpi-print-highlight-meta strong {
+  .kpi-print-meta-item {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    font-size: 8.5pt !important;
+  }
+
+  .kpi-print-meta-label {
+    color: #64748b !important;
+    font-weight: 600 !important;
+    font-size: 8.5pt !important;
+  }
+
+  .kpi-print-meta-val {
     color: #0f172a !important;
+    font-weight: 700 !important;
+    font-size: 8.5pt !important;
+  }
+
+  .kpi-print-meta-divider {
+    color: #cbd5e1 !important;
+    font-weight: 400 !important;
+    font-size: 8.5pt !important;
+    margin: 0 2px !important;
+    user-select: none !important;
+  }
+
+  .kpi-print-meta-trend-val {
+    color: #047857 !important;
+    font-weight: 700 !important;
+    font-size: 8.5pt !important;
+  }
+
+  .kpi-print-meta-caption {
+    color: #64748b !important;
+    font-weight: 500 !important;
+    font-size: 8.5pt !important;
   }
 
   .kpi-print-trend {
-    color: #059669 !important;
+    color: #047857 !important;
     font-weight: 700 !important;
   }
 

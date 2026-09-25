@@ -934,7 +934,7 @@ function SummaryCard({ title, value, caption, icon: Icon, trend, tone = 'neutral
 
 export default function Reports({ data = {} }) {
   const [reports, setReports] = useState(EMPTY_REPORTS)
-  const [activeReport, setActiveReport] = useState('sales')
+  const [activeReport, setActiveReport] = useState('')
   const [filters, setFilters] = useState({
     from: '',
     to: '',
@@ -943,7 +943,7 @@ export default function Reports({ data = {} }) {
     product: 'all',
     customer: 'all',
     supplier: 'all',
-    reportType: 'sales',
+    reportType: '',
     status: 'all',
   })
   const [activeRange, setActiveRange] = useState('all_time')
@@ -1305,6 +1305,7 @@ export default function Reports({ data = {} }) {
   ], [suppliersList])
 
   const reportTypeOptions = useMemo(() => [
+    { value: '', label: 'Select Report Type' },
     ...REPORT_TABS.map((tab) => ({ value: tab.key, label: tab.label })),
   ], [])
 
@@ -1667,12 +1668,16 @@ export default function Reports({ data = {} }) {
     forecasting: ['insight', 'status'],
   }
 
-  const activeRows = filteredReports[activeReport] ?? []
+  const activeRows = activeReport ? (filteredReports[activeReport] ?? []) : []
   const activeTab = REPORT_TABS.find((tab) => tab.key === activeReport)
-  const activeColumns = columnsByReport[activeReport] ?? []
+  const activeColumns = activeReport ? (columnsByReport[activeReport] ?? []) : []
   const dateRangeLabel = getDateRangeLabel(filters)
 
   function handleExportActiveReport() {
+    if (!activeReport) {
+      showToast({ type: 'error', title: 'Reports', message: 'Please select a report type first.' })
+      return
+    }
     const header = activeColumns.map((column) => csvEscape(column.label)).join(',')
     const body = activeRows.map((row) => activeColumns.map((column) => csvEscape(getExportValue(row, column))).join(',')).join('\n')
     const filename = `${activeTab?.label?.toLowerCase().replace(/\s+/g, '-') || 'report'}-view.csv`
@@ -1992,19 +1997,19 @@ export default function Reports({ data = {} }) {
 
         <DataTable
           key={`reports-${activeReport}`}
-          title={`${activeTab?.label ?? 'Report'} Report`}
+          title={activeTab ? `${activeTab.label} Report` : 'Report'}
           className="reports-data-table--compact"
           rows={activeRows}
           columns={activeColumns}
           loading={isLoading}
           defaultPageSize={10}
           defaultVisibleColumnKeys={activeColumns.map((column) => column.key)}
-          lockedColumnKeys={lockedColumnsByReport[activeReport]}
+          lockedColumnKeys={activeReport ? lockedColumnsByReport[activeReport] : []}
           minVisibleColumnCount={Math.min(3, activeColumns.length)}
-          columnStorageKey={`ims.reports.visibleColumns.v11.${activeReport}`}
+          columnStorageKey={`ims.reports.visibleColumns.v11.${activeReport || 'default'}`}
           splitToolbar
           searchPlaceholder={`Search ${activeTab?.label.toLowerCase() ?? 'report'}`}
-          emptyMessage="No report records match the current filters."
+          emptyMessage={!activeReport ? 'Please select a report type to view data.' : 'No report records match the current filters.'}
         />
       </div>
 
@@ -2029,7 +2034,7 @@ export default function Reports({ data = {} }) {
       ) : (
         <ReportPrintContainer
           activeReport={activeReport}
-          activeTabLabel={activeTab?.label}
+          activeTabLabel={activeTab?.label || 'Select Report Type'}
           filters={filters}
           activeRange={activeRange}
           warehousesList={warehousesList}
