@@ -177,10 +177,10 @@
 .reports-page__header-actions .export-menu__trigger:hover,
 .reports-page__header-actions button:hover {
   transform: none;
-  border-color: #14b8a6;
-  background: #ffffff;
+  border-color: #0d9488;
+  background: #f0fdfa;
   color: #0f766e;
-  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.055);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.15);
 }
 
 .reports-page__header-actions .button:disabled,
@@ -1301,9 +1301,10 @@
 .reports-page__header-actions .export-menu__trigger:hover,
 .reports-page__header-actions button:hover {
   transform: none !important;
-  border-color: #14b8a6 !important;
+  border-color: #0d9488 !important;
   color: #0f766e !important;
-  background: #ffffff !important;
+  background: #f0fdfa !important;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.15) !important;
 }
 
 /* Compact filters: premium toolbar, not huge boxes */

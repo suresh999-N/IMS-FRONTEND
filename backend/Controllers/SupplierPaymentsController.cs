@@ -79,6 +79,11 @@ namespace IMSBackend.Controllers
                 return BadRequest("Payment amount must be greater than zero.");
             }
 
+            if (dto.PaymentDate.Date < DateTime.UtcNow.Date)
+            {
+                return BadRequest("Payment date cannot be in the past.");
+            }
+
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
             try

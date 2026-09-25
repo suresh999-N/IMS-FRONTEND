@@ -266,7 +266,10 @@ export default function Accounting({
         : ''),
     paymentDate:
       formCalculations.paidAmount > 0
-        ? getRequiredError(formData.paymentDate, 'Payment date')
+        ? getRequiredError(formData.paymentDate, 'Payment date') ||
+          (formData.paymentDate && formData.paymentDate < getToday()
+            ? 'Payment date cannot be in the past.'
+            : '')
         : '',
     date: getRequiredError(formData.date, 'Invoice date'),
     dueDate:
@@ -846,6 +849,7 @@ export default function Accounting({
               id="invoice-payment-date"
               name="paymentDate"
               label="Payment Date"
+              min={getToday()}
               value={formData.paymentDate}
               onChange={handleChange}
               onBlur={handleBlur}

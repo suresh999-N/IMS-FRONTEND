@@ -893,8 +893,83 @@ namespace IMSBackend.Controllers
         }
 
         // ============================================================
-        // EXPORTS - current frontend directly uses these four endpoints
+        // EXPORTS - current frontend directly uses these endpoints
         // ============================================================
+
+        private static void FormatExcelSheet(
+            IXLWorksheet sheet,
+            int colCount,
+            int rowCount,
+            HashSet<int>? currencyCols = null,
+            HashSet<int>? dateCols = null,
+            HashSet<int>? numberCols = null)
+        {
+            currencyCols ??= new HashSet<int>();
+            dateCols ??= new HashSet<int>();
+            numberCols ??= new HashSet<int>();
+
+            sheet.ShowGridLines = true;
+            sheet.SheetView.FreezeRows(1);
+
+            var headerRow = sheet.Row(1);
+            headerRow.Height = 26;
+            var headerRange = sheet.Range(1, 1, 1, colCount);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Font.FontSize = 11;
+            headerRange.Style.Font.FontColor = XLColor.White;
+            headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#1E293B");
+            headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            headerRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+            for (var r = 2; r <= rowCount; r++)
+            {
+                sheet.Row(r).Height = 21;
+
+                for (var c = 1; c <= colCount; c++)
+                {
+                    var cell = sheet.Cell(r, c);
+                    cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                    if (currencyCols.Contains(c))
+                    {
+                        cell.Style.NumberFormat.Format = "\"₹\" #,##0.00";
+                        cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+                    }
+                    else if (numberCols.Contains(c))
+                    {
+                        cell.Style.NumberFormat.Format = "#,##0";
+                        cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+                    }
+                    else if (dateCols.Contains(c))
+                    {
+                        if (cell.Value.IsDateTime)
+                        {
+                            cell.Style.DateFormat.Format = "dd-MM-yyyy";
+                        }
+                        cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    }
+                    else
+                    {
+                        var headerText = sheet.Cell(1, c).GetString().ToLowerInvariant();
+                        if (headerText.Contains("status") || headerText.Contains("code") || headerText.Contains("sku") || headerText.Contains("no") || headerText.Contains("id"))
+                        {
+                            cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        }
+                        else
+                        {
+                            cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+                        }
+                    }
+                }
+            }
+
+            sheet.Columns().AdjustToContents();
+
+            foreach (var col in sheet.ColumnsUsed())
+            {
+                col.Width = Math.Max(col.Width + 6, 16);
+            }
+        }
 
         [HttpGet("export-sales")]
         public async Task<IActionResult> ExportSales([FromQuery] ReportQuery query)
@@ -920,7 +995,11 @@ namespace IMSBackend.Controllers
 
                 sheet.Cell(row, 1).Value = item.invoiceNumber ?? "";
                 sheet.Cell(row, 2).Value = item.customer ?? "";
-                sheet.Cell(row, 3).Value = FormatDate(item.invoiceDate);
+                if (item.invoiceDate.HasValue)
+                    sheet.Cell(row, 3).Value = item.invoiceDate.Value.Date;
+                else
+                    sheet.Cell(row, 3).Value = "";
+
                 sheet.Cell(row, 4).Value = item.warehouseName ?? "";
                 sheet.Cell(row, 5).Value = item.totalAmount;
                 sheet.Cell(row, 6).Value = item.paidAmount;
@@ -928,7 +1007,12 @@ namespace IMSBackend.Controllers
                 sheet.Cell(row, 8).Value = item.status ?? "";
             }
 
-            sheet.Columns().AdjustToContents();
+            FormatExcelSheet(
+                sheet,
+                headers.Length,
+                data.Count + 1,
+                currencyCols: new HashSet<int> { 5, 6, 7 },
+                dateCols: new HashSet<int> { 3 });
 
             using var stream = new MemoryStream();
             workbook.SaveAs(stream);
@@ -973,7 +1057,12 @@ namespace IMSBackend.Controllers
                 sheet.Cell(row, 10).Value = item.status ?? "";
             }
 
-            sheet.Columns().AdjustToContents();
+            FormatExcelSheet(
+                sheet,
+                headers.Length,
+                data.Count + 1,
+                currencyCols: new HashSet<int> { 8, 9 },
+                numberCols: new HashSet<int> { 5, 6, 7 });
 
             using var stream = new MemoryStream();
             workbook.SaveAs(stream);

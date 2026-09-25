@@ -357,7 +357,9 @@ export default function SupplierAddressTab({
             const showPincodeWarning = Boolean(addressWarnings.pincode && !addressErrors.pincode && (showErrors || pincodeBlurred))
             const stateError = stateSuppressed
               ? ''
-              : getVisibleError({ error: addressErrors.state, blurred: stateBlurred, focused: stateFocused, submitted: showErrors })
+              : addressErrors.state && (showErrors || stateBlurred || Boolean(address.state))
+                ? addressErrors.state
+                : getVisibleError({ error: addressErrors.state, blurred: stateBlurred, focused: stateFocused, submitted: showErrors })
             const pincodeError = pincodeSuppressed
               ? ''
               : addressErrors.pincode && (showErrors || pincodeBlurred || (address.pincode && String(address.pincode).trim().length >= 6))

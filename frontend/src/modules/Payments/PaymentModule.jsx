@@ -349,7 +349,7 @@ function exportPaymentsToCsv(rows, fileName) {
     getPaymentStatusMeta(payment.status).label,
     payment.createdBy,
   ].map(escapeCsvValue).join(','))
-  const blob = new Blob([[headers.map(escapeCsvValue).join(','), ...lines].join('\n')], { type: 'text/csv;charset=utf-8;' })
+  const blob = new Blob(['\uFEFF' + [headers.map(escapeCsvValue).join(','), ...lines].join('\n')], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
   anchor.href = url
@@ -1517,7 +1517,11 @@ function PaymentForm({
       (!isSupplier && selectedInvoice && Number(formData.amount) > outstandingBalance
         ? 'Amount cannot exceed outstanding balance.'
         : ''),
-    paymentDate: getRequiredError(formData.paymentDate, 'Payment date'),
+    paymentDate:
+      getRequiredError(formData.paymentDate, 'Payment date') ||
+      (formData.paymentDate && formData.paymentDate < getToday()
+        ? 'Payment date cannot be in the past.'
+        : ''),
     referenceNumber:
       formData.referenceNumber.length > 100
         ? 'Reference number must be 100 characters or fewer.'
@@ -1691,6 +1695,7 @@ function PaymentForm({
             name="paymentDate"
             label="Payment Date"
             icon={CalendarDays}
+            min={getToday()}
             value={formData.paymentDate}
             onChange={handleChange}
             onBlur={handleBlur}

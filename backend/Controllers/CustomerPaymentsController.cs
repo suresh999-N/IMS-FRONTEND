@@ -108,6 +108,11 @@ namespace IMSBackend.Controllers
                 return BadRequest("Payment amount must be greater than zero.");
             }
 
+            if (dto.PaymentDate.Date < DateTime.UtcNow.Date)
+            {
+                return BadRequest("Payment date cannot be in the past.");
+            }
+
             var validationError = ValidateEditableFields(dto.ReferenceNumber, dto.Notes, dto.Status);
             if (validationError != null)
             {

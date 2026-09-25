@@ -6839,9 +6839,10 @@
 .resource-center__page--product-style .resource-center__table-actions .erp-export-menu__trigger:focus-visible,
 .resource-center__page--product-style .table-component__columns-trigger:hover,
 .resource-center__page--product-style .table-component__columns-trigger:focus-visible {
-  border-color: rgba(148, 163, 184, 0.58);
-  background: #f8fafc;
-  color: #0f172a;
+  border-color: #0d9488;
+  background: #f0fdfa;
+  color: #0f766e;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.15);
 }
 
 .resource-center__page--product-style .table-component__columns-trigger.is-open,

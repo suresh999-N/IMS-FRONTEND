@@ -436,7 +436,21 @@ function getExportValue(row, column) {
   const key = String(column.key || '').toLowerCase()
 
   if (key.includes('date')) return value ? formatDate(value) : ''
-  if (key.includes('amount') || key.includes('balance') || key.includes('limit') || key.includes('value') || key.includes('cost') || key.includes('profit') || key === 'total') return formatCurrency(value)
+  if (
+    key.includes('amount') ||
+    key.includes('balance') ||
+    key.includes('limit') ||
+    key.includes('value') ||
+    key.includes('cost') ||
+    key.includes('price') ||
+    key.includes('profit') ||
+    key.includes('gst') ||
+    key.includes('receivables') ||
+    key.includes('payables') ||
+    key === 'total'
+  ) {
+    return formatCurrency(value)
+  }
   if (key.includes('margin')) return `${numeric(value).toFixed(1)}%`
 
   return value ?? ''
@@ -1663,7 +1677,7 @@ export default function Reports({ data = {} }) {
     const body = activeRows.map((row) => activeColumns.map((column) => csvEscape(getExportValue(row, column))).join(',')).join('\n')
     const filename = `${activeTab?.label?.toLowerCase().replace(/\s+/g, '-') || 'report'}-view.csv`
 
-    downloadBlob(new Blob([[header, body].filter(Boolean).join('\n')], { type: 'text/csv;charset=utf-8' }), filename)
+    downloadBlob(new Blob(['\uFEFF' + [header, body].filter(Boolean).join('\n')], { type: 'text/csv;charset=utf-8;' }), filename)
     showToast({ type: 'success', title: 'Reports', message: `${activeTab?.label ?? 'Current'} view exported successfully.` })
   }
 
@@ -1681,7 +1695,7 @@ export default function Reports({ data = {} }) {
     ]
     const csv = rows.map((row) => row.map(csvEscape).join(',')).join('\n')
 
-    downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), 'reports-summary.csv')
+    downloadBlob(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }), 'reports-summary.csv')
     showToast({ type: 'success', title: 'Reports', message: 'Summary exported successfully.' })
   }
 

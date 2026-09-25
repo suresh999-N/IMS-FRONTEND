@@ -944,9 +944,10 @@ button:disabled {
 }
 
 .button-secondary:hover:not(:disabled) {
-  background: #ffffff;
-  border-color: #cbd5e1;
-  color: #0f172a;
+  background: #f0fdfa;
+  border-color: #0d9488;
+  color: #0f766e;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.15);
 }
 
 /* Safe Secondary Blue Cancel Buttons - Maximum Specificity Rule Overriding All Container CSS */

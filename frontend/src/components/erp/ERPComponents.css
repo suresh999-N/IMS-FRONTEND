@@ -184,6 +184,13 @@
   white-space: nowrap;
 }
 
+.erp-export-menu__trigger:hover:not(:disabled) {
+  background: #f0fdfa !important;
+  border-color: #0d9488 !important;
+  color: #0f766e !important;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.15) !important;
+}
+
 .erp-action-menu__trigger--icon,
 button.erp-action-menu__trigger--icon,
 .button.erp-action-menu__trigger--icon {
