@@ -3,6 +3,7 @@ import { API_ENDPOINTS } from './endpoints'
 import { getCustomers } from './customersApi'
 import { getProductCatalog } from './productApi'
 import { getSuppliers, invalidateSupplierCache } from './suppliersApi'
+import { formatPersonName } from '../validators/nameValidator'
 
 function idOf(item, keys) {
   for (const key of keys) {
@@ -73,7 +74,7 @@ export function normalizePayment(item, partyType = 'customer') {
     invoiceAmount: number(item?.invoiceAmount ?? item?.InvoiceAmount ?? item?.invoice_amount),
     outstandingBefore: number(item?.outstandingBefore ?? item?.OutstandingBefore ?? item?.outstanding_before),
     outstandingAfter: number(item?.outstandingAfter ?? item?.OutstandingAfter ?? item?.outstanding_after),
-    partyName: text(item?.[partyKey] ?? item?.partyName ?? item?.customerName ?? item?.supplierName ?? item?.customer_name ?? item?.supplier_name),
+    partyName: formatPersonName(text(item?.[partyKey] ?? item?.partyName ?? item?.customerName ?? item?.supplierName ?? item?.customer_name ?? item?.supplier_name)),
     amount: number(item?.amount ?? item?.Amount),
     paymentDate,
     paymentMethod: text(item?.paymentMethod ?? item?.PaymentMethod ?? item?.payment_method) || 'Bank Transfer',
@@ -526,9 +527,13 @@ export function normalizeReportRow(item, reportType, index = 0) {
     supplierId: idOf(item, ['supplierId', 'SupplierId']),
     productId: idOf(item, ['productId', 'ProductId']),
     warehouseId: idOf(item, ['warehouseId', 'WarehouseId', 'warehouse_id', 'whId', 'locationId']),
-    name: text(item?.name ?? item?.Name),
-    customer: text(item?.customer ?? item?.Customer ?? item?.customerName ?? item?.CustomerName),
-    customerName: text(item?.customerName ?? item?.CustomerName ?? item?.customer ?? item?.Customer),
+    name: formatPersonName(text(item?.name ?? item?.Name)),
+    customer: formatPersonName(text(item?.customer ?? item?.Customer ?? item?.customerName ?? item?.CustomerName)),
+    customerName: formatPersonName(text(item?.customerName ?? item?.CustomerName ?? item?.customer ?? item?.Customer)),
+    company: (() => {
+      const val = text(item?.company ?? item?.Company ?? item?.companyName ?? item?.CompanyName)
+      return (val && val !== '-') ? val : 'N/A'
+    })(),
     supplier: text(item?.supplier ?? item?.Supplier ?? item?.supplierName ?? item?.SupplierName),
     supplierName: text(item?.supplierName ?? item?.SupplierName ?? item?.supplier ?? item?.Supplier),
     product: text(item?.product ?? item?.Product ?? item?.productName ?? item?.ProductName ?? item?.name ?? item?.Name),

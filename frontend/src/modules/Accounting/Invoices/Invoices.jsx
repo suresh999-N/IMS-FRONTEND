@@ -610,9 +610,14 @@ function formatCellValue(row, column, referenceData) {
   }
 
   if (column.format === 'status') {
+    const label = formatStatusLabel(value)
     return (
-      <StatusBadge type={getStatusType(value)}>
-        {formatStatusLabel(value)}
+      <StatusBadge
+        type={getStatusType(value)}
+        title={`Status: ${label}`}
+        ariaLabel={`Invoice status: ${label}`}
+      >
+        {label}
       </StatusBadge>
     )
   }
@@ -3036,27 +3041,27 @@ function ResourcePage({ config, navigationContent = null }) {
               </div>
             ) : (
               <div className="resource-center__compact-metrics" aria-label="Invoice summary">
-                <span className="resource-center__metric-badge resource-center__metric-badge--total">
+                <span className="resource-center__metric-badge resource-center__metric-badge--total" title="Total Invoices">
                   <strong>{invoiceSummary.total}</strong>
                   Invoices
                 </span>
-                <span className="resource-center__metric-badge resource-center__metric-badge--success">
+                <span className="resource-center__metric-badge resource-center__metric-badge--success" title="Invoices Paid in Full">
                   <strong>{invoiceSummary.paid}</strong>
                   Paid
                 </span>
-                <span className="resource-center__metric-badge resource-center__metric-badge--warning">
+                <span className="resource-center__metric-badge resource-center__metric-badge--warning" title="Partially Paid Invoices">
                   <strong>{invoiceSummary.partiallyPaid}</strong>
                   Partially Paid
                 </span>
-                <span className="resource-center__metric-badge resource-center__metric-badge--sent">
+                <span className="resource-center__metric-badge resource-center__metric-badge--sent" title="Invoices Sent to Customer">
                   <strong>{invoiceSummary.sent}</strong>
                   Sent
                 </span>
-                <span className="resource-center__metric-badge resource-center__metric-badge--open">
+                <span className="resource-center__metric-badge resource-center__metric-badge--open" title="Open / Pending Invoices">
                   <strong>{invoiceSummary.open}</strong>
                   Open
                 </span>
-                <span className="resource-center__metric-badge resource-center__metric-badge--info">
+                <span className="resource-center__metric-badge resource-center__metric-badge--info" title="Total Outstanding Balance">
                   <strong>{formatCurrency(invoiceSummary.balance)}</strong>
                   Balance
                 </span>

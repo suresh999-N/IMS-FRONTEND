@@ -140,7 +140,7 @@ const emptyForm = {
   panNumber: '',
   phone: '',
   email: '',
-  status: 'Active',
+  status: '',
   notes: '',
   contacts: [],
   addresses: [],
@@ -320,6 +320,7 @@ function normalizeDigits(value, maxLength) {
 }
 
 function normalizeStatus(value) {
+  if (!value) return ''
   return collapseSpaces(value).toLowerCase() === 'inactive' ? 'Inactive' : 'Active'
 }
 
@@ -371,7 +372,7 @@ function getInitialForm(initialValues) {
     panNumber: normalizePan(initialValues?.panNumber ?? ''),
     phone: sanitizeCustomerPhone(initialValues?.phone ?? ''),
     email: sanitizeEmailInput(initialValues?.email ?? ''),
-    status: normalizeStatus(initialValues?.status ?? 'Active'),
+    status: normalizeStatus(initialValues?.status ?? ''),
     notes: initialValues?.notes ?? '',
     contacts: readInitialList(initialValues?.contacts).map((contact, index) => ({
       ...emptyContact,
@@ -797,7 +798,7 @@ export default function CustomerForm({
     ),
     phone: getPhoneError(formData.phone),
     email: formData.email ? getEmailError(formData.email) : '',
-    status: ['Active', 'Inactive'].includes(formData.status) ? '' : 'Select a valid status.',
+    status: formData.status ? (['Active', 'Inactive'].includes(formData.status) ? '' : 'Select a valid status.') : 'Status is required.',
   }
 
   const contactErrors = useMemo(() => {
@@ -1877,7 +1878,7 @@ export default function CustomerForm({
                     disabled={isBusy || isReadOnly}
                   />
                   <label className="customer-form__status-field customer-basic-field--select customer-basic-field--status">
-                    <span>Status</span>
+                    <span>Status <span className="required-asterisk" style={{ color: '#dc2626', fontWeight: 'bold', marginLeft: '2px' }}>*</span></span>
                     <select
                       name="status"
                       value={formData.status}
@@ -1886,6 +1887,7 @@ export default function CustomerForm({
                       disabled={isBusy || isReadOnly}
                       aria-invalid={Boolean(shouldShowError('status') && errors.status)}
                     >
+                      <option value="" disabled>Select Status</option>
                       <option value="Active">Active</option>
                       <option value="Inactive">Inactive</option>
                     </select>

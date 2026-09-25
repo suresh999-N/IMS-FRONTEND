@@ -17,6 +17,7 @@ import { useState } from 'react'
 import StateBlock from '../../../components/common/StateBlock'
 import { DataTable } from '../../../components/erp'
 import { formatCreditLimit, formatCurrency } from '../../../utils/helpers'
+import { formatPersonName } from '../../../validators/nameValidator'
 import CustomerDetailCard from './CustomerDetailCard'
 import StatusBadge from './StatusBadge'
 
@@ -166,7 +167,7 @@ export default function CustomerDetailsPanel({
           </div>
           <div className="customers-workspace__identity-copy">
             <div className="customers-workspace__title-row">
-              <h2>{customer.name}</h2>
+              <h2>{formatPersonName(customer.name) || 'Unnamed customer'}</h2>
               <StatusBadge status={customer.status} />
             </div>
             <p>

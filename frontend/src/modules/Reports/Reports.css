@@ -104,11 +104,14 @@
   border-radius: 999px;
   background: #ffffff;
   color: #475569;
+  font-family: inherit;
   font-size: 12.2px;
   font-weight: 760;
   line-height: 1;
   white-space: nowrap;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.025);
+  cursor: pointer;
+  user-select: none;
 }
 
 .reports-metric-badge strong {
@@ -428,10 +431,11 @@
   font-size: clamp(15px, 1.2vw, 18px);
   font-weight: 900;
   letter-spacing: -0.025em;
-  line-height: 1.05;
+  line-height: 1.15;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
 }
 
 .reports-page .erp-statistics-card__helper {
@@ -798,25 +802,41 @@
 }
 
 .reports-page .reports-data-table--compact .table-component__table thead th {
-  height: 36px;
-  padding: 6px 10px;
-  background: linear-gradient(180deg, #ffffff, #f8fafc);
-  border-bottom: 1px solid #dbe5f0;
-  color: #475569;
-  font-size: 11px;
-  font-weight: 850;
-  letter-spacing: 0.04em;
-  line-height: 1;
-  box-shadow: inset 0 2px 0 var(--reports-accent-soft);
+  height: 38px;
+  padding: 8px 12px !important;
+  background: #f8fafc !important;
+  border-right: 1px solid #e2e8f0 !important;
+  border-bottom: 1px solid #dbe5f0 !important;
+  color: #475569 !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em !important;
+  line-height: 1.2 !important;
+  text-align: left !important;
+  vertical-align: middle !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+}
+
+.reports-page .reports-data-table--compact .table-component__table thead th:last-child {
+  border-right: 0 !important;
 }
 
 .reports-page .reports-data-table--compact .table-component__table tbody td {
-  height: 38px;
-  padding: 6px 10px;
-  border-bottom: 1px solid #f0f3f7;
-  color: #334155;
-  font-size: 12.5px;
-  line-height: 1.25;
+  height: 38px !important;
+  padding: 6px 12px !important;
+  border-right: 1px solid #f0f3f7 !important;
+  border-bottom: 1px solid #f0f3f7 !important;
+  color: #334155 !important;
+  font-size: 12.5px !important;
+  line-height: 1.25 !important;
+  text-align: left !important;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+}
+
+.reports-page .reports-data-table--compact .table-component__table tbody td:last-child {
+  border-right: 0 !important;
 }
 
 .reports-page .reports-data-table--compact .table-component__table tbody tr:hover td {
@@ -824,28 +844,51 @@
 }
 
 .reports-page .reports-data-table--compact .reports-table__numeric {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
+  text-align: left !important;
+  font-variant-numeric: tabular-nums !important;
 }
 
 .reports-page .reports-data-table--compact .table-component__table th:not(:first-child),
 .reports-page .reports-data-table--compact .table-component__table td:not(:first-child) {
-  box-shadow: inset 1px 0 0 rgba(241, 245, 249, 0.72);
+  box-shadow: none !important;
 }
 
 .reports-page .reports-data-table--compact .table-component__sort-button {
-  gap: 5px;
-  color: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  letter-spacing: inherit;
-  line-height: 1;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 6px !important;
+  color: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  letter-spacing: inherit !important;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+  text-align: left !important;
+  width: auto !important;
+  cursor: pointer !important;
+}
+
+.reports-page .reports-data-table--compact .table-component__sort-button span {
+  display: inline-flex !important;
+  align-items: center !important;
+  vertical-align: middle !important;
+}
+
+.reports-page .reports-data-table--compact .table-component__sort-indicator {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  vertical-align: middle !important;
+  margin-left: 2px !important;
 }
 
 .reports-page .reports-data-table--compact .table-component__sort-button svg {
-  width: 13px;
-  height: 13px;
-  color: #94a3b8;
+  width: 14px !important;
+  height: 14px !important;
+  color: #94a3b8 !important;
+  display: block !important;
 }
 
 .reports-page .reports-data-table--compact .status-badge {
@@ -945,17 +988,24 @@
 .reports-page .status-badge--healthy,
 .reports-page .status-badge--fast,
 .reports-page .status-badge--paid,
-.reports-page .status-badge--enabled {
+.reports-page .status-badge--enabled,
+.reports-page .status-enabled {
   background: #ecfdf5;
   color: #047857;
   border-color: #bbf7d0;
 }
 
-.reports-page .status-badge--slow,
-.reports-page .status-badge--disabled {
+.reports-page .status-badge--slow {
   background: #f1f5f9;
   color: #475569;
   border-color: #cbd5e1;
+}
+
+.reports-page .status-badge--disabled,
+.reports-page .status-disabled {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fecaca;
 }
 
 /* Responsive */
@@ -1235,11 +1285,30 @@
   padding: 0 13px !important;
   border: 1px solid #e2e8f0 !important;
   border-radius: 999px !important;
+  font-family: inherit !important;
   font-size: 12.5px !important;
   font-weight: 800 !important;
   line-height: 1 !important;
   white-space: nowrap !important;
   box-shadow: none !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  outline: none !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, border-color 0.15s ease !important;
+}
+
+.reports-metric-badge:hover {
+  transform: translateY(-1.5px) !important;
+  box-shadow: 0 3px 6px -1px rgba(15, 23, 42, 0.12), 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+}
+
+.reports-metric-badge:active {
+  transform: translateY(0) !important;
+}
+
+.reports-metric-badge:focus-visible {
+  outline: 2px solid #2563eb !important;
+  outline-offset: 2px !important;
 }
 
 .reports-metric-badge strong {
@@ -1253,11 +1322,31 @@
   border-color: #bbf7d0 !important;
   color: #047857 !important;
 }
+.reports-metric-badge--success:hover {
+  background: #dcfce7 !important;
+  border-color: #86efac !important;
+}
+.reports-metric-badge--success.is-active {
+  background: #d1fae5 !important;
+  border-color: #059669 !important;
+  color: #047857 !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3) !important;
+}
 
 .reports-metric-badge--info {
   background: #ecfeff !important;
   border-color: #a5f3fc !important;
   color: #0e7490 !important;
+}
+.reports-metric-badge--info:hover {
+  background: #cffafe !important;
+  border-color: #67e8f9 !important;
+}
+.reports-metric-badge--info.is-active {
+  background: #cffafe !important;
+  border-color: #0891b2 !important;
+  color: #0e7490 !important;
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.3) !important;
 }
 
 .reports-metric-badge--warning {
@@ -1265,11 +1354,31 @@
   border-color: #fed7aa !important;
   color: #c2410c !important;
 }
+.reports-metric-badge--warning:hover {
+  background: #ffedd5 !important;
+  border-color: #fdba74 !important;
+}
+.reports-metric-badge--warning.is-active {
+  background: #ffedd5 !important;
+  border-color: #ea580c !important;
+  color: #c2410c !important;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.3) !important;
+}
 
 .reports-metric-badge--primary {
   background: #eff6ff !important;
   border-color: #bfdbfe !important;
   color: #1d4ed8 !important;
+}
+.reports-metric-badge--primary:hover {
+  background: #dbeafe !important;
+  border-color: #93c5fd !important;
+}
+.reports-metric-badge--primary.is-active {
+  background: #dbeafe !important;
+  border-color: #2563eb !important;
+  color: #1d4ed8 !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3) !important;
 }
 
 /* Keep right actions same position as template */
@@ -1823,6 +1932,7 @@
 .reports-page .status-badge--healthy,
 .reports-page .status-badge--active,
 .reports-page .status-badge--enabled,
+.reports-page .status-enabled,
 .reports-page .status-badge--paid,
 .reports-page .status-badge--completed,
 .reports-page .status-badge--delivered,
@@ -1853,7 +1963,8 @@
 .reports-page .status-badge--cancelled,
 .reports-page .status-badge--above-90-days,
 .reports-page .status-badge--high,
-.reports-page .status-badge--disabled {
+.reports-page .status-badge--disabled,
+.reports-page .status-disabled {
   background: #fee2e2;
   color: #b91c1c;
   border-color: #fecaca;
@@ -1990,11 +2101,76 @@
   margin-top: 3px !important;
   font-size: clamp(13.5px, 1.02vw, 16px) !important;
   font-weight: 900 !important;
-  line-height: 1.05 !important;
+  line-height: 1.15 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
+
+/* Reports KPI floating tooltip */
+.reports-kpi-tooltip {
+  position: fixed;
+  z-index: 99999;
+  transform: translate(-50%, -100%);
+  max-width: 320px;
+  padding: 6px 11px;
+  border-radius: 6px;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid rgba(51, 65, 85, 0.85);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.35);
+  pointer-events: none;
+  word-break: break-word;
+  white-space: normal;
+  text-align: center;
+  animation: reportsTooltipFadeIn 0.15s ease-out;
+}
+
+.reports-kpi-tooltip--below {
+  transform: translate(-50%, 0);
+  animation-name: reportsTooltipFadeInBelow;
+}
+
+.reports-kpi-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: #0f172a transparent transparent transparent;
+}
+
+.reports-kpi-tooltip--below::after {
+  top: auto;
+  bottom: 100%;
+  border-color: transparent transparent #0f172a transparent;
+}
+
+@keyframes reportsTooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -90%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%);
+  }
+}
+
+@keyframes reportsTooltipFadeInBelow {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 
 .reports-page .erp-statistics-card__helper {
   margin-top: 3px !important;
@@ -2142,21 +2318,48 @@
   color: currentColor !important;
 }
 
-/* V17: Purchases table PO number full view without changing layout */
+/* Purchases table column sizing and text containment */
 .reports-page__table-card--purchases .reports-data-table--compact .table-component__table th:nth-child(1),
 .reports-page__table-card--purchases .reports-data-table--compact .table-component__table td:nth-child(1) {
-  width: 300px !important;
-  min-width: 300px !important;
-  max-width: 300px !important;
+  width: 185px !important;
+  min-width: 175px !important;
+  max-width: 210px !important;
   white-space: nowrap !important;
 }
 
 .reports-page__table-card--purchases .reports-data-table--compact .table-component__table th:nth-child(2),
-.reports-page__table-card--purchases .reports-data-table--compact .table-component__table td:nth-child(2) {
-  width: 160px !important;
-  min-width: 160px !important;
-  max-width: 160px !important;
+.reports-page__table-card--purchases .reports-data-table--compact .table-component__table td:nth-child(2),
+.reports-page .reports-data-table--compact .table-component__table th[data-column="supplier"],
+.reports-page .reports-data-table--compact .table-component__table td[data-column="supplier"],
+.reports-page .reports-data-table--compact .table-component__table th[data-column="Supplier"],
+.reports-page .reports-data-table--compact .table-component__table td[data-column="Supplier"] {
+  width: 270px !important;
+  min-width: 250px !important;
+  max-width: 340px !important;
+}
+
+.reports-page__table-card--purchases .reports-data-table--compact .table-component__table td:nth-child(2),
+.reports-page__table-card--purchases .reports-data-table--compact .table-component__table td:nth-child(2) .table-cell-text,
+.reports-page__table-card--purchases .reports-data-table--compact .table-component__table td:nth-child(2) *,
+.reports-page .reports-data-table--compact .table-component__table td[data-column="supplier"],
+.reports-page .reports-data-table--compact .table-component__table td[data-column="supplier"] .table-cell-text,
+.reports-page .reports-data-table--compact .table-component__table td[data-column="supplier"] *,
+.reports-page .reports-data-table--compact .table-component__table td[data-column="Supplier"],
+.reports-page .reports-data-table--compact .table-component__table td[data-column="Supplier"] .table-cell-text,
+.reports-page .reports-data-table--compact .table-component__table td[data-column="Supplier"] * {
+  max-width: 340px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
   white-space: nowrap !important;
+}
+
+.reports-table__party-name {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* V18 complete report data visibility fix */

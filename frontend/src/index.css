@@ -476,8 +476,8 @@ input[name*="customer" i]:not(:placeholder-shown) {
 input:focus,
 textarea:focus,
 select:focus {
-  border-color: rgba(14, 165, 183, 0.46);
-  box-shadow: 0 0 0 3px rgba(14, 165, 183, 0.08);
+  border-color: var(--ims-success, #059669);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
   outline: none;
 }
 
@@ -487,6 +487,7 @@ select:focus {
 }
 
 .input-with-icon {
+  position: relative;
   display: flex;
   align-items: center;
   border: 1px solid rgba(203, 213, 225, 0.72);
@@ -496,6 +497,8 @@ select:focus {
   min-height: 36px;
   min-width: 0;
   cursor: text;
+  box-sizing: border-box;
+  overflow: hidden;
   transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -506,19 +509,29 @@ select:focus {
 }
 
 .input-with-icon:focus-within {
-  border-color: rgba(14, 165, 183, 0.46);
-  box-shadow: 0 0 0 3px rgba(14, 165, 183, 0.08);
+  border-color: var(--ims-success, #059669);
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
 }
 
 .input-with-icon input,
 .input-with-icon textarea {
-  border: none;
-  outline: none;
-  box-shadow: none;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
   flex: 1;
   min-width: 0;
   padding: 6px 5px;
-  background: transparent;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-sizing: border-box !important;
+}
+
+.input-with-icon:not(.input-with-icon--textarea) input {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 !important;
 }
 
 .input-prefix {
@@ -690,9 +703,16 @@ select:focus {
   color: #475569;
 }
 
-.date-picker-popover__header button:hover {
+.date-picker-popover__header button:hover:not(:disabled) {
   background: #e6fffb;
   color: #047857;
+}
+
+.date-picker-popover__header button:disabled {
+  opacity: 0.3 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  background: transparent !important;
 }
 
 .date-picker-popover__weekdays,
@@ -1236,6 +1256,7 @@ html body #root :is(
   border-radius: 999px;
   background: var(--surface-muted);
   white-space: nowrap;
+  transition: all 0.15s ease-in-out;
 }
 
 button.status-badge,
@@ -1267,7 +1288,9 @@ button.status-badge:disabled,
 .status-blocked,
 .status-decrease,
 .status-stock-out,
-.status-inactive {
+.status-inactive,
+.status-disabled,
+.status-badge--disabled {
   color: var(--status-danger-color, #b91c1c) !important;
   background: var(--status-danger-bg, #fef2f2) !important;
   border-color: var(--status-danger-border, #fecaca) !important;
@@ -1286,7 +1309,9 @@ button.status-badge:disabled,
 .status-received,
 .status-success,
 .status-increase,
-.status-stock-in {
+.status-stock-in,
+.status-enabled,
+.status-badge--enabled {
   color: var(--status-success-color, #047857) !important;
   background: var(--status-success-bg, #ecfdf5) !important;
   border-color: var(--status-success-border, #a7f3d0) !important;
@@ -1304,8 +1329,7 @@ button.status-badge:disabled,
 
 .status-draft,
 .status-archived,
-.status-unpaid,
-.status-disabled {
+.status-unpaid {
   color: var(--status-inactive-color, #334155) !important;
   background: var(--status-inactive-bg, #e2e8f0) !important;
   border-color: var(--status-inactive-border, #94a3b8) !important;
@@ -1321,6 +1345,18 @@ button.status-badge:disabled,
   color: #1d4ed8 !important;
   background: #eff6ff !important;
   border-color: #bfdbfe !important;
+}
+
+.status-sent {
+  color: #2563eb !important;
+  background: #dbeafe !important;
+  border-color: #2563eb !important;
+}
+
+.status-badge.status-sent:hover {
+  color: #1d4ed8 !important;
+  background: #bfdbfe !important;
+  border-color: #1d4ed8 !important;
 }
 
 .status-read {
@@ -1366,6 +1402,22 @@ button.status-badge:disabled,
   color: var(--success);
   background: var(--color-success-50);
   border-color: var(--color-success-200);
+}
+
+.status-badge.status-paid:hover,
+.status-badge.status-healthy:hover,
+.status-badge.status-enabled:hover,
+.status-badge.status-badge--enabled:hover {
+  color: #15803d !important;
+  background: #dcfce7 !important;
+  border-color: #86efac !important;
+}
+
+.status-badge.status-disabled:hover,
+.status-badge.status-badge--disabled:hover {
+  color: #991b1b !important;
+  background: #fee2e2 !important;
+  border-color: #f87171 !important;
 }
 
 .status-confirmed {

@@ -1,3 +1,5 @@
+import { formatPersonName } from '../../../validators/nameValidator'
+
 const EMPTY_VALUE = ''
 
 const invoiceCurrencyFormatter = new Intl.NumberFormat('en-IN', {
@@ -117,7 +119,7 @@ function buildPartyDetails(invoice, customer) {
     findTypedAddress(customer, 'shipping')
 
   return {
-    name: textValue(invoice, [
+    name: formatPersonName(textValue(invoice, [
       'customerName',
       'CustomerName',
       'customer.name',
@@ -125,7 +127,7 @@ function buildPartyDetails(invoice, customer) {
     ]) || textValue(customer, [
       'name',
       'Name',
-    ]),
+    ])),
     companyName: textValue(invoice, [
       'customerCompanyName',
       'CustomerCompanyName',

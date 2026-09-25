@@ -519,6 +519,34 @@
   margin: 0 !important;
   border-radius: 8px !important;
   font-size: 13px !important;
+  overflow: hidden !important;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.form-modal__body--users .input-with-icon input {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  padding: 0 4px !important;
+  box-sizing: border-box !important;
+}
+
+.form-modal__body--users :where(select:hover, .input-with-icon:hover:not(:focus-within)) {
+  border-color: var(--ims-success, #059669) !important;
+  background-color: #f8fafc !important;
+}
+
+.form-modal__body--users :where(select:focus, .input-with-icon:focus-within) {
+  border-color: var(--ims-success, #059669) !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12) !important;
+  outline: none !important;
 }
 
 .form-modal__body--users select {

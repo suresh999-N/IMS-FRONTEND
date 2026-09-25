@@ -71,6 +71,7 @@ export default function CurrencyInput({
   placeholder,
   error,
   helperText,
+  required = false,
   className = '',
   currency = 'INR',
   onFocus,
@@ -153,7 +154,7 @@ export default function CurrencyInput({
 
   return (
     <div className={`field ${className}`.trim()}>
-      <label htmlFor={id}>{renderFormLabel(label)}</label>
+      <label htmlFor={id}>{renderFormLabel(label, required || props.required)}</label>
       <div className={`input-with-icon ${error ? 'field--error' : ''}`.trim()}>
         {Icon ? <Icon size={18} /> : null}
         {resolvedPrefix ? <span className="input-prefix">{resolvedPrefix}</span> : null}

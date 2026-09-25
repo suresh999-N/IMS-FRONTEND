@@ -17,6 +17,31 @@ export function autoCapitalizeWords(text) {
   return text.replace(/(?:^|[\s'-])\p{L}/gu, (match) => match.toUpperCase())
 }
 
+export function formatPersonName(value) {
+  if (typeof value !== 'string' || !value) return ''
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+  return trimmed
+    .split(/\s+/)
+    .map((word) => {
+      if (!word) return ''
+      if (word.includes('-')) {
+        return word
+          .split('-')
+          .map((sub) => (sub ? sub.charAt(0).toUpperCase() + sub.slice(1).toLowerCase() : ''))
+          .join('-')
+      }
+      if (/^(?:JR|SR|MD|II|III|IV|V)$/i.test(word)) {
+        return word.toUpperCase()
+      }
+      if (/^[A-Z]{2,4}$/.test(word)) {
+        return word
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    })
+    .join(' ')
+}
+
 export function shouldAutoCapitalizeField(fieldName = '', fieldType = '') {
   if (!fieldName || fieldType === 'email' || fieldType === 'password' || fieldType === 'number' || fieldType === 'tel') {
     return false

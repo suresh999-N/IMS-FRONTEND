@@ -1624,3 +1624,22 @@
   width: 100% !important;
   overflow-x: auto !important;
 }
+
+/* Clear separation between Requisition Summary and Estimated Value */
+.purchase-indent-details .invoice-document__closing {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  gap: 32px !important;
+  margin-top: 18px !important;
+  margin-bottom: 24px !important;
+}
+
+.purchase-indent-details .invoice-document__payment-overview {
+  flex: 1 1 auto;
+}
+
+.purchase-indent-details .invoice-document__summary {
+  flex: 0 0 280px;
+}
+

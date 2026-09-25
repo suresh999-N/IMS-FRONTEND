@@ -1251,8 +1251,6 @@ export const RESOURCE_CONFIGS = {
       },
       { name: 'email', label: 'Mail', type: 'email', required: true },
       { name: 'phoneNumber', label: 'Phone No', type: 'tel', required: true, minLength: 10, maxLength: 10, pattern: /^[6-9]\d{9}$/, patternMessage: 'Mobile number must start with 6, 7, 8, or 9 and be exactly 10 digits.' },
-      { name: 'password', label: 'Password', type: 'password', requiredOnCreate: true, minLength: 8, createOnly: true, pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/, patternMessage: 'Password must be at least 8 chars with uppercase, lowercase, number & symbol.', helperText: 'At least 8 chars with uppercase, lowercase, number & symbol' },
-      { name: 'confirmPassword', label: 'Confirm Password', type: 'password', requiredOnCreate: true, createOnly: true },
       {
         name: 'role',
         label: 'Role',
@@ -1265,6 +1263,8 @@ export const RESOURCE_CONFIGS = {
           return String(raw || '').replace(/\b\w/g, (l) => l.toUpperCase())
         },
       },
+      { name: 'password', label: 'Password', type: 'password', requiredOnCreate: true, minLength: 8, createOnly: true, pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/, patternMessage: 'Password must be at least 8 chars with uppercase, lowercase, number & symbol.', helperText: 'At least 8 chars with uppercase, lowercase, number & symbol' },
+      { name: 'confirmPassword', label: 'Confirm Password', type: 'password', requiredOnCreate: true, createOnly: true },
       {
         name: 'isActive',
         label: 'Status',

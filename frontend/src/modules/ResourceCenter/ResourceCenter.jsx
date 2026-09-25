@@ -3316,6 +3316,13 @@ function ResourcePage({ config, navigationContent = null }) {
   const stockAdjustmentsBulkActions = useMemo(() => {
     if (!hasSelectedStockAdjustments) return []
     return [
+      canUpdate ? {
+        key: 'approve',
+        label: 'Approve',
+        icon: CheckCircle2,
+        disabled: isSaving,
+        onClick: handleBulkStockAdjustmentApprove,
+      } : null,
       {
         key: 'export',
         label: 'Export',
@@ -3337,7 +3344,7 @@ function ResourcePage({ config, navigationContent = null }) {
         onClick: handleBulkStockAdjustmentDelete,
       } : null,
     ].filter(Boolean)
-  }, [canDelete, config, hasSelectedStockAdjustments, isDeleting, selectedStockAdjustments])
+  }, [canDelete, canUpdate, config, hasSelectedStockAdjustments, isDeleting, isSaving, selectedStockAdjustments])
 
   const stockAdjustmentsSelectedToolbarContent = hasSelectedStockAdjustments ? (
     <FilterBar className="resource-center__product-style-selection-actions resource-center__stock-adjustments-selection-actions" ariaLabel="Selected Stock Adjustment actions">

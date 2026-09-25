@@ -258,6 +258,12 @@
   border-radius: 999px;
   background: #ffffff;
   white-space: nowrap;
+  transition: all 0.15s ease-in-out;
+  cursor: default;
+}
+
+.resource-center__metric-badge:hover {
+  transform: translateY(-0.5px);
 }
 
 .resource-center__metric-badge strong {
@@ -272,10 +278,24 @@
   color: #047857;
 }
 
+.resource-center__metric-badge--success:hover {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #15803d;
+  box-shadow: 0 2px 5px rgba(5, 150, 105, 0.16);
+}
+
 .resource-center__metric-badge--warning {
   border-color: rgba(245, 158, 11, 0.24);
   background: #fffbeb;
   color: #b45309;
+}
+
+.resource-center__metric-badge--warning:hover {
+  background: #ffedd5;
+  border-color: #fdba74;
+  color: #9a3412;
+  box-shadow: 0 2px 5px rgba(245, 158, 11, 0.16);
 }
 
 .resource-center__metric-badge--danger {
@@ -284,22 +304,50 @@
   color: #b91c1c;
 }
 
+.resource-center__metric-badge--danger:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
+  box-shadow: 0 2px 5px rgba(239, 68, 68, 0.16);
+}
+
 .resource-center__metric-badge--info {
   border-color: rgba(14, 165, 183, 0.22);
   background: #ecfeff;
   color: #0e7490;
 }
 
+.resource-center__metric-badge--info:hover {
+  background: #cffafe;
+  border-color: #67e8f9;
+  color: #0e7490;
+  box-shadow: 0 2px 5px rgba(14, 165, 183, 0.16);
+}
+
 .resource-center__metric-badge--sent {
-  border-color: #cbd5e1;
-  background: #f1f5f9;
-  color: #475569;
+  border-color: #2563eb;
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.resource-center__metric-badge--sent:hover {
+  background: #bfdbfe;
+  border-color: #1d4ed8;
+  color: #1d4ed8;
+  box-shadow: 0 2px 5px rgba(37, 99, 235, 0.22);
 }
 
 .resource-center__metric-badge--open {
   border-color: rgba(59, 130, 246, 0.24);
   background: #eff6ff;
   color: #1d4ed8;
+}
+
+.resource-center__metric-badge--open:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1e40af;
+  box-shadow: 0 2px 5px rgba(59, 130, 246, 0.16);
 }
 
 .resource-center__page--invoices {
@@ -561,6 +609,51 @@
   font-weight: 730;
   line-height: 1.15;
   box-shadow: none;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+}
+
+.resource-center__invoices-table .status-badge:hover {
+  transform: translateY(-1px);
+  filter: saturate(1.12);
+}
+
+.resource-center__invoices-table .status-badge.status-paid:hover,
+.resource-center__invoices-table .status-badge.status-success:hover {
+  background: #dcfce7 !important;
+  border-color: #86efac !important;
+  color: #15803d !important;
+  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.22) !important;
+}
+
+.resource-center__invoices-table .status-badge.status-partially-paid:hover,
+.resource-center__invoices-table .status-badge.status-warning:hover {
+  background: #ffedd5 !important;
+  border-color: #fdba74 !important;
+  color: #9a3412 !important;
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.22) !important;
+}
+
+.resource-center__invoices-table .status-badge.status-sent,
+.resource-center__invoices-table .status-sent {
+  background: #dbeafe !important;
+  border-color: #2563eb !important;
+  color: #2563eb !important;
+}
+
+.resource-center__invoices-table .status-badge.status-sent:hover,
+.resource-center__invoices-table .status-sent:hover {
+  background: #bfdbfe !important;
+  border-color: #1d4ed8 !important;
+  color: #1d4ed8 !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.22) !important;
+}
+
+.resource-center__invoices-table .status-badge.status-info:hover {
+  background: #e2e8f0 !important;
+  border-color: #94a3b8 !important;
+  color: #1e293b !important;
+  box-shadow: 0 2px 6px rgba(100, 116, 139, 0.22) !important;
 }
 
 .resource-center__invoices-table :where(th, td).resource-center__invoices-col-invoice {

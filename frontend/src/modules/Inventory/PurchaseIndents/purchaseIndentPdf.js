@@ -272,9 +272,15 @@ function drawIndentParties(doc, model, y) {
   return y + height + 5
 }
 
+function formatPdfCurrency(value) {
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric) || numeric <= 0) return '-'
+  return `Rs. ${numeric.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
 function itemCurrency(available, value) {
   const numeric = Number(value)
-  return available && Number.isFinite(numeric) && numeric > 0 ? formatPurchaseIndentCurrency(numeric) : '-'
+  return available && Number.isFinite(numeric) && numeric > 0 ? formatPdfCurrency(numeric) : '-'
 }
 
 function drawItemsTable(doc, model, startY) {
@@ -352,48 +358,61 @@ function ensureSpace(doc, y, requiredHeight) {
 }
 
 function drawSummary(doc, model, startY) {
-  const y = ensureSpace(doc, startY + 5, 31)
-  const leftWidth = 80
-  const rightWidth = 78
-  const rightX = PAGE_WIDTH - PAGE_MARGIN - rightWidth
+  const reqY = ensureSpace(doc, startY + 8, 48)
 
-  doc.setDrawColor(...COLORS.border)
-  doc.roundedRect(PAGE_MARGIN, y, leftWidth, 26, 1.5, 1.5, 'S')
+  // 1. Requisition Summary Section Header & Container
   doc.setTextColor(...COLORS.primary)
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(6)
-  doc.text('REQUISITION SUMMARY', PAGE_MARGIN + 3, y + 5)
+  doc.setFontSize(6.5)
+  doc.text('REQUISITION SUMMARY', PAGE_MARGIN, reqY + 4)
+
+  const summaryCardWidth = 95
+  const summaryCardHeight = 18
+  doc.setDrawColor(...COLORS.border)
+  doc.setFillColor(...COLORS.surface)
+  doc.roundedRect(PAGE_MARGIN, reqY + 6, summaryCardWidth, summaryCardHeight, 1.5, 1.5, 'FD')
 
   const overviewColumns = [
     ['TOTAL ITEMS', (Number(model.summary.itemCount) || 0).toLocaleString('en-IN')],
     ['TOTAL QUANTITY', (Number(model.summary.totalQuantity) || 0).toLocaleString('en-IN')],
   ]
   overviewColumns.forEach(([label, value], index) => {
-    const x = PAGE_MARGIN + 3 + (index * 38)
+    const x = PAGE_MARGIN + 4 + (index * 44)
     doc.setTextColor(...COLORS.muted)
+    doc.setFont('helvetica', 'bold')
     doc.setFontSize(5.5)
-    doc.text(label, x, y + 12)
+    doc.text(label, x, reqY + 11.5)
     doc.setTextColor(...COLORS.ink)
+    doc.setFont('helvetica', 'bold')
     doc.setFontSize(7.5)
-    doc.text(value, x, y + 18)
+    doc.text(value, x, reqY + 18)
   })
 
+  // 2. Estimated Value Box with clear vertical separation from Requisition Summary
+  const estValY = reqY + 6 + summaryCardHeight + 8
+  const estValWidth = 85
+  const estValHeight = 16
+  const rightX = PAGE_WIDTH - PAGE_MARGIN - estValWidth
+
   doc.setFillColor(...COLORS.primary)
-  doc.roundedRect(rightX, y, rightWidth, 26, 1.5, 1.5, 'F')
+  doc.roundedRect(rightX, estValY, estValWidth, estValHeight, 1.5, 1.5, 'F')
   doc.setTextColor(...COLORS.white)
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(8.5)
-  doc.text('Estimated Value', rightX + 6, y + 15)
+  doc.text('Estimated Value', rightX + 6, estValY + 10.5)
+
+  const formattedAmount = model.summary.hasEstimatedValue && Number(model.summary.estimatedValue) > 0
+    ? formatPdfCurrency(model.summary.estimatedValue)
+    : '-'
+
   doc.text(
-    model.summary.hasEstimatedValue && Number(model.summary.estimatedValue) > 0
-      ? formatPurchaseIndentCurrency(model.summary.estimatedValue)
-      : '-',
-    rightX + rightWidth - 6,
-    y + 15,
+    formattedAmount,
+    rightX + estValWidth - 6,
+    estValY + 10.5,
     { align: 'right' },
   )
 
-  return y + 26
+  return estValY + estValHeight + 2
 }
 
 function drawApprovalActivity(doc, model, startY) {

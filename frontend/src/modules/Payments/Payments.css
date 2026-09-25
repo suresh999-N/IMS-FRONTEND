@@ -337,6 +337,14 @@
   padding: 10px;
 }
 
+.payment-form .field-help {
+  font-size: 11.5px;
+  color: #64748b;
+  margin-top: 3px;
+  line-height: 1.35;
+  display: block;
+}
+
 .payment-form__section-header h3,
 .payment-form__section-header p {
   margin: 0;
@@ -1946,24 +1954,49 @@
 }
 
 .payment-drawer__section-header h3 {
-  margin-bottom: 7px;
-  font-size: 12.75px;
+  margin: 0 0 9px 0;
+  font-size: 13px;
+  font-weight: 780;
+  color: #111827;
 }
 
 .payment-info-inline {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   margin: 0;
 }
 
 .payment-info-inline .payment-detail-item {
-  min-height: 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: auto;
+  min-width: 0;
+}
+
+.payment-info-inline .payment-detail-item dt {
+  margin: 0;
+  color: #64748b;
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.payment-info-inline .payment-detail-item dd {
+  margin: 0;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.35;
+  overflow-wrap: break-word;
 }
 
 .payment-info-inline .payment-detail-item--wide {
-  padding-top: 4px;
-  border-top: 1px solid #edf2f7;
+  padding-top: 0;
+  border-top: none;
 }
 
 .payment-drawer__footer {
@@ -2298,14 +2331,14 @@
 .payment-drawer__invoice-actions {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   max-width: 100%;
 }
 
 .payment-detail-copy-value > span,
 .payment-drawer__invoice-actions > span {
   min-width: 0;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 
 .payment-drawer__invoice-link {
@@ -2315,12 +2348,13 @@
   background: transparent;
   color: #0f766e;
   font: inherit;
-  font-weight: 820;
-  text-align: right;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 
 .payment-drawer__invoice-link:hover,
@@ -7231,18 +7265,24 @@
 }
 
 .payments-page__table-card .table-component__toolbar > .search-input-container {
-  flex: 0 0 360px !important;
-  width: 360px !important;
-  min-width: 360px !important;
-  max-width: 360px !important;
+  flex: 0 1 420px !important;
+  width: 420px !important;
+  min-width: 280px !important;
+  max-width: 440px !important;
 }
 
 .payments-page__table-card .search-input-container {
-  flex: 0 0 360px !important;
-  width: 360px !important;
-  min-width: 360px !important;
-  max-width: 360px !important;
+  flex: 0 1 420px !important;
+  width: 420px !important;
+  min-width: 280px !important;
+  max-width: 440px !important;
   margin: 0 !important;
+}
+
+.payments-page__table-card .search-wrapper input::placeholder {
+  color: #94a3b8 !important;
+  font-size: 12.5px !important;
+  font-weight: 450 !important;
 }
 
 .payments-page__toolbar-actions {
@@ -9389,7 +9429,7 @@
   height: 100% !important;
   max-height: none !important;
   margin-top: 0 !important;
-  overflow-x: hidden !important;
+  overflow-x: auto !important;
   overflow-y: auto !important;
   border-radius: 0 !important;
   background: #ffffff !important;
@@ -9403,8 +9443,8 @@
 }
 
 .payments-page__table-card--customer .table-component__table {
-  width: 100% !important;
-  min-width: 100% !important;
+  width: var(--table-explicit-width, 100%) !important;
+  min-width: max(var(--table-explicit-width, 100%), 100%) !important;
   max-width: none !important;
   table-layout: fixed !important;
 }
@@ -9415,8 +9455,8 @@
 }
 
 .payments-page__table-card--customer:not(.payments-page__table-card--expanded-columns) .table-component__table {
-  width: 100% !important;
-  min-width: 100% !important;
+  width: var(--table-explicit-width, 100%) !important;
+  min-width: max(var(--table-explicit-width, 100%), 100%) !important;
 }
 
 .payments-page__table-card--customer .table-component__table > thead > tr > th,
@@ -9464,74 +9504,74 @@
 }
 
 .payments-page__table-card--customer :where(th, td).payments-col-number {
-  width: 176px !important;
-  min-width: 176px !important;
-  max-width: 176px !important;
+  width: 180px !important;
+  min-width: 180px !important;
+  max-width: 180px !important;
 }
 
 .payments-page__table-card--customer :where(th, td).payments-col-date {
-  width: 126px !important;
-  min-width: 126px !important;
-  max-width: 126px !important;
+  width: 130px !important;
+  min-width: 130px !important;
+  max-width: 130px !important;
 }
 
 .payments-page__table-card--customer :where(th, td).payments-col-party {
-  width: 176px !important;
-  min-width: 176px !important;
-  max-width: 176px !important;
+  width: 180px !important;
+  min-width: 180px !important;
+  max-width: 180px !important;
 }
 
 .payments-page__table-card--customer :where(th, td).payments-col-document {
-  width: 176px !important;
-  min-width: 176px !important;
-  max-width: 176px !important;
+  width: 180px !important;
+  min-width: 180px !important;
+  max-width: 180px !important;
 }
 
 .payments-page__table-card--customer :where(th, td).payments-col-invoice-status {
-  width: 116px !important;
-  min-width: 116px !important;
-  max-width: 116px !important;
+  width: 135px !important;
+  min-width: 135px !important;
+  max-width: 135px !important;
 }
 
 .payments-page__table-card--customer :where(th, td).payments-col-amount {
-  width: 124px !important;
-  min-width: 124px !important;
-  max-width: 124px !important;
+  width: 130px !important;
+  min-width: 130px !important;
+  max-width: 130px !important;
   text-align: right !important;
 }
 
 .payments-page__table-card--customer :where(th, td).payments-col-status {
-  width: 104px !important;
-  min-width: 104px !important;
-  max-width: 104px !important;
+  width: 115px !important;
+  min-width: 115px !important;
+  max-width: 115px !important;
   text-align: center !important;
 }
 
 .payments-page__table-card--customer :where(th, td).payments-col-actions {
-  width: 70px !important;
-  min-width: 70px !important;
-  max-width: 70px !important;
+  width: 76px !important;
+  min-width: 76px !important;
+  max-width: 76px !important;
   overflow: visible !important;
   text-align: center !important;
 }
 
 .payments-page__table-card--customer :where(th, td).payments-col-method {
-  width: 132px !important;
-  min-width: 132px !important;
-  max-width: 132px !important;
+  width: 135px !important;
+  min-width: 135px !important;
+  max-width: 135px !important;
 }
 
 .payments-page__table-card--customer :where(th, td).payments-col-reference {
-  width: 160px !important;
-  min-width: 160px !important;
-  max-width: 160px !important;
+  width: 170px !important;
+  min-width: 170px !important;
+  max-width: 170px !important;
 }
 
 .payments-page__table-card--customer :where(th, td).payments-col-created-by,
 .payments-page__table-card--customer :where(th, td).payments-col-cancelled-at {
-  width: 130px !important;
-  min-width: 130px !important;
-  max-width: 130px !important;
+  width: 140px !important;
+  min-width: 140px !important;
+  max-width: 140px !important;
 }
 
 .payments-page__table-card--customer :where(th, td).payments-col-notes,
@@ -9675,53 +9715,53 @@
 }
 
 .payments-page__table-card--supplier :where(th, td).payments-col-number {
-  width: 160px !important;
-  min-width: 160px !important;
-  max-width: 160px !important;
+  width: 180px !important;
+  min-width: 180px !important;
+  max-width: 180px !important;
 }
 
 .payments-page__table-card--supplier :where(th, td).payments-col-date {
-  width: 118px !important;
-  min-width: 118px !important;
-  max-width: 118px !important;
+  width: 130px !important;
+  min-width: 130px !important;
+  max-width: 130px !important;
 }
 
 .payments-page__table-card--supplier :where(th, td).payments-col-party {
+  width: 180px !important;
+  min-width: 180px !important;
+  max-width: 180px !important;
+}
+
+.payments-page__table-card--supplier :where(th, td).payments-col-document {
   width: 160px !important;
   min-width: 160px !important;
   max-width: 160px !important;
 }
 
-.payments-page__table-card--supplier :where(th, td).payments-col-document {
-  width: 72px !important;
-  min-width: 72px !important;
-  max-width: 72px !important;
-}
-
 .payments-page__table-card--supplier :where(th, td).payments-col-amount {
-  width: 124px !important;
-  min-width: 124px !important;
-  max-width: 124px !important;
+  width: 130px !important;
+  min-width: 130px !important;
+  max-width: 130px !important;
   text-align: right !important;
 }
 
 .payments-page__table-card--supplier :where(th, td).payments-col-method {
-  width: 108px !important;
-  min-width: 108px !important;
-  max-width: 108px !important;
+  width: 135px !important;
+  min-width: 135px !important;
+  max-width: 135px !important;
 }
 
 .payments-page__table-card--supplier :where(th, td).payments-col-status {
-  width: 96px !important;
-  min-width: 96px !important;
-  max-width: 96px !important;
+  width: 115px !important;
+  min-width: 115px !important;
+  max-width: 115px !important;
   text-align: center !important;
 }
 
 .payments-page__table-card--supplier :where(th, td).payments-col-actions {
-  width: 64px !important;
-  min-width: 64px !important;
-  max-width: 64px !important;
+  width: 76px !important;
+  min-width: 76px !important;
+  max-width: 76px !important;
   overflow: visible !important;
   text-align: center !important;
 }
@@ -10454,6 +10494,10 @@
 
 .payment-drawer--landscape .payment-drawer__finance-card .payment-drawer__section-header h3 {
   margin: 0 !important;
+}
+
+.payment-drawer--landscape .payment-drawer__section--compact .payment-drawer__section-header h3 {
+  margin: 0 0 10px 0 !important;
 }
 
 .payment-drawer--landscape .payment-drawer__finance-card .payment-drawer__progress {

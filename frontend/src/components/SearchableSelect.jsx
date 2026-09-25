@@ -20,6 +20,7 @@ export default function SearchableSelect(props) {
     onBlur,
     options,
     placeholder = 'Select option',
+    required = false,
     error,
     showError,
     searchPlaceholder = 'Search options',
@@ -334,7 +335,7 @@ export default function SearchableSelect(props) {
       className={`${hideLabel ? 'searchable-select' : 'field searchable-select'} ${showError && error ? 'field--error' : ''} ${className}`.trim()}
       ref={rootRef}
     >
-      {hideLabel ? null : <label htmlFor={id}>{renderFormLabel(label)}</label>}
+      {hideLabel ? null : <label htmlFor={id}>{renderFormLabel(label, required || props.required)}</label>}
 
       <button
         id={id}

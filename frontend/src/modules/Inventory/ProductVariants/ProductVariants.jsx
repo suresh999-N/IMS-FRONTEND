@@ -964,6 +964,7 @@ export default function ProductVariants() {
           invalidSearchMessage="Please enter a valid search term (e.g., variant SKU, product name, variant name, attribute, price)."
           loading={isLoading}
           showSearch={true}
+          hideSelectionSummary={selectedVariantIds.length > 0}
           splitToolbar
           fitExplicitColumnsToContainer
           onSearchChange={setSearchTerm}

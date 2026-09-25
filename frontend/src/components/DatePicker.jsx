@@ -244,23 +244,42 @@ export default function DatePicker(props) {
     setIsOpen(false)
   }
 
+  const cleanLabel = typeof label === 'string'
+    ? label.replace(/\s*\*+\s*$/, '').replace(/\s*\(Today\)\s*/i, '').trim()
+    : ''
+  const currentViewMonth = `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}`
+  const minMonth = minDateIso ? minDateIso.slice(0, 7) : ''
+  const maxMonth = maxDateIso ? maxDateIso.slice(0, 7) : ''
+  const isPrevMonthDisabled = Boolean(minMonth && currentViewMonth <= minMonth)
+  const isNextMonthDisabled = Boolean(maxMonth && currentViewMonth >= maxMonth)
+
   const popover = isOpen ? (
     <div
       ref={popoverRef}
       className="date-picker-popover"
       role="dialog"
-      aria-label={`${label || 'Date'} calendar`}
+      aria-label={`${cleanLabel || label || 'Date'} calendar`}
       style={popoverStyle}
     >
       <div className="date-picker-popover__header">
-        <button type="button" onClick={() => shiftMonth(-1)} aria-label="Previous month">
+        <button
+          type="button"
+          onClick={() => shiftMonth(-1)}
+          aria-label="Previous month"
+          disabled={isPrevMonthDisabled}
+        >
           <ChevronLeft size={16} />
         </button>
         <span>
-          <small>{label ? `${label} date` : 'Date'}</small>
+          <small>{cleanLabel || (label ? `${label} date` : 'Date')}</small>
           <strong>{getMonthLabel(viewDate)}</strong>
         </span>
-        <button type="button" onClick={() => shiftMonth(1)} aria-label="Next month">
+        <button
+          type="button"
+          onClick={() => shiftMonth(1)}
+          aria-label="Next month"
+          disabled={isNextMonthDisabled}
+        >
           <ChevronRight size={16} />
         </button>
       </div>
@@ -318,7 +337,7 @@ export default function DatePicker(props) {
       <InputField
         icon={icon}
         onIconClick={openCalendar}
-        iconLabel={`Open ${label || 'date'} calendar`}
+        iconLabel={`Open ${cleanLabel || label || 'date'} calendar`}
         label={label}
         type="text"
         name={name}

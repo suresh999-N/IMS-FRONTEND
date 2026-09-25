@@ -3,6 +3,7 @@ import { cachedApiRequest, createApiCacheKey, hasApiCache, invalidateApiCache } 
 import { API_ENDPOINTS } from './endpoints'
 import { sanitizeEmailInput } from '../validators/emailValidator'
 import { sanitizePhoneInput } from '../validators/phoneValidator'
+import { formatPersonName } from '../validators/nameValidator'
 
 const DEFAULT_LIST_QUERY = { page: 1, pageSize: 100 }
 const CUSTOMER_CACHE_PREFIX = 'customers:'
@@ -249,7 +250,7 @@ export function normalizeCustomer(customer = {}) {
     id,
     customerId: id,
     customerCode: cleanString(readFirst(customer, ['customerCode', 'code', 'CustomerCode'])),
-    name: cleanString(readFirst(customer, ['name', 'Name'])),
+    name: formatPersonName(cleanString(readFirst(customer, ['name', 'Name']))),
     email: normalizeEmail(readFirst(customer, ['email', 'Email'])),
     phone: normalizePhone(readFirst(customer, ['phone', 'Phone', 'mobile'])),
     company: cleanString(readFirst(customer, ['company', 'Company'])),
@@ -377,7 +378,7 @@ export function buildCustomerPayload(values = {}) {
 
   return {
     customerCode: cleanString(values.customerCode).toUpperCase(),
-    name: cleanString(values.name),
+    name: formatPersonName(cleanString(values.name)),
     company: cleanString(readFirst(values, ['company', 'companyName'])),
     phone: normalizePhone(values.phone),
     email: normalizeEmail(values.email),
@@ -397,7 +398,7 @@ export function buildCustomerPayload(values = {}) {
     ),
     contacts: Array.isArray(values.contacts)
       ? values.contacts.map((contact) => ({
-          contactName: cleanString(contact.contactName || contact.name),
+          contactName: formatPersonName(cleanString(contact.contactName || contact.name)),
           role: cleanString(contact.role || contact.contactRole),
           designation: cleanString(contact.designation),
           phone: normalizePhone(contact.phone),

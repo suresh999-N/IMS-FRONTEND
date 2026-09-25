@@ -277,7 +277,7 @@ function getResourceFieldClassName(config, field) {
     return 'resource-form__field--full'
   }
 
-  if (config.key === 'users' && ['confirmPassword', 'isActive'].includes(field.name)) {
+  if (config.key === 'users' && field.name === 'isActive') {
     return 'resource-form__field--full'
   }
 

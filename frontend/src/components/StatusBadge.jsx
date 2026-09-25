@@ -9,6 +9,7 @@ const STATUS_TYPE_MAP = {
   paid: 'success',
   received: 'success',
   success: 'success',
+  enabled: 'success',
   'low-stock': 'warning',
   partial: 'warning',
   'partially-paid': 'warning',
@@ -19,7 +20,7 @@ const STATUS_TYPE_MAP = {
   cancelled: 'cancelled',
   canceled: 'cancelled',
   critical: 'failed',
-  disabled: 'inactive',
+  disabled: 'failed',
   failed: 'failed',
   inactive: 'failed',
   pending: 'warning',
@@ -34,6 +35,7 @@ const STATUS_TYPE_MAP = {
   reversed: 'draft',
   archived: 'archived',
   discontinued: 'archived',
+  sent: 'sent',
 }
 
 function normalizeStatusKey(value) {
@@ -66,7 +68,9 @@ export default function StatusBadge({
   const normalizedKey = normalizeStatusKey(status ?? content)
   const resolvedType = getStatusType(status ?? content, type)
   const isInteractive = Boolean(onClick || onDoubleClick || onKeyDown)
-  const resolvedClassName = `status-badge status-${resolvedType} ${normalizedKey ? `status-${normalizedKey}` : ''} ${isInteractive ? 'status-badge--button' : ''} ${className}`.trim()
+  const badgeModifier = resolvedType ? `status-badge--${resolvedType}` : ''
+  const keyModifier = normalizedKey && normalizedKey !== resolvedType ? `status-badge--${normalizedKey}` : ''
+  const resolvedClassName = `status-badge status-${resolvedType} ${normalizedKey ? `status-${normalizedKey}` : ''} ${badgeModifier} ${keyModifier} ${isInteractive ? 'status-badge--button' : ''} ${className}`.replace(/\s+/g, ' ').trim()
 
   if (isInteractive) {
     return (
@@ -87,8 +91,15 @@ export default function StatusBadge({
     )
   }
 
+  const defaultTitle = title || (content ? `Status: ${content}` : undefined)
+
   return (
-    <span className={resolvedClassName}>
+    <span
+      className={resolvedClassName}
+      title={defaultTitle}
+      aria-label={ariaLabel || defaultTitle}
+      data-tooltip={defaultTitle}
+    >
       {Icon ? <Icon size={14} /> : null}
       {content}
     </span>

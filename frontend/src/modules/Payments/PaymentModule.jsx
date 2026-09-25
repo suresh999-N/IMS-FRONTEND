@@ -34,6 +34,7 @@ import PortalDropdown from '../../components/layout/PortalDropdown'
 import FormModal from '../../layouts/FormModal'
 import { useAuth } from '../../hooks/useAuth'
 import { formatCurrency, formatDate, getNumberError, getRequiredError, getToday } from '../../utils/helpers'
+import { formatPersonName } from '../../validators/nameValidator'
 import { getInvoices, getPurchaseOrders } from '../../api/businessApi'
 import './Payments.css'
 
@@ -103,36 +104,36 @@ const PAYMENT_COLUMNS_STORAGE_KEYS = {
 }
 const ENABLE_PAYMENT_SELECTION_DEBUG = import.meta.env.DEV
 const PAYMENT_COLUMN_WIDTHS = {
-  paymentNumber: 144,
-  paymentDate: 112,
-  partyName: 160,
-  invoiceNumber: 140,
+  paymentNumber: 180,
+  paymentDate: 130,
+  partyName: 180,
+  invoiceNumber: 180,
   poId: 180,
-  invoiceStatus: 100,
-  amount: 112,
-  paymentMethod: 132,
-  referenceNumber: 160,
-  status: 96,
-  createdBy: 130,
+  invoiceStatus: 135,
+  amount: 130,
+  paymentMethod: 135,
+  referenceNumber: 170,
+  status: 115,
+  createdBy: 140,
   notes: 220,
-  cancelledAt: 140,
+  cancelledAt: 150,
   cancellationReason: 220,
-  actions: 64,
+  actions: 76,
 }
 const SUPPLIER_PAYMENT_COLUMN_WIDTHS = {
-  paymentNumber: 160,
-  paymentDate: 118,
-  partyName: 160,
-  poId: 72,
-  amount: 124,
-  paymentMethod: 108,
+  paymentNumber: 180,
+  paymentDate: 130,
+  partyName: 180,
+  poId: 160,
+  amount: 130,
+  paymentMethod: 135,
   referenceNumber: 170,
-  status: 96,
-  createdBy: 130,
-  notes: 200,
-  cancelledAt: 140,
-  cancellationReason: 200,
-  actions: 64,
+  status: 115,
+  createdBy: 140,
+  notes: 220,
+  cancelledAt: 150,
+  cancellationReason: 220,
+  actions: 76,
 }
 
 function toApiId(value, label) {
@@ -187,6 +188,7 @@ function buildStablePaymentRowId(payment) {
 function withPaymentRowId(payment) {
   return {
     ...payment,
+    paymentNumber: paymentNumberFrom(payment),
     paymentRowId: buildStablePaymentRowId(payment),
   }
 }
@@ -524,6 +526,11 @@ function renderReceiptInfoCell(label, value, x, y, width, options = {}) {
   `
 }
 
+function formatPdfCurrency(value) {
+  const num = Number(value || 0)
+  return `Rs. ${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
 function exportPaymentsToPdf(rows, isSupplier, user) {
   if (!Array.isArray(rows) || rows.length === 0) return
 
@@ -585,7 +592,7 @@ function exportPaymentsToPdf(rows, isSupplier, user) {
 
   const metricsData = [
     { label: 'TOTAL RECORDS', val: `${totalCount} Payments`, color: [15, 23, 42] },
-    { label: 'TOTAL SETTLED AMOUNT', val: formatReceiptCurrency(totalAmount), color: [16, 185, 129] },
+    { label: 'TOTAL SETTLED AMOUNT', val: formatPdfCurrency(totalAmount), color: [16, 185, 129] },
     { label: 'COMPLETED / SUCCESS', val: `${completedCount}`, color: [22, 163, 74] },
     { label: 'PENDING RECONCILIATION', val: `${pendingCount}`, color: [217, 119, 6] },
   ]
@@ -622,21 +629,35 @@ function exportPaymentsToPdf(rows, isSupplier, user) {
   const body = rows.map((payment) => [
     paymentNumberFrom(payment),
     formatReceiptDate(payment.paymentDate),
-    payment.partyName || (isSupplier ? 'Supplier' : 'Customer'),
+    formatPersonName(payment.partyName || (isSupplier ? 'Supplier' : 'Customer')),
     isSupplier
       ? (payment.poNumber || (payment.poId ? `PO-${String(payment.poId).padStart(3, '0')}` : '-'))
       : (payment.invoiceNumber || (payment.invoiceId ? `INV-${String(payment.invoiceId).padStart(3, '0')}` : '-')),
-    formatReceiptCurrency(payment.amount),
+    formatPdfCurrency(payment.amount),
     payment.paymentMethod || 'Bank Transfer',
     payment.referenceNumber || 'N/A',
     getPaymentStatusMeta(payment.status).label,
   ])
+
+  const isSmallList = rows.length <= 5
+  const dynamicCellPadding = isSmallList ? 4 : 2.5
+  const dynamicFontSize = isSmallList ? 8.5 : 8
 
   autoTable(doc, {
     startY: startY + cardHeight + 4,
     margin: { left: pageMargin, right: pageMargin, bottom: 16 },
     head,
     body,
+    foot: [[
+      'Total Settled',
+      `${totalCount} Transaction${totalCount === 1 ? '' : 's'}`,
+      '',
+      '',
+      formatPdfCurrency(totalAmount),
+      '',
+      '',
+      `${completedCount} Success`,
+    ]],
     theme: 'grid',
     headStyles: {
       fillColor: [15, 23, 42],
@@ -644,13 +665,20 @@ function exportPaymentsToPdf(rows, isSupplier, user) {
       fontStyle: 'bold',
       fontSize: 8.5,
       halign: 'left',
-      cellPadding: 2.5,
+      cellPadding: dynamicCellPadding,
     },
     bodyStyles: {
-      fontSize: 8,
+      fontSize: dynamicFontSize,
       textColor: [30, 41, 59],
-      cellPadding: 2.5,
+      cellPadding: dynamicCellPadding,
       overflow: 'linebreak',
+    },
+    footStyles: {
+      fillColor: [241, 245, 249],
+      textColor: [15, 23, 42],
+      fontStyle: 'bold',
+      fontSize: 8.5,
+      cellPadding: dynamicCellPadding,
     },
     columnStyles: {
       0: { fontStyle: 'bold', cellWidth: 36 },
@@ -679,6 +707,151 @@ function exportPaymentsToPdf(rows, isSupplier, user) {
     },
   })
 
+  // Distribution & Reconciliation Metrics
+  const methodMap = {}
+  rows.forEach((r) => {
+    const m = r.paymentMethod || 'Bank Transfer'
+    if (!methodMap[m]) methodMap[m] = { count: 0, amount: 0 }
+    methodMap[m].count += 1
+    methodMap[m].amount += Number(r.amount || 0)
+  })
+  const methodEntries = Object.entries(methodMap)
+  const avgAmount = totalCount > 0 ? totalAmount / totalCount : 0
+  const maxAmount = rows.reduce((max, r) => Math.max(max, Number(r.amount || 0)), 0)
+  const successPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 100
+
+  const tableBottom = doc.lastAutoTable?.finalY || (startY + cardHeight + 35)
+  let sectionY = tableBottom + 6
+
+  // If section does not fit before bottom margin, add new page
+  if (sectionY + 56 > pageHeight - 16) {
+    doc.addPage()
+    sectionY = pageMargin + 10
+  }
+
+  const blockHeight = 44
+  const halfWidth = (contentWidth - 6) / 2
+  const leftX = pageMargin
+  const rightX = pageMargin + halfWidth + 6
+
+  // 1. Left Card: Financial Breakdown by Payment Method
+  doc.setFillColor(248, 250, 252)
+  doc.setDrawColor(226, 232, 240)
+  doc.roundedRect(leftX, sectionY, halfWidth, blockHeight, 2.5, 2.5, 'FD')
+
+  // Card Header Bar
+  doc.setFillColor(241, 245, 249)
+  doc.roundedRect(leftX, sectionY, halfWidth, 7, 2.5, 2.5, 'F')
+  doc.rect(leftX, sectionY + 4, halfWidth, 3, 'F')
+  doc.setFontSize(7.5)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(71, 85, 105)
+  doc.text('SETTLEMENT BREAKDOWN BY PAYMENT METHOD', leftX + 4, sectionY + 4.8)
+
+  // Breakdown Line Items
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(8)
+  doc.setTextColor(30, 41, 59)
+
+  let lineOffset = sectionY + 12
+  const displayMethods = methodEntries.length > 0 ? methodEntries.slice(0, 3) : [['Standard', { count: totalCount, amount: totalAmount }]]
+  displayMethods.forEach(([method, data]) => {
+    const pct = totalAmount > 0 ? Math.round((data.amount / totalAmount) * 100) : 100
+    doc.setFont('helvetica', 'bold')
+    doc.text(`• ${method}:`, leftX + 4, lineOffset)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`${formatPdfCurrency(data.amount)} (${data.count} txn${data.count === 1 ? '' : 's'} · ${pct}%)`, leftX + 34, lineOffset)
+    lineOffset += 5.2
+  })
+
+  // Summary Metrics Divider & Values
+  doc.setDrawColor(226, 232, 240)
+  doc.line(leftX + 4, sectionY + 28, leftX + halfWidth - 4, sectionY + 28)
+  doc.setFontSize(7.5)
+  doc.setTextColor(100, 116, 139)
+  doc.text(`Avg Settlement: ${formatPdfCurrency(avgAmount)}`, leftX + 4, sectionY + 34)
+  doc.text(`Highest Settled: ${formatPdfCurrency(maxAmount)}`, leftX + 4, sectionY + 39.5)
+  doc.setTextColor(22, 163, 74)
+  doc.setFont('helvetica', 'bold')
+  doc.text(`Reconciliation Rate: ${successPct}%`, leftX + halfWidth - 4, sectionY + 34, { align: 'right' })
+  doc.setTextColor(100, 116, 139)
+  doc.setFont('helvetica', 'normal')
+  doc.text(`Status: Verified in Ledger`, leftX + halfWidth - 4, sectionY + 39.5, { align: 'right' })
+
+  // 2. Right Card: Audit Record & Signatures
+  doc.setFillColor(248, 250, 252)
+  doc.setDrawColor(226, 232, 240)
+  doc.roundedRect(rightX, sectionY, halfWidth, blockHeight, 2.5, 2.5, 'FD')
+
+  // Header Bar
+  doc.setFillColor(241, 245, 249)
+  doc.roundedRect(rightX, sectionY, halfWidth, 7, 2.5, 2.5, 'F')
+  doc.rect(rightX, sectionY + 4, halfWidth, 3, 'F')
+  doc.setFontSize(7.5)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(71, 85, 105)
+  doc.text('AUDIT RECORD & AUTHORIZED SIGN-OFF', rightX + 4, sectionY + 4.8)
+
+  // Details
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7.5)
+  doc.setTextColor(100, 116, 139)
+  const safeUser = String(user?.email || user?.name || 'System Administrator').slice(0, 32)
+  doc.text(`Issued By: ${safeUser}`, rightX + 4, sectionY + 12)
+  doc.text(`System: StockPilot IMS Financial Core`, rightX + 4, sectionY + 16.5)
+
+  // Signatures
+  const sigY = sectionY + 33
+  const sig1X = rightX + 6
+  const sig1W = 55
+  const sig2X = rightX + halfWidth - 61
+  const sig2W = 55
+
+  // Left Signature (Prepared By)
+  doc.setDrawColor(203, 213, 225)
+  doc.setLineDashPattern([2, 2], 0)
+  doc.line(sig1X, sigY, sig1X + sig1W, sigY)
+  doc.setLineDashPattern([], 0)
+  doc.setFontSize(7)
+  doc.setTextColor(100, 116, 139)
+  doc.setFont('helvetica', 'bold')
+  doc.text('PREPARED / VERIFIED BY', sig1X + sig1W / 2, sigY + 4, { align: 'center' })
+
+  // Right Signature (Authorized Signatory + Stamp)
+  doc.setDrawColor(203, 213, 225)
+  doc.setLineDashPattern([2, 2], 0)
+  doc.line(sig2X, sigY, sig2X + sig2W, sigY)
+  doc.setLineDashPattern([], 0)
+
+  // Stamp Box
+  doc.setFillColor(255, 255, 255)
+  doc.setDrawColor(203, 213, 225)
+  doc.roundedRect(sig2X + sig2W / 2 - 9, sigY - 14, 18, 11, 2, 2, 'FD')
+  doc.setFontSize(6.5)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(148, 163, 184)
+  doc.text('SEAL', sig2X + sig2W / 2, sigY - 7, { align: 'center' })
+
+  doc.setFontSize(7)
+  doc.setTextColor(100, 116, 139)
+  doc.setFont('helvetica', 'bold')
+  doc.text('AUTHORIZED SIGNATORY', sig2X + sig2W / 2, sigY + 4, { align: 'center' })
+
+  // 3. Official Notice Banner
+  const noticeY = Math.min(pageHeight - 14, sectionY + blockHeight + 4)
+  doc.setFillColor(241, 245, 249)
+  doc.setDrawColor(226, 232, 240)
+  doc.roundedRect(pageMargin, noticeY, contentWidth, 7, 2, 2, 'FD')
+  doc.setFontSize(7)
+  doc.setFont('helvetica', 'normal')
+  doc.setTextColor(100, 116, 139)
+  doc.text(
+    'CONFIDENTIAL & OFFICIAL FINANCIAL STATEMENT  —  Generated by StockPilot IMS. All transactions are recorded in the general ledger.',
+    pageWidth / 2,
+    noticeY + 4.5,
+    { align: 'center' }
+  )
+
   const dateTag = new Date().toISOString().slice(0, 10)
   const filePrefix = isSupplier ? 'Supplier-Payments-Detailed-Report' : 'Customer-Payments-Detailed-Report'
   doc.save(`${filePrefix}-${dateTag}.pdf`)
@@ -697,7 +870,7 @@ function buildReceiptSvg({ payment, invoice, metrics, generatedBy }) {
   const documentTag = 'CUSTOMER PAYMENT RECEIPT'
   const partyTypeLabel = 'Customer'
   const referenceTypeLabel = 'Invoice Number'
-  const partyName = payment.partyName || 'Customer'
+  const partyName = formatPersonName(payment.partyName) || 'Customer'
   const totalLabel = 'Invoice Total Amount'
 
   const safeIssuedBy = String(generatedBy || 'System Administrator').slice(0, 34)
@@ -756,11 +929,11 @@ function buildReceiptSvg({ payment, invoice, metrics, generatedBy }) {
         .balance-paid-desc { fill: #166534; font: 800 13.5px Arial, sans-serif; }
         .balance-paid-amt { fill: #15803d; font: 800 14px Consolas, monospace; }
 
-        .badge-bg-green { fill: #dcfce7; stroke: #86efac; stroke-width: 1; }
+        .badge-bg-green, .badge-green { fill: #dcfce7; stroke: #86efac; stroke-width: 1; }
         .badge-txt-green { fill: #15803d; font: 800 11px Arial, sans-serif; }
-        .badge-bg-amber { fill: #fff7ed; stroke: #fed7aa; stroke-width: 1; }
+        .badge-bg-amber, .badge-amber { fill: #fff7ed; stroke: #fed7aa; stroke-width: 1; }
         .badge-txt-amber { fill: #c2410c; font: 800 11px Arial, sans-serif; }
-        .badge-bg-red { fill: #fef2f2; stroke: #fca5a5; stroke-width: 1; }
+        .badge-bg-red, .badge-red { fill: #fef2f2; stroke: #fca5a5; stroke-width: 1; }
         .badge-txt-red { fill: #b91c1c; font: 800 11px Arial, sans-serif; }
 
         .sig-line { stroke: #cbd5e1; stroke-width: 1.5; stroke-dasharray: 4 3; }
@@ -788,10 +961,8 @@ function buildReceiptSvg({ payment, invoice, metrics, generatedBy }) {
       <rect x="490" y="66" width="232" height="26" rx="13" fill="rgba(96,165,250,0.18)" stroke="rgba(96,165,250,0.4)"/>
       <text x="606" y="83" text-anchor="middle" class="meta-tag">${escapeXml(documentTag)}</text>
 
-      <text x="550" y="110" text-anchor="end" class="meta-lbl">RECEIPT NO:</text>
-      <text x="558" y="110" class="meta-txt">${escapeXml(receiptNumber)}</text>
-      <text x="550" y="128" text-anchor="end" class="meta-lbl">DATE:</text>
-      <text x="558" y="128" class="meta-txt">${escapeXml(formatReceiptDate(payment.paymentDate))}</text>
+      <text x="550" y="118" text-anchor="end" class="meta-lbl">RECEIPT NO:</text>
+      <text x="558" y="118" class="meta-txt">${escapeXml(receiptNumber)}</text>
 
       <!-- Watermark Stamp -->
       <rect class="stamp-bg" x="52" y="168" width="690" height="38" rx="8"/>
@@ -799,8 +970,8 @@ function buildReceiptSvg({ payment, invoice, metrics, generatedBy }) {
       <text class="stamp-check" x="76" y="191" text-anchor="middle">✓</text>
       <text class="stamp-text" x="96" y="191">OFFICIAL SETTLEMENT RECEIPT — RECORDED</text>
 
-      <!-- Section 1: Details Card -->
-      <text class="section-title" x="52" y="232">${escapeXml(partyTypeLabel.toUpperCase())} &amp; DETAILS</text>
+      <!-- Section 1: Customer & Invoice Details Card -->
+      <text class="section-title" x="52" y="232">CUSTOMER &amp; INVOICE DETAILS</text>
       <rect class="card-bg" x="52" y="244" width="690" height="92" rx="10"/>
       <line x1="224" y1="244" x2="224" y2="336" stroke="#e2e8f0"/>
       <line x1="396" y1="244" x2="396" y2="336" stroke="#e2e8f0"/>
@@ -812,7 +983,7 @@ function buildReceiptSvg({ payment, invoice, metrics, generatedBy }) {
       <text class="card-label" x="242" y="268">${escapeXml(referenceTypeLabel)}</text>
       <text class="card-val" x="242" y="292">${escapeXml(invoiceNumber)}</text>
 
-      <text class="card-label" x="414" y="268">Date</text>
+      <text class="card-label" x="414" y="268">Invoice Date</text>
       <text class="card-val" x="414" y="292">${escapeXml(invoiceDate)}</text>
 
       <text class="card-label" x="586" y="268">Status</text>
@@ -863,24 +1034,18 @@ function buildReceiptSvg({ payment, invoice, metrics, generatedBy }) {
       <rect class="${getPaymentReceiptStatusClass(payment.status)}" x="530" y="668" width="124" height="26" rx="13"/>
       <text class="${getPaymentReceiptStatusClass(payment.status).replace('badge-', 'badge-txt-')}" x="592" y="685" text-anchor="middle">${escapeXml(paymentStatus)}</text>
 
-      <!-- Section 4: Signature & Stamp -->
-      <text class="section-title" x="52" y="746">AUTHORIZATION &amp; SIGNATURE</text>
-      <line class="sig-line" x1="72" y1="810" x2="350" y2="810"/>
-      <text class="sig-lbl" x="211" y="830" text-anchor="middle">Customer Signature</text>
-
-      <circle class="seal-bg" cx="560" cy="790" r="22"/>
-      <text class="seal-txt" x="560" y="793" text-anchor="middle">SEAL</text>
-      <line class="sig-line" x1="440" y1="810" x2="720" y2="810"/>
-      <text class="sig-lbl" x="580" y="830" text-anchor="middle">Authorized Signatory</text>
+      <!-- Section 4: Electronic Validation & Audit Notice -->
+      <rect class="card-bg" x="52" y="756" width="690" height="74" rx="10"/>
+      <circle class="stamp-circle" cx="80" cy="793" r="12" fill="#16a34a"/>
+      <text x="80" y="798" text-anchor="middle" fill="#ffffff" font-weight="900" font-size="13">✓</text>
+      <text x="104" y="788" fill="#0f172a" font-weight="700" font-size="12">ELECTRONIC VALIDATION &amp; AUDIT TRAIL</text>
+      <text x="104" y="806" class="footer-note">This is a computer-generated official payment receipt issued by StockPilot IMS. Valid without physical signature.</text>
 
       <!-- Footer Audit -->
-      <line x1="52" y1="880" x2="742" y2="880" stroke="#e2e8f0"/>
-      <text class="footer-note" x="397" y="904" text-anchor="middle">This is a computer-generated official payment receipt issued by StockPilot IMS. Valid without physical signature.</text>
-      
-      <rect class="footer-box" x="52" y="920" width="690" height="34" rx="6"/>
-      <text class="footer-meta" x="70" y="941">Generated On: ${escapeXml(generatedOn)}</text>
-      <text class="footer-meta" x="397" y="941" text-anchor="middle">Issued By: ${escapeXml(safeIssuedBy)}</text>
-      <text class="footer-meta" x="724" y="941" text-anchor="end">System: ${escapeXml(RECEIPT_SYSTEM_NAME)}</text>
+      <rect class="footer-box" x="52" y="856" width="690" height="34" rx="6"/>
+      <text class="footer-meta" x="70" y="877">Generated On: ${escapeXml(generatedOn)}</text>
+      <text class="footer-meta" x="397" y="877" text-anchor="middle">Issued By: ${escapeXml(safeIssuedBy)}</text>
+      <text class="footer-meta" x="724" y="877" text-anchor="end">System: ${escapeXml(RECEIPT_SYSTEM_NAME)}</text>
     </svg>
   `
 }
@@ -1210,7 +1375,7 @@ function PaymentDetailsDrawer({ payment, invoice, allPayments = [], onClose, onP
           </div>
           <div className="payment-drawer__summary-customer">
             <span>Customer</span>
-            <strong>{activePayment.partyName || 'Customer'}</strong>
+            <strong>{formatPersonName(activePayment.partyName) || 'Customer'}</strong>
           </div>
         </section>
 
@@ -1255,22 +1420,35 @@ function PaymentDetailsDrawer({ payment, invoice, allPayments = [], onClose, onP
           <section className="payment-drawer__section payment-drawer__section--compact">
             <div className="payment-drawer__section-header">
               <h3>Payment Information</h3>
-              <span className="payment-drawer__invoice-actions">
-                <button type="button" className="payment-drawer__invoice-link" onClick={() => onOpenInvoice?.(activePayment, invoice)}>
-                  {invoiceNumber}
-                </button>
-                <button
-                  type="button"
-                  className={`payment-copy-button ${copiedKey === 'invoice-number' ? 'is-copied' : ''}`.trim()}
-                  onClick={() => handleCopy(invoiceNumber, 'invoice-number')}
-                  aria-label="Copy invoice number"
-                  title={copiedKey === 'invoice-number' ? 'Copied' : 'Copy invoice number'}
-                >
-                  <Copy size={13} />
-                </button>
-              </span>
             </div>
             <dl className="payment-info-inline">
+              <DetailItem
+                label="Invoice Number"
+                value={
+                  invoiceNumber && invoiceNumber !== 'Not Linked' ? (
+                    <span className="payment-detail-copy-value">
+                      <button
+                        type="button"
+                        className="payment-drawer__invoice-link"
+                        onClick={() => onOpenInvoice?.(activePayment, invoice)}
+                      >
+                        {invoiceNumber}
+                      </button>
+                      <button
+                        type="button"
+                        className={`payment-copy-button ${copiedKey === 'invoice-number' ? 'is-copied' : ''}`.trim()}
+                        onClick={() => handleCopy(invoiceNumber, 'invoice-number')}
+                        aria-label="Copy invoice number"
+                        title={copiedKey === 'invoice-number' ? 'Copied' : 'Copy invoice number'}
+                      >
+                        <Copy size={13} />
+                      </button>
+                    </span>
+                  ) : (
+                    'Not Linked'
+                  )
+                }
+              />
               <DetailItem label="Method" value={activePayment.paymentMethod || 'Not Provided'} />
               <DetailItem
                 label="Reference Number"
@@ -1406,7 +1584,7 @@ function PaymentEditModal({ payment, invoice, onSubmit, onClose, isSubmitting })
       <form className="payment-form payment-edit-form" onSubmit={handleSubmit}>
         <div className="payment-form__readonly-grid">
           <DetailItem label="Payment Number" value={paymentNumberFrom(payment)} />
-          <DetailItem label="Customer" value={payment.partyName} />
+          <DetailItem label="Customer" value={formatPersonName(payment.partyName || invoice?.customerName || invoice?.customer || 'Customer')} />
           <DetailItem label="Invoice Number" value={getInvoiceNumber(payment, invoice)} />
         </div>
 
@@ -1414,7 +1592,8 @@ function PaymentEditModal({ payment, invoice, onSubmit, onClose, isSubmitting })
           <CurrencyInput
             id="payment-edit-amount"
             name="amount"
-            label="Amount"
+            label="Amount *"
+            required
             value={formData.amount}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -1424,7 +1603,8 @@ function PaymentEditModal({ payment, invoice, onSubmit, onClose, isSubmitting })
           <SearchableSelect
             id="payment-edit-method"
             name="paymentMethod"
-            label="Payment Method"
+            label="Payment Method *"
+            required
             value={formData.paymentMethod}
             onChange={handleChange}
             options={PAYMENT_METHODS}
@@ -1506,7 +1686,7 @@ function PaymentForm({
   const duplicateReference =
     normalizedReference &&
     existingPayments.some((payment) =>
-      payment.referenceNumber.trim().toLowerCase() === normalizedReference,
+      String(payment?.referenceNumber || '').trim().toLowerCase() === normalizedReference,
     )
 
   const errors = {
@@ -1593,6 +1773,7 @@ function PaymentForm({
       poId: true,
       amount: true,
       paymentDate: true,
+      paymentMethod: true,
       referenceNumber: true,
       notes: true,
     })
@@ -1615,7 +1796,8 @@ function PaymentForm({
           <SearchableSelect
             id="payment-party"
             name="partyId"
-            label={partyLabel}
+            label={`${partyLabel} *`}
+            required
             value={formData.partyId}
             onChange={handlePartyChange}
             onBlur={handleBlur}
@@ -1629,7 +1811,8 @@ function PaymentForm({
             <SearchableSelect
               id="payment-po"
               name="poId"
-              label="Purchase order"
+              label="Purchase order *"
+              required
               value={formData.poId}
               onChange={handleChange}
               onBlur={handleBlur}
@@ -1643,7 +1826,8 @@ function PaymentForm({
               <SearchableSelect
                 id="payment-invoice"
                 name="invoiceId"
-                label="Invoice"
+                label="Invoice *"
+                required
                 value={formData.invoiceId}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -1684,7 +1868,8 @@ function PaymentForm({
           <CurrencyInput
             id="payment-amount"
             name="amount"
-            label="Amount"
+            label="Amount *"
+            required
             value={formData.amount}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -1695,19 +1880,27 @@ function PaymentForm({
           <DatePicker
             id="payment-date"
             name="paymentDate"
-            label="Payment Date"
+            label={formData.paymentDate === getToday() ? 'Payment Date (Today) *' : 'Payment Date *'}
+            required
             icon={CalendarDays}
             min={getToday()}
+            minDate={getToday()}
             value={formData.paymentDate}
             onChange={handleChange}
             onBlur={handleBlur}
+            helperText={
+              formData.paymentDate === getToday()
+                ? "Defaulted to today's date. Click calendar to select today or a future date."
+                : 'Payment transaction date (today or future date).'
+            }
             error={touched.paymentDate ? errors.paymentDate : ''}
           />
 
           <SearchableSelect
             id="payment-method"
             name="paymentMethod"
-            label="Payment Method"
+            label="Payment Method *"
+            required
             placeholder="Select Payment Method"
             value={formData.paymentMethod}
             onChange={handleChange}
@@ -1928,6 +2121,51 @@ export default function CustomerPaymentModule({
     [filteredPayments, selectedPaymentIds],
   )
 
+  const enrichedPayments = useMemo(() => {
+    return filteredPayments.map((payment) => {
+      let resolvedParty = payment.partyName
+      if (!resolvedParty || resolvedParty === '-') {
+        const partyId = payment.supplierId || payment.customerId || payment.partyId
+        if (partyId && Array.isArray(parties)) {
+          const matched = parties.find(
+            (p) =>
+              String(p.id) === String(partyId) ||
+              String(p.supplierId) === String(partyId) ||
+              String(p.customerId) === String(partyId),
+          )
+          if (matched) {
+            resolvedParty =
+              matched.name ||
+              matched.companyName ||
+              matched.company ||
+              matched.supplierName ||
+              matched.customerName ||
+              '-'
+          }
+        }
+      }
+      const paymentNum = paymentNumberFrom(payment)
+      const invNum = getInvoiceNumber(payment, invoiceById.get(String(payment.invoiceId)))
+      const amt = Number(payment.amount || 0)
+      const formattedAmt = formatCurrency(amt)
+      const plainAmt = String(payment.amount || '')
+      const method = payment.paymentMethod || 'Cash'
+
+      const formattedParty = formatPersonName(resolvedParty || payment.partyName) || '-'
+
+      return {
+        ...payment,
+        paymentNumber: paymentNum,
+        partyName: formattedParty,
+        customerName: formattedParty,
+        invoiceNumber: invNum,
+        formattedAmount: formattedAmt,
+        plainAmount: plainAmt,
+        paymentMethod: method,
+      }
+    })
+  }, [filteredPayments, invoiceById, parties])
+
   const summary = useMemo(() => {
     const totalAmount = filteredPayments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0)
     const currentMonth = new Date().toISOString().slice(0, 7)
@@ -2035,10 +2273,6 @@ export default function CustomerPaymentModule({
                 <span class="meta-label">RECEIPT NO:</span>
                 <span class="meta-val">${escapeXml(paymentNumberFrom(payment))}</span>
               </div>
-              <div class="receipt-date-badge">
-                <span class="meta-label">DATE:</span>
-                <span class="meta-val">${escapeXml(formatReceiptDate(payment.paymentDate))}</span>
-              </div>
             </div>
           </div>
 
@@ -2051,7 +2285,7 @@ export default function CustomerPaymentModule({
           <div class="receipt-info-card">
             <div class="info-cell">
               <span class="info-label">Customer Name</span>
-              <span class="info-value info-value--large">${escapeXml(payment.partyName || 'Customer')}</span>
+              <span class="info-value info-value--large">${escapeXml(formatPersonName(payment.partyName) || 'Customer')}</span>
             </div>
             <div class="info-cell">
               <span class="info-label">Invoice Number</span>
@@ -2113,20 +2347,15 @@ export default function CustomerPaymentModule({
             </div>
           </div>
 
-          <div class="receipt-signature-section">
-            <div class="signature-box">
-              <div class="signature-line"></div>
-              <span>Customer Signature</span>
-            </div>
-            <div class="signature-box">
-              <div class="signature-seal-circle">SEAL</div>
-              <div class="signature-line"></div>
-              <span>Authorized Signatory</span>
+          <div class="receipt-validation-card">
+            <div class="validation-badge">✓</div>
+            <div class="validation-copy">
+              <span class="validation-title">Electronic Validation &amp; Audit Trail</span>
+              <p class="validation-text">This is a computer-generated official payment receipt issued by StockPilot IMS. Valid without physical signature.</p>
             </div>
           </div>
 
           <footer class="receipt-footer">
-            <p class="footer-notice">This is a computer-generated official payment receipt issued by StockPilot IMS. Valid without physical signature.</p>
             <div class="footer-meta">
               <span><b>Generated On:</b> ${escapeXml(getGeneratedTimestamp())}</span>
               <span><b>Issued By:</b> ${escapeXml(user?.email || user?.name || 'System Administrator')}</span>
@@ -2216,15 +2445,14 @@ export default function CustomerPaymentModule({
       .row-balance-paid { background: #f0fdf4 !important; border-left: 4px solid #10b981; }
       .row-balance-paid td { color: #15803d !important; font-size: 14px; }
 
-      .receipt-signature-section { display: flex; justify-content: space-between; gap: 40px; margin-top: 36px; padding-top: 10px; }
-      .signature-box { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; }
-      .signature-seal-circle { width: 44px; height: 44px; border: 2px dashed #cbd5e1; border-radius: 50%; color: #94a3b8; font-size: 9px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-bottom: -18px; background: #ffffff; z-index: 1; }
-      .signature-line { width: 100%; border-bottom: 1.5px dashed #cbd5e1; height: 32px; margin-bottom: 8px; }
-      .signature-box span { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+      .receipt-validation-card { display: flex; align-items: center; gap: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 18px; margin-top: 24px; }
+      .validation-badge { width: 26px; height: 26px; border-radius: 50%; background: #16a34a; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; flex-shrink: 0; }
+      .validation-copy { display: flex; flex-direction: column; gap: 2px; }
+      .validation-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #0f172a; }
+      .validation-text { font-size: 11px; color: #64748b; margin: 0; font-weight: 500; }
 
-      .receipt-footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid #e2e8f0; text-align: center; color: #64748b; }
-      .footer-notice { font-size: 11px; color: #64748b; margin: 0 0 10px; font-weight: 500; }
-      .footer-meta { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; color: #94a3b8; background: #f8fafc; padding: 8px 14px; border-radius: 6px; }
+      .receipt-footer { margin-top: 18px; text-align: center; color: #64748b; }
+      .footer-meta { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; color: #94a3b8; background: #f8fafc; padding: 8px 14px; border-radius: 6px; border: 1px solid #e2e8f0; }
 
       @media print {
         body { background: #ffffff; }
@@ -2381,11 +2609,14 @@ export default function CustomerPaymentModule({
       mobilePrimary: true,
       sortable: true,
       sortValue: (payment) => paymentNumberFrom(payment),
-      render: (payment) => (
-        <strong className="payments-page__record-number payments-readable-cell" title={paymentNumberFrom(payment)}>
-          {paymentNumberFrom(payment)}
-        </strong>
-      ),
+      render: (payment) => {
+        const val = paymentNumberFrom(payment)
+        return (
+          <strong className="payments-page__record-number payments-readable-cell" title={val} data-tooltip={val}>
+            {val}
+          </strong>
+        )
+      },
       searchValue: (payment) => `${paymentNumberFrom(payment)} ${payment.partyName} ${payment.invoiceNumber} ${payment.invoiceStatus} ${payment.referenceNumber} ${payment.status}`,
     },
     {
@@ -2398,7 +2629,7 @@ export default function CustomerPaymentModule({
         const paymentDateText = formatDate(payment.paymentDate)
 
         return (
-          <span className="payments-readable-cell" title={paymentDateText}>
+          <span className="payments-readable-cell" title={paymentDateText} data-tooltip={paymentDateText}>
             {paymentDateText}
           </span>
         )
@@ -2410,15 +2641,22 @@ export default function CustomerPaymentModule({
       className: 'payments-col-party',
       sortable: true,
       render: (payment) => {
-        if (payment.partyName && payment.partyName !== '-') return payment.partyName
-        const partyId = payment.customerId || payment.supplierId || payment.partyId
-        if (partyId && Array.isArray(parties)) {
-          const matched = parties.find((p) => String(p.id) === String(partyId) || String(p.customerId) === String(partyId) || String(p.supplierId) === String(partyId))
-          if (matched) {
-            return matched.name || matched.companyName || matched.company || matched.customerName || matched.supplierName || '-'
+        let name = payment.partyName
+        if (!name || name === '-') {
+          const partyId = payment.customerId || payment.supplierId || payment.partyId
+          if (partyId && Array.isArray(parties)) {
+            const matched = parties.find((p) => String(p.id) === String(partyId) || String(p.customerId) === String(partyId) || String(p.supplierId) === String(partyId))
+            if (matched) {
+              name = matched.name || matched.companyName || matched.company || matched.customerName || matched.supplierName || '-'
+            }
           }
         }
-        return payment.partyName || '-'
+        const displayName = name || '-'
+        return (
+          <span className="payments-page__party-name payments-readable-cell" title={displayName} data-tooltip={displayName}>
+            {displayName}
+          </span>
+        )
       },
     },
     ...(isSupplier
@@ -2430,7 +2668,7 @@ export default function CustomerPaymentModule({
           render: (payment) => {
             const documentNumber = payment.poId || '-'
             return (
-              <span className="payments-page__document-number payments-readable-cell" title={documentNumber}>
+              <span className="payments-page__document-number payments-readable-cell" title={documentNumber} data-tooltip={documentNumber}>
                 {documentNumber}
               </span>
             )
@@ -2445,7 +2683,7 @@ export default function CustomerPaymentModule({
           render: (payment) => {
             const documentNumber = getInvoiceNumber(payment, invoiceById.get(String(payment.invoiceId)))
             return (
-              <span className="payments-page__document-number payments-readable-cell" title={documentNumber}>
+              <span className="payments-page__document-number payments-readable-cell" title={documentNumber} data-tooltip={documentNumber}>
                 {documentNumber}
               </span>
             )
@@ -2466,15 +2704,42 @@ export default function CustomerPaymentModule({
       className: 'is-numeric payments-col-amount',
       sortable: true,
       sortValue: (payment) => Number(payment.amount || 0),
-      render: (payment) => formatCurrency(payment.amount),
+      render: (payment) => {
+        const amountText = formatCurrency(payment.amount)
+        return (
+          <span className="payments-readable-cell" title={amountText} data-tooltip={amountText}>
+            {amountText}
+          </span>
+        )
+      },
     },
-    { key: 'paymentMethod', label: 'Method', className: 'payments-col-method', sortable: true },
+    {
+      key: 'paymentMethod',
+      label: 'Method',
+      className: 'payments-col-method',
+      sortable: true,
+      render: (payment) => {
+        const methodText = payment.paymentMethod || 'Cash'
+        return (
+          <span className="payments-readable-cell" title={methodText} data-tooltip={methodText}>
+            {methodText}
+          </span>
+        )
+      },
+    },
     {
       key: 'referenceNumber',
       label: 'Reference Number',
       className: 'payments-col-reference',
       sortable: true,
-      render: (payment) => payment.referenceNumber || (payment.id || payment.paymentId ? `REF-PAY-${String(payment.id || payment.paymentId).padStart(4, '0')}` : 'Not provided'),
+      render: (payment) => {
+        const refText = payment.referenceNumber || (payment.id || payment.paymentId ? `REF-PAY-${String(payment.id || payment.paymentId).padStart(4, '0')}` : 'Not provided')
+        return (
+          <span className="payments-readable-cell" title={refText} data-tooltip={refText}>
+            {refText}
+          </span>
+        )
+      },
     },
     {
       key: 'status',
@@ -2498,21 +2763,42 @@ export default function CustomerPaymentModule({
       label: 'Created By',
       className: 'payments-col-created-by',
       sortable: true,
-      render: (payment) => payment.createdBy || 'System',
+      render: (payment) => {
+        const creator = payment.createdBy || 'System'
+        return (
+          <span className="payments-readable-cell" title={creator} data-tooltip={creator}>
+            {creator}
+          </span>
+        )
+      },
     },
     {
       key: 'notes',
       label: 'Notes',
       className: 'payments-col-notes',
       sortable: true,
-      render: (payment) => payment.notes || 'No notes',
+      render: (payment) => {
+        const notesText = payment.notes || 'No notes'
+        return (
+          <span className="payments-readable-cell" title={notesText} data-tooltip={notesText}>
+            {notesText}
+          </span>
+        )
+      },
     },
     {
       key: 'cancelledAt',
       label: 'Cancelled At',
       className: 'payments-col-cancelled-at',
       sortable: true,
-      render: (payment) => payment.cancelledAt ? formatDate(payment.cancelledAt) : '-',
+      render: (payment) => {
+        const dt = payment.cancelledAt ? formatDate(payment.cancelledAt) : '-'
+        return (
+          <span className="payments-readable-cell" title={dt} data-tooltip={dt}>
+            {dt}
+          </span>
+        )
+      },
       searchValue: (payment) => payment.cancelledAt ? formatDate(payment.cancelledAt) : '',
     },
     {
@@ -2520,9 +2806,16 @@ export default function CustomerPaymentModule({
       label: 'Cancellation Reason',
       className: 'payments-col-cancellation-reason',
       sortable: true,
-      render: (payment) => (normalizePaymentStatus(payment) === 'Cancelled' || payment.cancelledAt)
-        ? (payment.cancellationReason || 'Not provided')
-        : 'N/A',
+      render: (payment) => {
+        const reason = (normalizePaymentStatus(payment) === 'Cancelled' || payment.cancelledAt)
+          ? (payment.cancellationReason || 'Not provided')
+          : 'N/A'
+        return (
+          <span className="payments-readable-cell" title={reason} data-tooltip={reason}>
+            {reason}
+          </span>
+        )
+      },
       searchValue: (payment) => (normalizePaymentStatus(payment) === 'Cancelled' || payment.cancelledAt)
         ? (payment.cancellationReason || 'Not provided')
         : '',
@@ -2796,15 +3089,27 @@ export default function CustomerPaymentModule({
           <DataTable
             className="resource-center__inventory-table"
             key={visibleColumnSignature}
-            rows={filteredPayments}
+            rows={enrichedPayments}
             columns={sizedVisibleColumns}
             keyField="paymentRowId"
             loading={isLoading}
             defaultPageSize={20}
             allowSortReset
             showSearch={true}
-            searchKeys={['paymentNumber', 'partyName', 'invoiceNumber', 'invoiceStatus', 'referenceNumber']}
-            searchPlaceholder="Search payments"
+            searchKeys={[
+              'paymentNumber',
+              'partyName',
+              'customerName',
+              'amount',
+              'formattedAmount',
+              'plainAmount',
+              'paymentMethod',
+              'referenceNumber',
+              'invoiceNumber',
+              'invoiceStatus',
+              'status',
+            ]}
+            searchPlaceholder="Search by Payment No, Customer, Amount, or Method"
             emptyMessage="No customer payments available."
             hideSelectionSummary
             filterContent={selectedToolbarContent}
@@ -2814,8 +3119,8 @@ export default function CustomerPaymentModule({
             enableRowSelection
             selectedRowKeys={selectedPaymentIds}
             onSelectionChange={setSelectedPaymentIds}
-            fitExplicitColumnsToContainer={!hasExpandedColumns}
-            showHorizontalScrollbar={hasExpandedColumns}
+            fitExplicitColumnsToContainer={false}
+            showHorizontalScrollbar={true}
             splitToolbar
           />
         </div>
@@ -2875,7 +3180,7 @@ export default function CustomerPaymentModule({
             <div>
               <h3>{deleteTarget.deleteMode === 'void' ? 'Void this payment?' : 'Delete this payment?'}</h3>
               <p>
-                Payment <strong>{paymentNumberFrom(deleteTarget)}</strong> for <strong>{deleteTarget.partyName}</strong> worth{' '}
+                Payment <strong>{paymentNumberFrom(deleteTarget)}</strong> for <strong>{formatPersonName(deleteTarget.partyName)}</strong> worth{' '}
                 <strong style={{ color: '#0f172a' }}>{formatCurrency(deleteTarget.amount)}</strong> will be cancelled and the ledger balances will be reversed.
               </p>
             </div>

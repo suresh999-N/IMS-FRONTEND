@@ -196,7 +196,7 @@ namespace IMSBackend.Controllers
                     name = customer.Name,
                     customer = customer.Name,
                     customerName = customer.Name,
-                    company = customer.Company,
+                    company = string.IsNullOrEmpty(customer.Company) ? "N/A" : customer.Company,
                     creditLimit = customer.CreditLimit,
                     outstandingBalance = customer.OutstandingBalance,
                     status = customer.Status,
@@ -224,6 +224,10 @@ namespace IMSBackend.Controllers
             // to the requested warehouse, with product-warehouse fallback.
             var sales = await SalesReportRows(query, includeCancelled: false);
 
+            var custMap = await _context.Customers.AsNoTracking()
+                .Select(c => new { c.CustomerId, c.Company, c.CreditLimit, c.Status })
+                .ToDictionaryAsync(c => c.CustomerId, c => c);
+
             var customerIds = sales
                 .Where(x => x.customerId.HasValue)
                 .GroupBy(x => new
@@ -233,17 +237,24 @@ namespace IMSBackend.Controllers
                     x.warehouseId,
                     x.warehouseName
                 })
-                .Select(g => new
+                .Select(g =>
                 {
-                    customerId = g.Key.customerId!.Value,
-                    name = g.Key.customer,
-                    company = "",
-                    creditLimit = 0m,
-                    outstandingBalance = g.Sum(x => x.balanceAmount),
-                    status = "active",
-                    warehouseId = g.Key.warehouseId,
-                    warehouseName = g.Key.warehouseName,
-                    warehouse = g.Key.warehouseName
+                    custMap.TryGetValue(g.Key.customerId!.Value, out var cust);
+                    var comp = !string.IsNullOrWhiteSpace(cust?.Company) ? cust.Company : "N/A";
+                    var credit = cust?.CreditLimit ?? 0m;
+                    var stat = cust?.Status ?? "active";
+                    return new
+                    {
+                        customerId = g.Key.customerId!.Value,
+                        name = g.Key.customer,
+                        company = comp,
+                        creditLimit = credit,
+                        outstandingBalance = g.Sum(x => x.balanceAmount),
+                        status = stat,
+                        warehouseId = g.Key.warehouseId,
+                        warehouseName = g.Key.warehouseName,
+                        warehouse = g.Key.warehouseName
+                    };
                 })
                 .Where(x => x.outstandingBalance != 0)
                 .ToList();
@@ -252,6 +263,14 @@ namespace IMSBackend.Controllers
                 customerIds = customerIds
                     .Where(x => string.Equals(x.status, query.Status, StringComparison.OrdinalIgnoreCase))
                     .ToList();
+
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                var search = query.Search.Trim();
+                customerIds = customerIds.Where(x =>
+                    (x.name ?? "").Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    (x.company ?? "").Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
 
             return Ok(customerIds.Select((x, index) => new
             {

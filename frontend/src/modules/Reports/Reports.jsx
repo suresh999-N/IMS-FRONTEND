@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   Bar,
   BarChart,
@@ -41,6 +42,7 @@ import DatePicker from '../../components/DatePicker'
 import { DataTable, ExportMenu, StatisticsCard, StatusBadge } from '../../components/erp'
 import { showToast } from '../../components/common/toast'
 import { formatCreditLimit, formatCurrency, formatDate } from '../../utils/helpers'
+import { formatPersonName } from '../../validators/nameValidator'
 import {
   buildCustomerOutstandingReport,
   buildFastMovingReport,
@@ -435,6 +437,13 @@ function getExportValue(row, column) {
   const value = row[column.key]
   const key = String(column.key || '').toLowerCase()
 
+  if (key === 'company') {
+    const trimmed = String(value ?? '').trim()
+    return trimmed && trimmed !== '-' ? trimmed : 'N/A'
+  }
+  if (key === 'name' || key === 'customer' || key === 'customername') {
+    return formatPersonName(value) || value || '-'
+  }
   if (key.includes('date')) return value ? formatDate(value) : ''
   if (
     key.includes('amount') ||
@@ -898,13 +907,46 @@ function buildKpiPdfLines({ title, value, trend, caption, dateRangeLabel, report
 }
 
 function SummaryCard({ title, value, caption, icon: Icon, trend, tone = 'neutral', onClick, onDownload, loading }) {
+  const [tooltipPos, setTooltipPos] = useState(null)
+  const tileRef = useRef(null)
+  const textValue = typeof value === 'string' || typeof value === 'number' ? String(value).trim() : ''
+  const displayTitle = !loading && textValue && textValue !== '...' ? textValue : undefined
+
+  const handleMouseEnter = () => {
+    if (loading || !displayTitle) return
+    const valueEl = tileRef.current?.querySelector('.erp-statistics-card__value') || tileRef.current
+    if (!valueEl) return
+    const rect = valueEl.getBoundingClientRect()
+    const placeBelow = rect.top < 65
+    setTooltipPos({
+      left: Math.max(16, Math.min(rect.left + rect.width / 2, window.innerWidth - 16)),
+      top: placeBelow ? rect.bottom + 8 : rect.top - 8,
+      placeBelow,
+      text: displayTitle,
+    })
+  }
+
+  const handleMouseLeave = () => {
+    setTooltipPos(null)
+  }
+
   return (
-    <div className="reports-kpi-tile">
-      <button type="button" className="reports-kpi-button" onClick={onClick}>
+    <div className="reports-kpi-tile" ref={tileRef}>
+      <button
+        type="button"
+        className="reports-kpi-button"
+        onClick={onClick}
+        title={displayTitle}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onFocus={handleMouseEnter}
+        onBlur={handleMouseLeave}
+      >
         <StatisticsCard
           icon={Icon}
           label={title}
           value={loading ? '...' : value}
+          valueTitle={displayTitle}
           helper={
             <span className={`reports-kpi-helper reports-kpi-helper--${tone}`}>
               <strong>{loading ? '...' : trend}</strong>
@@ -925,9 +967,26 @@ function SummaryCard({ title, value, caption, icon: Icon, trend, tone = 'neutral
           event.stopPropagation()
           onDownload?.()
         }}
+        onMouseEnter={handleMouseLeave}
       >
         <Printer size={14} strokeWidth={2.4} />
       </button>
+
+      {tooltipPos && typeof document !== 'undefined'
+        ? createPortal(
+            <div
+              className={`reports-kpi-tooltip ${tooltipPos.placeBelow ? 'reports-kpi-tooltip--below' : ''}`.trim()}
+              role="tooltip"
+              style={{
+                left: `${tooltipPos.left}px`,
+                top: `${tooltipPos.top}px`,
+              }}
+            >
+              {tooltipPos.text}
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   )
 }
@@ -1498,6 +1557,14 @@ export default function Reports({ data = {} }) {
     setFilters((currentValue) => ({ ...currentValue, reportType: tabKey }))
   }
 
+  function handleMetricBadgeClick(tabKey) {
+    handleTabChange(tabKey)
+    const tableEl = document.querySelector('.reports-page__table-card')
+    if (tableEl) {
+      tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   const columnsByReport = {
     sales: [
       { key: 'soNumber', label: 'Order No.', sortable: true, width: '185px' },
@@ -1507,10 +1574,20 @@ export default function Reports({ data = {} }) {
       { key: 'status', label: 'Status', sortable: true, width: '150px', render: (row) => renderStatusBadge(row.status) },
     ],
     purchases: [
-      { key: 'poNumber', label: 'PO No.', sortable: true, width: '300px' },
-      { key: 'supplier', label: 'Supplier', sortable: true, width: '160px' },
-      { key: 'orderDate', label: 'Order Date', sortable: true, width: '180px', render: (row) => formatDate(row.orderDate) },
-      { key: 'totalAmount', label: 'Total', sortable: true, width: '170px', className: 'reports-table__numeric', render: (row) => formatCurrency(row.totalAmount) },
+      { key: 'poNumber', label: 'PO No.', sortable: true, width: '185px' },
+      {
+        key: 'supplier',
+        label: 'Supplier',
+        sortable: true,
+        width: '270px',
+        render: (row) => (
+          <span className="reports-table__party-name" title={row.supplier || row.supplierName || 'Default Supplier'}>
+            {row.supplier || row.supplierName || 'Default Supplier'}
+          </span>
+        ),
+      },
+      { key: 'orderDate', label: 'Order Date', sortable: true, width: '160px', render: (row) => formatDate(row.orderDate) },
+      { key: 'totalAmount', label: 'Total', sortable: true, width: '160px', className: 'reports-table__numeric', render: (row) => formatCurrency(row.totalAmount) },
       { key: 'status', label: 'Status', sortable: true, width: '150px', render: (row) => renderStatusBadge(row.status) },
     ],
     invoices: [
@@ -1531,8 +1608,8 @@ export default function Reports({ data = {} }) {
       { key: 'computedStatus', label: 'Status', sortable: false, width: '150px', render: (row) => renderStatusBadge(getStockHealthStatus(row)) },
     ],
     customerBalances: [
-      { key: 'name', label: 'Customer', sortable: true, width: '220px', render: (row) => row.name || row.customer },
-      { key: 'company', label: 'Company', sortable: true, width: '220px' },
+      { key: 'name', label: 'Customer', sortable: true, width: '220px', render: (row) => formatPersonName(row.name || row.customer) },
+      { key: 'company', label: 'Company', sortable: true, width: '220px', render: (row) => (row.company && String(row.company).trim() && String(row.company).trim() !== '-') ? row.company.trim() : 'N/A' },
       { key: 'creditLimit', label: 'Credit Limit', sortable: true, width: '160px', className: 'reports-table__numeric', render: (row) => formatCreditLimit(row.creditLimit, 'INR') },
       { key: 'outstandingBalance', label: 'Outstanding', sortable: true, width: '170px', className: 'reports-table__numeric', render: (row) => formatCurrency(row.outstandingBalance) },
       { key: 'status', label: 'Status', sortable: true, width: '150px', render: (row) => renderStatusBadge(row.status) },
@@ -1574,7 +1651,7 @@ export default function Reports({ data = {} }) {
       { key: 'stockValue', label: 'Stock Value', sortable: true, width: '160px', className: 'reports-table__numeric', render: (row) => formatCurrency(row.stockValue) },
     ],
     topCustomers: [
-      { key: 'customerName', label: 'Customer Name', sortable: true, width: '240px' },
+      { key: 'customerName', label: 'Customer Name', sortable: true, width: '240px', render: (row) => formatPersonName(row.customerName || row.name) },
       { key: 'totalOrders', label: 'Total Orders', sortable: true, width: '150px', className: 'reports-table__numeric' },
       { key: 'totalSalesValue', label: 'Total Sales Value', sortable: true, width: '190px', className: 'reports-table__numeric', render: (row) => formatCurrency(row.totalSalesValue) },
       { key: 'outstandingAmount', label: 'Outstanding Amount', sortable: true, width: '190px', className: 'reports-table__numeric', render: (row) => formatCurrency(row.outstandingAmount) },
@@ -1596,7 +1673,7 @@ export default function Reports({ data = {} }) {
       { key: 'status', label: 'Status', sortable: true, width: '150px', render: (row) => renderStatusBadge(row.status) },
     ],
     customerOutstanding: [
-      { key: 'customerName', label: 'Customer Name', sortable: true, width: '230px' },
+      { key: 'customerName', label: 'Customer Name', sortable: true, width: '230px', render: (row) => formatPersonName(row.customerName || row.name) },
       { key: 'invoiceNumber', label: 'Invoice Number', sortable: true, width: '180px' },
       { key: 'invoiceDate', label: 'Invoice Date', sortable: true, width: '160px', render: (row) => (row.invoiceDate ? formatDate(row.invoiceDate) : '-') },
       { key: 'dueDate', label: 'Due Date', sortable: true, width: '160px', render: (row) => (row.dueDate ? formatDate(row.dueDate) : '-') },
@@ -1730,10 +1807,46 @@ export default function Reports({ data = {} }) {
             <div className="reports-page__title-row">
               <h1>Reports</h1>
               <div className="reports-page__metrics" aria-label="Report summary">
-                <span className="reports-metric-badge reports-metric-badge--success"><strong>{filteredReports.sales.length}</strong><span>Sales</span></span>
-                <span className="reports-metric-badge reports-metric-badge--info"><strong>{filteredReports.purchases.length}</strong><span>Purchases</span></span>
-                <span className="reports-metric-badge reports-metric-badge--warning"><strong>{filteredReports.invoices.length}</strong><span>Invoices</span></span>
-                <span className="reports-metric-badge reports-metric-badge--primary"><strong>{summary.stockAvailable}</strong><span>Stock Units</span></span>
+                <button
+                  type="button"
+                  className={`reports-metric-badge reports-metric-badge--success ${activeReport === 'sales' ? 'is-active' : ''}`}
+                  onClick={() => handleMetricBadgeClick('sales')}
+                  title="View Sales Reports"
+                  aria-label={`View Sales Reports (${filteredReports.sales.length} records)`}
+                >
+                  <strong>{filteredReports.sales.length}</strong>
+                  <span>Sales</span>
+                </button>
+                <button
+                  type="button"
+                  className={`reports-metric-badge reports-metric-badge--info ${activeReport === 'purchases' ? 'is-active' : ''}`}
+                  onClick={() => handleMetricBadgeClick('purchases')}
+                  title="View Purchase Reports"
+                  aria-label={`View Purchase Reports (${filteredReports.purchases.length} records)`}
+                >
+                  <strong>{filteredReports.purchases.length}</strong>
+                  <span>Purchases</span>
+                </button>
+                <button
+                  type="button"
+                  className={`reports-metric-badge reports-metric-badge--warning ${activeReport === 'invoices' ? 'is-active' : ''}`}
+                  onClick={() => handleMetricBadgeClick('invoices')}
+                  title="View Invoice Reports"
+                  aria-label={`View Invoice Reports (${filteredReports.invoices.length} records)`}
+                >
+                  <strong>{filteredReports.invoices.length}</strong>
+                  <span>Invoices</span>
+                </button>
+                <button
+                  type="button"
+                  className={`reports-metric-badge reports-metric-badge--primary ${activeReport === 'stock' ? 'is-active' : ''}`}
+                  onClick={() => handleMetricBadgeClick('stock')}
+                  title="View Inventory / Stock Reports"
+                  aria-label={`View Inventory / Stock Reports (${summary.stockAvailable} units)`}
+                >
+                  <strong>{summary.stockAvailable}</strong>
+                  <span>Stock Units</span>
+                </button>
               </div>
             </div>
 

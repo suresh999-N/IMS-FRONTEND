@@ -20,7 +20,7 @@ const statusSelectStyles = {
   control: (base, state) => ({
     ...base,
     minHeight: 36,
-    borderColor: state.selectProps['aria-invalid'] ? '#ead7da' : state.isFocused ? '#6ee7b7' : '#d1fae5',
+    borderColor: state.selectProps['aria-invalid'] ? '#ef4444' : state.isFocused ? '#6ee7b7' : '#d1fae5',
     borderRadius: 7,
     backgroundColor: '#fafffe',
     boxShadow: state.isFocused
@@ -32,7 +32,7 @@ const statusSelectStyles = {
     lineHeight: 1.25,
     minWidth: 0,
     '&:hover': {
-      borderColor: state.isFocused ? '#6ee7b7' : '#bbf7d0',
+      borderColor: state.selectProps['aria-invalid'] ? '#ef4444' : state.isFocused ? '#6ee7b7' : '#bbf7d0',
       backgroundColor: '#ffffff',
     },
   }),
@@ -49,7 +49,7 @@ const statusSelectStyles = {
   }),
   placeholder: (base) => ({
     ...base,
-    color: '#6b7f6e',
+    color: '#64748b',
     fontWeight: 450,
   }),
   singleValue: (base) => ({
@@ -284,7 +284,7 @@ export default function SupplierBasicInfoTab({
             value={selectedStatus}
             onChange={(option) => onChange({ target: { name: 'status', value: option?.value ?? '' } })}
             onBlur={() => onBlur?.({ target: { name: 'status', value: formData.status } })}
-            placeholder="Select status"
+            placeholder="Select Status"
             isSearchable={false}
             isDisabled={readOnly}
             menuPortalTarget={statusPortalTarget}

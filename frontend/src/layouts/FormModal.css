@@ -166,10 +166,48 @@
   margin-bottom: 3px;
 }
 
-.form-modal :where(.input-with-icon input, input, textarea, select, .searchable-select__trigger) {
-  border-color: rgba(203, 213, 225, 0.68);
-  border-radius: 9px;
+.form-modal :where(.input-with-icon, input:not(.input-with-icon input), textarea:not(.input-with-icon textarea), select, .searchable-select__trigger) {
+  border: 1px solid rgba(203, 213, 225, 0.68);
+  border-radius: 8px;
   font-size: 13px;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-modal .input-with-icon {
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.form-modal .input-with-icon input,
+.form-modal .input-with-icon textarea {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+.form-modal .input-with-icon:not(.input-with-icon--textarea) input {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 4px !important;
+  box-sizing: border-box !important;
+}
+
+.form-modal :where(.input-with-icon:hover, input:hover:not(:disabled):not(:focus), textarea:hover:not(:disabled):not(:focus), select:hover:not(:disabled):not(:focus)) {
+  border-color: var(--ims-success, #059669);
+  background-color: #f8fafc;
+}
+
+.form-modal :where(.input-with-icon:focus-within, input:focus, textarea:focus, select:focus, .searchable-select__trigger:focus-visible, .searchable-select__trigger.is-open) {
+  border-color: var(--ims-success, #059669) !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12) !important;
+  outline: none !important;
 }
 
 /* Ensure field validation errors are always prominently visible in modals */

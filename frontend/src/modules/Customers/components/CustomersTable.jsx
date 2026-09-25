@@ -2,6 +2,7 @@ import { Check, Eye, Pencil, Printer, RefreshCw, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionMenu, DataTable, FilterBar, StatusBadge } from '../../../components/erp'
 import { formatCreditLimit, formatCurrency } from '../../../utils/helpers'
+import { formatPersonName } from '../../../validators/nameValidator'
 
 const COLUMN_STORAGE_KEY = 'ims.customers.visibleColumns.supplierImageParity.v1'
 const DEFAULT_VISIBLE_COLUMNS = [
@@ -228,8 +229,8 @@ export default function CustomersTable({
             {getCustomerInitials(customer)}
           </span>
           <div className="customers-page__table-stack">
-            <strong title={customer.name || 'Unnamed customer'}>
-              {customer.name || 'Unnamed customer'}
+            <strong title={formatPersonName(customer.name) || 'Unnamed customer'}>
+              {formatPersonName(customer.name) || 'Unnamed customer'}
             </strong>
             <span title={customer.customerCode || customer.id}>
               {customer.customerCode || customer.id}
