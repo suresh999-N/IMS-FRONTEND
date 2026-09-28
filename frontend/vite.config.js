@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
   const proxyConfig = {
     target,
     changeOrigin: true,
-    secure: true,
+    secure: false,
     headers: {
       'ngrok-skip-browser-warning': 'true',
     },
