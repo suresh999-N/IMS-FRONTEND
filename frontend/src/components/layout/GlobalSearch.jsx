@@ -46,6 +46,11 @@ const TYPE_LABELS = {
   CustomerPayment: 'Customer Payments',
   User: 'Users',
   Role: 'Roles',
+  Address: 'Addresses',
+  addresses: 'Addresses',
+  Addressess: 'Addresses',
+  CustomerAddress: 'Customer Addresses',
+  SupplierAddress: 'Supplier Addresses',
 }
 
 const TYPE_BADGES = {
@@ -67,6 +72,11 @@ const TYPE_BADGES = {
   CustomerPayment: 'Customer Payment',
   User: 'User',
   Role: 'Role',
+  Address: 'Address',
+  addresses: 'Address',
+  Addressess: 'Address',
+  CustomerAddress: 'Customer Address',
+  SupplierAddress: 'Supplier Address',
 }
 
 const TYPE_ORDER = [
@@ -172,7 +182,54 @@ function getSubtitleLabel(result) {
 }
 
 function getEntityLabel(type) {
-  return TYPE_BADGES[type] || type || 'Result'
+  if (TYPE_BADGES[type]) return TYPE_BADGES[type]
+  if (!type) return 'Result'
+
+  const str = String(type).trim()
+  const lower = str.toLowerCase()
+
+  if (lower === 'address' || lower === 'addresses' || lower === 'addressess') {
+    return 'Address'
+  }
+  if (lower.endsWith('addressess')) {
+    return str.slice(0, -10) + 'Address'
+  }
+  if (lower.endsWith('addresses')) {
+    return str.slice(0, -9) + 'Address'
+  }
+  return str
+}
+
+function formatTypeLabel(type) {
+  if (TYPE_LABELS[type]) return TYPE_LABELS[type]
+  if (!type) return 'Results'
+
+  const str = String(type).trim()
+  const lower = str.toLowerCase()
+
+  if (lower === 'address' || lower === 'addresses' || lower === 'addressess') {
+    return 'Addresses'
+  }
+
+  if (lower.endsWith('addressess')) {
+    return str.slice(0, -10) + 'Addresses'
+  }
+  if (lower.endsWith('addresses')) {
+    return str.slice(0, -9) + 'Addresses'
+  }
+  if (lower.endsWith('address')) {
+    return str.slice(0, -7) + 'Addresses'
+  }
+
+  if (lower.endsWith('es') || lower.endsWith('s')) {
+    return str
+  }
+
+  if (lower.endsWith('sh') || lower.endsWith('ch') || lower.endsWith('x') || lower.endsWith('z')) {
+    return `${str}es`
+  }
+
+  return `${str}s`
 }
 
 function normalizeForSearch(value) {
@@ -231,7 +288,7 @@ function groupResults(results, query) {
     })
     .map(([type, items]) => ({
       type,
-      label: TYPE_LABELS[type] || `${type}s`,
+      label: formatTypeLabel(type),
       icon: items[0]?.icon || 'search',
       route: TYPE_ROUTES[type],
       items,

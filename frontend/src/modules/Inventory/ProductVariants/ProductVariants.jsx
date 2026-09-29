@@ -885,7 +885,7 @@ export default function ProductVariants() {
                 onClick={() => setIsBulkDeleteModalOpen(true)}
               >
                 <Trash2 size={15} />
-                Delete Selected ({selectedVariantIds.length})
+                Delete ({selectedVariantIds.length})
               </button>
             )}
           </div>
@@ -897,7 +897,7 @@ export default function ProductVariants() {
           onClick={() => loadData({ force: true, showLoading: true })}
           disabled={isLoading}
         >
-          <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+          <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
           Refresh
         </button>
       </FilterBar>

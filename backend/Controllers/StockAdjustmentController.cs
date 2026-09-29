@@ -124,7 +124,28 @@ namespace IMSBackend.Controllers
         private static bool IsValidStockAdjustmentReason(string adjustmentType, string reason, out string? errorMessage)
         {
             errorMessage = null;
-            var normReason = reason.Trim().ToLowerInvariant();
+
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                errorMessage = "Reason is required.";
+                return false;
+            }
+
+            var trimmedReason = reason.Trim();
+            if (trimmedReason.Length < 3)
+            {
+                errorMessage = "Reason must be at least 3 characters.";
+                return false;
+            }
+
+            int alphaNumericCount = trimmedReason.Count(char.IsLetterOrDigit);
+            if (alphaNumericCount < 2)
+            {
+                errorMessage = "Reason must contain valid words or text (e.g. Low stock, Damage, Correction).";
+                return false;
+            }
+
+            var normReason = trimmedReason.ToLowerInvariant();
 
             if (adjustmentType == "increase")
             {
@@ -134,11 +155,12 @@ namespace IMSBackend.Controllers
                     return false;
                 }
 
-                if (normReason.Contains("damage") || normReason.Contains("expiry") || normReason.Contains("expired") ||
-                    normReason.Contains("shrinkage") || normReason.Contains("theft") || normReason.Contains("stolen") ||
-                    normReason.Contains("loss") || normReason.Contains("lost") || normReason.Contains("broken") ||
-                    normReason.Contains("spoilage") || normReason.Contains("spoiled") || normReason.Contains("waste") ||
-                    normReason.Contains("scrap") || normReason.Contains("write-off") || normReason.Contains("deficit"))
+                if (normReason.Contains("damage") || normReason.Contains("damaged") || normReason.Contains("expiry") ||
+                    normReason.Contains("expired") || normReason.Contains("shrinkage") || normReason.Contains("theft") ||
+                    normReason.Contains("stolen") || normReason.Contains("loss") || normReason.Contains("lost") ||
+                    normReason.Contains("broken") || normReason.Contains("breakage") || normReason.Contains("spoilage") ||
+                    normReason.Contains("spoiled") || normReason.Contains("waste") || normReason.Contains("scrap") ||
+                    normReason.Contains("write-off") || normReason.Contains("deficit") || normReason.Contains("shortage"))
                 {
                     errorMessage = "Damage, expiry, shrinkage, loss, or waste causes inventory reduction and cannot be used for an Increase adjustment.";
                     return false;
@@ -167,7 +189,7 @@ namespace IMSBackend.Controllers
                     return false;
                 }
 
-                if (normReason.Contains("high stock") || normReason.Contains("overstock"))
+                if (normReason.Contains("high stock") || normReason.Contains("overstock") || normReason.Contains("excess stock"))
                 {
                     errorMessage = "Reason 'high stock' is invalid for Decrease adjustment. Please use a reduction reason like damage, expiry, shrinkage, or correction.";
                     return false;
@@ -201,7 +223,7 @@ namespace IMSBackend.Controllers
 
             if (adjustmentType == "recount")
             {
-                if (normReason.Contains("high stock"))
+                if (normReason.Contains("high stock") || normReason.Contains("overstock"))
                 {
                     errorMessage = "Reason 'high stock' is invalid for Recount adjustment.";
                     return false;

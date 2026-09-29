@@ -185,7 +185,7 @@ export default function BarcodeTable({ barcodes, onRefresh, isLoading }) {
       label: 'Preview',
       searchable: false,
       mobileHidden: true,
-      render: (item) => <CodePreview codeType={item.codeType} value={item.value} />,
+      render: (item) => <CodePreview codeType={item.codeType} value={item.value} compact={true} />,
       className: 'barcode-page__preview',
     },
     {

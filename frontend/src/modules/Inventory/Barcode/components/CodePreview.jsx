@@ -1,32 +1,38 @@
 import { getBarcodeBars, getQrCells } from '../utils/preview'
 
-function BarcodeVisual({ value }) {
+function BarcodeVisual({ value, compact = false }) {
   const bars = getBarcodeBars(value)
 
   return (
-    <div className="barcode-visual" aria-label={`Barcode preview for ${value}`}>
+    <div
+      className={`barcode-visual ${compact ? 'barcode-visual--compact' : ''}`.trim()}
+      aria-label={`Barcode preview for ${value}`}
+    >
       <div className="barcode-visual__bars">
         {bars.map((bar) => (
           <span
             key={bar.key}
             className="barcode-visual__bar"
             style={{
-              width: `${bar.width}px`,
-              height: `${bar.height}px`,
+              width: compact ? `${Math.max(2, Math.round(bar.width * 1.5))}px` : `${bar.width}px`,
+              height: compact ? `${Math.max(18, Math.round(bar.height * 0.45))}px` : `${bar.height}px`,
             }}
           />
         ))}
       </div>
-      <span className="barcode-visual__label">{value}</span>
+      {!compact && <span className="barcode-visual__label">{value}</span>}
     </div>
   )
 }
 
-function QrVisual({ value }) {
+function QrVisual({ value, compact = false }) {
   const cells = getQrCells(value)
 
   return (
-    <div className="qr-visual" aria-label={`QR preview for ${value}`}>
+    <div
+      className={`qr-visual ${compact ? 'qr-visual--compact' : ''}`.trim()}
+      aria-label={`QR preview for ${value}`}
+    >
       <div className="qr-visual__grid">
         {cells.map((cell) => (
           <span
@@ -35,15 +41,15 @@ function QrVisual({ value }) {
           />
         ))}
       </div>
-      <span className="qr-visual__label">{value}</span>
+      {!compact && <span className="qr-visual__label">{value}</span>}
     </div>
   )
 }
 
-export default function CodePreview({ codeType, value }) {
+export default function CodePreview({ codeType, value, compact = false }) {
   if (codeType === 'QR Code') {
-    return <QrVisual value={value} />
+    return <QrVisual value={value} compact={compact} />
   }
 
-  return <BarcodeVisual value={value} />
+  return <BarcodeVisual value={value} compact={compact} />
 }

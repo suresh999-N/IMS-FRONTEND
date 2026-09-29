@@ -61,6 +61,10 @@ import {
   getEmailError,
   sanitizeEmailInput,
 } from '../../../validators/emailValidator'
+import {
+  validateStockAdjustmentQuantity,
+  isFractionalUnitAllowed,
+} from '../../../validators/stockAdjustmentValidator'
 import { RESOURCE_CONFIGS, RESOURCE_HUBS } from '../../ResourceCenter/resourceConfigs'
 import './Stock.css'
 
@@ -167,6 +171,29 @@ function normalizeForCompare(value) {
   }
 
   return String(value ?? '')
+}
+
+function getKeyField(config) {
+  if (PRODUCT_STYLE_RESOURCE_KEYS.has(config?.key)) {
+    return '__resourceSelectionKey'
+  }
+  if (config?.key === 'stock') return 'stockId'
+  if (config?.key === 'stockMovements') return 'movementId'
+  if (config?.key === 'stockLedger') return 'ledgerId'
+  if (config?.key === 'stockAdjustments') return 'adjustmentId'
+  if (config?.key === 'stockTransfers') return 'transferId'
+  if (config?.key === 'stockAudits') return 'auditId'
+  if (config?.key === 'goodsReceipts') return 'grnId'
+  return config?.idFields?.[0] || 'id'
+}
+
+function getRowSelectionKey(row, config, index) {
+  if (!row) return ''
+  if (PRODUCT_STYLE_RESOURCE_KEYS.has(config?.key)) {
+    return getSelectionRowKey(row, index)
+  }
+  const field = getKeyField(config)
+  return String(row[field] ?? row.id ?? row[config?.idFields?.[0]] ?? `row-${index}`)
 }
 
 function getDefaultValue(field) {
@@ -1357,74 +1384,100 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
               (v) => String(v.productId) === String(item.productId)
             )
 
+            const product = productsList.find((p) => String(p.productId ?? p.id) === String(item.productId))
+            const unitsList = referenceData.units ?? []
+            const unit = unitsList.find((u) => String(u.unitId ?? u.id) === String(product?.unitId))
+            const lineQtyError = validateStockAdjustmentQuantity(item.quantity, product, unit)
+            const hasQtyError = Boolean(lineQtyError)
+
+            const unitName = unit?.name || unit?.unitName || unit?.Name || product?.unitName || product?.UnitName || product?.unit || ''
+            const unitShortName = unit?.shortName || unit?.ShortName || unit?.abbreviation || product?.unitShortName || product?.UnitShortName || ''
+            const allowDecimal = isFractionalUnitAllowed(unitName, unitShortName)
+            const stepVal = allowDecimal ? '0.01' : '1'
+
             return (
-              <div className="resource-form__line-row" key={`${index}-${items.length}`} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 40px', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
-                <select
-                  value={item.productId}
-                  onChange={(event) => {
-                    const nextProdId = event.target.value
-                    // Clear variant if product changes
-                    onChange(items.map((it, idx) =>
-                      idx === index ? { ...it, productId: nextProdId, variantId: '' } : it
-                    ))
-                  }}
-                  required
-                  aria-label={`Line ${index + 1} product`}
-                  className="select-input"
-                  style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #dbe4f0', padding: '0 8px' }}
-                >
-                  <option value="">Select product...</option>
-                  {productsList.map((p) => (
-                    <option key={p.id ?? p.productId} value={p.productId ?? p.id}>
-                      {p.name}
+              <div key={`${index}-${items.length}`} style={{ marginBottom: '12px' }}>
+                <div className="resource-form__line-row" style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 40px', gap: '8px', alignItems: 'center' }}>
+                  <select
+                    value={item.productId}
+                    onChange={(event) => {
+                      const nextProdId = event.target.value
+                      // Clear variant if product changes
+                      onChange(items.map((it, idx) =>
+                        idx === index ? { ...it, productId: nextProdId, variantId: '' } : it
+                      ))
+                    }}
+                    required
+                    aria-label={`Line ${index + 1} product`}
+                    className="select-input"
+                    style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #dbe4f0', padding: '0 8px' }}
+                  >
+                    <option value="">Select product...</option>
+                    {productsList.map((p) => (
+                      <option key={p.id ?? p.productId} value={p.productId ?? p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={item.variantId}
+                    onChange={(event) => updateLine(index, 'variantId', event.target.value)}
+                    aria-label={`Line ${index + 1} variant`}
+                    className="select-input"
+                    style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #dbe4f0', padding: '0 8px' }}
+                    disabled={!item.productId}
+                  >
+                    <option value="">
+                      {!item.productId
+                        ? 'Select Variant'
+                        : filteredVariants.length > 0
+                        ? 'Select Variant'
+                        : 'Default / No Variant'}
                     </option>
-                  ))}
-                </select>
+                    {filteredVariants.map((v) => (
+                      <option key={v.id ?? v.variantId} value={v.variantId ?? v.id}>
+                        {v.variantName ? `${v.variantName} (${v.sku || ''})` : v.sku || 'Variant'}
+                      </option>
+                    ))}
+                  </select>
 
-                <select
-                  value={item.variantId}
-                  onChange={(event) => updateLine(index, 'variantId', event.target.value)}
-                  aria-label={`Line ${index + 1} variant`}
-                  className="select-input"
-                  style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #dbe4f0', padding: '0 8px' }}
-                  disabled={!item.productId}
-                >
-                  <option value="">
-                    {!item.productId
-                      ? 'Select Variant'
-                      : filteredVariants.length > 0
-                      ? 'Select Variant'
-                      : 'Default / No Variant'}
-                  </option>
-                  {filteredVariants.map((v) => (
-                    <option key={v.id ?? v.variantId} value={v.variantId ?? v.id}>
-                      {v.variantName ? `${v.variantName} (${v.sku || ''})` : v.sku || 'Variant'}
-                    </option>
-                  ))}
-                </select>
+                  <input
+                    type="number"
+                    min="0.01"
+                    step={stepVal}
+                    value={item.quantity}
+                    onChange={(event) => updateLine(index, 'quantity', event.target.value)}
+                    required
+                    aria-label={`Line ${index + 1} quantity`}
+                    style={{
+                      width: '100%',
+                      height: '38px',
+                      borderRadius: '4px',
+                      border: hasQtyError ? '1.5px solid #dc2626' : '1px solid #dbe4f0',
+                      backgroundColor: hasQtyError ? '#fef2f2' : '#ffffff',
+                      padding: '0 8px',
+                      outline: hasQtyError ? '1px solid #dc2626' : undefined,
+                    }}
+                  />
 
-                <input
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  value={item.quantity}
-                  onChange={(event) => updateLine(index, 'quantity', event.target.value)}
-                  required
-                  aria-label={`Line ${index + 1} quantity`}
-                  style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #dbe4f0', padding: '0 8px' }}
-                />
-
-                <button
-                  type="button"
-                  className="button button-secondary resource-form__icon-button"
-                  onClick={() => removeLine(index)}
-                  disabled={items.length === 1}
-                  aria-label={`Remove line ${index + 1}`}
-                  title="Remove line"
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', padding: 0 }}
-                >
-                  <X size={16} />
-                </button>
+                  <button
+                    type="button"
+                    className="button button-secondary resource-form__icon-button"
+                    onClick={() => removeLine(index)}
+                    disabled={items.length === 1}
+                    aria-label={`Remove line ${index + 1}`}
+                    title="Remove line"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', padding: 0 }}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+                {hasQtyError && (
+                  <div className="field-error" style={{ color: '#dc2626', fontSize: '0.8125rem', marginTop: '4px', fontWeight: 500 }}>
+                    {lineQtyError}
+                  </div>
+                )}
               </div>
             )
           })}
@@ -1439,7 +1492,13 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
             Add Line
           </button>
         </div>
-        {error ? <span className="field-error">{error}</span> : null}
+        {error && !items.some(item => {
+          const product = productsList.find((p) => String(p.productId ?? p.id) === String(item.productId))
+          const unit = (referenceData.units ?? []).find((u) => String(u.unitId ?? u.id) === String(product?.unitId))
+          return Boolean(validateStockAdjustmentQuantity(item.quantity, product, unit))
+        }) ? (
+          <span className="field-error">{error}</span>
+        ) : null}
       </div>
     )
   }
@@ -1993,6 +2052,8 @@ function ResourcePage({ config, navigationContent = null }) {
   const [selectedSubCategoryIds, setSelectedSubCategoryIds] = useState([])
   const [selectedProductStyleRowIds, setSelectedProductStyleRowIds] = useState([])
   const [selectedStockAdjustmentIds, setSelectedStockAdjustmentIds] = useState([])
+  const [selectedStockIds, setSelectedStockIds] = useState([])
+  const [selectedRowIds, setSelectedRowIds] = useState([])
 
   const canCreate = (config.canCreate ?? true) && hasPermission(config.permissionKey, 'create')
   const canUpdate = (config.canUpdate ?? true) && hasPermission(config.permissionKey, 'edit')
@@ -2005,6 +2066,7 @@ function ResourcePage({ config, navigationContent = null }) {
   const isAuditLogsPage = config.key === 'auditLogs'
   const isProductStylePage = PRODUCT_STYLE_RESOURCE_KEYS.has(config.key)
   const isStockAdjustmentsPage = config.key === 'stockAdjustments'
+  const isStockPage = config.key === 'stock'
   const usesCompactActionMenu = ACTION_MENU_RESOURCE_KEYS.has(config.key)
   const isNotificationsPage = config.key === 'notifications'
   const isInvoicesPage = config.key === 'invoices'
@@ -2280,6 +2342,22 @@ function ResourcePage({ config, navigationContent = null }) {
   }, [rows, selectedStockAdjustmentIds])
   const hasSelectedStockAdjustments = selectedStockAdjustments.length > 0
 
+  const selectedStockRows = useMemo(() => {
+    const selectedIdSet = new Set(selectedStockIds.map(String))
+    return rows.filter((row) => selectedIdSet.has(String(row.stockId ?? row.id ?? '')))
+  }, [rows, selectedStockIds])
+  const hasSelectedStockRows = selectedStockRows.length > 0
+
+  useEffect(() => {
+    setSelectedRowIds([])
+  }, [config.key])
+
+  const selectedGeneralRows = useMemo(() => {
+    const selectedIdSet = new Set(selectedRowIds.map(String))
+    return rows.filter((row, index) => selectedIdSet.has(getRowSelectionKey(row, config, index)))
+  }, [config, rows, selectedRowIds])
+  const hasSelectedGeneralRows = selectedGeneralRows.length > 0
+
   useEffect(() => {
     if (!isSubCategoriesPage) {
       return
@@ -2306,6 +2384,15 @@ function ResourcePage({ config, navigationContent = null }) {
     const visibleIdSet = new Set(rows.map((row) => String(row.adjustmentId ?? row.id ?? '')))
     setSelectedStockAdjustmentIds((currentValue) => currentValue.filter((id) => visibleIdSet.has(String(id))))
   }, [isStockAdjustmentsPage, rows])
+
+  useEffect(() => {
+    if (!isStockPage) {
+      return
+    }
+
+    const visibleIdSet = new Set(rows.map((row) => String(row.stockId ?? row.id ?? '')))
+    setSelectedStockIds((currentValue) => currentValue.filter((id) => visibleIdSet.has(String(id))))
+  }, [isStockPage, rows])
 
   async function handleSave({ payload, changedPayload }) {
     setIsSaving(true)
@@ -2634,6 +2721,44 @@ function ResourcePage({ config, navigationContent = null }) {
         message: `${selectedStockAdjustments.length} ${config.entityName} record${selectedStockAdjustments.length === 1 ? '' : 's'} deleted successfully.`,
       })
       notifyCatalogStructureUpdate(config, 'deleted')
+      await loadRows({ force: true })
+    } catch (deleteError) {
+      showToast({
+        type: 'error',
+        title: config.title,
+        message:
+          deleteError instanceof Error
+            ? deleteError.message
+            : `Unable to delete ${config.entityName.toLowerCase()}.`,
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  async function handleBulkGeneralDelete() {
+    if (!canDelete || selectedGeneralRows.length === 0) {
+      return
+    }
+
+    setIsDeleting(true)
+
+    try {
+      for (const row of selectedGeneralRows) {
+        const id = getRowSelectionKey(row, config, 0)
+        const response = await deleteResource(config, id)
+
+        if (!response.success) {
+          throw new Error(getDeleteErrorMessage(config, response.error))
+        }
+      }
+
+      setSelectedRowIds([])
+      showToast({
+        type: 'success',
+        title: config.title,
+        message: `${selectedGeneralRows.length} ${config.entityName} record${selectedGeneralRows.length === 1 ? '' : 's'} deleted successfully.`,
+      })
       await loadRows({ force: true })
     } catch (deleteError) {
       showToast({
@@ -3064,7 +3189,9 @@ function ResourcePage({ config, navigationContent = null }) {
             mobileStatus: column.mobileStatus ?? (column.format === 'status' || ['status', 'isActive', 'type'].includes(column.key)),
             searchable: column.searchable,
             render: (row) => formatCellValue(row, column, referenceData),
-            searchValue: (row) => String(readResourceValue(row, column.key, '') ?? ''),
+            searchValue: column.searchValue
+              ? (row) => column.searchValue(row, referenceData)
+              : (row) => String(readResourceValue(row, column.key, '') ?? ''),
             sortValue: (row) => readResourceValue(row, column.key, ''),
           }
         })
@@ -3530,18 +3657,139 @@ function ResourcePage({ config, navigationContent = null }) {
     </FilterBar>
   ) : null
 
+  const stockBulkActions = useMemo(() => {
+    if (!hasSelectedStockRows) return []
+    return [
+      {
+        key: 'export',
+        label: 'Export',
+        icon: Download,
+        onClick: () => exportResourceRowsCsv(config, selectedStockRows),
+      },
+      {
+        key: 'print',
+        label: 'Print',
+        icon: Printer,
+        onClick: () => printResourceRows(config, selectedStockRows),
+      },
+    ].filter(Boolean)
+  }, [config, hasSelectedStockRows, selectedStockRows])
+
+  const stockSelectedToolbarContent = hasSelectedStockRows ? (
+    <FilterBar className="resource-center__product-style-selection-actions resource-center__stock-selection-actions" ariaLabel="Selected Stock Register actions">
+      <div className="resource-center__product-style-selection-summary" aria-live="polite">
+        <Check size={15} />
+        <strong>{selectedStockRows.length} selected</strong>
+      </div>
+      <ActionMenu
+        label="Bulk Actions"
+        align="left"
+        className="resource-center__bulk-actions-menu"
+        actions={stockBulkActions}
+      />
+      <button
+        type="button"
+        className="button button-secondary resource-center__product-style-selection-button"
+        onClick={() => exportResourceRowsCsv(config, selectedStockRows)}
+      >
+        <Download size={15} />
+        Export
+      </button>
+      <button
+        type="button"
+        className="button button-secondary resource-center__product-style-selection-button"
+        onClick={() => printResourceRows(config, selectedStockRows)}
+      >
+        <Printer size={15} />
+        Print
+      </button>
+    </FilterBar>
+  ) : null
+
+  const generalBulkActions = useMemo(() => {
+    if (!hasSelectedGeneralRows) return []
+    return [
+      {
+        key: 'export',
+        label: 'Export',
+        icon: Download,
+        onClick: () => exportResourceRowsCsv(config, selectedGeneralRows),
+      },
+      {
+        key: 'print',
+        label: 'Print',
+        icon: Printer,
+        onClick: () => printResourceRows(config, selectedGeneralRows),
+      },
+      canDelete ? {
+        key: 'delete',
+        label: 'Delete',
+        icon: Trash2,
+        danger: true,
+        disabled: isDeleting,
+        onClick: handleBulkGeneralDelete,
+      } : null,
+    ].filter(Boolean)
+  }, [canDelete, config, hasSelectedGeneralRows, isDeleting, selectedGeneralRows])
+
+  const generalSelectedToolbarContent = hasSelectedGeneralRows ? (
+    <FilterBar className="resource-center__product-style-selection-actions resource-center__general-selection-actions" ariaLabel={`Selected ${config.title} actions`}>
+      <div className="resource-center__product-style-selection-summary" aria-live="polite">
+        <Check size={15} />
+        <strong>{selectedGeneralRows.length} selected</strong>
+      </div>
+      <ActionMenu
+        label="Bulk Actions"
+        align="left"
+        className="resource-center__bulk-actions-menu"
+        actions={generalBulkActions}
+      />
+      <button
+        type="button"
+        className="button button-secondary resource-center__product-style-selection-button"
+        onClick={() => exportResourceRowsCsv(config, selectedGeneralRows)}
+      >
+        <Download size={15} />
+        Export
+      </button>
+      <button
+        type="button"
+        className="button button-secondary resource-center__product-style-selection-button"
+        onClick={() => printResourceRows(config, selectedGeneralRows)}
+      >
+        <Printer size={15} />
+        Print
+      </button>
+      {canDelete ? (
+        <button
+          type="button"
+          className="button button-secondary resource-center__product-style-selection-button resource-center__product-style-selection-button--danger"
+          onClick={handleBulkGeneralDelete}
+          disabled={isDeleting}
+        >
+          <Trash2 size={15} />
+          Delete
+        </button>
+      ) : null}
+    </FilterBar>
+  ) : null
+
   const resolvedFilterContent = isSubCategoriesPage
     ? subCategorySelectedToolbarContent
     : isProductStylePage && hasSelectedProductStyleRows
       ? productStyleSelectedToolbarContent
       : isStockAdjustmentsPage && hasSelectedStockAdjustments
         ? stockAdjustmentsSelectedToolbarContent
-        : notificationFilterContent
+        : isStockPage && hasSelectedStockRows
+          ? stockSelectedToolbarContent
+          : hasSelectedGeneralRows
+            ? generalSelectedToolbarContent
+            : notificationFilterContent
   const resolvedToolbarContent = isProductStylePage && hasSelectedProductStyleRows
     ? productStyleSelectedRightContent
     : isSubCategoriesPage
       ? subCategoryToolbarContent
-      : isStockAdjustmentsPage && hasSelectedStockAdjustments
+      : (isStockAdjustmentsPage && hasSelectedStockAdjustments) || (isStockPage && hasSelectedStockRows) || hasSelectedGeneralRows
         ? null
         : tableToolbarContent
 
@@ -3731,11 +3979,11 @@ function ResourcePage({ config, navigationContent = null }) {
           loading={isLoading}
           defaultPageSize={isProductStylePage || isSubCategoriesPage || isInventoryCompactPage || isNotificationsPage || isInvoicesPage ? 20 : 8}
           showSearch={true}
-          hideSelectionSummary={hasSelectedSubCategories || hasSelectedProductStyleRows || hasSelectedStockAdjustments}
+          hideSelectionSummary={hasSelectedSubCategories || hasSelectedProductStyleRows || hasSelectedStockAdjustments || hasSelectedStockRows || hasSelectedGeneralRows}
           searchPlaceholder={`Search ${config.title.toLowerCase()}`}
           emptyMessage={`No ${config.title.toLowerCase()} records found.`}
           splitToolbar={isProductStylePage || isSubCategoriesPage || isInventoryCompactPage || isNotificationsPage || isInvoicesPage}
-          showColumnControls={!(isProductStylePage && hasSelectedProductStyleRows) && !(isStockAdjustmentsPage && hasSelectedStockAdjustments)}
+          showColumnControls={!(isProductStylePage && hasSelectedProductStyleRows) && !(isStockAdjustmentsPage && hasSelectedStockAdjustments) && !(isStockPage && hasSelectedStockRows) && !hasSelectedGeneralRows}
           filterContent={resolvedFilterContent}
           toolbarContent={resolvedToolbarContent}
           columnStorageKey={isProductStylePage ? `ims.${config.key}.visibleColumns.productsStyle.v1` : isSubCategoriesPage ? 'ims.subCategories.visibleColumns.warehouseParity.v1' : isNotificationsPage ? 'ims.notifications.visibleColumns.v2' : isInvoicesPage ? 'ims.invoices.visibleColumns.v2' : ''}
@@ -3749,10 +3997,10 @@ function ResourcePage({ config, navigationContent = null }) {
           rowClassName={isNotificationsPage ? (row) => (getNotificationReadState(row) ? 'is-read' : 'is-unread') : undefined}
           defaultSortKey={isProductStylePage ? config.columns?.[0]?.key || '' : isSubCategoriesPage ? 'name' : isInventoryCompactPage ? config.columns?.[0]?.key || '' : isNotificationsPage ? 'createdAt' : isInvoicesPage ? 'invoiceDate' : ''}
           defaultSortDirection={isNotificationsPage || isInvoicesPage ? 'desc' : 'asc'}
-          enableRowSelection={isSubCategoriesPage || isProductStylePage || isStockAdjustmentsPage}
-          selectedRowKeys={isStockAdjustmentsPage ? selectedStockAdjustmentIds : isSubCategoriesPage ? selectedSubCategoryIds : isProductStylePage ? selectedProductStyleRowIds : undefined}
-          onSelectionChange={isStockAdjustmentsPage ? setSelectedStockAdjustmentIds : isSubCategoriesPage ? setSelectedSubCategoryIds : isProductStylePage ? setSelectedProductStyleRowIds : undefined}
-          keyField={isStockAdjustmentsPage ? 'adjustmentId' : isProductStylePage ? '__resourceSelectionKey' : 'id'}
+          enableRowSelection={true}
+          selectedRowKeys={isStockPage ? selectedStockIds : isStockAdjustmentsPage ? selectedStockAdjustmentIds : isSubCategoriesPage ? selectedSubCategoryIds : isProductStylePage ? selectedProductStyleRowIds : selectedRowIds}
+          onSelectionChange={isStockPage ? setSelectedStockIds : isStockAdjustmentsPage ? setSelectedStockAdjustmentIds : isSubCategoriesPage ? setSelectedSubCategoryIds : isProductStylePage ? setSelectedProductStyleRowIds : setSelectedRowIds}
+          keyField={getKeyField(config)}
         />
       </div>
 

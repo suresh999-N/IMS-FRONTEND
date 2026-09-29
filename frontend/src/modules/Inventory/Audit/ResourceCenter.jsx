@@ -2325,7 +2325,9 @@ function ResourcePage({ config }) {
         mobileStatus: column.mobileStatus ?? (column.format === 'status' || ['status', 'isActive', 'type'].includes(column.key)),
         searchable: column.searchable,
         render: (row) => formatCellValue(row, column, referenceData),
-        searchValue: (row) => String(readResourceValue(row, column.key, '') ?? ''),
+        searchValue: column.searchValue
+          ? (row) => column.searchValue(row, referenceData)
+          : (row) => String(readResourceValue(row, column.key, '') ?? ''),
         sortValue: (row) => readResourceValue(row, column.key, ''),
       }))
   const columns = isSubCategoriesPage

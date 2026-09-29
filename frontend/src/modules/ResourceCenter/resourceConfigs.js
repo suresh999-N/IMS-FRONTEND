@@ -28,6 +28,7 @@ import { getDescriptiveProductName } from '../../utils/productNameUtils'
 import { getStandardizedSku } from '../../utils/skuUtils'
 import {
   validateStockAdjustmentReason,
+  validateStockAdjustmentQuantity,
   getSuggestedReasons,
   getReasonHelperText,
   getReasonPlaceholder,
@@ -491,12 +492,14 @@ export const RESOURCE_CONFIGS = {
       products: API_ENDPOINTS.products.list,
       productVariants: API_ENDPOINTS.productVariants.list,
       stockAdjustmentItems: API_ENDPOINTS.stockAdjustmentItems.list,
+      units: API_ENDPOINTS.units.list,
     },
     referenceListKeys: {
       warehouses: 'warehouses',
       products: 'products',
       productVariants: 'productVariants',
       stockAdjustmentItems: 'stockAdjustmentItems',
+      units: 'units',
     },
     fields: [
       {
@@ -540,6 +543,22 @@ export const RESOURCE_CONFIGS = {
         label: 'Adjustment Items *',
         type: 'lineItems',
         required: true,
+        validate: (value, context) => {
+          if (!Array.isArray(value) || value.length === 0) return ''
+          const products = context?.referenceData?.products || []
+          const units = context?.referenceData?.units || []
+          for (let i = 0; i < value.length; i++) {
+            const item = value[i]
+            if (!item.productId) continue
+            const product = products.find((p) => String(p.productId ?? p.id) === String(item.productId))
+            const unit = units.find((u) => String(u.unitId ?? u.id) === String(product?.unitId))
+            const qtyErr = validateStockAdjustmentQuantity(item.quantity, product, unit)
+            if (qtyErr) {
+              return `Line ${i + 1}: ${qtyErr}`
+            }
+          }
+          return ''
+        },
       },
     ],
     columns: [
@@ -548,12 +567,12 @@ export const RESOURCE_CONFIGS = {
         label: 'Adjustment No.',
         sortable: true,
         searchValue: (row) => {
-          const id = row.adjustmentId;
+          const id = row.adjustmentId ?? row.id;
           if (id === undefined || id === null || id === '') return '';
           return `SA-${String(id).padStart(6, '0')} ${id}`;
         },
         render: (row) => {
-          const id = row.adjustmentId;
+          const id = row.adjustmentId ?? row.id;
           if (id === undefined || id === null || id === '') return '';
           return `SA-${String(id).padStart(6, '0')}`;
         }
@@ -562,6 +581,12 @@ export const RESOURCE_CONFIGS = {
         key: 'warehouseId',
         label: 'Warehouse',
         sortable: true,
+        searchValue: (row, referenceData) => {
+          const id = row.warehouseId;
+          const warehouses = referenceData?.warehouses ?? [];
+          const warehouse = warehouses.find(w => String(w.id ?? w.warehouseId) === String(id));
+          return warehouse ? warehouse.name : (row.warehouseName || `Warehouse ${id}`);
+        },
         render: (row, referenceData) => {
           const id = row.warehouseId;
           const warehouses = referenceData?.warehouses ?? [];
@@ -588,11 +613,13 @@ export const RESOURCE_CONFIGS = {
       stockAdjustments: API_ENDPOINTS.stockAdjustments.list,
       products: API_ENDPOINTS.products.list,
       productVariants: API_ENDPOINTS.productVariants.list,
+      units: API_ENDPOINTS.units.list,
     },
     referenceListKeys: {
       stockAdjustments: 'stockAdjustments',
       products: 'products',
       productVariants: 'productVariants',
+      units: 'units',
     },
     fields: [
       {
@@ -636,7 +663,21 @@ export const RESOURCE_CONFIGS = {
         placeholder: 'Select variant',
         searchPlaceholder: 'Search variants',
       },
-      { name: 'quantity', label: 'Quantity *', type: 'number', required: true, min: 0.01 },
+      {
+        name: 'quantity',
+        label: 'Quantity *',
+        type: 'number',
+        required: true,
+        min: 0.01,
+        validate: (value, context) => {
+          const productId = context?.formData?.productId
+          const products = context?.referenceData?.products || []
+          const product = products.find((p) => String(p.productId ?? p.id) === String(productId))
+          const units = context?.referenceData?.units || []
+          const unit = units.find((u) => String(u.unitId ?? u.id) === String(product?.unitId))
+          return validateStockAdjustmentQuantity(value, product, unit)
+        },
+      },
     ],
     columns: [
       {

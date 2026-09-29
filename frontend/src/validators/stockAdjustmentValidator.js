@@ -182,18 +182,25 @@ const RECOUNT_FORBIDDEN_PATTERNS = [
  */
 export function validateStockAdjustmentReason(reason, adjustmentType = 'increase') {
   if (!reason || !String(reason).trim()) {
-    return '' // Let required validation handle empty check if needed
+    return 'Reason is required.'
   }
 
-  const cleanReason = String(reason).trim().toLowerCase()
+  const rawReason = String(reason).trim()
+  const cleanReason = rawReason.toLowerCase()
   const cleanType = String(adjustmentType || 'increase').trim().toLowerCase()
 
   if (cleanReason.length < 3) {
     return 'Reason must be at least 3 characters.'
   }
 
+  // Check for special characters / symbols only (must contain at least 2 alphanumeric characters)
+  const alphaNumericMatches = rawReason.match(/[a-zA-Z0-9]/g)
+  if (!alphaNumericMatches || alphaNumericMatches.length < 2) {
+    return 'Reason must contain valid words or text (e.g. Low stock, Damage, Correction).'
+  }
+
   if (cleanType === 'increase') {
-    // Check forbidden/mismatched patterns first
+    // Check forbidden/contradictory patterns first
     for (const item of INCREASE_FORBIDDEN_PATTERNS) {
       if (item.regex.test(cleanReason)) {
         return item.message
@@ -210,7 +217,7 @@ export function validateStockAdjustmentReason(reason, adjustmentType = 'increase
   }
 
   if (cleanType === 'decrease') {
-    // Check forbidden/mismatched patterns first
+    // Check forbidden/contradictory patterns first
     for (const item of DECREASE_FORBIDDEN_PATTERNS) {
       if (item.regex.test(cleanReason)) {
         return item.message
@@ -279,3 +286,75 @@ export function getReasonPlaceholder(adjustmentType = 'increase') {
   }
   return 'e.g., Low stock replenishment, New purchase, Inventory correction, Found stock'
 }
+
+/**
+ * Known continuous / decimal-supporting units (weight, volume, length, area, etc.)
+ */
+const FRACTIONAL_UNIT_PATTERNS = [
+  /^(kg|kilo|kilogram|kilograms)$/i,
+  /^(g|gram|grams)$/i,
+  /^(mg|milligram|milligrams)$/i,
+  /^(lb|lbs|pound|pounds)$/i,
+  /^(oz|ounce|ounces)$/i,
+  /^(t|ton|tons|tonne|tonnes)$/i,
+  /^(l|ltr|liter|liters|litre|litres)$/i,
+  /^(ml|milliliter|milliliters|millilitre|millitres)$/i,
+  /^(gal|gallon|gallons)$/i,
+  /^(m|meter|meters|metre|metres)$/i,
+  /^(cm|centimeter|centimeters)$/i,
+  /^(mm|millimeter|millimeters)$/i,
+  /^(ft|feet|foot)$/i,
+  /^(in|inch|inches)$/i,
+  /^(yd|yard|yards)$/i,
+  /^(sqm|sqft|sqin|cum|cuft)$/i,
+]
+
+/**
+ * Checks whether a given unit permits fractional/decimal quantities.
+ * Discrete units (Pcs, Unit, Box, Pack, Set, Pair, Nos, Item, etc.) do NOT allow fractions.
+ */
+export function isFractionalUnitAllowed(unitName, unitShortName) {
+  const name = String(unitName || '').trim()
+  const short = String(unitShortName || '').trim()
+
+  if (!name && !short) {
+    return false // Default: unit-based / discrete
+  }
+
+  return FRACTIONAL_UNIT_PATTERNS.some(
+    (pattern) => pattern.test(name) || pattern.test(short),
+  )
+}
+
+/**
+ * Validates quantity for Stock Adjustment based on product unit of measure.
+ * Unit-based products (e.g. Pcs, Units, Boxes, Water Pump) must be whole numbers.
+ */
+export function validateStockAdjustmentQuantity(quantity, product, unit) {
+  if (quantity === undefined || quantity === null || String(quantity).trim() === '') {
+    return ''
+  }
+
+  const num = Number(quantity)
+  if (Number.isNaN(num) || !Number.isFinite(num)) {
+    return 'Quantity must be a valid number.'
+  }
+
+  if (num <= 0) {
+    return 'Quantity must be a positive number greater than 0.'
+  }
+
+  const unitName = unit?.name || unit?.unitName || product?.unitName || product?.unit || ''
+  const unitShortName = unit?.shortName || unit?.abbreviation || product?.unitShortName || ''
+
+  const allowDecimal = isFractionalUnitAllowed(unitName, unitShortName)
+
+  if (!allowDecimal && !Number.isInteger(num)) {
+    const displayUnit = unitShortName || unitName || 'unit'
+    const productName = product?.name || product?.productName || 'this product'
+    return `Quantity for '${productName}' must be a whole number for unit '${displayUnit}'. Fractional quantities (e.g. ${quantity}) are not allowed.`
+  }
+
+  return ''
+}
+

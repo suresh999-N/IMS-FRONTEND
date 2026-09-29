@@ -75,6 +75,22 @@ namespace IMSBackend.Controllers
             if (product == null)
                 return BadRequest("Invalid ProductId");
 
+            var unit = product.UnitId.HasValue ? _context.Units.Find(product.UnitId.Value) : null;
+            var unitName = unit?.Name;
+            var unitShortName = unit?.ShortName;
+            bool isFractionalAllowed = IsFractionalUnitAllowed(unitName, unitShortName);
+
+            if (!isFractionalAllowed && dto.Quantity != Math.Truncate(dto.Quantity))
+            {
+                var displayUnit = !string.IsNullOrWhiteSpace(unitShortName) ? unitShortName : (!string.IsNullOrWhiteSpace(unitName) ? unitName : "unit");
+                var productName = !string.IsNullOrWhiteSpace(product.Name) ? product.Name : "this product";
+                return BadRequest(new
+                {
+                    success = false,
+                    message = $"Quantity for '{productName}' must be a whole number for unit '{displayUnit}'. Fractional quantities (e.g. {dto.Quantity}) are not allowed."
+                });
+            }
+
             var item = new StockAdjustmentItem
             {
                 AdjustmentId = dto.AdjustmentId,
@@ -175,6 +191,26 @@ namespace IMSBackend.Controllers
             if (item == null)
                 return NotFound();
 
+            var product = _context.Products.FirstOrDefault(p => p.ProductId == dto.ProductId && !p.IsDeleted);
+            if (product != null)
+            {
+                var unit = product.UnitId.HasValue ? _context.Units.Find(product.UnitId.Value) : null;
+                var unitName = unit?.Name;
+                var unitShortName = unit?.ShortName;
+                bool isFractionalAllowed = IsFractionalUnitAllowed(unitName, unitShortName);
+
+                if (!isFractionalAllowed && dto.Quantity != Math.Truncate(dto.Quantity))
+                {
+                    var displayUnit = !string.IsNullOrWhiteSpace(unitShortName) ? unitShortName : (!string.IsNullOrWhiteSpace(unitName) ? unitName : "unit");
+                    var productName = !string.IsNullOrWhiteSpace(product.Name) ? product.Name : "this product";
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = $"Quantity for '{productName}' must be a whole number for unit '{displayUnit}'. Fractional quantities (e.g. {dto.Quantity}) are not allowed."
+                    });
+                }
+            }
+
             item.AdjustmentId = dto.AdjustmentId;
             item.ProductId = dto.ProductId;
             item.VariantId = dto.VariantId;
@@ -183,6 +219,37 @@ namespace IMSBackend.Controllers
             _context.SaveChanges();
 
             return Ok(item);
+        }
+
+        private static readonly string[] ContinuousUnitPatterns = new[]
+        {
+            "kg", "kilo", "kilogram", "kilograms",
+            "g", "gram", "grams",
+            "mg", "milligram", "milligrams",
+            "lb", "lbs", "pound", "pounds",
+            "oz", "ounce", "ounces",
+            "t", "ton", "tons", "tonne", "tonnes",
+            "l", "ltr", "liter", "liters", "litre", "litres",
+            "ml", "milliliter", "milliliters", "millilitre", "millitres",
+            "gal", "gallon", "gallons",
+            "m", "meter", "meters", "metre", "metres",
+            "cm", "centimeter", "centimeters",
+            "mm", "millimeter", "millimeters",
+            "ft", "feet", "foot",
+            "in", "inch", "inches",
+            "yd", "yard", "yards",
+            "sqm", "sqft", "sqin", "cum", "cuft"
+        };
+
+        private static bool IsFractionalUnitAllowed(string? unitName, string? unitShortName)
+        {
+            var name = (unitName ?? "").Trim().ToLowerInvariant();
+            var shortName = (unitShortName ?? "").Trim().ToLowerInvariant();
+
+            if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(shortName))
+                return false;
+
+            return ContinuousUnitPatterns.Any(p => p == name || p == shortName);
         }
 
         // =========================

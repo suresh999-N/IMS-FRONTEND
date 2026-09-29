@@ -165,6 +165,47 @@
   background: #111827;
 }
 
+/* Compact preview for table grid cells */
+.barcode-visual--compact,
+.qr-visual--compact {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+  margin: 0 !important;
+}
+
+.barcode-visual--compact .barcode-visual__bars {
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  padding: 4px 8px !important;
+  gap: 1.5px !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  box-sizing: border-box !important;
+}
+
+.barcode-visual--compact .barcode-visual__bar {
+  background: #0f172a !important;
+  border-radius: 0.5px !important;
+}
+
+.qr-visual--compact .qr-visual__grid {
+  width: 32px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  padding: 2.5px !important;
+  gap: 0.5px !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+}
+
 /* Match Products table typography. */
 .barcode-page__table-card .table-container th {
   color: #536176 !important;

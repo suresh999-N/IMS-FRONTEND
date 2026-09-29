@@ -481,12 +481,15 @@
   background: #f8fafc;
 }
 
-.resource-center__page--productVariants .table-component__toolbar .button,
-.resource-center__page--productVariants .variants__toolbar-actions .button,
-.resource-center__page--productVariants .variants-table__selection-actions .button,
-.resource-center__page--productVariants .table-component__columns-trigger,
-.resource-center__page--productVariants .variants-table__clear-btn,
-.resource-center__page--productVariants .variants__refresh-btn {
+:is(#root, body) .resource-center__page--productVariants :is(
+  .table-component__toolbar .button,
+  .variants__toolbar-actions .button,
+  .variants-table__selection-actions .button,
+  .table-component__columns-trigger,
+  .variants-table__clear-btn,
+  .variants-table__delete-btn,
+  .variants__refresh-btn
+) {
   height: 34px !important;
   min-height: 34px !important;
   max-height: 34px !important;
@@ -501,8 +504,23 @@
   border-radius: 6px !important;
   box-sizing: border-box !important;
   white-space: nowrap !important;
+  margin: 0 !important;
   cursor: pointer !important;
   transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease !important;
+}
+
+:is(#root, body) .resource-center__page--productVariants :is(
+  .table-component__toolbar .button,
+  .variants__toolbar-actions .button,
+  .variants-table__selection-actions .button,
+  .table-component__columns-trigger,
+  .variants-table__clear-btn,
+  .variants-table__delete-btn,
+  .variants__refresh-btn
+) svg {
+  width: 15px !important;
+  height: 15px !important;
+  flex-shrink: 0 !important;
 }
 
 /* Secondary toolbar buttons (Clear, Columns, Refresh) */
@@ -622,29 +640,72 @@
 }
 
 /* Delete Selected button */
-.resource-center__page--productVariants .variants-table__selection-actions .button.button-danger,
-.resource-center__page--productVariants .variants-table__delete-btn {
-  border: 1px solid rgba(239, 68, 68, 0.32);
-  background-color: rgba(254, 242, 242, 0.95);
-  color: #b91c1c;
-  cursor: pointer;
-  transition: all 0.15s ease;
+:is(#root, body) .resource-center__page--productVariants :is(
+  .variants-table__selection-actions .button.button-danger,
+  .variants-table__delete-btn
+) {
+  border: 1px solid rgba(239, 68, 68, 0.32) !important;
+  background-color: rgba(254, 242, 242, 0.95) !important;
+  color: #b91c1c !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
 }
 
-.resource-center__page--productVariants .variants-table__selection-actions .button.button-danger:hover:not(:disabled),
-.resource-center__page--productVariants .variants-table__delete-btn:hover:not(:disabled) {
+:is(#root, body) .resource-center__page--productVariants :is(
+  .variants-table__selection-actions .button.button-danger,
+  .variants-table__delete-btn
+) svg {
+  color: #b91c1c !important;
+  stroke: currentColor !important;
+  transition: color 0.15s ease, stroke 0.15s ease !important;
+}
+
+:is(#root, body) .resource-center__page--productVariants :is(
+  .variants-table__selection-actions .button.button-danger,
+  .variants-table__delete-btn
+):hover:not(:disabled) {
   border-color: rgba(239, 68, 68, 0.5) !important;
   background-color: #fee2e2 !important;
   color: #991b1b !important;
-  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.16) !important;
+  transform: translateY(-1px) !important;
+  cursor: pointer !important;
 }
 
-.resource-center__page--productVariants .variants-table__selection-actions .button.button-danger:active:not(:disabled),
-.resource-center__page--productVariants .variants-table__delete-btn:active:not(:disabled) {
+:is(#root, body) .resource-center__page--productVariants :is(
+  .variants-table__selection-actions .button.button-danger,
+  .variants-table__delete-btn
+):hover:not(:disabled) svg {
+  color: #991b1b !important;
+  stroke: #991b1b !important;
+}
+
+:is(#root, body) .resource-center__page--productVariants :is(
+  .variants-table__selection-actions .button.button-danger,
+  .variants-table__delete-btn
+):active:not(:disabled) {
   border-color: #dc2626 !important;
   background-color: #fecaca !important;
   color: #7f1d1d !important;
-  transform: translateY(0.5px);
+  box-shadow: inset 0 1px 2px rgba(220, 38, 38, 0.15) !important;
+  transform: translateY(0) !important;
+}
+
+:is(#root, body) .resource-center__page--productVariants :is(
+  .variants-table__selection-actions .button.button-danger,
+  .variants-table__delete-btn
+):active:not(:disabled) svg {
+  color: #7f1d1d !important;
+  stroke: #7f1d1d !important;
+}
+
+:is(#root, body) .resource-center__page--productVariants :is(
+  .variants-table__selection-actions .button.button-danger,
+  .variants-table__delete-btn
+):focus-visible {
+  outline: none !important;
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25) !important;
 }
 
 /* ─── Identity & Badges ────────────────────────────────────────── */
