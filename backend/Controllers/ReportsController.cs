@@ -7,7 +7,9 @@ using iText.Kernel.Colors;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Layout;
+using iText.Layout.Borders;
 using iText.Layout.Element;
+using iText.Layout.Properties;
 using System.Globalization;
 
 namespace IMSBackend.Controllers
@@ -956,7 +958,7 @@ namespace IMSBackend.Controllers
                     }
                     else if (numberCols.Contains(c))
                     {
-                        cell.Style.NumberFormat.Format = "#,##0";
+                        cell.Style.NumberFormat.Format = "#,##0.##";
                         cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
                     }
                     else if (dateCols.Contains(c))
@@ -1105,25 +1107,34 @@ namespace IMSBackend.Controllers
             document.SetMargins(28, 28, 28, 28);
             AddPdfTitle(document, "Sales Report");
 
-            var table = new Table(new float[] { 1.4f, 1.8f, 1.2f, 1.5f, 1.2f, 1.2f, 1.2f, 1.1f })
+            var table = new Table(new float[] { 1.4f, 1.8f, 1.2f, 1.5f, 1.2f, 1.2f, 1.2f, 0.9f })
                 .UseAllAvailableWidth();
 
-            AddPdfHeaders(table, new[]
+            AddPdfHeaders(table, new (string, TextAlignment)[]
             {
-                "Order No", "Customer", "Date", "Warehouse",
-                "Total", "Paid", "Balance", "Status"
+                ("Order No", TextAlignment.LEFT),
+                ("Customer", TextAlignment.LEFT),
+                ("Date", TextAlignment.LEFT),
+                ("Warehouse", TextAlignment.LEFT),
+                ("Total (Rs.)", TextAlignment.RIGHT),
+                ("Paid (Rs.)", TextAlignment.RIGHT),
+                ("Balance (Rs.)", TextAlignment.RIGHT),
+                ("Status", TextAlignment.CENTER)
             });
 
-            foreach (var item in data)
+            for (var i = 0; i < data.Count; i++)
             {
-                AddPdfCell(table, item.invoiceNumber);
-                AddPdfCell(table, item.customer);
-                AddPdfCell(table, FormatDate(item.invoiceDate));
-                AddPdfCell(table, item.warehouseName);
-                AddPdfCell(table, FormatNumber(item.totalAmount));
-                AddPdfCell(table, FormatNumber(item.paidAmount));
-                AddPdfCell(table, FormatNumber(item.balanceAmount));
-                AddPdfCell(table, item.status);
+                var item = data[i];
+                var isAlternate = i % 2 == 1;
+
+                AddPdfCell(table, item.invoiceNumber, TextAlignment.LEFT, isAlternate);
+                AddPdfCell(table, item.customer, TextAlignment.LEFT, isAlternate);
+                AddPdfCell(table, FormatDate(item.invoiceDate), TextAlignment.LEFT, isAlternate);
+                AddPdfCell(table, item.warehouseName, TextAlignment.LEFT, isAlternate);
+                AddPdfCell(table, FormatCurrency(item.totalAmount), TextAlignment.RIGHT, isAlternate);
+                AddPdfCell(table, FormatCurrency(item.paidAmount), TextAlignment.RIGHT, isAlternate);
+                AddPdfCell(table, FormatCurrency(item.balanceAmount), TextAlignment.RIGHT, isAlternate);
+                AddPdfStatusCell(table, item.status, isAlternate);
             }
 
             document.Add(table);
@@ -1145,27 +1156,38 @@ namespace IMSBackend.Controllers
             document.SetMargins(28, 28, 28, 28);
             AddPdfTitle(document, "Stock Report");
 
-            var table = new Table(new float[] { 1.8f, 1.2f, 1.2f, 1.4f, 1f, 1f, 1f, 1f, 1f, 1f })
+            var table = new Table(new float[] { 2.4f, 1.3f, 1.3f, 1.5f, 0.85f, 0.85f, 0.9f, 1.1f, 1.1f, 0.8f })
                 .UseAllAvailableWidth();
 
-            AddPdfHeaders(table, new[]
+            AddPdfHeaders(table, new (string, TextAlignment)[]
             {
-                "Product", "SKU", "Category", "Warehouse",
-                "On Hand", "Reserved", "Available", "Price", "Cost", "Status"
+                ("Product", TextAlignment.LEFT),
+                ("SKU", TextAlignment.LEFT),
+                ("Category", TextAlignment.LEFT),
+                ("Warehouse", TextAlignment.LEFT),
+                ("On Hand", TextAlignment.RIGHT),
+                ("Reserved", TextAlignment.RIGHT),
+                ("Available", TextAlignment.RIGHT),
+                ("Price (Rs.)", TextAlignment.RIGHT),
+                ("Cost (Rs.)", TextAlignment.RIGHT),
+                ("Status", TextAlignment.CENTER)
             });
 
-            foreach (var item in data)
+            for (var i = 0; i < data.Count; i++)
             {
-                AddPdfCell(table, item.product);
-                AddPdfCell(table, item.sku);
-                AddPdfCell(table, item.category);
-                AddPdfCell(table, item.warehouse);
-                AddPdfCell(table, item.quantity.ToString(CultureInfo.InvariantCulture));
-                AddPdfCell(table, item.reservedQuantity.ToString(CultureInfo.InvariantCulture));
-                AddPdfCell(table, item.availableQuantity.ToString(CultureInfo.InvariantCulture));
-                AddPdfCell(table, FormatNumber(item.price));
-                AddPdfCell(table, FormatNumber(item.costPrice));
-                AddPdfCell(table, item.status);
+                var item = data[i];
+                var isAlternate = i % 2 == 1;
+
+                AddPdfCell(table, item.product, TextAlignment.LEFT, isAlternate);
+                AddPdfCell(table, item.sku, TextAlignment.LEFT, isAlternate);
+                AddPdfCell(table, item.category, TextAlignment.LEFT, isAlternate);
+                AddPdfCell(table, item.warehouse, TextAlignment.LEFT, isAlternate);
+                AddPdfCell(table, FormatQuantity(item.quantity), TextAlignment.RIGHT, isAlternate);
+                AddPdfCell(table, FormatQuantity(item.reservedQuantity), TextAlignment.RIGHT, isAlternate);
+                AddPdfCell(table, FormatQuantity(item.availableQuantity), TextAlignment.RIGHT, isAlternate);
+                AddPdfCell(table, FormatCurrency(item.price), TextAlignment.RIGHT, isAlternate);
+                AddPdfCell(table, FormatCurrency(item.costPrice), TextAlignment.RIGHT, isAlternate);
+                AddPdfStatusCell(table, item.status, isAlternate);
             }
 
             document.Add(table);
@@ -1682,42 +1704,145 @@ namespace IMSBackend.Controllers
         private static string FormatNumber(decimal value)
             => value.ToString("N2", CultureInfo.InvariantCulture);
 
-        private static void AddPdfTitle(Document document, string title)
+        private static string FormatCurrency(decimal value)
+            => "Rs. " + value.ToString("N2", CultureInfo.InvariantCulture);
+
+        private static string FormatQuantity(decimal value)
         {
-            document.Add(new Paragraph("IMS Reports")
-                .SetFontSize(10)
-                .SetFontColor(ColorConstants.DARK_GRAY));
+            if (value % 1 == 0)
+                return value.ToString("#,##0", CultureInfo.InvariantCulture);
 
-            document.Add(new Paragraph(title)
-                .SetFontSize(20)
-                .SetFontColor(new DeviceRgb(15, 23, 42)));
-
-            document.Add(new Paragraph(
-                $"Generated {DateTime.Now:dd MMM yyyy, hh:mm tt}")
-                .SetFontSize(10)
-                .SetFontColor(ColorConstants.GRAY));
-
-            document.Add(new Paragraph(" "));
+            return value.ToString("#,##0.##", CultureInfo.InvariantCulture);
         }
 
-        private static void AddPdfHeaders(Table table, string[] headers)
+        private static string FormatStatus(string? status)
         {
-            foreach (var header in headers)
+            if (string.IsNullOrWhiteSpace(status))
+                return "Active";
+
+            var clean = status.Trim().Replace('_', ' ');
+            return CultureInfo.InvariantCulture.TextInfo.ToTitleCase(clean.ToLowerInvariant());
+        }
+
+        private static void AddPdfTitle(Document document, string title)
+        {
+            document.Add(new Paragraph("INVENTORY MANAGEMENT SYSTEM")
+                .SetFontSize(8.5f)
+                .SetFontColor(new DeviceRgb(5, 150, 105))
+                .SetMarginBottom(2));
+
+            document.Add(new Paragraph(title)
+                .SetFontSize(18)
+                .SetFontColor(new DeviceRgb(15, 23, 42))
+                .SetMarginBottom(2));
+
+            document.Add(new Paragraph($"Generated on {DateTime.Now:dd MMM yyyy, hh:mm tt}")
+                .SetFontSize(8.5f)
+                .SetFontColor(new DeviceRgb(100, 116, 139))
+                .SetMarginBottom(12));
+        }
+
+        private static void AddPdfHeaders(Table table, (string Header, TextAlignment Alignment)[] headers)
+        {
+            var headerBorder = new SolidBorder(new DeviceRgb(203, 213, 225), 0.75f);
+            foreach (var (header, alignment) in headers)
             {
                 table.AddHeaderCell(new Cell()
                     .SetBackgroundColor(new DeviceRgb(241, 245, 249))
                     .SetFontColor(new DeviceRgb(51, 65, 85))
-                    .SetFontSize(9)
-                    .Add(new Paragraph(header)));
+                    .SetFontSize(8.5f)
+                    .SetTextAlignment(alignment)
+                    .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                    .SetPaddingTop(6f)
+                    .SetPaddingBottom(6f)
+                    .SetPaddingLeft(4f)
+                    .SetPaddingRight(4f)
+                    .SetBorder(headerBorder)
+                    .Add(new Paragraph(header).SetMultipliedLeading(1.1f)));
             }
         }
 
-        private static void AddPdfCell(Table table, string? value)
+        private static void AddPdfCell(
+            Table table,
+            string? value,
+            TextAlignment alignment = TextAlignment.LEFT,
+            bool isAlternate = false)
         {
+            var cellBorder = new SolidBorder(new DeviceRgb(226, 232, 240), 0.5f);
+            var bg = isAlternate ? new DeviceRgb(248, 250, 252) : ColorConstants.WHITE;
+
             table.AddCell(new Cell()
-                .SetFontSize(8.5f)
-                .SetFontColor(new DeviceRgb(30, 41, 59))
-                .Add(new Paragraph(value ?? "")));
+                .SetBackgroundColor(bg)
+                .SetFontSize(8f)
+                .SetFontColor(new DeviceRgb(15, 23, 42))
+                .SetTextAlignment(alignment)
+                .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                .SetKeepTogether(true)
+                .SetPaddingTop(5f)
+                .SetPaddingBottom(5f)
+                .SetPaddingLeft(4f)
+                .SetPaddingRight(4f)
+                .SetBorder(cellBorder)
+                .Add(new Paragraph(value ?? "").SetMultipliedLeading(1.15f)));
+        }
+
+        private static void AddPdfStatusCell(
+            Table table,
+            string? status,
+            bool isAlternate = false)
+        {
+            var cellBorder = new SolidBorder(new DeviceRgb(226, 232, 240), 0.5f);
+            var bg = isAlternate ? new DeviceRgb(248, 250, 252) : ColorConstants.WHITE;
+            var text = FormatStatus(status);
+
+            DeviceRgb badgeBg;
+            DeviceRgb badgeFg;
+
+            var lower = text.ToLowerInvariant();
+            if (lower.Contains("active") || lower.Contains("healthy") || lower.Contains("in stock") || lower.Contains("completed") || lower.Contains("paid"))
+            {
+                badgeBg = new DeviceRgb(220, 252, 231);
+                badgeFg = new DeviceRgb(22, 101, 52);
+            }
+            else if (lower.Contains("critical") || lower.Contains("out") || lower.Contains("inactive") || lower.Contains("cancelled"))
+            {
+                badgeBg = new DeviceRgb(254, 226, 226);
+                badgeFg = new DeviceRgb(153, 27, 27);
+            }
+            else if (lower.Contains("warning") || lower.Contains("low") || lower.Contains("pending"))
+            {
+                badgeBg = new DeviceRgb(254, 243, 199);
+                badgeFg = new DeviceRgb(146, 64, 14);
+            }
+            else
+            {
+                badgeBg = new DeviceRgb(241, 245, 249);
+                badgeFg = new DeviceRgb(71, 85, 105);
+            }
+
+            var cell = new Cell()
+                .SetBackgroundColor(bg)
+                .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                .SetTextAlignment(TextAlignment.CENTER)
+                .SetKeepTogether(true)
+                .SetPaddingTop(4f)
+                .SetPaddingBottom(4f)
+                .SetPaddingLeft(4f)
+                .SetPaddingRight(4f)
+                .SetBorder(cellBorder);
+
+            var badgePara = new Paragraph(text)
+                .SetFontSize(7.5f)
+                .SetFontColor(badgeFg)
+                .SetBackgroundColor(badgeBg)
+                .SetPaddingTop(2f)
+                .SetPaddingBottom(2f)
+                .SetPaddingLeft(5f)
+                .SetPaddingRight(5f)
+                .SetTextAlignment(TextAlignment.CENTER);
+
+            cell.Add(badgePara);
+            table.AddCell(cell);
         }
 
         // ============================================================

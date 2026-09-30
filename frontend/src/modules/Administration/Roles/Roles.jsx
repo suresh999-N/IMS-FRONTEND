@@ -277,9 +277,6 @@ function getResourceFieldClassName(config, field) {
     return 'resource-form__field--full'
   }
 
-  if (config.key === 'users' && field.name === 'isActive') {
-    return 'resource-form__field--full'
-  }
 
   if (config.key === 'productVariants') {
     const baseClass = `resource-form__field--${field.name}`

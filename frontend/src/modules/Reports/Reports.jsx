@@ -433,6 +433,16 @@ function csvEscape(value) {
   return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
 }
 
+function formatQuantity(value) {
+  if (value === null || value === undefined || value === '') return '0'
+  const num = Number(value)
+  if (!Number.isFinite(num)) return String(value)
+  if (num % 1 === 0) {
+    return num.toLocaleString('en-IN', { maximumFractionDigits: 0 })
+  }
+  return num.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+}
+
 function getExportValue(row, column) {
   const value = row[column.key]
   const key = String(column.key || '').toLowerCase()
@@ -461,6 +471,18 @@ function getExportValue(row, column) {
     return formatCurrency(value)
   }
   if (key.includes('margin')) return `${numeric(value).toFixed(1)}%`
+  if (
+    key.includes('quantity') ||
+    key === 'stock' ||
+    key.includes('qty') ||
+    key.includes('onhand') ||
+    key.includes('reserved') ||
+    key.includes('available') ||
+    key.includes('units') ||
+    key.includes('level')
+  ) {
+    return formatQuantity(value)
+  }
 
   return value ?? ''
 }
@@ -1638,9 +1660,9 @@ export default function Reports({ data = {} }) {
     stock: [
       { key: 'product', label: 'Product', sortable: true, width: '240px' },
       { key: 'warehouse', label: 'Warehouse', sortable: true, width: '220px' },
-      { key: 'quantity', label: 'On Hand', sortable: true, width: '140px', className: 'reports-table__numeric' },
-      { key: 'reservedQuantity', label: 'Reserved', sortable: true, width: '140px', className: 'reports-table__numeric' },
-      { key: 'availableQuantity', label: 'Available', sortable: true, width: '140px', className: 'reports-table__numeric' },
+      { key: 'quantity', label: 'On Hand', sortable: true, width: '140px', className: 'reports-table__numeric', render: (row) => formatQuantity(row.quantity) },
+      { key: 'reservedQuantity', label: 'Reserved', sortable: true, width: '140px', className: 'reports-table__numeric', render: (row) => formatQuantity(row.reservedQuantity) },
+      { key: 'availableQuantity', label: 'Available', sortable: true, width: '140px', className: 'reports-table__numeric', render: (row) => formatQuantity(row.availableQuantity) },
       { key: 'computedStatus', label: 'Status', sortable: false, width: '150px', render: (row) => renderStatusBadge(getStockHealthStatus(row)) },
     ],
     customerBalances: [
@@ -1655,7 +1677,7 @@ export default function Reports({ data = {} }) {
       { key: 'sku', label: 'SKU', sortable: true, width: '140px' },
       { key: 'category', label: 'Category', sortable: true, width: '160px' },
       { key: 'warehouse', label: 'Warehouse', sortable: true, width: '190px' },
-      { key: 'quantityAvailable', label: 'Qty Available', sortable: true, width: '150px', className: 'reports-table__numeric' },
+      { key: 'quantityAvailable', label: 'Qty Available', sortable: true, width: '150px', className: 'reports-table__numeric', render: (row) => formatQuantity(row.quantityAvailable) },
       { key: 'averageCost', label: 'Avg Cost', sortable: true, width: '140px', className: 'reports-table__numeric', render: (row) => formatCurrency(row.averageCost) },
       { key: 'totalStockValue', label: 'Stock Value', sortable: true, width: '160px', className: 'reports-table__numeric', render: (row) => formatCurrency(row.totalStockValue) },
       { key: 'lastPurchaseDate', label: 'Last Purchase', sortable: true, width: '160px', render: (row) => (row.lastPurchaseDate ? formatDate(row.lastPurchaseDate) : '-') },
@@ -1664,25 +1686,25 @@ export default function Reports({ data = {} }) {
       { key: 'productName', label: 'Product Name', sortable: true, width: '230px' },
       { key: 'sku', label: 'SKU', sortable: true, width: '140px' },
       { key: 'category', label: 'Category', sortable: true, width: '160px' },
-      { key: 'availableStock', label: 'Available Stock', sortable: true, width: '160px', className: 'reports-table__numeric' },
-      { key: 'minimumStockLevel', label: 'Minimum Level', sortable: true, width: '160px', className: 'reports-table__numeric' },
-      { key: 'reorderQuantity', label: 'Reorder Qty', sortable: true, width: '150px', className: 'reports-table__numeric' },
+      { key: 'availableStock', label: 'Available Stock', sortable: true, width: '160px', className: 'reports-table__numeric', render: (row) => formatQuantity(row.availableStock) },
+      { key: 'minimumStockLevel', label: 'Minimum Level', sortable: true, width: '160px', className: 'reports-table__numeric', render: (row) => formatQuantity(row.minimumStockLevel) },
+      { key: 'reorderQuantity', label: 'Reorder Qty', sortable: true, width: '150px', className: 'reports-table__numeric', render: (row) => formatQuantity(row.reorderQuantity) },
       { key: 'warehouse', label: 'Warehouse', sortable: true, width: '190px' },
       { key: 'status', label: 'Status', sortable: true, width: '150px', render: (row) => renderStatusBadge(row.status) },
     ],
     fastMoving: [
       { key: 'productName', label: 'Product Name', sortable: true, width: '230px' },
       { key: 'sku', label: 'SKU', sortable: true, width: '140px' },
-      { key: 'unitsSold', label: 'Units Sold', sortable: true, width: '140px', className: 'reports-table__numeric' },
+      { key: 'unitsSold', label: 'Units Sold', sortable: true, width: '140px', className: 'reports-table__numeric', render: (row) => formatQuantity(row.unitsSold) },
       { key: 'salesValue', label: 'Sales Value', sortable: true, width: '160px', className: 'reports-table__numeric', render: (row) => formatCurrency(row.salesValue) },
-      { key: 'stockLeft', label: 'Stock Left', sortable: true, width: '140px', className: 'reports-table__numeric' },
+      { key: 'stockLeft', label: 'Stock Left', sortable: true, width: '140px', className: 'reports-table__numeric', render: (row) => formatQuantity(row.stockLeft) },
       { key: 'movementStatus', label: 'Movement Status', sortable: true, width: '170px', render: (row) => renderStatusBadge(row.movementStatus) },
     ],
     slowMoving: [
       { key: 'productName', label: 'Product Name', sortable: true, width: '230px' },
       { key: 'sku', label: 'SKU', sortable: true, width: '140px' },
       { key: 'lastSoldDate', label: 'Last Sold Date', sortable: true, width: '160px', render: (row) => (row.lastSoldDate ? formatDate(row.lastSoldDate) : 'Not sold') },
-      { key: 'stockAvailable', label: 'Stock Available', sortable: true, width: '160px', className: 'reports-table__numeric' },
+      { key: 'stockAvailable', label: 'Stock Available', sortable: true, width: '160px', className: 'reports-table__numeric', render: (row) => formatQuantity(row.stockAvailable) },
       { key: 'daysSinceLastSale', label: 'Days Since Last Sale', sortable: true, width: '190px', className: 'reports-table__numeric' },
       { key: 'stockValue', label: 'Stock Value', sortable: true, width: '160px', className: 'reports-table__numeric', render: (row) => formatCurrency(row.stockValue) },
     ],

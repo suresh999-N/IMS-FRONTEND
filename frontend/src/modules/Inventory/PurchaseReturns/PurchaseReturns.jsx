@@ -529,7 +529,7 @@ export default function PurchaseReturns() {
   // =========================================================
 
   return (
-    <main>
+    <main className="purchase-returns-page">
       <PageHeader
         title="Purchase Returns"
         subtitle="Manage and track goods returned to suppliers."

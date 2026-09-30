@@ -7651,16 +7651,19 @@
   grid-column: 1 / -1 !important;
 }
 
-.form-modal__body--users .field {
+.form-modal__body--users .field,
+.form-modal--users .field {
   display: flex !important;
   flex-direction: column !important;
-  gap: 6px !important;
+  gap: 4px !important;
   margin: 0 !important;
   min-width: 0 !important;
 }
 
-.form-modal__body--users .field label {
+.form-modal__body--users .field label,
+.form-modal--users .field label {
   margin: 0 !important;
+  margin-bottom: 0 !important;
   padding: 0 !important;
   font-size: 13px !important;
   font-weight: 650 !important;
@@ -7668,19 +7671,22 @@
   line-height: 1.2 !important;
 }
 
-.form-modal__body--users :where(select, .input-with-icon) {
+.form-modal__body--users :where(select, .input-with-icon),
+.form-modal--users :where(select, .input-with-icon) {
   height: 38px !important;
   min-height: 38px !important;
   max-height: 38px !important;
   box-sizing: border-box !important;
   margin: 0 !important;
+  margin-top: 0 !important;
   border-radius: 8px !important;
   font-size: 13px !important;
   overflow: hidden !important;
   transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease !important;
 }
 
-.form-modal__body--users .input-with-icon input {
+.form-modal__body--users .input-with-icon input,
+.form-modal--users .input-with-icon input {
   height: 100% !important;
   min-height: 0 !important;
   max-height: 100% !important;
@@ -7694,23 +7700,32 @@
   box-sizing: border-box !important;
 }
 
-.form-modal__body--users :where(select:hover, .input-with-icon:hover:not(:focus-within)) {
+.form-modal__body--users :where(select:hover, .input-with-icon:hover:not(:focus-within)),
+.form-modal--users :where(select:hover, .input-with-icon:hover:not(:focus-within)) {
   border-color: var(--ims-success, #059669) !important;
   background-color: #f8fafc !important;
 }
 
-.form-modal__body--users :where(select:focus, .input-with-icon:focus-within) {
+.form-modal__body--users :where(select:focus, .input-with-icon:focus-within),
+.form-modal--users :where(select:focus, .input-with-icon:focus-within) {
   border-color: var(--ims-success, #059669) !important;
   background-color: #ffffff !important;
   box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12) !important;
   outline: none !important;
 }
 
-.form-modal__body--users select {
+.form-modal__body--users select,
+.form-modal--users select {
   padding: 0 10px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
   line-height: 36px !important;
+  box-sizing: border-box !important;
   background-color: #fff !important;
   color: #1e293b !important;
+  margin: 0 !important;
+  margin-top: 0 !important;
   cursor: pointer;
 }
 

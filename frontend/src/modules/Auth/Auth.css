@@ -795,22 +795,61 @@
   font-weight: 550;
   cursor: pointer;
   user-select: none;
+  line-height: 1;
+}
+
+.auth-login-remember span {
+  line-height: 16px;
+  user-select: none;
 }
 
 .auth-login-remember input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  margin: 0;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  accent-color: #16a34a;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  width: 16px !important;
+  min-width: 16px !important;
+  max-width: 16px !important;
+  height: 16px !important;
+  min-height: 16px !important;
+  max-height: 16px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 4px !important;
+  background-color: #ffffff !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: 10px 10px !important;
+  box-shadow: none !important;
+  outline: none !important;
   cursor: pointer;
-  transition: all 0.15s ease;
+  box-sizing: border-box !important;
+  flex-shrink: 0 !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.auth-login-remember input[type="checkbox"]:hover:not(:disabled) {
+  border-color: #16a34a !important;
+}
+
+.auth-login-remember input[type="checkbox"]:checked {
+  border-color: #16a34a !important;
+  background-color: #16a34a !important;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1.5 5.1 4.5 8 10.5 1.5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+}
+
+.auth-login-remember input[type="checkbox"]:focus {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .auth-login-remember input[type="checkbox"]:focus-visible {
-  outline: 2px solid #22c55e;
-  outline-offset: 1px;
+  border-color: #16a34a !important;
+  outline: 2px solid rgba(22, 163, 74, 0.28) !important;
+  outline-offset: 1.5px !important;
+  box-shadow: none !important;
 }
 
 .auth-login-options-row a,

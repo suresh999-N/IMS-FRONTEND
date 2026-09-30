@@ -320,3 +320,43 @@
     gap: 4px;
   }
 }
+
+/* ====================================================================
+   Accounting Selection Summary Indicator (e.g. "9 selected")
+   Ensures distinct emerald green highlight and high-contrast styling
+   ==================================================================== */
+.accounting-page .resource-center__product-style-selection-summary,
+.accounting-page .invoices__selection-summary,
+.accounting-page [class*="selection-summary"],
+.resource-center__page--invoices .resource-center__product-style-selection-summary,
+.resource-center__page--invoices .invoices__selection-summary,
+.resource-center__page--invoices [class*="selection-summary"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 12px !important;
+  border: 1px solid #6ee7b7 !important;
+  border-radius: 999px !important;
+  background: #d1fae5 !important;
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.18) !important;
+}
+
+.accounting-page [class*="selection-summary"] strong,
+.resource-center__page--invoices [class*="selection-summary"] strong {
+  color: #065f46 !important;
+  font-weight: 700 !important;
+}
+
+.accounting-page [class*="selection-summary"] svg,
+.resource-center__page--invoices [class*="selection-summary"] svg {
+  color: #047857 !important;
+  stroke-width: 2.2px !important;
+}
+

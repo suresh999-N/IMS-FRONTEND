@@ -2791,17 +2791,17 @@ function ResourcePage({ config, navigationContent = null }) {
           height: '34px',
           minHeight: '34px',
           padding: '0 10px',
-          border: '1px solid #a7f3d0',
+          border: '1px solid #6ee7b7',
           borderRadius: '999px',
-          backgroundColor: '#dffaf0',
-          color: '#059669',
+          backgroundColor: '#d1fae5',
+          color: '#065f46',
           fontSize: '12.5px',
           fontWeight: 700,
-          boxShadow: '0 1px 3px rgba(5, 150, 105, 0.12)',
+          boxShadow: '0 1px 3px rgba(5, 150, 105, 0.18)',
         }}
       >
-        <Check size={15} style={{ color: '#059669', strokeWidth: '2.4px' }} />
-        <strong style={{ color: '#059669', fontWeight: 700 }}>{selectedSubCategories.length} selected</strong>
+        <Check size={15} style={{ color: '#047857', strokeWidth: '2.4px' }} />
+        <strong style={{ color: '#065f46', fontWeight: 700 }}>{selectedSubCategories.length} selected</strong>
       </div>
       <button
         type="button"
@@ -2845,17 +2845,17 @@ function ResourcePage({ config, navigationContent = null }) {
           height: '36px',
           minHeight: '36px',
           padding: '0 12px',
-          border: '1px solid #a7f3d0',
+          border: '1px solid #6ee7b7',
           borderRadius: '999px',
-          backgroundColor: '#dffaf0',
-          color: '#059669',
+          backgroundColor: '#d1fae5',
+          color: '#065f46',
           fontSize: '13px',
           fontWeight: 700,
-          boxShadow: '0 1px 3px rgba(5, 150, 105, 0.12)',
+          boxShadow: '0 1px 3px rgba(5, 150, 105, 0.18)',
         }}
       >
-        <Check size={15} style={{ color: '#059669', strokeWidth: '2.4px' }} />
-        <strong style={{ color: '#059669', fontWeight: 700 }}>{selectedProductStyleRows.length} selected</strong>
+        <Check size={15} style={{ color: '#047857', strokeWidth: '2.4px' }} />
+        <strong style={{ color: '#065f46', fontWeight: 700 }}>{selectedProductStyleRows.length} selected</strong>
       </div>
       <button
         type="button"
@@ -2934,17 +2934,17 @@ function ResourcePage({ config, navigationContent = null }) {
           height: '36px',
           minHeight: '36px',
           padding: '0 12px',
-          border: '1px solid #a7f3d0',
+          border: '1px solid #6ee7b7',
           borderRadius: '999px',
-          backgroundColor: '#dffaf0',
-          color: '#059669',
+          backgroundColor: '#d1fae5',
+          color: '#065f46',
           fontSize: '13px',
           fontWeight: 700,
-          boxShadow: '0 1px 3px rgba(5, 150, 105, 0.12)',
+          boxShadow: '0 1px 3px rgba(5, 150, 105, 0.18)',
         }}
       >
-        <Check size={15} style={{ color: '#059669', strokeWidth: '2.4px' }} />
-        <strong style={{ color: '#059669', fontWeight: 700 }}>{selectedInvoiceRows.length} selected</strong>
+        <Check size={15} style={{ color: '#047857', strokeWidth: '2.4px' }} />
+        <strong style={{ color: '#065f46', fontWeight: 700 }}>{selectedInvoiceRows.length} selected</strong>
       </div>
       <button
         type="button"

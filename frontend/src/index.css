@@ -409,7 +409,7 @@ label .text-red-600 {
   white-space: nowrap !important;
 }
 
-input,
+input:not([type="checkbox"]):not([type="radio"]),
 textarea,
 select {
   min-height: var(--touch-target);
@@ -429,7 +429,15 @@ select {
     background-color var(--transition);
 }
 
-input:not(:disabled),
+input[type="checkbox"],
+input[type="radio"] {
+  min-height: auto;
+  width: auto;
+  padding: 0;
+  cursor: pointer;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not(:disabled),
 textarea:not(:disabled) {
   cursor: text;
 }
@@ -438,7 +446,7 @@ select:not(:disabled) {
   cursor: pointer;
 }
 
-input:hover:not(:disabled):not(:focus),
+input:not([type="checkbox"]):not([type="radio"]):hover:not(:disabled):not(:focus),
 textarea:hover:not(:disabled):not(:focus),
 select:hover:not(:disabled):not(:focus) {
   border-color: var(--ims-success, #059669);
@@ -473,7 +481,7 @@ input[name*="customer" i]:not(:placeholder-shown) {
   text-transform: capitalize;
 }
 
-input:focus,
+input:not([type="checkbox"]):not([type="radio"]):focus,
 textarea:focus,
 select:focus {
   border-color: var(--ims-success, #059669);
@@ -2381,18 +2389,20 @@ input[type="password"]::-ms-clear {
   .global-search__trigger,
   .global-search__control,
   .app-header__search,
-  .app-header__search input,
   .search-input-container,
   .search-wrapper,
-  .search-wrapper input,
   .erp-search-bar,
   .toolbar-search,
   .toolbar-search input,
+  .purchase-returns-toolbar .toolbar-search,
   .purchase-returns-toolbar input,
   .purchase-returns-toolbar .toolbar-search input,
+  .purchase-returns-page .toolbar-search,
   .purchase-returns-page .toolbar-search input,
+  .sales-returns-toolbar .toolbar-search,
   .sales-returns-toolbar input,
   .sales-returns-toolbar .toolbar-search input,
+  .sales-returns-page .toolbar-search,
   .sales-returns-page .toolbar-search input,
   .barcode-page__table-card .search-wrapper,
   .barcode-page__table-card .search-input-container,
@@ -2407,6 +2417,21 @@ input[type="password"]::-ms-clear {
   [class*='-page'] .search-wrapper
 ) {
   border-radius: 10px !important;
+}
+
+/* Ensure inputs nested inside decorated search wrappers remain borderless and uncurved */
+:is(#root, body) :is(
+  .app-header__search input,
+  .global-search .app-header__search input,
+  .global-search__trigger input,
+  .search-wrapper input
+) {
+  border: 0 !important;
+  outline: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 .global-search,
@@ -2514,13 +2539,13 @@ input[type="password"]::-ms-clear {
   display: inline-flex !important;
   align-items: center !important;
   gap: 6px !important;
-  border: 1px solid #a7f3d0 !important;
+  border: 1px solid #6ee7b7 !important;
   border-radius: 999px !important;
-  background-color: #dffaf0 !important;
-  background: #dffaf0 !important;
-  color: #059669 !important;
+  background-color: #d1fae5 !important;
+  background: #d1fae5 !important;
+  color: #065f46 !important;
   font-weight: 700 !important;
-  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.12) !important;
+  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.18) !important;
 }
 
 .resource-center__product-style-selection-summary strong,
@@ -2528,7 +2553,7 @@ input[type="password"]::-ms-clear {
 .invoices__selection-summary strong,
 .table-component__selection-summary strong,
 [class*="selection-summary"] strong {
-  color: #059669 !important;
+  color: #065f46 !important;
   font-weight: 700 !important;
 }
 
@@ -2537,7 +2562,7 @@ input[type="password"]::-ms-clear {
 .invoices__selection-summary svg,
 .table-component__selection-summary svg,
 [class*="selection-summary"] svg {
-  color: #059669 !important;
+  color: #047857 !important;
   stroke-width: 2.2px !important;
 }
 

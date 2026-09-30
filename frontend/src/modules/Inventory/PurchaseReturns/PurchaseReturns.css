@@ -34,19 +34,24 @@
   gap: var(--space-3, 12px);
 }
 
-.toolbar-search {
+.toolbar-search,
+.purchase-returns-toolbar .toolbar-search,
+.purchase-returns-page .toolbar-search {
   position: relative;
   flex: 1;
   min-width: 260px;
   display: flex;
   align-items: center;
+  border-radius: 10px !important;
 }
 
 .toolbar-search input,
 .purchase-returns-toolbar .toolbar-search input,
 .purchase-returns-page .toolbar-search input,
 .purchase-returns-toolbar input[type="text"],
-.purchase-returns-toolbar input[type="search"] {
+.purchase-returns-toolbar input[type="search"],
+.purchase-returns-page input[type="text"],
+.purchase-returns-page input[type="search"] {
   width: 100%;
   height: 38px;
   padding: 8px 32px 8px 36px;

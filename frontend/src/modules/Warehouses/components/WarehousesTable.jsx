@@ -131,7 +131,8 @@ function printWarehouses(warehouses, productsCatalog = []) {
     const prodsSummary = grouped.length > 0
       ? grouped.map((p) => `
         <div class="product-item">
-          <span class="product-name">${escapeHtml(p.name)}</span>${p.sku ? ` <span class="product-sku">[${escapeHtml(p.sku)}]</span>` : ''} <span class="product-qty">(${escapeHtml(String(p.quantity))}${p.unit ? ` ${escapeHtml(p.unit)}` : ''})</span>
+          <span class="product-name">${escapeHtml(p.name)}</span>
+          <span class="product-details">${p.sku ? `<span class="product-sku">[${escapeHtml(p.sku)}]</span> ` : ''}<span class="product-qty">(${escapeHtml(String(p.quantity))}${p.unit ? ` ${escapeHtml(p.unit)}` : ''})</span></span>
         </div>
       `).join('')
       : '<span class="empty-cell">No Products</span>'
@@ -203,7 +204,7 @@ function printWarehouses(warehouses, productsCatalog = []) {
       padding: 16px 20px;
       color: #0f172a;
       background: #ffffff;
-      font: 11.5px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font: 11px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -248,8 +249,10 @@ function printWarehouses(warehouses, productsCatalog = []) {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      white-space: nowrap;
+      line-height: 1.25;
+      white-space: normal;
       vertical-align: middle;
+      padding: 8px 6px;
     }
     td {
       vertical-align: top;
@@ -265,14 +268,14 @@ function printWarehouses(warehouses, productsCatalog = []) {
     /* Column Widths and Alignments */
     .col-warehouse { width: 13%; text-align: left; }
     .col-products  { width: 23%; text-align: left; }
-    .col-location  { width: 10%; text-align: left; white-space: nowrap; }
-    .col-contact   { width: 14%; text-align: left; }
-    .col-capacity  { width: 7%; text-align: right; white-space: nowrap; }
-    .col-stock     { width: 7%; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
-    .col-rackbin   { width: 6%; text-align: center; white-space: nowrap; }
-    .col-manager   { width: 8%; text-align: left; white-space: nowrap; }
-    .col-status    { width: 6%; text-align: center; white-space: nowrap; }
-    .col-updated   { width: 6%; text-align: center; white-space: nowrap; }
+    .col-location  { width: 10%; text-align: left; }
+    .col-contact   { width: 11%; text-align: left; }
+    .col-capacity  { width: 7%; text-align: center; }
+    .col-stock     { width: 8%; text-align: right; font-variant-numeric: tabular-nums; }
+    .col-rackbin   { width: 7%; text-align: center; }
+    .col-manager   { width: 8%; text-align: left; }
+    .col-status    { width: 6%; text-align: center; }
+    .col-updated   { width: 7%; text-align: center; }
 
     /* Content Typography & Elements */
     .warehouse-name {
@@ -289,8 +292,9 @@ function printWarehouses(warehouses, productsCatalog = []) {
       margin-top: 2px;
     }
     .product-item {
-      margin-bottom: 3px;
+      margin-bottom: 4px;
       line-height: 1.35;
+      font-size: 10.5px;
     }
     .product-item:last-child {
       margin-bottom: 0;
@@ -299,22 +303,27 @@ function printWarehouses(warehouses, productsCatalog = []) {
       font-weight: 500;
       color: #1e293b;
     }
+    .product-details {
+      display: inline-block;
+      white-space: nowrap;
+    }
     .product-sku {
       color: #64748b;
       font-size: 10px;
-      margin-left: 2px;
+      white-space: nowrap;
     }
     .product-qty {
       color: #059669;
       font-weight: 600;
-      font-size: 10.5px;
+      font-size: 10px;
       white-space: nowrap;
-      margin-left: 3px;
+      margin-left: 2px;
     }
     .contact-line {
       font-size: 10.5px;
       color: #334155;
       line-height: 1.35;
+      word-break: break-all;
     }
     .manager-name {
       font-weight: 600;
@@ -352,6 +361,18 @@ function printWarehouses(warehouses, productsCatalog = []) {
       </div>
     </div>
     <table>
+      <colgroup>
+        <col style="width: 13%;">
+        <col style="width: 23%;">
+        <col style="width: 10%;">
+        <col style="width: 11%;">
+        <col style="width: 7%;">
+        <col style="width: 8%;">
+        <col style="width: 7%;">
+        <col style="width: 8%;">
+        <col style="width: 6%;">
+        <col style="width: 7%;">
+      </colgroup>
       <thead>
         <tr>
           <th class="col-warehouse">Warehouse</th>

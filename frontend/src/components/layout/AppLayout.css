@@ -716,14 +716,19 @@
     0 8px 20px rgba(15, 23, 42, 0.06);
 }
 
-.app-header__search input {
-  min-height: 34px;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  color: #0f172a;
+.app-header__search input,
+.global-search .app-header__search input,
+.global-search__trigger input {
+  min-height: 34px !important;
+  border: 0 !important;
+  outline: none !important;
+  padding: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #0f172a !important;
   font-size: 13.5px;
-  box-shadow: none;
+  box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 .app-header__search input::placeholder {

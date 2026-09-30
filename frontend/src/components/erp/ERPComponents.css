@@ -732,13 +732,13 @@ button.erp-action-menu__trigger--icon,
   display: inline-flex !important;
   align-items: center !important;
   gap: 6px !important;
-  border: 1px solid #a7f3d0 !important;
+  border: 1px solid #6ee7b7 !important;
   border-radius: 999px !important;
-  background-color: #dffaf0 !important;
-  background: #dffaf0 !important;
-  color: #059669 !important;
+  background-color: #d1fae5 !important;
+  background: #d1fae5 !important;
+  color: #065f46 !important;
   font-weight: 700 !important;
-  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.12) !important;
+  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.18) !important;
 }
 
 .resource-center__product-style-selection-summary strong,
@@ -746,7 +746,7 @@ button.erp-action-menu__trigger--icon,
 .invoices__selection-summary strong,
 .table-component__selection-summary strong,
 [class*="selection-summary"] strong {
-  color: #059669 !important;
+  color: #065f46 !important;
   font-weight: 700 !important;
 }
 
@@ -755,7 +755,7 @@ button.erp-action-menu__trigger--icon,
 .invoices__selection-summary svg,
 .table-component__selection-summary svg,
 [class*="selection-summary"] svg {
-  color: #059669 !important;
+  color: #047857 !important;
   stroke-width: 2.2px !important;
 }
 

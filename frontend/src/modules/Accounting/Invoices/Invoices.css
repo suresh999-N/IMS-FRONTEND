@@ -6405,23 +6405,24 @@
   height: 34px !important;
   min-height: 34px !important;
   padding: 0 10px !important;
-  border: 1px solid #a7f3d0 !important;
+  border: 1px solid #6ee7b7 !important;
   border-radius: 999px !important;
-  background: #dffaf0 !important;
-  color: #059669 !important;
+  background: #d1fae5 !important;
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
   font-size: 12.5px !important;
   font-weight: 700 !important;
   line-height: 1 !important;
-  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.12) !important;
+  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.18) !important;
 }
 
 .resource-center__subcategories-selection-summary strong {
-  color: #059669 !important;
+  color: #065f46 !important;
   font-weight: 700 !important;
 }
 
 .resource-center__subcategories-selection-summary svg {
-  color: #059669 !important;
+  color: #047857 !important;
   stroke-width: 2.2px !important;
 }
 
@@ -7430,21 +7431,22 @@
   height: 36px !important;
   min-height: 36px !important;
   padding: 0 12px !important;
-  border: 1px solid #a7f3d0 !important;
+  border: 1px solid #6ee7b7 !important;
   border-radius: 999px !important;
-  background: #dffaf0 !important;
-  color: #059669 !important;
+  background: #d1fae5 !important;
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
   font-size: 13px !important;
   font-weight: 700 !important;
   line-height: 1 !important;
-  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.12) !important;
+  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.18) !important;
 }
 
 .resource-center__product-style-selection-summary strong,
 .resource-center__page--invoices .resource-center__product-style-selection-summary strong,
 .resource-center__invoices-table .resource-center__product-style-selection-summary strong,
 .invoices__selection-summary strong {
-  color: #059669 !important;
+  color: #065f46 !important;
   font-weight: 700 !important;
 }
 
@@ -7452,7 +7454,7 @@
 .resource-center__page--invoices .resource-center__product-style-selection-summary svg,
 .resource-center__invoices-table .resource-center__product-style-selection-summary svg,
 .invoices__selection-summary svg {
-  color: #059669 !important;
+  color: #047857 !important;
   stroke-width: 2.2px !important;
 }
 
