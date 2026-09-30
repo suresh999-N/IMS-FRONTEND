@@ -482,7 +482,7 @@ function CategoryForm({
     name: editingCategory?.name ?? '',
     parentId: editingCategory ? parentIdOf(editingCategory) : initialParentId,
     description: editingCategory?.description ?? '',
-    status: editingCategory?.status ?? 'Active',
+    status: editingCategory?.status ?? '',
   }))
   const [touched, setTouched] = useState({})
 
@@ -499,7 +499,8 @@ function CategoryForm({
   const selfParent = isEditing && parentId && parentId === editingId
   const circularParent = isEditing && parentId && descendantIds.has(parentId)
 
-  const categoryValidationErr = validateCategoryName(name, categories, editingId)
+  const categoryValidationErr = validateCategoryName(name, categories, editingId, parentId)
+  const statusValue = clean(formData.status)
   const errors = {
     name: !name
       ? 'Category name is required.'
@@ -510,6 +511,11 @@ function CategoryForm({
       ? 'A category cannot be its own parent.'
       : circularParent
         ? 'A category cannot be moved under one of its subcategories.'
+        : '',
+    status: !statusValue
+      ? 'Please select a status.'
+      : !['active', 'inactive'].includes(statusValue.toLowerCase())
+        ? 'Choose Active or Inactive.'
         : '',
   }
   const isFormValid = Object.values(errors).every((value) => !value)
@@ -549,7 +555,7 @@ function CategoryForm({
 
   function handleSubmit(event) {
     event.preventDefault()
-    setTouched({ name: true, parentId: Boolean(errors.parentId) })
+    setTouched({ name: true, parentId: Boolean(errors.parentId), status: true })
 
     if (!isFormValid || !hasChanges || isSubmitting) {
       return
@@ -559,8 +565,8 @@ function CategoryForm({
       name,
       parentId: parentId ? Number(parentId) : null,
       description: clean(formData.description),
-      status: clean(formData.status) || 'Active',
-      isActive: (clean(formData.status) || 'Active') === 'Active',
+      status: clean(formData.status),
+      isActive: clean(formData.status).toLowerCase() === 'active',
     })
   }
 
@@ -603,7 +609,11 @@ function CategoryForm({
               { value: 'Active', label: 'Active' },
               { value: 'Inactive', label: 'Inactive' },
             ]}
-            placeholder="Select status"
+            placeholder="Select"
+            showPlaceholder={true}
+            showSearch={false}
+            error={errors.status}
+            showError={Boolean(touched.status && errors.status)}
           />
 
           <InputField
@@ -867,12 +877,21 @@ export default function Categories() {
   }
 
   async function handleSubmit(values) {
-    const categoryNameErr = validateCategoryName(values?.name, categories, formState?.category?.id)
+    const categoryNameErr = validateCategoryName(values?.name, categories, formState?.category?.id, values?.parentId)
     if (categoryNameErr) {
       showToast({
         type: 'error',
         title: 'Categories',
         message: categoryNameErr,
+      })
+      return
+    }
+
+    if (!values?.status || !['active', 'inactive'].includes(String(values.status).toLowerCase())) {
+      showToast({
+        type: 'error',
+        title: 'Categories',
+        message: 'Please select a status (Active or Inactive).',
       })
       return
     }

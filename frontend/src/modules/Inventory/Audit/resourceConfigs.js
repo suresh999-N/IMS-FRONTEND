@@ -998,10 +998,10 @@ export const RESOURCE_CONFIGS = {
     canUpdate: false,
     idFields: ['invoiceId'],
     fields: [
-      { name: 'soId', label: 'Sales Order ID', type: 'number', min: 1 },
+      { name: 'soId', label: 'Sales Order ID', type: 'number', required: true, min: 1 },
       { name: 'customerId', label: 'Customer ID', type: 'number', required: true, min: 1 },
       { name: 'invoiceDate', label: 'Invoice Date', type: 'date', required: true, defaultValue: getToday },
-      { name: 'dueDate', label: 'Due Date', type: 'date', defaultValue: getToday },
+      { name: 'dueDate', label: 'Due Date', type: 'date', required: true, defaultValue: getToday },
       { name: 'paidAmount', label: 'Paid Amount', type: 'currency', defaultValue: '0', min: 0 },
       { name: 'items', label: 'Invoice Items', type: 'lineItems', required: true },
     ],

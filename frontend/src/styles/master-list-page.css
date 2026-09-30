@@ -212,12 +212,16 @@
 :is(.catalog-page__table-card, .reference-compact-table-card, .products-table-card, .supplier-table-card, .customers-page__directory-card, .resource-center__inventory-table-card, .resource-center__products-table-card) thead {
   position: sticky;
   top: 0;
-  z-index: 2;
+  z-index: 20;
 }
 
 :is(.catalog-page__table-card, .reference-compact-table-card, .products-table-card, .supplier-table-card, .customers-page__directory-card, .resource-center__inventory-table-card, .resource-center__products-table-card) th {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   height: 44px;
   background: #f8fafc;
+  background-clip: padding-box;
   color: #475569;
   font-size: 12px;
   font-weight: 650;
@@ -225,6 +229,8 @@
 }
 
 :is(.catalog-page__table-card, .reference-compact-table-card, .products-table-card, .supplier-table-card, .customers-page__directory-card, .resource-center__inventory-table-card, .resource-center__products-table-card) td {
+  position: static;
+  z-index: auto;
   height: 52px;
   color: #334155;
   border-bottom-color: #eef2f7;

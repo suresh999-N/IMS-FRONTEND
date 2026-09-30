@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   ShoppingCart,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import loginLeftPanel from '../../assets/auth/login-left-panel.png'
@@ -24,6 +24,33 @@ import { getAuthErrorMessage } from './authCopy'
 import './Auth.css'
  
 const REMEMBER_ME_STORAGE_KEY = 'ims_remember_me_identifier'
+const REMEMBER_ME_CREDENTIALS_KEY = 'ims_remember_me_credentials'
+
+function readSavedCredentials() {
+  if (typeof window === 'undefined') return { email: '', password: '', rememberMe: false }
+  try {
+    const rawCreds = window.localStorage.getItem(REMEMBER_ME_CREDENTIALS_KEY)
+    if (rawCreds) {
+      const parsed = JSON.parse(decodeURIComponent(atob(rawCreds)))
+      if (parsed && typeof parsed === 'object') {
+        return {
+          email: parsed.email || '',
+          password: parsed.password || '',
+          rememberMe: true,
+        }
+      }
+    }
+    const legacyIdentifier = window.localStorage.getItem(REMEMBER_ME_STORAGE_KEY)
+    if (legacyIdentifier) {
+      return {
+        email: legacyIdentifier,
+        password: '',
+        rememberMe: true,
+      }
+    }
+  } catch {}
+  return { email: '', password: '', rememberMe: false }
+}
 
 import { renderFormLabel } from '../../utils/labelUtils'
 
@@ -34,20 +61,14 @@ export default function Login({ onLoginSuccess, isSwitchMode = false }) {
   const verificationMessage = location.state?.verificationMessage || ''
   const verificationNotice = location.state?.verificationNotice || ''
  
-  const [rememberMe, setRememberMe] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return Boolean(window.localStorage.getItem(REMEMBER_ME_STORAGE_KEY))
-  })
+  const savedCredentials = useMemo(() => readSavedCredentials(), [])
 
-  const [formData, setFormData] = useState(() => {
-    const savedIdentifier = typeof window !== 'undefined'
-      ? window.localStorage.getItem(REMEMBER_ME_STORAGE_KEY) || ''
-      : ''
-    return {
-      email: location.state?.email || savedIdentifier,
-      password: '',
-    }
-  })
+  const [rememberMe, setRememberMe] = useState(() => savedCredentials.rememberMe)
+
+  const [formData, setFormData] = useState(() => ({
+    email: location.state?.email || savedCredentials.email || '',
+    password: savedCredentials.password || '',
+  }))
   const [touched, setTouched] = useState({
     email: false,
     password: false,
@@ -95,6 +116,17 @@ export default function Login({ onLoginSuccess, isSwitchMode = false }) {
     setTouched((prev) => ({ ...prev, [name]: true }))
   }
  
+  function handleRememberMeChange(event) {
+    const isChecked = event.target.checked
+    setRememberMe(isChecked)
+    if (!isChecked && typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(REMEMBER_ME_STORAGE_KEY)
+        window.localStorage.removeItem(REMEMBER_ME_CREDENTIALS_KEY)
+      } catch {}
+    }
+  }
+
   async function handleSubmit(event) {
     event.preventDefault()
     if (loading) return
@@ -110,12 +142,6 @@ export default function Login({ onLoginSuccess, isSwitchMode = false }) {
     try {
       setLoading(true)
 
-      if (rememberMe && typeof window !== 'undefined') {
-        window.localStorage.setItem(REMEMBER_ME_STORAGE_KEY, identifier)
-      } else if (typeof window !== 'undefined') {
-        window.localStorage.removeItem(REMEMBER_ME_STORAGE_KEY)
-      }
-
       const result = await login({
         emailOrPhone: identifier,
         password: formData.password,
@@ -123,6 +149,12 @@ export default function Login({ onLoginSuccess, isSwitchMode = false }) {
       })
  
       if (!result?.success) {
+        if (typeof window !== 'undefined') {
+          try {
+            window.localStorage.removeItem(REMEMBER_ME_CREDENTIALS_KEY)
+          } catch {}
+        }
+
         const msg = result?.message || ''
         const lowerMsg = msg.toLowerCase()
         const fieldErrorMap = {}
@@ -135,6 +167,21 @@ export default function Login({ onLoginSuccess, isSwitchMode = false }) {
 
         setError(getAuthErrorMessage(result?.message, 'Check your credentials and password.'))
         return
+      }
+
+      if (rememberMe && typeof window !== 'undefined') {
+        try {
+          window.localStorage.setItem(REMEMBER_ME_STORAGE_KEY, identifier)
+          window.localStorage.setItem(
+            REMEMBER_ME_CREDENTIALS_KEY,
+            btoa(encodeURIComponent(JSON.stringify({ email: identifier, password: formData.password })))
+          )
+        } catch {}
+      } else if (typeof window !== 'undefined') {
+        try {
+          window.localStorage.removeItem(REMEMBER_ME_STORAGE_KEY)
+          window.localStorage.removeItem(REMEMBER_ME_CREDENTIALS_KEY)
+        } catch {}
       }
  
       navigate('/dashboard', { replace: true })
@@ -257,13 +304,17 @@ export default function Login({ onLoginSuccess, isSwitchMode = false }) {
             )}
 
             <div className="auth-login-options-row">
-              <label className="auth-login-remember" htmlFor="login-remember-me">
+              <label
+                className="auth-login-remember"
+                htmlFor="login-remember-me"
+                title="Save your login credentials on this device so you can sign in without re-entering your password"
+              >
                 <input
                   id="login-remember-me"
                   type="checkbox"
                   name="rememberMe"
                   checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
+                  onChange={handleRememberMeChange}
                 />
                 <span>Remember me</span>
               </label>

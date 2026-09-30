@@ -257,9 +257,29 @@ namespace IMSBackend.Controllers
                 return "Category name is required.";
             }
 
+            if (name.Length < 2)
+            {
+                return "Category name must be at least 2 characters.";
+            }
+
+            if (name.Length > 50)
+            {
+                return "Category name cannot exceed 50 characters.";
+            }
+
             if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-z0-9\s\&\-\/\(\)\,\.]+$"))
             {
-                return "Name contains invalid characters.";
+                return "Category name contains invalid characters.";
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"[A-Za-z]"))
+            {
+                return "Category name must contain at least one letter.";
+            }
+
+            if (IsGibberishOrNonsensical(name))
+            {
+                return "Please enter a valid, meaningful category name.";
             }
 
             if (dto.ParentId.HasValue)
@@ -359,8 +379,92 @@ namespace IMSBackend.Controllers
 
         private static readonly HashSet<string> Acronyms = new(StringComparer.OrdinalIgnoreCase)
         {
-            "IT", "USB", "LED", "LCD", "TV", "RAM", "SSD", "POS", "CCTV", "GPS", "SKU", "SIM", "VIP", "AC", "DC", "RO", "PVC", "HD", "FHD", "UHD", "4K", "5G", "4G", "3G"
+            "IT", "PC", "TV", "AC", "DC", "RO", "HD", "FHD", "UHD", "4K", "8K", "2D", "3D", "4G", "5G",
+            "POS", "CCTV", "GPS", "SKU", "SIM", "VIP", "LED", "LCD", "USB", "RAM", "SSD", "HDD", "CPU", "GPU",
+            "DVD", "CD", "VCR", "FM", "AM", "RF", "NFC", "RFID", "VGA", "DVI", "HDMI", "LAN", "WAN", "WIFI",
+            "PVC", "ABS", "MS", "SS", "GI", "TMT", "UPVC", "CPVC", "PPR", "HDPE", "LDPE", "PPE",
+            "OTG", "OEM", "ODM", "DIY", "AI", "IOT", "EV", "AV", "DJ", "PA", "UPS", "SMPS", "PCB"
         };
+
+        private static readonly HashSet<string> ShortNumPrefixes = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "D", "K", "G", "P", "V", "W", "M", "L", "B", "T", "HZ", "GHZ", "MHZ", "MP"
+        };
+
+        private static readonly string[] KeyboardPatterns = new[]
+        {
+            "qwerty", "qwert", "werty", "asdfgh", "asdfg", "asdf", "sdfg", "dfgh", "fghj", "ghjk", "hjkl",
+            "zxcvbn", "zxcvb", "zxcv", "xcvbn", "cvbnm", "yuiop", "ghjkl", "fghjk",
+            "ytrewq", "gfdsa", "lkjhg", "lkjh", "kjhg", "jhgf", "hgfd", "gfds", "fdsa", "mnbvc", "nbvcx", "bvcxz",
+            "12345", "23456", "34567", "45678", "56789", "67890", "09876", "54321", "43210"
+        };
+
+        private static bool IsGibberishOrNonsensical(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            var trimmed = text.Trim();
+
+            if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"(.)\1{2,}", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                return true;
+
+            if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"(.{2,4})\1{2,}", System.Text.RegularExpressions.RegexOptions.IgnoreCase) ||
+                System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"([a-z])\1([a-z])\2", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                return true;
+
+            var lower = trimmed.ToLowerInvariant();
+            if (KeyboardPatterns.Any(pat => lower.Contains(pat)))
+                return true;
+
+            if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"([a-z]\d[a-z]\d|\d[a-z]\d[a-z])", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                return true;
+
+            var words = System.Text.RegularExpressions.Regex.Split(trimmed, @"[\s\-/&,.]+").Where(w => !string.IsNullOrEmpty(w));
+            bool hasMeaningfulWord = false;
+
+            foreach (var word in words)
+            {
+                var lettersOnly = System.Text.RegularExpressions.Regex.Replace(word, @"[^a-zA-Z]", "");
+                if (lettersOnly.Length == 0) continue;
+
+                if (Acronyms.Contains(word) || Acronyms.Contains(lettersOnly))
+                {
+                    hasMeaningfulWord = true;
+                    continue;
+                }
+
+                var numLetterMatch = System.Text.RegularExpressions.Regex.Match(word, @"^(\d+)([a-zA-Z]+)$");
+                if (numLetterMatch.Success)
+                {
+                    var alphaPart = numLetterMatch.Groups[2].Value.ToUpperInvariant();
+                    if (Acronyms.Contains(alphaPart) || ShortNumPrefixes.Contains(alphaPart))
+                    {
+                        hasMeaningfulWord = true;
+                        continue;
+                    }
+                    return true;
+                }
+
+                if (System.Text.RegularExpressions.Regex.IsMatch(lettersOnly, @"[bcdfghjklmnpqrstvwxz]{5,}", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                    return true;
+
+                if (lettersOnly.Length >= 2 && !System.Text.RegularExpressions.Regex.IsMatch(lettersOnly, @"[aeiouy]", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                    return true;
+
+                if (lettersOnly.Length >= 7)
+                {
+                    var vowelCount = System.Text.RegularExpressions.Regex.Matches(lettersOnly, @"[aeiouy]", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Count;
+                    if ((double)vowelCount / lettersOnly.Length < 0.15)
+                        return true;
+                }
+
+                if (lettersOnly.Length > 25)
+                    return true;
+
+                hasMeaningfulWord = true;
+            }
+
+            return !hasMeaningfulWord;
+        }
 
         private static string FormatCategoryName(string? value)
         {

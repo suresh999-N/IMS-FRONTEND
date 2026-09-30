@@ -14164,8 +14164,8 @@
 .customers-page__directory-card .table-container tbody td,
 .customers-page__directory-card .table-container td.customers-col-status,
 .customers-page__directory-card .table-container td.customers-col-actions {
-  position: relative !important;
-  z-index: 1 !important;
+  position: static !important;
+  z-index: auto !important;
 }
 
 .customers-page__directory-card .table-container tbody tr:has(.customers-status-menu__popover),
@@ -14177,17 +14177,10 @@
   z-index: 120 !important;
 }
 
-/* Keep the inline status picker visible inside the ERP grid. */
+/* Keep the status column contained inside the ERP grid without floating over headers. */
 .customers-page__directory-card .table-container td.customers-col-status {
-  position: relative !important;
-  z-index: 8 !important;
-  overflow: visible !important;
-}
-
-.customers-page__directory-card .table-container tr:has(.customers-status-menu__popover) td {
-  position: relative !important;
-  z-index: 9 !important;
-  overflow: visible !important;
+  position: static !important;
+  z-index: auto !important;
 }
 
 .customers-page__directory-card .customers-status-menu {
@@ -22105,10 +22098,23 @@
   scrollbar-gutter: stable !important;
 }
 
+.resource-center__page--customers .resource-center__inventory-table-card thead,
+.customers-page .resource-center__inventory-table-card thead {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 30 !important;
+}
+
 .resource-center__page--customers .resource-center__inventory-table-card th,
-.customers-page .resource-center__inventory-table-card th {
+.customers-page .resource-center__inventory-table-card th,
+.resource-center__page--customers .resource-center__inventory-table-card thead th,
+.customers-page .resource-center__inventory-table-card thead th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 30 !important;
   height: 44px !important;
   background: #f8fafc !important;
+  background-clip: padding-box !important;
   color: #475569 !important;
   font-size: 12px !important;
   font-weight: 650 !important;
@@ -22116,11 +22122,21 @@
 }
 
 .resource-center__page--customers .resource-center__inventory-table-card td,
-.customers-page .resource-center__inventory-table-card td {
+.customers-page .resource-center__inventory-table-card td,
+.resource-center__page--customers .resource-center__inventory-table-card tbody td,
+.customers-page .resource-center__inventory-table-card tbody td {
+  position: static !important;
+  z-index: auto !important;
   height: 52px !important;
   color: #334155 !important;
   border-bottom: 1px solid #eef2f7 !important;
   border-style: solid !important;
+}
+
+.resource-center__page--customers .resource-center__inventory-table-card .status-badge,
+.customers-page .resource-center__inventory-table-card .status-badge {
+  position: static !important;
+  z-index: auto !important;
 }
 
 .resource-center__page--customers .resource-center__inventory-table-card tbody tr:hover td,
@@ -22452,4 +22468,40 @@
     padding: 8px 12px !important;
   }
 }
+
+/* ==========================================================================
+   Table Scroll & Sticky Header Occlusion Contract
+   Prevents status badges and row cells from overlapping or bleeding into the
+   table header row during vertical scrolling.
+   ========================================================================== */
+:is(.resource-center__page--customers, .customers-page) .table-container thead {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 30 !important;
+}
+
+:is(.resource-center__page--customers, .customers-page) .table-container thead th,
+:is(.resource-center__page--customers, .customers-page) .table-component__table thead th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 30 !important;
+  background: #f8fafc !important;
+  background-clip: padding-box !important;
+}
+
+:is(.resource-center__page--customers, .customers-page) .table-container tbody tr > td,
+:is(.resource-center__page--customers, .customers-page) .table-container tbody td,
+:is(.resource-center__page--customers, .customers-page) .table-container td.customers-col-status,
+:is(.resource-center__page--customers, .customers-page) .table-container td.customers-col-actions,
+:is(.resource-center__page--customers, .customers-page) .table-component__table tbody td {
+  position: static !important;
+  z-index: auto !important;
+}
+
+:is(.resource-center__page--customers, .customers-page) .table-container .status-badge,
+:is(.resource-center__page--customers, .customers-page) .table-component__table .status-badge {
+  position: static !important;
+  z-index: auto !important;
+}
+
 

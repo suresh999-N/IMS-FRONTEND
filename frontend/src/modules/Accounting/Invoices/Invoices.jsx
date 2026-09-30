@@ -49,6 +49,7 @@ import { showToast } from '../../../components/common/toast'
 import FormModal from '../../../layouts/FormModal'
 import { useAuth } from '../../../hooks/useAuth'
 import { formatCurrency, formatDate } from '../../../utils/helpers'
+import { renderFormLabel } from '../../../utils/labelUtils'
 import {
   emailInputProps,
   getEmailError,
@@ -1146,7 +1147,7 @@ function LineItemsField({ field, value, error, onChange }) {
 
   return (
     <div className={`field resource-form__line-field ${error ? 'field--error' : ''}`}>
-      <label>{field.label}</label>
+      <label>{renderFormLabel(field.label, field.required)}</label>
       <div className="resource-form__line-items">
         <div className="resource-form__line-heading" aria-hidden="true">
           <span>Product ID</span>
@@ -1425,7 +1426,7 @@ function ResourceForm({
             id={`resource-${config.key}-${field.name}`}
             name={field.name}
             label={field.label}
-
+            required={Boolean(field.required)}
             value={formData[field.name] ?? ''}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -1455,7 +1456,7 @@ function ResourceForm({
           className={`field ${error ? 'field--error' : ''} ${getResourceFieldClassName(config, field)}`.trim()}
           key={field.name}
         >
-          <label htmlFor={`resource-${config.key}-${field.name}`}>{field.label}</label>
+          <label htmlFor={`resource-${config.key}-${field.name}`}>{renderFormLabel(field.label, field.required)}</label>
           <select
             id={`resource-${config.key}-${field.name}`}
             name={field.name}
@@ -1504,7 +1505,7 @@ function ResourceForm({
           id={`resource-${config.key}-${field.name}`}
           name={field.name}
           label={field.label}
-
+          required={Boolean(field.required)}
           value={formData[field.name]}
           onChange={handleChange}
           onBlur={handleBlur}
@@ -1520,7 +1521,7 @@ function ResourceForm({
         id={`resource-${config.key}-${field.name}`}
         name={field.name}
         label={field.label}
-
+        required={Boolean(field.required)}
         {...(field.type === 'email' ? emailInputProps : {})}
         type={field.type === 'textarea' ? 'text' : field.type || 'text'}
         textarea={field.type === 'textarea'}
@@ -2780,9 +2781,27 @@ function ResourcePage({ config, navigationContent = null }) {
   )
   const subCategorySelectedToolbarContent = hasSelectedSubCategories ? (
     <FilterBar className="resource-center__subcategories-selection-actions" ariaLabel="Selected SubCategory actions">
-      <div className="resource-center__subcategories-selection-summary" aria-live="polite">
-        <Check size={15} />
-        <strong>{selectedSubCategories.length} selected</strong>
+      <div
+        className="resource-center__subcategories-selection-summary"
+        aria-live="polite"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          height: '34px',
+          minHeight: '34px',
+          padding: '0 10px',
+          border: '1px solid #a7f3d0',
+          borderRadius: '999px',
+          backgroundColor: '#dffaf0',
+          color: '#059669',
+          fontSize: '12.5px',
+          fontWeight: 700,
+          boxShadow: '0 1px 3px rgba(5, 150, 105, 0.12)',
+        }}
+      >
+        <Check size={15} style={{ color: '#059669', strokeWidth: '2.4px' }} />
+        <strong style={{ color: '#059669', fontWeight: 700 }}>{selectedSubCategories.length} selected</strong>
       </div>
       <button
         type="button"
@@ -2816,9 +2835,27 @@ function ResourcePage({ config, navigationContent = null }) {
   const subCategoryToolbarContent = null
   const productStyleSelectedToolbarContent = hasSelectedProductStyleRows ? (
     <FilterBar className="resource-center__product-style-selection-actions" ariaLabel={`Selected ${config.title} actions`}>
-      <div className="resource-center__product-style-selection-summary" aria-live="polite">
-        <Check size={15} />
-        <strong>{selectedProductStyleRows.length} selected</strong>
+      <div
+        className="resource-center__product-style-selection-summary"
+        aria-live="polite"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          height: '36px',
+          minHeight: '36px',
+          padding: '0 12px',
+          border: '1px solid #a7f3d0',
+          borderRadius: '999px',
+          backgroundColor: '#dffaf0',
+          color: '#059669',
+          fontSize: '13px',
+          fontWeight: 700,
+          boxShadow: '0 1px 3px rgba(5, 150, 105, 0.12)',
+        }}
+      >
+        <Check size={15} style={{ color: '#059669', strokeWidth: '2.4px' }} />
+        <strong style={{ color: '#059669', fontWeight: 700 }}>{selectedProductStyleRows.length} selected</strong>
       </div>
       <button
         type="button"
@@ -2887,9 +2924,27 @@ function ResourcePage({ config, navigationContent = null }) {
   ) : null
   const invoiceSelectedToolbarContent = hasSelectedInvoiceRows ? (
     <FilterBar className="resource-center__product-style-selection-actions" ariaLabel="Selected Invoice actions">
-      <div className="resource-center__product-style-selection-summary" aria-live="polite">
-        <Check size={15} />
-        <strong>{selectedInvoiceRows.length} selected</strong>
+      <div
+        className="resource-center__product-style-selection-summary invoices__selection-summary"
+        aria-live="polite"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          height: '36px',
+          minHeight: '36px',
+          padding: '0 12px',
+          border: '1px solid #a7f3d0',
+          borderRadius: '999px',
+          backgroundColor: '#dffaf0',
+          color: '#059669',
+          fontSize: '13px',
+          fontWeight: 700,
+          boxShadow: '0 1px 3px rgba(5, 150, 105, 0.12)',
+        }}
+      >
+        <Check size={15} style={{ color: '#059669', strokeWidth: '2.4px' }} />
+        <strong style={{ color: '#059669', fontWeight: 700 }}>{selectedInvoiceRows.length} selected</strong>
       </div>
       <button
         type="button"

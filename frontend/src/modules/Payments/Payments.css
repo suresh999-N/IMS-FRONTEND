@@ -7091,20 +7091,22 @@
   min-width: 0 !important;
   min-height: 30px;
   padding: 5px 9px;
-  border: 1px solid #c7d9f3;
+  border: 1px solid #a7f3d0;
   border-radius: 999px;
-  background: #f8fbff;
-  color: #0f172a;
+  background: #dffaf0;
+  color: #059669;
   font-size: 12.5px;
   line-height: 1;
 }
 
 .payments-selection-summary svg {
-  color: #0891b2;
+  color: #059669;
+  stroke-width: 2.2px;
   flex: 0 0 auto;
 }
 
 .payments-selection-summary strong {
+  color: #059669;
   font-weight: 760;
 }
 
@@ -7658,13 +7660,14 @@
   height: 34px !important;
   min-height: 34px !important;
   padding: 0 10px !important;
+  border: 1px solid #a7f3d0 !important;
   border-radius: 999px !important;
-  background: #f8fbff !important;
-  color: #0f172a !important;
+  background: #dffaf0 !important;
+  color: #059669 !important;
   font-size: 12.5px !important;
-  font-weight: 620 !important;
+  font-weight: 700 !important;
   line-height: 1 !important;
-  box-shadow: none !important;
+  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.12) !important;
 }
 
 .payments-toolbar-button--danger {

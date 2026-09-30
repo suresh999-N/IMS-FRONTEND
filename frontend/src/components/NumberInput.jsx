@@ -17,6 +17,7 @@ export default function NumberInput({
   onBlur,
   placeholder,
   error,
+  required = false,
   className = '',
   allowDecimal = true,
   allowNegative = false,
@@ -78,7 +79,7 @@ export default function NumberInput({
 
   return (
     <div className={`field ${className}`.trim()}>
-      <label htmlFor={id}>{renderFormLabel(label)}</label>
+      <label htmlFor={id}>{renderFormLabel(label, required || props.required)}</label>
       <div className={`input-with-icon ${error ? 'field--error' : ''}`.trim()}>
         {Icon ? <Icon size={18} /> : null}
         {prefix ? <span className="input-prefix">{prefix}</span> : null}

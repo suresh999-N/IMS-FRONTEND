@@ -10,6 +10,7 @@ import {
   Sparkles,
   X,
   Eye,
+  RotateCcw,
 } from 'lucide-react'
 import { apiRequest } from '../../../api/apiClient'
 import { API_ENDPOINTS } from '../../../api/endpoints'
@@ -370,6 +371,39 @@ export default function ProductVariants() {
   const handleCloseModal = () => {
     setCreateOpen(false)
     setEditingItem(null)
+  }
+
+  const handleReset = () => {
+    if (editingItem) {
+      const product = products.find((p) => String(p.productId ?? p.id) === String(editingItem.productId))
+      const productPrice = product ? (product.price || 0) : 0
+
+      const currentAttrs = variantAttributes
+        .filter((va) => String(readResourceValue(va, 'variantId')) === String(editingItem.variantId))
+        .map((va) => ({
+          attributeId: String(readResourceValue(va, 'attributeId')),
+          valueId: String(readResourceValue(va, 'valueId')),
+        }))
+
+      setFormValues({
+        productId: String(editingItem.productId),
+        variantName: editingItem.variantName || '',
+        sku: editingItem.sku || '',
+        priceDelta: Number(editingItem.price || 0) - productPrice,
+        stockDelta: 0,
+      })
+      setSelectedAttrs(currentAttrs.length > 0 ? currentAttrs : [{ attributeId: '', valueId: '' }])
+    } else {
+      setFormValues({
+        productId: '',
+        variantName: '',
+        sku: '',
+        priceDelta: 0,
+        stockDelta: 0,
+      })
+      setSelectedAttrs([{ attributeId: '', valueId: '' }])
+    }
+    setServerErrors({})
   }
 
   const handleGenerateSku = () => {
@@ -1234,6 +1268,17 @@ export default function ProductVariants() {
               <button type="submit" className="button button-primary" disabled={isSaving}>
                 <Save size={16} />
                 {isSaving ? 'Saving...' : 'Save Variant'}
+              </button>
+              <button
+                type="button"
+                className="button button-secondary button-reset"
+                onClick={handleReset}
+                disabled={isSaving}
+                title="Reset form to default state"
+                aria-label="Reset form"
+              >
+                <RotateCcw size={16} />
+                Reset
               </button>
               <button
                 className="button button-secondary button-cancel"
