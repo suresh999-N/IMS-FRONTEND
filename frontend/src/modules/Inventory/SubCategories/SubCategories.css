@@ -224,18 +224,10 @@
 }
 
 .subcategories__status-filter {
-  position: relative;
   display: flex;
   align-items: center;
   height: 34px;
   color: #64748b;
-}
-
-.subcategories__status-filter > svg {
-  position: absolute;
-  left: 10px;
-  z-index: 1;
-  pointer-events: none;
 }
 
 .subcategories__status-filter select {
@@ -244,7 +236,7 @@
   max-width: 148px;
   height: 34px;
   min-height: 34px;
-  padding: 0 24px 0 34px;
+  padding: 0 24px 0 12px;
   border: 1px solid #dbe4ee;
   border-radius: 7px;
   background: #fff;
@@ -253,6 +245,11 @@
   font-weight: 600;
   appearance: auto;
   cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.subcategories__status-filter select:hover {
+  border-color: #cbd5e1;
 }
 
 .subcategories__status-filter select:focus {
@@ -474,26 +471,45 @@
 }
 
 .resource-center__page--subCategories .resource-center__inventory-table .table-component__toolbar:has(.subcategories__selection-summary) .table-component__columns-menu {
-  display: none;
+  display: flex;
 }
 
-.subcategories__selection-actions { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.subcategories__selection-actions {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 6px !important;
+  white-space: nowrap !important;
+  min-width: 0 !important;
+  flex-shrink: 0 !important;
+}
 
 .subcategories__selection-summary {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 34px;
-  padding: 0 10px;
-  border: 1px solid #a7f3d0;
-  border-radius: 999px;
-  background: #dffaf0;
-  color: #059669;
-  font-size: 12.5px;
-  font-weight: 700;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  height: 34px !important;
+  padding: 0 10px !important;
+  border: 1px solid #a7f3d0 !important;
+  border-radius: 999px !important;
+  background: #dffaf0 !important;
+  color: #059669 !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
 }
 
-.resource-center__page--subCategories .subcategories__selection-button { min-width: 82px; border-color: #dbe4ee; background: #fff; color: #334155; }
+.resource-center__page--subCategories .subcategories__selection-button {
+  height: 34px !important;
+  padding: 0 10px !important;
+  min-width: max-content !important;
+  border-color: #dbe4ee;
+  background: #fff;
+  color: #334155;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
 .resource-center__page--subCategories .subcategories__selection-button:hover { border-color: #059669; background: #ecfdf5; color: #059669; }
 .resource-center__page--subCategories .subcategories__selection-button--danger { border-color: #fca5a5; background: #fef2f2; color: #dc2626; }
 .resource-center__page--subCategories .subcategories__selection-button--danger:hover { border-color: #dc2626; background: #fee2e2; color: #b91c1c; }

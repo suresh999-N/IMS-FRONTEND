@@ -322,11 +322,11 @@
 }
 
 .invoice-document__col-serial {
-  width: 5%;
+  width: 4%;
 }
 
 .invoice-document__col-product {
-  width: 21%;
+  width: 35%;
 }
 
 .invoice-document__col-sku {
@@ -334,24 +334,24 @@
 }
 
 .invoice-document__col-quantity {
-  width: 8%;
+  width: 6%;
 }
 
 .invoice-document__col-unit {
-  width: 7%;
+  width: 6%;
 }
 
 .invoice-document__col-price {
-  width: 12%;
+  width: 10%;
 }
 
 .invoice-document__col-discount,
 .invoice-document__col-tax {
-  width: 11%;
+  width: 8%;
 }
 
 .invoice-document__col-total {
-  width: 15%;
+  width: 13%;
 }
 
 .invoice-document__items thead {

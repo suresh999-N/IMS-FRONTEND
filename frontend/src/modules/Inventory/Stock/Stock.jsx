@@ -5,8 +5,10 @@ import {
   CalendarDays,
   Check,
   CheckCircle2,
+  Boxes,
   Database,
   Download,
+  Eye,
   FileSpreadsheet,
   FileText,
   FolderTree,
@@ -46,6 +48,7 @@ import {
 import CurrencyInput from '../../../components/CurrencyInput'
 import DatePicker from '../../../components/DatePicker'
 import PageHeader from '../../../components/common/PageHeader'
+import RecordDetailsView from '../../../components/common/RecordDetailsView'
 import StateBlock from '../../../components/common/StateBlock'
 import InputField from '../../../components/InputField'
 import SearchableSelect from '../../../components/SearchableSelect'
@@ -728,6 +731,12 @@ function getInventoryWorkspaceMetrics(config, rows) {
     const status = String(readResourceValue(row, 'status', '') || '').toLowerCase()
     return statuses.some((value) => status.includes(value))
   }).length
+  const countAdjustmentType = (...types) => rows.filter((row) => {
+    const typeVal = String(
+      readResourceValue(row, 'adjustmentType', readResourceValue(row, 'type', '')) || ''
+    ).toLowerCase()
+    return types.some((val) => typeVal.includes(val))
+  }).length
 
   switch (config.key) {
     case 'productAttributes':
@@ -782,6 +791,12 @@ function getInventoryWorkspaceMetrics(config, rows) {
         { label: 'Transfers', value: total, tone: 'success' },
         { label: 'Pending', value: countStatus('pending', 'draft'), tone: 'warning' },
         { label: 'Completed', value: countStatus('complete', 'received', 'approved'), tone: 'info' },
+      ]
+    case 'stockAdjustments':
+      return [
+        { label: 'Records', value: total, tone: 'info' },
+        { label: 'Increase', value: countAdjustmentType('increase', 'in', 'addition', 'positive'), tone: 'success' },
+        { label: 'Decrease', value: countAdjustmentType('decrease', 'out', 'reduction', 'negative'), tone: 'danger' },
       ]
     default:
       return [
@@ -2038,6 +2053,7 @@ function ResourcePage({ config, navigationContent = null }) {
   const [metric, setMetric] = useState(null)
   const [editingRecord, setEditingRecord] = useState(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [viewingStock, setViewingStock] = useState(null)
   const [viewingAdjustment, setViewingAdjustment] = useState(null)
   const [viewingTransfer, setViewingTransfer] = useState(null)
   const [viewingAudit, setViewingAudit] = useState(null)
@@ -3231,7 +3247,7 @@ function ResourcePage({ config, navigationContent = null }) {
         ),
       },
     ]
-    : isInventoryCompactPage && (canUpdate || canDelete || (config.rowActions ?? []).length)
+    : isInventoryCompactPage
       ? [
         ...baseColumns,
         {
@@ -3248,6 +3264,12 @@ function ResourcePage({ config, navigationContent = null }) {
               iconOnly
               label={`Actions for ${config.entityName}`}
               actions={[
+                config.key === 'stock' ? {
+                  key: 'view',
+                  label: 'View Details',
+                  icon: Eye,
+                  onClick: () => setViewingStock(row),
+                } : null,
                 config.key === 'stockAdjustments' ? {
                   key: 'view',
                   label: 'View Details',
@@ -4006,6 +4028,32 @@ function ResourcePage({ config, navigationContent = null }) {
 
       {!isProductStylePage && isAuditLogsPage ? (
         <AuditLogsMobileFeed rows={rows} isLoading={isLoading} />
+      ) : null}
+
+      {viewingStock ? (
+        <RecordDetailsView
+          modalTitle="Stock Register Details"
+          heroTitle={viewingStock.productName || readResourceValue(viewingStock, 'productName', 'Stock Item')}
+          heroSubtitle={`Warehouse: ${viewingStock.warehouseName || readResourceValue(viewingStock, 'warehouseName', 'Not set')}`}
+          icon={Boxes}
+          status={(Number(readResourceValue(viewingStock, 'availableQuantity', readResourceValue(viewingStock, 'quantity', 0))) > 0) ? 'In Stock' : 'Out Of Stock'}
+          fields={[
+            { label: 'Stock ID', value: `ID ${readResourceValue(viewingStock, 'stockId', readResourceValue(viewingStock, 'id', '—'))}` },
+            { label: 'Product Name', value: readResourceValue(viewingStock, 'productName', '—') },
+            { label: 'Warehouse Name', value: readResourceValue(viewingStock, 'warehouseName', '—') },
+            { label: 'Variant Name', value: readResourceValue(viewingStock, 'variantName', 'Standard') },
+            { label: 'On Hand Quantity', value: String(readResourceValue(viewingStock, 'quantity', 0)) },
+            { label: 'Reserved Quantity', value: String(readResourceValue(viewingStock, 'reservedQuantity', 0)) },
+            { label: 'Available Quantity', value: String(readResourceValue(viewingStock, 'availableQuantity', readResourceValue(viewingStock, 'quantity', 0))) },
+            { label: 'Status', render: () => (
+              <StatusBadge status={(Number(readResourceValue(viewingStock, 'availableQuantity', readResourceValue(viewingStock, 'quantity', 0))) > 0) ? 'In Stock' : 'Out Of Stock'}>
+                {(Number(readResourceValue(viewingStock, 'availableQuantity', readResourceValue(viewingStock, 'quantity', 0))) > 0) ? 'In Stock' : 'Out Of Stock'}
+              </StatusBadge>
+            ) },
+            { label: 'Last Updated', value: readResourceValue(viewingStock, 'updatedAt') ? formatDate(readResourceValue(viewingStock, 'updatedAt')) : readResourceValue(viewingStock, 'createdAt') ? formatDate(readResourceValue(viewingStock, 'createdAt')) : 'Not set' },
+          ]}
+          onClose={() => setViewingStock(null)}
+        />
       ) : null}
 
       {viewingAdjustment ? (() => {

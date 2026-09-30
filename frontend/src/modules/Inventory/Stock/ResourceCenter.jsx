@@ -4,8 +4,10 @@ import {
   CalendarDays,
   Check,
   CheckCircle2,
+  Boxes,
   Database,
   Download,
+  Eye,
   FileSpreadsheet,
   FileText,
   FolderTree,
@@ -41,6 +43,7 @@ import {
 import CurrencyInput from '../../../components/CurrencyInput'
 import DatePicker from '../../../components/DatePicker'
 import PageHeader from '../../../components/common/PageHeader'
+import RecordDetailsView from '../../../components/common/RecordDetailsView'
 import StateBlock from '../../../components/common/StateBlock'
 import InputField from '../../../components/InputField'
 import SearchableSelect from '../../../components/SearchableSelect'
@@ -622,6 +625,12 @@ function getInventoryWorkspaceMetrics(config, rows) {
     const status = String(readResourceValue(row, 'status', '') || '').toLowerCase()
     return statuses.some((value) => status.includes(value))
   }).length
+  const countAdjustmentType = (...types) => rows.filter((row) => {
+    const typeVal = String(
+      readResourceValue(row, 'adjustmentType', readResourceValue(row, 'type', '')) || ''
+    ).toLowerCase()
+    return types.some((val) => typeVal.includes(val))
+  }).length
 
   switch (config.key) {
     case 'productAttributes':
@@ -676,6 +685,12 @@ function getInventoryWorkspaceMetrics(config, rows) {
         { label: 'Transfers', value: total, tone: 'success' },
         { label: 'Pending', value: countStatus('pending', 'draft'), tone: 'warning' },
         { label: 'Completed', value: countStatus('complete', 'received', 'approved'), tone: 'info' },
+      ]
+    case 'stockAdjustments':
+      return [
+        { label: 'Records', value: total, tone: 'info' },
+        { label: 'Increase', value: countAdjustmentType('increase', 'in', 'addition', 'positive'), tone: 'success' },
+        { label: 'Decrease', value: countAdjustmentType('decrease', 'out', 'reduction', 'negative'), tone: 'danger' },
       ]
     default:
       return [
@@ -1734,6 +1749,7 @@ function ResourcePage({ config, tabsContent = null }) {
   const [error, setError] = useState('')
   const [metric, setMetric] = useState(null)
   const [editingRecord, setEditingRecord] = useState(null)
+  const [viewingRecord, setViewingRecord] = useState(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -2517,7 +2533,7 @@ function ResourcePage({ config, tabsContent = null }) {
           ),
         },
       ]
-    : isInventoryCompactPage && (canUpdate || canDelete || (config.rowActions ?? []).length)
+    : isInventoryCompactPage
     ? [
         ...baseColumns,
         {
@@ -2534,6 +2550,12 @@ function ResourcePage({ config, tabsContent = null }) {
               iconOnly
               label={`Actions for ${config.entityName}`}
               actions={[
+                {
+                  key: 'view',
+                  label: 'View Details',
+                  icon: Eye,
+                  onClick: () => setViewingRecord(row),
+                },
                 ...(config.rowActions ?? [])
                   .filter((action) => (action.shouldShow ? action.shouldShow(row) : true))
                   .map((action) => ({
@@ -3053,6 +3075,24 @@ function ResourcePage({ config, tabsContent = null }) {
             </div>
           </div>
         </FormModal>
+      ) : null}
+
+      {viewingRecord ? (
+        <RecordDetailsView
+          modalTitle={`${config.entityName} Details`}
+          heroTitle={readResourceValue(viewingRecord, 'productName', readResourceValue(viewingRecord, 'name', config.entityName))}
+          heroSubtitle={readResourceValue(viewingRecord, 'warehouseName') ? `Warehouse: ${readResourceValue(viewingRecord, 'warehouseName')}` : ''}
+          icon={config.icon}
+          status={readResourceValue(viewingRecord, 'status', (Number(readResourceValue(viewingRecord, 'availableQuantity', readResourceValue(viewingRecord, 'quantity', 0))) > 0) ? 'In Stock' : 'Out Of Stock')}
+          fields={[
+            ...(config.fields || []).map((f) => ({
+              label: getFieldLabel(f),
+              value: readResourceValue(viewingRecord, f.name, readResourceValue(viewingRecord, f.apiKey, '—')),
+            })),
+            { label: 'Created Date', value: readResourceValue(viewingRecord, 'createdAt') ? formatDate(readResourceValue(viewingRecord, 'createdAt')) : 'Not set' },
+          ]}
+          onClose={() => setViewingRecord(null)}
+        />
       ) : null}
     </div>
   )

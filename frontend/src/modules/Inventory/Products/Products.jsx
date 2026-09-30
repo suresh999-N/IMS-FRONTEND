@@ -183,25 +183,7 @@ function toOptionalNumber(value) {
 }
 
 function prepareProductPayload(values) {
-  let variants = Array.isArray(values?.variants) ? values.variants : []
-
-  if (variants.length === 0) {
-    const derivedVariantName =
-      getDescriptiveVariantName(null, values) ||
-      [values.variantColor, values.variantSize].filter(Boolean).join(' / ') ||
-      values.variantColor ||
-      values.variantSize ||
-      'Standard'
-
-    variants = [
-      {
-        variantName: derivedVariantName,
-        sku: values.sku || '',
-        priceDelta: 0,
-        attributes: [],
-      },
-    ]
-  }
+  const variants = Array.isArray(values?.variants) ? values.variants : []
 
   return {
     name: values.name || '',

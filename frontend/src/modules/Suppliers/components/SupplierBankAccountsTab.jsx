@@ -256,8 +256,9 @@ export default function SupplierBankAccountsTab({
       }
     >
       <div className="supplier-repeat-grid supplier-bank-grid">
-        {bankAccounts.map((account, index) => {
-            const accountErrors = errors[index] || {}
+        {(bankAccounts || []).map((rawAccount, index) => {
+            const account = rawAccount || {}
+            const accountErrors = (errors && errors[index]) || {}
             const isAccountRevealed = revealedAccounts.has(index)
             const isIfscChecking = checkingIfscFields.has(String(index))
             const isEmptyAccount = !account.accountName && !account.accountNumber && !account.bankName && !account.ifscCode && !account.branch && !account.bankState && !account.bankCity && !account.upiId

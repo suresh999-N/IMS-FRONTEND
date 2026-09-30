@@ -2438,19 +2438,22 @@
     background: #047857 !important;
     color: #ffffff !important;
     font-weight: 750 !important;
-    font-size: 9pt !important;
+    font-size: 8.5pt !important;
     text-align: left !important;
-    padding: 7px 10px !important;
+    padding: 7px 8px !important;
     border: 1px solid #065f46 !important;
     letter-spacing: 0.01em !important;
+    white-space: nowrap !important;
+    vertical-align: middle !important;
   }
 
   .print-report-table td {
-    padding: 6px 10px !important;
-    font-size: 8.8pt !important;
+    padding: 6px 8px !important;
+    font-size: 8.5pt !important;
     border: 1px solid #e2e8f0 !important;
     color: #1e293b !important;
     vertical-align: middle !important;
+    word-break: break-word !important;
   }
 
   /* Row Striping: Alternating white and light mint tint */
@@ -2465,6 +2468,13 @@
   .print-report-table td.reports-table__numeric,
   .print-report-table th.reports-table__numeric {
     text-align: right !important;
+  }
+
+  .print-report-table .sku-cell,
+  .print-report-table td.sku-cell,
+  .print-report-table .date-cell,
+  .print-report-table .status-cell {
+    white-space: nowrap !important;
   }
 
   .print-table-empty {

@@ -8,7 +8,7 @@ function getCurrencyFormatter(currency = 'INR') {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: code,
-      currencyDisplay: 'code',
+      currencyDisplay: 'narrowSymbol',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })
@@ -16,7 +16,7 @@ function getCurrencyFormatter(currency = 'INR') {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
-      currencyDisplay: 'code',
+      currencyDisplay: 'narrowSymbol',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })

@@ -76,15 +76,15 @@
 }
 .resource-center__page--products .resource-center__inventory-metric--info     { border-color: #bfdbfe; background: #eff6ff; color: #1e40af; }
 .resource-center__page--products .resource-center__inventory-metric--warning  { border-color: #fed7aa; background: #fff7ed; color: #c2410c; }
-.resource-center__page--products .resource-center__inventory-metric--danger,
-.resource-center__page--products .resource-center__inventory-metric--inactive { border-color: #fecaca; background: #fef2f2; color: #b91c1c; }
+.resource-center__page--products .resource-center__inventory-metric--danger   { border-color: #fecaca; background: #fef2f2; color: #b91c1c; }
+.resource-center__page--products .resource-center__inventory-metric--inactive,
 .resource-center__page--products .resource-center__inventory-metric--neutral,
 .resource-center__page--products .resource-center__inventory-metric--archived { border-color: #cbd5e1; background: #f1f5f9; color: #475569; }
 
 .resource-center__page--products .status-badge.status-inactive {
-  border-color: #fecaca !important;
-  background: #fef2f2 !important;
-  color: #b91c1c !important;
+  border-color: #cbd5e1 !important;
+  background: #f1f5f9 !important;
+  color: #475569 !important;
 }
 
 .resource-center__page--products .resource-center__inventory-metric.is-active {

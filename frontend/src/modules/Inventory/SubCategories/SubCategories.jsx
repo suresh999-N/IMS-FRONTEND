@@ -671,7 +671,7 @@ function SubCategoriesHeader({ canCreate, summary, activeStatus, onFilterStatus,
   const metrics = [
     { key: 'all', count: summary.total, label: 'Records', tone: 'info' },
     { key: 'active', count: summary.active, label: 'Active', tone: 'success' },
-    { key: 'inactive', count: summary.inactive, label: 'Inactive', tone: 'warning' },
+    { key: 'inactive', count: summary.inactive, label: 'Inactive', tone: 'danger' },
   ]
 
   return (
@@ -1184,25 +1184,12 @@ export default function SubCategories() {
       ariaLabel="SubCategory filters"
     >
       <label className="subcategories__status-filter">
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-        </svg>
         <select
           value={statusFilter}
           onChange={(event) => setStatusFilter(event.target.value)}
           aria-label="Filter by status"
         >
-          <option value="all">All Statuses</option>
+          <option value="all">All statuses</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>

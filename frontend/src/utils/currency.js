@@ -26,14 +26,14 @@ export function formatCreditLimit(amount, currency = 'INR') {
     const formatted = new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: code,
-      currencyDisplay: 'code',
+      currencyDisplay: 'narrowSymbol',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(numericValue)
 
     return formatted.replace(/\u00A0/g, ' ')
   } catch {
-    return `${code} ${numericValue.toLocaleString('en-IN', {
+    return `₹${numericValue.toLocaleString('en-IN', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`

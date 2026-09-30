@@ -606,7 +606,7 @@ function createPremiumKpiPdfBlob({ title, value, trend, caption, dateRangeLabel,
     })
   }
   const truncate = (input) => normalizePdfText(input)
-  const charsForWidth = (width, fontSize = 7.2) => Math.max(8, Math.floor((width - 12) / (fontSize * 0.52)))
+  const charsForWidth = (width, fontSize = 7.2) => Math.max(16, Math.floor((width - 8) / (fontSize * 0.45)))
   const wrapCell = (valueToWrap, width, fontSize = 7.2) => {
     const limit = charsForWidth(width, fontSize)
     const clean = normalizePdfText(valueToWrap || '-')
@@ -720,13 +720,15 @@ function createPremiumKpiPdfBlob({ title, value, trend, caption, dateRangeLabel,
     const key = String(column?.key || '').toLowerCase()
     const label = String(column?.label || '').toLowerCase()
 
-    if (key === 'ponumber' || label.includes('po no')) return 2.4
-    if (key.includes('number') || label.includes('number')) return 1.5
-    if (key.includes('date')) return 1.15
-    if (key.includes('amount') || key.includes('total') || key.includes('value') || key.includes('balance') || key.includes('cost')) return 1.25
-    if (key.includes('status')) return 0.95
-    if (key.includes('supplier') || key.includes('customer') || key.includes('product')) return 1.65
-    return 1.15
+    if (key === 'ponumber' || label.includes('po no') || key.includes('inv')) return 2.2
+    if (key.includes('product') || key.includes('name') || label.includes('product')) return 2.8
+    if (key === 'sku' || label.includes('sku') || key.includes('code')) return 1.8
+    if (key.includes('warehouse') || key.includes('category') || label.includes('warehouse') || label.includes('category')) return 1.6
+    if (key.includes('date') || label.includes('date')) return 1.3
+    if (key.includes('quantity') || key.includes('stock') || key.includes('available') || key.includes('reserved') || key.includes('hand') || label.includes('hand') || label.includes('stock') || label.includes('qty')) return 1.4
+    if (key.includes('amount') || key.includes('total') || key.includes('value') || key.includes('balance') || key.includes('cost') || key.includes('price') || label.includes('price') || label.includes('cost')) return 1.4
+    if (key.includes('status') || label.includes('status')) return 1.1
+    return 1.4
   }
 
   const makeColumnSections = () => {
@@ -787,13 +789,38 @@ function createPremiumKpiPdfBlob({ title, value, trend, caption, dateRangeLabel,
       }, [])
       const headerHeight = 26
       const headerY = () => y
+      const isRightAlignedCol = (column) => {
+        const className = String(column?.className || '')
+        if (className.includes('numeric') || className.includes('right')) return true
+        const key = String(column?.key || '').toLowerCase()
+        const label = String(column?.label || '').toLowerCase()
+        return (
+          key.includes('amount') || key.includes('total') || key.includes('value') ||
+          key.includes('price') || key.includes('cost') || key.includes('quantity') ||
+          key.includes('stock') || key.includes('available') || key.includes('reserved') ||
+          key.includes('balance') || key.includes('limit') || key.includes('hand') ||
+          label.includes('hand') || label.includes('reserved') || label.includes('available') ||
+          label.includes('price') || label.includes('cost') || label.includes('amount') ||
+          label.includes('total') || label.includes('qty') || label.includes('units')
+        )
+      }
+
       const drawHeader = () => {
-        // Table header â€” very subtle navy tint (not mint-green)
+        // Table header — subtle navy tint
         rectFill(margin, y, tableWidth, headerHeight, [0.235, 0.298, 0.416])
         sectionColumns.forEach((column, index) => {
           const x = starts[index]
+          const colWidth = widths[index]
           if (index > 0) line(x, y, x, y + headerHeight, [0.35, 0.41, 0.53], 0.7)
-          textLines(wrapCell(column.label, widths[index], 7.4).slice(0, 2), x + 6, y + 15, 7.5, 'F2', [1, 1, 1], 8)
+          const headerText = column.label
+          const isRight = isRightAlignedCol(column)
+          if (isRight) {
+            const textWidth = headerText.length * (7.5 * 0.45)
+            const rightX = x + Math.max(6, colWidth - 8 - textWidth)
+            text(headerText, rightX, y + 10, 7.5, 'F2', [1, 1, 1])
+          } else {
+            textLines(wrapCell(headerText, colWidth, 7.4).slice(0, 2), x + 6, y + 15, 7.5, 'F2', [1, 1, 1], 8)
+          }
         })
         y -= headerHeight
       }
@@ -817,8 +844,17 @@ function createPremiumKpiPdfBlob({ title, value, trend, caption, dateRangeLabel,
 
         sectionColumns.forEach((column, columnIndex) => {
           const x = starts[columnIndex]
+          const colWidth = widths[columnIndex]
           if (columnIndex > 0) line(x, y - rowHeight, x, y, [0.90, 0.92, 0.95], 0.5)
-          textLines(cellLines[columnIndex], x + 6, y - 12, 7.1, 'F1', [0.15, 0.20, 0.30], 8.2)
+          const isRight = isRightAlignedCol(column)
+          if (isRight && cellLines[columnIndex].length === 1) {
+            const cellText = cellLines[columnIndex][0]
+            const textWidth = cellText.length * (7.1 * 0.45)
+            const rightX = x + Math.max(6, colWidth - 8 - textWidth)
+            text(cellText, rightX, y - 14, 7.1, 'F1', [0.15, 0.20, 0.30])
+          } else {
+            textLines(cellLines[columnIndex], x + 6, y - 12, 7.1, 'F1', [0.15, 0.20, 0.30], 8.2)
+          }
         })
 
         y -= rowHeight

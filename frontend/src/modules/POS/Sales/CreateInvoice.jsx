@@ -174,13 +174,12 @@ function generateInvoiceNumber(invoices = []) {
 }
 
 function buildInitialDraft(initialInvoiceNo) {
-  const today = getToday()
   return {
     customerId: '',
     warehouseId: 'all',
     invoiceNo: initialInvoiceNo || `INV-${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(Math.floor(1000 + Math.random() * 9000))}`,
-    invoiceDate: today,
-    dueDate: today,
+    invoiceDate: '',
+    dueDate: '',
     salesPerson: '',
     paymentTerms: '',
     paymentMethod: '',

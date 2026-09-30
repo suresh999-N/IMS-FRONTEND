@@ -22,7 +22,7 @@ const STATUS_TYPE_MAP = {
   critical: 'failed',
   disabled: 'failed',
   failed: 'failed',
-  inactive: 'failed',
+  inactive: 'inactive',
   pending: 'warning',
   prospect: 'warning',
   unpaid: 'warning',

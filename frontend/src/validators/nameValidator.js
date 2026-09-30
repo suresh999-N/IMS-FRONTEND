@@ -14,7 +14,7 @@ export function stripUnsafeNameText(value) {
 
 export function autoCapitalizeWords(text) {
   if (typeof text !== 'string' || !text) return text
-  return text.replace(/(?:^|[\s'-])\p{L}/gu, (match) => match.toUpperCase())
+  return text.replace(/(?:^|[\s'-])[a-zA-Z]/g, (match) => match.toUpperCase())
 }
 
 export function formatPersonName(value) {
@@ -98,7 +98,7 @@ export function getNameError(value, options = {}) {
     return required ? `${label} is required.` : ''
   }
 
-  const pattern = /^(?=.*[a-zA-Z\p{L}])[a-zA-Z\p{L}0-9\s.,&'/\-()]+$/u
+  const pattern = /^(?=.*[a-zA-Z])[a-zA-Z0-9\s.,&'/\-()]+$/
   if (!pattern.test(cleanValue)) {
     return `${label} contains invalid characters.`
   }
@@ -112,7 +112,7 @@ export function getNameError(value, options = {}) {
   }
 
   // Reject 3 or more consecutive identical characters (e.g. "aaa")
-  if (/([\p{L}a-zA-Z])\1\1/u.test(cleanValue)) {
+  if (/([a-zA-Z])\1\1/.test(cleanValue)) {
     return `${label} contains invalid repeated characters.`
   }
 
@@ -149,7 +149,7 @@ export function getNameError(value, options = {}) {
   // Reject words with 5+ characters that have no vowels
   const words = cleanValue.split(/\s+/)
   for (const word of words) {
-    const lettersOnly = word.replace(/[^a-zA-Z\p{L}]/gu, '')
+    const lettersOnly = word.replace(/[^a-zA-Z]/g, '')
     if (lettersOnly.length >= 5 && !/[aeiouyAEIOUY]/i.test(lettersOnly)) {
       return 'Please enter a valid name.'
     }

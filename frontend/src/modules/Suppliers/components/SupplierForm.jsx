@@ -443,6 +443,14 @@ function getIfscError(value) {
     : 'IFSC code must follow format: SBIN0001234'
 }
 
+function getUpiError(value) {
+  const upiId = cleanString(value)
+  if (!upiId) return ''
+  if (upiId.length > 100) return 'UPI ID cannot exceed 100 characters.'
+  const UPI_PATTERN = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z0-9.\-_]{2,64}$/
+  return UPI_PATTERN.test(upiId) ? '' : 'Enter valid UPI ID (e.g., username@bank).'
+}
+
 const IFSC_PREFIX_BANK_MAP = {
   SBIN: ['state bank of india', 'sbi', 'state bank'],
   UTIB: ['axis bank', 'axis'],
@@ -860,7 +868,7 @@ function sanitizeNestedValue(name, value) {
   if (name === 'pincode') return onlyDigits(value, 6)
   if (name === 'accountNumber') return onlyDigits(value, 18)
   if (name === 'ifscCode') return normalizeCode(value, 11)
-  if (name === 'accountName') return normalizeHumanName(value).slice(0, 100)
+  if (name === 'accountName') return normalizeBusinessText(value, { allowAmpersand: true }).slice(0, 100)
   if (name === 'bankName') return normalizeBankText(value)
   if (name === 'branch') return normalizeBranchText(value)
   if (name === 'name') return normalizeContactName(value).slice(0, INPUT_LIMITS.contactName)
@@ -1092,7 +1100,7 @@ export default function SupplierForm({
       const bankMismatchError = getIfscBankMismatchError(account.ifscCode, account.bankName)
 
       return {
-        accountName: getHumanNameError(account.accountName, 'Account name'),
+        accountName: getBusinessNameError(account.accountName, 'Account name', { required: true, min: 2, max: 100 }),
         accountNumber:
           getAccountNumberError(account.accountNumber) ||
           (hasDuplicate(accountNumbers, onlyDigits(account.accountNumber)) ? 'Account number is already used.' : '') ||

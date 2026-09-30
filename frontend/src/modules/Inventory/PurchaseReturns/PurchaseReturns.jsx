@@ -717,7 +717,7 @@ export default function PurchaseReturns() {
                   <tr>
                     <th>Return ID</th>
                     <th>Supplier</th>
-                    <th>GRN</th>
+                    <th className="text-center grn-header">GRN</th>
                     <th>Return Date</th>
                     <th className="text-right">
                       Total Amount
@@ -776,7 +776,7 @@ export default function PurchaseReturns() {
 
                     return (
                       <tr key={returnId}>
-                        <td className="font-semibold text-primary">
+                        <td className="font-semibold text-primary return-id-cell">
                           {getReturnNumberDisplay(row)}
                         </td>
 
@@ -784,11 +784,11 @@ export default function PurchaseReturns() {
                           {supplierName}
                         </td>
 
-                        <td>
+                        <td className="text-center grn-cell">
                           {grnNumber}
                         </td>
 
-                        <td>
+                        <td className="date-cell">
                           {returnDate
                             ? formatDate(
                               returnDate
@@ -796,7 +796,7 @@ export default function PurchaseReturns() {
                             : '-'}
                         </td>
 
-                        <td className="text-right font-semibold">
+                        <td className="text-right font-semibold amount-cell">
                           {formatCurrency(
                             totalAmount
                           )}

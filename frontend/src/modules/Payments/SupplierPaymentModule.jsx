@@ -2137,6 +2137,7 @@ export default function SupplierPaymentModule({
   const [detailTarget, setDetailTarget] = useState(null)
   const [editTarget, setEditTarget] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false)
   const [paymentFilter, setPaymentFilter] = useState('all')
   const [selectedPaymentIds, setSelectedPaymentIds] = useState([])
   const [visibleColumnKeys, setVisibleColumnKeys] = useState(() =>
@@ -2604,6 +2605,7 @@ export default function SupplierPaymentModule({
 
   async function handleBulkDelete() {
     if (selectedPayments.length === 0) {
+      setIsBulkDeleteModalOpen(false)
       return
     }
 
@@ -2612,6 +2614,7 @@ export default function SupplierPaymentModule({
       await Promise.all(selectedPayments.map((payment) => deletePayment(payment.id)))
       await loadPayments({ updateLoading: false })
       setSelectedPaymentIds([])
+      setIsBulkDeleteModalOpen(false)
       showToast({ type: 'success', title, message: 'Selected payments deleted.' })
     } catch (bulkError) {
       showToast({ type: 'error', title, message: bulkError instanceof Error ? bulkError.message : 'Unable to delete selected payments.' })
@@ -2981,12 +2984,6 @@ export default function SupplierPaymentModule({
               icon: Pencil,
               onClick: () => setEditTarget(payment),
             } : null,
-            {
-              key: 'receipt-pdf',
-              label: 'Receipt PDF',
-              icon: ReceiptText,
-              onClick: () => handleDownloadReceipt(payment),
-            },
           ]}
         />
       ),
@@ -2995,6 +2992,7 @@ export default function SupplierPaymentModule({
     canEdit,
     filteredPayments,
     handleDownloadReceipt,
+    handlePrint,
     invoiceById,
     isSupplier,
     partyLabel,
@@ -3087,7 +3085,7 @@ export default function SupplierPaymentModule({
       </button>
 
       {canDelete ? (
-        <button type="button" className="button button-secondary payments-toolbar-button payments-toolbar-button--danger" onClick={handleBulkDelete} disabled={isSaving}>
+        <button type="button" className="button button-secondary payments-toolbar-button payments-toolbar-button--danger" onClick={() => setIsBulkDeleteModalOpen(true)} disabled={isSaving}>
           <Trash2 size={15} />
           Delete
         </button>
@@ -3327,6 +3325,45 @@ export default function SupplierPaymentModule({
               </button>
               <button type="button" className="button button-danger" onClick={confirmDelete}>
                 {deleteTarget.deleteMode === 'void' ? 'Void Payment' : 'Delete Payment'}
+              </button>
+            </div>
+          </div>
+        </FormModal>
+      ) : null}
+
+      {isBulkDeleteModalOpen ? (
+        <FormModal
+          title="Delete Selected Payments"
+          onClose={() => setIsBulkDeleteModalOpen(false)}
+        >
+          <div className="payment-delete-dialog">
+            <div className="payment-delete-dialog__icon">
+              <AlertTriangle size={18} />
+            </div>
+            <div>
+              <h3>Are you sure you want to delete {selectedPayments.length} selected payment{selectedPayments.length === 1 ? '' : 's'}?</h3>
+              <p>
+                You are about to delete <strong>{selectedPayments.length} selected payment{selectedPayments.length === 1 ? '' : 's'}</strong> totaling{' '}
+                <strong style={{ color: '#0f172a' }}>{formatCurrency(selectedPayments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0))}</strong>.
+                This action will cancel these payments and reverse their ledger balances.
+              </p>
+            </div>
+            <div className="button-row payment-delete-dialog__actions">
+              <button
+                type="button"
+                className="button button-secondary button-cancel"
+                onClick={() => setIsBulkDeleteModalOpen(false)}
+                disabled={isSaving}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="button button-danger"
+                onClick={handleBulkDelete}
+                disabled={isSaving}
+              >
+                {isSaving ? 'Deleting...' : 'Delete Payments'}
               </button>
             </div>
           </div>

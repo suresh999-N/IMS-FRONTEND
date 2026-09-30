@@ -790,6 +790,12 @@ function getInventoryWorkspaceMetrics(config, rows) {
     const status = String(readResourceValue(row, 'status', '') || '').toLowerCase()
     return statuses.some((value) => status.includes(value))
   }).length
+  const countAdjustmentType = (...types) => rows.filter((row) => {
+    const typeVal = String(
+      readResourceValue(row, 'adjustmentType', readResourceValue(row, 'type', '')) || ''
+    ).toLowerCase()
+    return types.some((val) => typeVal.includes(val))
+  }).length
 
   switch (config.key) {
     case 'productAttributes':
@@ -844,6 +850,12 @@ function getInventoryWorkspaceMetrics(config, rows) {
         { label: 'Transfers', value: total, tone: 'success' },
         { label: 'Pending', value: countStatus('pending', 'draft'), tone: 'warning' },
         { label: 'Completed', value: countStatus('complete', 'received', 'approved'), tone: 'info' },
+      ]
+    case 'stockAdjustments':
+      return [
+        { label: 'Records', value: total, tone: 'info' },
+        { label: 'Increase', value: countAdjustmentType('increase', 'in', 'addition', 'positive'), tone: 'success' },
+        { label: 'Decrease', value: countAdjustmentType('decrease', 'out', 'reduction', 'negative'), tone: 'danger' },
       ]
     default:
       return [
@@ -3685,10 +3697,17 @@ function ResourcePage({ config, navigationContent = null }) {
           </div>
           <div className="resource-center__inventory-metrics">
             {inventoryMetrics.map((item) => (
-              <div key={item.label} className="resource-center__inventory-metric-chip">
-                <span className="resource-center__inventory-metric-label">{item.label}</span>
-                <span className="resource-center__inventory-metric-value">{item.value}</span>
-              </div>
+              <span
+                key={item.label}
+                className={`resource-center__inventory-metric resource-center__inventory-metric--${item.tone}`}
+              >
+                <strong className="resource-center__inventory-metric-count" style={{ color: '#000000', fontWeight: 700 }}>
+                  {item.value}
+                </strong>{' '}
+                <span className={`resource-center__inventory-metric-label resource-center__inventory-metric-label--${item.tone}`}>
+                  {item.label}
+                </span>
+              </span>
             ))}
           </div>
         </header>

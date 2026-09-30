@@ -43,11 +43,11 @@ const CATEGORY_COLUMNS_STORAGE_KEY = 'ims.categories.table.visibleColumns.wareho
 const CATEGORY_DEFAULT_COLUMNS = ['name', 'parentId', 'childCount', 'status', 'actions']
 const CATEGORY_COLUMN_WIDTHS = {
   name: 250,
-  parentId: 160,
-  childCount: 150,
+  parentId: 170,
+  childCount: 130,
   status: 96,
-  updatedAt: 160,
-  actions: 90,
+  updatedAt: 170,
+  actions: 72,
 }
 
 function clean(value) {
@@ -439,7 +439,7 @@ function CategoriesHeader({ canCreate, summary, onAdd }) {
   const metrics = [
     { key: 'total', label: 'Categories', value: summary.total, tone: 'info' },
     { key: 'active', label: 'Active', value: summary.active, tone: 'success' },
-    { key: 'inactive', label: 'Inactive', value: summary.inactive, tone: 'warning' },
+    { key: 'inactive', label: 'Inactive', value: summary.inactive, tone: 'danger' },
   ]
 
   return (

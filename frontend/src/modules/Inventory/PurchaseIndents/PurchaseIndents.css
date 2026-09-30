@@ -1297,32 +1297,35 @@
 }
 
 .purchase-indent-document__col-serial {
-  width: 5%;
+  width: 4%;
 }
 
 .purchase-indent-document__col-product {
-  width: 21%;
+  width: 34%;
 }
 
 .purchase-indent-document__col-sku {
   width: 10%;
 }
 
-.purchase-indent-document__col-stock,
-.purchase-indent-document__col-quantity {
-  width: 8%;
-}
-
-.purchase-indent-document__col-unit {
+.purchase-indent-document__col-stock {
   width: 7%;
 }
 
+.purchase-indent-document__col-quantity {
+  width: 6%;
+}
+
+.purchase-indent-document__col-unit {
+  width: 6%;
+}
+
 .purchase-indent-document__col-rate {
-  width: 11%;
+  width: 10%;
 }
 
 .purchase-indent-document__col-amount {
-  width: 13%;
+  width: 12%;
 }
 
 .purchase-indent-document__items th.invoice-document__numeric,
@@ -1331,7 +1334,7 @@
 }
 
 .purchase-indent-document__col-date {
-  width: 17%;
+  width: 11%;
 }
 
 .purchase-indent-document__item-note {

@@ -9,16 +9,20 @@ export default function Input({ className = '', name, type, autoCapitalize, onCh
 
     if (isAutoCap && event?.target && typeof event.target.value === 'string' && event.target.value) {
       const originalValue = event.target.value
-      const capitalizedValue = autoCapitalizeWords(originalValue)
-      if (capitalizedValue !== originalValue) {
-        event = {
-          ...event,
-          target: {
-            ...event.target,
-            name: event.target.name || name,
-            value: capitalizedValue,
-          },
+      try {
+        const capitalizedValue = autoCapitalizeWords(originalValue)
+        if (capitalizedValue !== originalValue) {
+          event = {
+            ...event,
+            target: {
+              ...event.target,
+              name: event.target.name || name,
+              value: capitalizedValue,
+            },
+          }
         }
+      } catch (err) {
+        console.error('Auto-capitalization error in Input:', err)
       }
     }
 

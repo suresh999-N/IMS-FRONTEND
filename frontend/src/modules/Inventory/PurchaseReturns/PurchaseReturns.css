@@ -222,6 +222,19 @@
   font-weight: 600;
 }
 
+.purchase-returns-table th.grn-header,
+.purchase-returns-table td.grn-cell {
+  text-align: center;
+  white-space: nowrap;
+  min-width: 120px;
+}
+
+.purchase-returns-table td.return-id-cell,
+.purchase-returns-table td.date-cell,
+.purchase-returns-table td.amount-cell {
+  white-space: nowrap;
+}
+
 .grn-badge {
   display: inline;
   padding: 0;
