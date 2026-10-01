@@ -1437,7 +1437,7 @@ export default function ProductForm({
           <InputField
             id="variantColor"
             name="variantColor"
-            label="Base Color / Finish"
+            label="Attributes"
             value={formData.variantColor || ''}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -1445,7 +1445,7 @@ export default function ProductForm({
             helperText={
               formData.variants.length > 0
                 ? 'Product variants defined below override this specification.'
-                : 'Base color for standalone products without multiple variants.'
+                : 'Attributes for standalone products without multiple variants.'
             }
             disabled={formData.variants.length > 0}
           />

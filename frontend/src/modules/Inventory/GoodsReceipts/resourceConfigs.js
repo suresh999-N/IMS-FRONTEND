@@ -1197,7 +1197,18 @@ export const RESOURCE_CONFIGS = {
         { value: 'Staff', label: 'Staff' },
         { value: 'User', label: 'User' },
       ] },
-      { name: 'isActive', label: 'Active', type: 'checkbox', defaultValue: true },
+      {
+        name: 'isActive',
+        label: 'Status',
+        type: 'select',
+        valueType: 'boolean',
+        required: true,
+        placeholder: 'Select Status',
+        options: [
+          { value: 'true', label: 'Active' },
+          { value: 'false', label: 'Inactive' },
+        ],
+      },
     ],
     columns: [
       {

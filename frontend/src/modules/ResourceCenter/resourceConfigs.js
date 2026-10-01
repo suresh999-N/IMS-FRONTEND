@@ -1312,7 +1312,7 @@ export const RESOURCE_CONFIGS = {
         type: 'select',
         valueType: 'boolean',
         required: true,
-        defaultValue: 'true',
+        placeholder: 'Select Status',
         options: [
           { value: 'true', label: 'Active' },
           { value: 'false', label: 'Inactive' },
