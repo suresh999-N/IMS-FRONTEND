@@ -786,23 +786,27 @@ namespace IMSBackend.Controllers
 <p>If you did not request a password reset, please ignore this email.</p>";
 
                 // Send OTP email
+                try
+                {
+                    await _emailService.SendEmailAsync(
+                        user.Email,
+                        "IMS Password Reset OTP",
+                        emailBody);
 
-                await _emailService.SendEmailAsync(
-
-                    user.Email,
-
-                    "IMS Password Reset OTP",
-
-                    emailBody);
-
-                _logger.LogInformation(
-
-                    "Password reset OTP generated and sent for {Email}. TraceId: {TraceId}",
-
-                    email,
-
-                    HttpContext.TraceIdentifier);
-
+                    _logger.LogInformation(
+                        "Password reset OTP generated and sent for {Email}. TraceId: {TraceId}",
+                        email,
+                        HttpContext.TraceIdentifier);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(
+                        ex,
+                        "Password reset email delivery failed for {Email}. Generated OTP: {OtpCode}. TraceId: {TraceId}",
+                        email,
+                        otpCode,
+                        HttpContext.TraceIdentifier);
+                }
             }
 
             return Ok(ApiResponse<object>.Ok(

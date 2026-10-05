@@ -53,7 +53,7 @@ export default function ForgotPassword() {
       })
 
       if (!result.success) {
-        setError(getAuthErrorMessage(result.error, 'We could not send a code. Try again.'))
+        setError(getAuthErrorMessage(result.error || result.message, 'We could not send a code. Try again.'))
         return
       }
 
