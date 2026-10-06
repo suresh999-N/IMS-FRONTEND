@@ -4469,6 +4469,7 @@ export default function Stock() {
   const initialResourceKey = 'stock';
   const location = useLocation()
   const navigate = useNavigate()
+  const { hasPermission } = useAuth()
 
   const keys = useMemo(() => {
     if (Array.isArray(resourceKeys) && resourceKeys.length > 0) {
@@ -4482,8 +4483,12 @@ export default function Stock() {
     return [resourceKey].filter(Boolean)
   }, [hubKey, resourceKey, resourceKeys])
   const configs = useMemo(
-    () => keys.map((key) => RESOURCE_CONFIGS[key]).filter(Boolean),
-    [keys],
+    () =>
+      keys
+        .map((key) => RESOURCE_CONFIGS[key])
+        .filter(Boolean)
+        .filter((config) => hasPermission(config.permissionKey || config.key, 'view')),
+    [keys, hasPermission],
   )
   const preferredKey = useMemo(() => {
     const tabQuery = new URLSearchParams(location.search).get('tab')

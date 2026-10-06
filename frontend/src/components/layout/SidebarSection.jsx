@@ -9,7 +9,7 @@ export default function SidebarSection({
   isCollapsed,
   onToggle,
 }) {
-  if (items.length === 0 && sectionKey !== 'pos') {
+  if (items.length === 0) {
     return null
   }
 

@@ -450,15 +450,20 @@ export function isNavItemMatch(item, pathname = '') {
   return false
 }
 
-function resolveRole(role, roleList = []) {
+export function resolveRole(role, roleList = []) {
   if (!role) return null
 
   if (typeof role === 'object' && role.permissions) {
     return role
   }
 
-  const normalizedRole = String(role).toLowerCase()
-  const matchedRole = roleList.find((item) => item.name.toLowerCase() === normalizedRole) ?? null
+  const roleName = typeof role === 'object' ? (role.role || role.name || role.roleName) : role
+  if (!roleName) return null
+
+  const normalizedRole = String(roleName).trim().toLowerCase()
+  const matchedRole = (roleList || []).find((item) =>
+    String(item?.name || item?.roleName || '').trim().toLowerCase() === normalizedRole
+  ) ?? null
 
   return matchedRole
 }
@@ -473,36 +478,56 @@ export function normalizePermissions(permissions = {}) {
 }
 
 export function canAccess(moduleKey, action, role, roleList = []) {
-  const roleObject = resolveRole(role, roleList)
+  let roleObject = resolveRole(role, roleList)
+  if (!roleObject && typeof role === 'object' && role?.permissions) {
+    roleObject = role
+  }
   if (!roleObject) return false
 
-  const normalizedRoleName = String(roleObject.name || role || '').trim().toLowerCase()
+  const normalizedRoleName = String(roleObject.name || roleObject.roleName || role || '').trim().toLowerCase()
   if (normalizedRoleName === 'admin') {
     return true
   }
 
-  const actualKey = moduleKey === 'settings' ? 'systemSettings' : moduleKey
+  const perms = roleObject.permissions ?? {}
 
-  if (
-    ['purchaseIndents'].includes(actualKey) &&
-    !Object.prototype.hasOwnProperty.call(roleObject.permissions ?? {}, actualKey)
-  ) {
-    return action === 'view'
+  const candidateKeys = [moduleKey]
+  if (moduleKey === 'settings') candidateKeys.push('systemSettings')
+  if (moduleKey === 'systemSettings') candidateKeys.push('settings')
+  if (moduleKey === 'purchaseIndents') candidateKeys.push('purchaseIndent')
+  if (moduleKey === 'purchaseIndent') candidateKeys.push('purchaseIndents')
+
+  for (const key of candidateKeys) {
+    if (perms[key]?.includes(action)) {
+      return true
+    }
   }
 
-  return (
-    roleObject.permissions?.[actualKey]?.includes(action) ??
-    roleObject.permissions?.[moduleKey]?.includes(action) ??
-    false
-  )
+  return false
 }
 
 export function getDefaultPath(role, roleList = []) {
-  const allowedItem = NAV_ITEMS.find((item) =>
-    canAccess(item.key, 'view', role, roleList),
-  )
+  for (const item of NAV_ITEMS) {
+    if (canAccess(item.key, 'view', role, roleList)) {
+      if (item.children && item.children.length > 0) {
+        const allowedChild = item.children.find((c) =>
+          canAccess(c.key || item.key, 'view', role, roleList),
+        )
+        return allowedChild?.path ?? item.path
+      }
+      return item.path
+    }
+    if (item.children && item.children.length > 0) {
+      const allowedChild = item.children.find((c) =>
+        canAccess(c.key || item.key, 'view', role, roleList),
+      )
+      if (allowedChild) {
+        return allowedChild.path
+      }
+    }
+  }
 
-  return allowedItem?.path ?? '/login'
+  return '/login'
 }
 
 export function getPageTitle(pathname) {
@@ -512,8 +537,29 @@ export function getPageTitle(pathname) {
   return matchedItem?.label ?? 'Workspace'
 }
 
-export function getNavItem(pathname) {
+export function getNavItem(pathname, search = '') {
+  const currentTab = search ? new URLSearchParams(search).get('tab') : null
+
+  if (currentTab) {
+    for (const item of NAV_ITEMS) {
+      if (item.children) {
+        const matchingChild = item.children.find((child) => {
+          const [childPath, childSearch] = child.path.split('?')
+          if (childPath === pathname && childSearch) {
+            const childTab = new URLSearchParams(childSearch).get('tab')
+            return childTab === currentTab
+          }
+          return false
+        })
+        if (matchingChild) {
+          return matchingChild
+        }
+      }
+    }
+  }
+
   return NAV_ITEMS.find((item) =>
     isNavItemMatch(item, pathname),
   ) ?? null
 }
+

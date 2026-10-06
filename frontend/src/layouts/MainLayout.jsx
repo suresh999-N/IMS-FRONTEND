@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import AccessDenied from '../components/common/AccessDenied'
 import AppLayout from '../components/layout/AppLayout'
@@ -13,8 +13,8 @@ const SIDEBAR_COLLAPSED_KEY = 'ims-sidebar-collapsed'
 const SIDEBAR_OPEN_MENU_KEY = 'ims-sidebar-open-menu'
 const SIDEBAR_MENU_KEYS = ['admin', 'masters', 'inventory', 'pos', 'management', 'billing']
 
-function getActiveMenuKey(pathname) {
-  const activeItem = getNavItem(pathname)
+function getActiveMenuKey(pathname, search = '') {
+  const activeItem = getNavItem(pathname, search)
   return SIDEBAR_MENU_KEYS.includes(activeItem?.category) ? activeItem.category : ''
 }
 
@@ -38,18 +38,45 @@ function getStoredOpenMenuKey() {
 export default function MainLayout() {
   const { user, logout, hasPermission } = useAuth()
   const location = useLocation()
-  const [openMenuKey, setOpenMenuKey] = useState(() => getActiveMenuKey(location.pathname) || getStoredOpenMenuKey())
+  const [openMenuKey, setOpenMenuKey] = useState(() => getActiveMenuKey(location.pathname, location.search) || getStoredOpenMenuKey())
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(getInitialCollapsedState)
   const mainRef = useRef(null)
   const drawerTouchStartX = useRef(null)
 
   const isCustomersRoute = location.pathname.startsWith('/people/customers')
-  const visibleItems = NAV_ITEMS.filter((item) =>
-    hasPermission(item.key, 'view'),
-  )
-  const activeItem = getNavItem(location.pathname)
-  const canViewPage = activeItem ? hasPermission(activeItem.key, 'view') : true
+  const visibleItems = useMemo(() => {
+    return NAV_ITEMS.map((item) => {
+      if (item.children && item.children.length > 0) {
+        const allowedChildren = item.children.filter((child) =>
+          hasPermission(child.key || item.key, 'view'),
+        )
+        const canViewParent = hasPermission(item.key, 'view') || allowedChildren.length > 0
+        if (!canViewParent) return null
+        return {
+          ...item,
+          path: allowedChildren.length > 0 && !hasPermission(item.key, 'view') ? allowedChildren[0].path : item.path,
+          children: allowedChildren,
+        }
+      }
+      return hasPermission(item.key, 'view') ? item : null
+    }).filter(Boolean)
+  }, [hasPermission])
+
+  const activeItem = getNavItem(location.pathname, location.search)
+  const requiredAction =
+    location.pathname.endsWith('/create') || location.pathname.includes('/create/')
+      ? 'create'
+      : location.pathname.includes('/edit/')
+        ? 'edit'
+        : 'view'
+
+  const canViewPage = activeItem
+    ? activeItem.children && activeItem.children.length > 0
+      ? hasPermission(activeItem.key, requiredAction) ||
+        activeItem.children.some((c) => hasPermission(c.key, requiredAction))
+      : hasPermission(activeItem.key, requiredAction)
+    : true
 
   useEffect(() => {
     setIsDrawerOpen(false)

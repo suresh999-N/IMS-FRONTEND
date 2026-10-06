@@ -191,12 +191,21 @@ export function AuthProvider({ children, roles = [] }) {
 
   const hasPermission = useCallback(
     function hasPermission(moduleKey, action = "view") {
-      const liveRoles = roles.length
-        ? roles
-        : user?.role && user?.permissions
-          ? [{ name: user.role, permissions: user.permissions }]
-          : [];
+      let roleObj = null;
+      if (Array.isArray(roles) && roles.length > 0 && user?.role) {
+        const normalized = String(user.role).trim().toLowerCase();
+        roleObj = roles.find((r) =>
+          String(r?.name || r?.roleName || '').trim().toLowerCase() === normalized
+        );
+      }
 
+      if (!roleObj || !roleObj.permissions || Object.keys(roleObj.permissions).length === 0) {
+        if (user?.role && user?.permissions) {
+          roleObj = { name: user.role, permissions: user.permissions };
+        }
+      }
+
+      const liveRoles = roleObj ? [roleObj] : (roles || []);
       return canAccess(moduleKey, action, user?.role, liveRoles);
     },
     [roles, user],

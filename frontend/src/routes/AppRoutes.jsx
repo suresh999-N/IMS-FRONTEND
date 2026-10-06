@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import LoadingFallback from '../components/common/LoadingFallback'
 import MainLayout from '../layouts/MainLayout'
 import { useAuth } from '../hooks/useAuth'
+import { getDefaultPath } from '../utils/permissions'
 import ProtectedRoute from './ProtectedRoute'
 
 function lazyWithPreload(importer) {
@@ -93,7 +94,9 @@ const PRELOAD_AFTER_AUTH = [
 ]
 
 export default function AppRoutes({ data, actions }) {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user, roles } = useAuth()
+  const defaultPath = getDefaultPath(user, roles)
+
   useEffect(() => {
     if (!isAuthenticated || typeof window === 'undefined') {
       return undefined
@@ -137,29 +140,29 @@ export default function AppRoutes({ data, actions }) {
     <Routes>
       <Route
         path="/login"
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : withRouteSuspense(<Login />)}
+        element={isAuthenticated ? <Navigate to={defaultPath} replace /> : withRouteSuspense(<Login />)}
       />
       <Route
         path="/register"
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : withRouteSuspense(<Register />)}
+        element={isAuthenticated ? <Navigate to={defaultPath} replace /> : withRouteSuspense(<Register />)}
       />
       <Route
         path="/forgot-password"
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : withRouteSuspense(<ForgotPassword />)}
+        element={isAuthenticated ? <Navigate to={defaultPath} replace /> : withRouteSuspense(<ForgotPassword />)}
       />
       <Route
         path="/verify-otp"
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : withRouteSuspense(<VerifyOTP />)}
+        element={isAuthenticated ? <Navigate to={defaultPath} replace /> : withRouteSuspense(<VerifyOTP />)}
       />
       <Route
         path="/reset-password"
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : withRouteSuspense(<ResetPassword />)}
+        element={isAuthenticated ? <Navigate to={defaultPath} replace /> : withRouteSuspense(<ResetPassword />)}
       />
       <Route path="/verify-email" element={withRouteSuspense(<VerifyEmail />)} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<MainLayout />}>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<Navigate to={defaultPath} replace />} />
           <Route path="/dashboard" element={withRouteSuspense(<Dashboard data={data} />)} />
 
           <Route
@@ -342,7 +345,7 @@ export default function AppRoutes({ data, actions }) {
 
       <Route
         path="*"
-        element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />}
+        element={<Navigate to={isAuthenticated ? defaultPath : '/login'} replace />}
       />
     </Routes>
   )

@@ -15,6 +15,7 @@ import {
 import { useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+import { getDefaultPath } from '../../utils/permissions'
 import loginLeftPanel from '../../assets/auth/login-left-panel.png'
 import {
   getEmailError,
@@ -57,7 +58,7 @@ import { renderFormLabel } from '../../utils/labelUtils'
 export default function Login({ onLoginSuccess, isSwitchMode = false }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login } = useAuth()
+  const { login, roles } = useAuth()
   const verificationMessage = location.state?.verificationMessage || ''
   const verificationNotice = location.state?.verificationNotice || ''
  
@@ -184,7 +185,8 @@ export default function Login({ onLoginSuccess, isSwitchMode = false }) {
         } catch {}
       }
  
-      navigate('/dashboard', { replace: true })
+      const targetPath = getDefaultPath(result.user, roles)
+      navigate(targetPath, { replace: true })
     } catch {
       setError('Unable to connect to the server.')
     } finally {
