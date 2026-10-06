@@ -84,10 +84,26 @@
   display: flex;
   align-items: center;
   position: relative;
+  gap: 8px;
 }
 
 .filter-group label {
-  display: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.purchase-returns-table-card {
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.purchase-returns__filters,
+.purchase-returns__toolbar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .filter-group select {

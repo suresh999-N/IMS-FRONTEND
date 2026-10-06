@@ -75,6 +75,15 @@ namespace IMSBackend.Controllers
             if (product == null)
                 return BadRequest("Invalid ProductId");
 
+            if (dto.Quantity <= 0)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Quantity must be greater than zero."
+                });
+            }
+
             var unit = product.UnitId.HasValue ? _context.Units.Find(product.UnitId.Value) : null;
             var unitName = unit?.Name;
             var unitShortName = unit?.ShortName;
@@ -191,6 +200,15 @@ namespace IMSBackend.Controllers
             if (item == null)
                 return NotFound();
 
+            if (dto.Quantity <= 0)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Quantity must be greater than zero."
+                });
+            }
+
             var product = _context.Products.FirstOrDefault(p => p.ProductId == dto.ProductId && !p.IsDeleted);
             if (product != null)
             {
@@ -221,14 +239,26 @@ namespace IMSBackend.Controllers
             return Ok(item);
         }
 
+        private static readonly string[] DiscreteUnitPatterns = new[]
+        {
+            "pc", "pcs", "piece", "pieces", "unit", "units",
+            "box", "boxes", "bag", "bags", "pack", "packs",
+            "packet", "packets", "set", "sets", "pair", "pairs",
+            "nos", "no", "item", "items", "carton", "cartons",
+            "bundle", "bundles", "roll", "rolls", "drum", "drums",
+            "bottle", "bottles", "can", "cans", "barrel", "barrels",
+            "strip", "strips"
+        };
+
         private static readonly string[] ContinuousUnitPatterns = new[]
         {
             "kg", "kilo", "kilogram", "kilograms",
-            "g", "gram", "grams",
+            "g", "gm", "gram", "grams",
             "mg", "milligram", "milligrams",
             "lb", "lbs", "pound", "pounds",
             "oz", "ounce", "ounces",
             "t", "ton", "tons", "tonne", "tonnes",
+            "quintal", "qtl",
             "l", "ltr", "liter", "liters", "litre", "litres",
             "ml", "milliliter", "milliliters", "millilitre", "millitres",
             "gal", "gallon", "gallons",
@@ -241,7 +271,7 @@ namespace IMSBackend.Controllers
             "sqm", "sqft", "sqin", "cum", "cuft"
         };
 
-        private static bool IsFractionalUnitAllowed(string? unitName, string? unitShortName)
+        public static bool IsFractionalUnitAllowed(string? unitName, string? unitShortName)
         {
             var name = (unitName ?? "").Trim().ToLowerInvariant();
             var shortName = (unitShortName ?? "").Trim().ToLowerInvariant();
@@ -249,7 +279,18 @@ namespace IMSBackend.Controllers
             if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(shortName))
                 return false;
 
-            return ContinuousUnitPatterns.Any(p => p == name || p == shortName);
+            bool isDiscrete = DiscreteUnitPatterns.Any(p =>
+                name == p || shortName == p ||
+                System.Text.RegularExpressions.Regex.IsMatch(name, $@"\b{p}\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase) ||
+                System.Text.RegularExpressions.Regex.IsMatch(shortName, $@"\b{p}\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
+
+            if (isDiscrete)
+                return false;
+
+            return ContinuousUnitPatterns.Any(p =>
+                name == p || shortName == p ||
+                System.Text.RegularExpressions.Regex.IsMatch(name, $@"\b{p}\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase) ||
+                System.Text.RegularExpressions.Regex.IsMatch(shortName, $@"\b{p}\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
         }
 
         // =========================

@@ -67,7 +67,148 @@ namespace IMSBackend.Controllers
             if (!IsValidStockAdjustmentReason(normType, dto.Reason, out string? reasonError))
                 return BadRequest(reasonError);
 
-            var adjustment = new StockAdjustment
+            if (dto.Items != null && dto.Items.Count > 0)
+            {
+                var isIncrease = normType == "increase" || normType == "adjustment_in";
+                var isDecrease = normType == "decrease" || normType == "adjustment_out";
+
+                if (!isIncrease && !isDecrease)
+                {
+                    return BadRequest("Adjustment type must be increase or decrease.");
+                }
+
+                // Pre-validate all items
+                foreach (var itemDto in dto.Items)
+                {
+                    if (itemDto.ProductId <= 0)
+                        return BadRequest("Invalid ProductId in adjustment items.");
+
+                    var product = _context.Products.FirstOrDefault(p => p.ProductId == itemDto.ProductId && !p.IsDeleted);
+                    if (product == null)
+                        return BadRequest($"Product with ID {itemDto.ProductId} not found.");
+
+                    if (itemDto.Quantity <= 0)
+                        return BadRequest($"Quantity for '{product.Name}' must be greater than zero.");
+
+                    var unit = product.UnitId.HasValue ? _context.Units.Find(product.UnitId.Value) : null;
+                    var unitName = unit?.Name;
+                    var unitShortName = unit?.ShortName;
+                    bool isFractionalAllowed = StockAdjustmentItemController.IsFractionalUnitAllowed(unitName, unitShortName);
+
+                    if (!isFractionalAllowed && itemDto.Quantity != Math.Truncate(itemDto.Quantity))
+                    {
+                        var displayUnit = !string.IsNullOrWhiteSpace(unitShortName) ? unitShortName : (!string.IsNullOrWhiteSpace(unitName) ? unitName : "unit");
+                        var productName = !string.IsNullOrWhiteSpace(product.Name) ? product.Name : "this product";
+                        return BadRequest($"Quantity for '{productName}' must be a whole number for unit '{displayUnit}'. Fractional quantities (e.g. {itemDto.Quantity}) are not allowed.");
+                    }
+
+                    if (isDecrease)
+                    {
+                        var currentStock = _context.Stocks.FirstOrDefault(row =>
+                            row.ProductId == itemDto.ProductId &&
+                            row.VariantId == itemDto.VariantId &&
+                            row.WarehouseId == dto.WarehouseId);
+
+                        if (currentStock == null || itemDto.Quantity > currentStock.Quantity)
+                        {
+                            var available = currentStock?.Quantity ?? 0;
+                            return BadRequest($"Insufficient stock for '{product.Name}'. Available stock is {available}, but requested quantity is {itemDto.Quantity}.");
+                        }
+                    }
+                }
+
+                using var transaction = _context.Database.BeginTransaction();
+                try
+                {
+                    var adjustment = new StockAdjustment
+                    {
+                        WarehouseId = dto.WarehouseId,
+                        AdjustmentType = normType,
+                        Reason = dto.Reason.Trim(),
+                        CreatedAt = DateTime.Now
+                    };
+
+                    _context.StockAdjustments.Add(adjustment);
+                    _context.SaveChanges();
+
+                    foreach (var itemDto in dto.Items)
+                    {
+                        var adjItem = new StockAdjustmentItem
+                        {
+                            AdjustmentId = adjustment.AdjustmentId,
+                            ProductId = itemDto.ProductId,
+                            VariantId = itemDto.VariantId,
+                            Quantity = itemDto.Quantity
+                        };
+                        _context.StockAdjustmentItems.Add(adjItem);
+
+                        var stock = _context.Stocks.FirstOrDefault(row =>
+                            row.ProductId == itemDto.ProductId &&
+                            row.VariantId == itemDto.VariantId &&
+                            row.WarehouseId == dto.WarehouseId);
+
+                        if (stock == null)
+                        {
+                            stock = new Stock
+                            {
+                                ProductId = itemDto.ProductId,
+                                VariantId = itemDto.VariantId,
+                                WarehouseId = dto.WarehouseId,
+                                Quantity = 0,
+                                ReservedQuantity = 0
+                            };
+                            _context.Stocks.Add(stock);
+                        }
+
+                        var openingQty = stock.Quantity;
+                        var changeQty = isIncrease ? itemDto.Quantity : -itemDto.Quantity;
+                        var closingQty = openingQty + changeQty;
+
+                        stock.Quantity = closingQty;
+
+                        var prod = _context.Products.Find(itemDto.ProductId);
+                        if (prod != null) prod.UpdatedAt = DateTime.UtcNow;
+
+                        _context.StockMovements.Add(new StockMovement
+                        {
+                            ProductId = itemDto.ProductId,
+                            VariantId = itemDto.VariantId,
+                            WarehouseId = dto.WarehouseId,
+                            MovementType = "ADJUSTMENT",
+                            Quantity = itemDto.Quantity,
+                            ReferenceId = adjustment.AdjustmentId,
+                            ReferenceType = isIncrease ? "adjustment_in" : "adjustment_out",
+                            Notes = adjustment.Reason,
+                            CreatedAt = DateTime.UtcNow
+                        });
+
+                        _context.StockLedgers.Add(new StockLedger
+                        {
+                            ProductId = itemDto.ProductId,
+                            VariantId = itemDto.VariantId,
+                            WarehouseId = dto.WarehouseId,
+                            OpeningQty = openingQty,
+                            ChangeQty = changeQty,
+                            ClosingQty = closingQty,
+                            TransactionType = isIncrease ? "ADJUSTMENT_IN" : "ADJUSTMENT_OUT",
+                            TransactionId = adjustment.AdjustmentId,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+
+                    _context.SaveChanges();
+                    transaction.Commit();
+
+                    return Ok(adjustment);
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return StatusCode(500, $"An error occurred while creating stock adjustment: {ex.Message}");
+                }
+            }
+
+            var singleAdjustment = new StockAdjustment
             {
                 WarehouseId = dto.WarehouseId,
                 AdjustmentType = normType,
@@ -75,10 +216,10 @@ namespace IMSBackend.Controllers
                 CreatedAt = DateTime.Now
             };
 
-            _context.StockAdjustments.Add(adjustment);
+            _context.StockAdjustments.Add(singleAdjustment);
             _context.SaveChanges();
 
-            return Ok(adjustment);
+            return Ok(singleAdjustment);
         }
 
         // =========================

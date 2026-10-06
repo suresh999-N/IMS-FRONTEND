@@ -1018,8 +1018,21 @@ function getGoodsReceiptDetailItems(record = {}) {
   ])
   const createdBy = getFirstReferenceValue(record, ['createdBy', 'CreatedBy', 'createdByName', 'CreatedByName', 'user', 'User'])
 
+  const grnNum = getGoodsReceiptNumber(record)
+  const poNum = getFirstReferenceValue(record, ['poNumber', 'PoNumber', 'poId', 'PoId', 'purchaseOrderId', 'PurchaseOrderId'])
+
+  const rawInvoiceNo = String(supplierInvoiceNo ?? '').trim()
+  const displayInvoiceNo = (rawInvoiceNo && rawInvoiceNo.toLowerCase() !== 'n/a')
+    ? rawInvoiceNo
+    : (poNum ? `INV-${String(poNum).replace(/^PO-?/i, '')}` : (grnNum && grnNum !== 'N/A' ? `INV-${String(grnNum).replace(/^GRN-?/i, '')}` : 'N/A'))
+
+  const rawInvoiceDate = (supplierInvoiceDate && String(supplierInvoiceDate).toLowerCase() !== 'n/a')
+    ? supplierInvoiceDate
+    : (receiptDate || record?.createdAt || record?.CreatedAt)
+  const displayInvoiceDate = rawInvoiceDate ? formatDate(rawInvoiceDate) : 'N/A'
+
   return [
-    { key: 'receiptId', label: 'GRN Number', value: getGoodsReceiptNumber(record), icon: Hash },
+    { key: 'receiptId', label: 'GRN Number', value: grnNum, icon: Hash },
     { key: 'purchaseOrder', label: 'Purchase Order', value: purchaseOrder, icon: ReceiptText },
     { key: 'supplier', label: 'Supplier', value: supplier, icon: UserRound },
     { key: 'warehouse', label: 'Warehouse', value: warehouse, icon: Database },
@@ -1032,13 +1045,13 @@ function getGoodsReceiptDetailItems(record = {}) {
     {
       key: 'supplierInvoiceNo',
       label: 'Supplier Invoice No',
-      value: String(supplierInvoiceNo ?? '').trim() || 'N/A',
+      value: displayInvoiceNo,
       icon: FileSpreadsheet,
     },
     {
       key: 'supplierInvoiceDate',
       label: 'Supplier Invoice Date',
-      value: supplierInvoiceDate ? formatDate(supplierInvoiceDate) : 'N/A',
+      value: displayInvoiceDate,
       icon: CalendarDays,
     },
     {
@@ -3751,6 +3764,45 @@ function ResourcePage({ config, navigationContent = null }) {
           console.warn('[GoodsReceipts] Could not load live Purchase Order, proceeding with payload data for PO:', poId)
         }
 
+        const supplierInvoiceNo = String(
+          payload.supplierInvoice ||
+          payload.supplierInvoiceNo ||
+          payload.supplierInvoiceNumber ||
+          payload.invoiceNo ||
+          payload.invoiceNumber ||
+          ''
+        ).trim()
+
+        const rawSupplierInvoiceDate = payload.supplierInvoiceDate || payload.invoiceDate || null
+
+        if (!supplierInvoiceNo) {
+          setIsSaving(false)
+          saveInFlightRef.current = false
+          if (goodsReceiptSubmissionKey) {
+            GOODS_RECEIPT_SUBMISSION_LOCKS.delete(goodsReceiptSubmissionKey)
+          }
+          showToast({
+            type: 'error',
+            title: config.title,
+            message: 'Supplier Invoice Number is required.',
+          })
+          return { success: false, error: 'Supplier Invoice Number is required.' }
+        }
+
+        if (!rawSupplierInvoiceDate) {
+          setIsSaving(false)
+          saveInFlightRef.current = false
+          if (goodsReceiptSubmissionKey) {
+            GOODS_RECEIPT_SUBMISSION_LOCKS.delete(goodsReceiptSubmissionKey)
+          }
+          showToast({
+            type: 'error',
+            title: config.title,
+            message: 'Supplier Invoice Date is required.',
+          })
+          return { success: false, error: 'Supplier Invoice Date is required.' }
+        }
+
         const knownReceiptIds = new Set(
           (existingReceiptsResponse.rows || [])
             .map(getGoodsReceiptId)
@@ -3867,6 +3919,13 @@ function ResourcePage({ config, navigationContent = null }) {
           price: Number(firstItem.unitPrice || unitPrice || 0),
           unitPrice: Number(firstItem.unitPrice || unitPrice || 0),
           receiptDate: payload.receiptDate ? new Date(payload.receiptDate).toISOString() : new Date().toISOString(),
+          supplierInvoice: supplierInvoiceNo,
+          supplierInvoiceNo: supplierInvoiceNo,
+          supplierInvoiceNumber: supplierInvoiceNo,
+          invoiceNo: supplierInvoiceNo,
+          invoiceNumber: supplierInvoiceNo,
+          supplierInvoiceDate: rawSupplierInvoiceDate ? new Date(rawSupplierInvoiceDate).toISOString() : null,
+          invoiceDate: rawSupplierInvoiceDate ? new Date(rawSupplierInvoiceDate).toISOString() : null,
           notes: payload.notes || payload.remarks || '',
           status: 'Pending',
           items: mappedItems,
@@ -4285,9 +4344,27 @@ function ResourcePage({ config, navigationContent = null }) {
             ? backendItems
             : rowItems
 
+          const existingInvoiceNo = row.supplierInvoice || row.supplierInvoiceNo || row.supplierInvoiceNumber || row.SupplierInvoice
+          const responseInvoiceNo = receiptData.supplierInvoice || receiptData.supplierInvoiceNo || receiptData.SupplierInvoice
+          const finalInvoiceNo = (responseInvoiceNo && String(responseInvoiceNo).toLowerCase() !== 'n/a')
+            ? responseInvoiceNo
+            : (existingInvoiceNo || '')
+
+          const existingInvoiceDate = row.supplierInvoiceDate || row.SupplierInvoiceDate || row.invoiceDate
+          const responseInvoiceDate = receiptData.supplierInvoiceDate || receiptData.SupplierInvoiceDate || receiptData.invoiceDate
+          const finalInvoiceDate = (responseInvoiceDate && String(responseInvoiceDate).toLowerCase() !== 'n/a')
+            ? responseInvoiceDate
+            : (existingInvoiceDate || '')
+
           fullRecord = {
             ...row,
             ...receiptData,
+            supplierInvoice: finalInvoiceNo || row.supplierInvoice || '',
+            supplierInvoiceNo: finalInvoiceNo || row.supplierInvoiceNo || '',
+            supplierInvoiceNumber: finalInvoiceNo || row.supplierInvoiceNumber || '',
+            SupplierInvoice: finalInvoiceNo || row.SupplierInvoice || '',
+            supplierInvoiceDate: finalInvoiceDate || row.supplierInvoiceDate || null,
+            SupplierInvoiceDate: finalInvoiceDate || row.SupplierInvoiceDate || null,
             items: itemsToKeep,
             goodsReceiptItems: itemsToKeep,
             receiptItems: itemsToKeep,

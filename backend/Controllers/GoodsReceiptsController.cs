@@ -115,8 +115,12 @@ namespace IMSBackend.Controllers
                     WarehouseName = grn.First().WarehouseName,
 
                     ReceiptDate = grn.First().ReceiptDate,
-                    SupplierInvoice = grn.First().SupplierInvoice,
-                    SupplierInvoiceDate = grn.First().SupplierInvoiceDate,
+                    SupplierInvoice = !string.IsNullOrWhiteSpace(grn.First().SupplierInvoice)
+                        ? grn.First().SupplierInvoice
+                        : (!string.IsNullOrWhiteSpace(grn.First().PoNumber)
+                            ? $"INV-{grn.First().PoNumber!.Replace("PO-", "")}"
+                            : $"INV-{(grn.First().GrnNumber?.Replace("GRN-", "") ?? grn.Key.ToString("D6"))}"),
+                    SupplierInvoiceDate = grn.First().SupplierInvoiceDate ?? grn.First().ReceiptDate,
                     Status = grn.First().Status,
                     Notes = grn.First().Notes,
 
@@ -163,16 +167,31 @@ namespace IMSBackend.Controllers
                     traceId: HttpContext.TraceIdentifier));
             }
 
-            if (dto.PoId <= 0 ||
-    dto.SupplierId <= 0 ||
-    dto.WarehouseId <= 0 ||
-    string.IsNullOrWhiteSpace(dto.SupplierInvoice) ||
-    !dto.SupplierInvoiceDate.HasValue ||
-    dto.Items == null ||
-    !dto.Items.Any())
+            if (dto.PoId <= 0 || dto.SupplierId <= 0 || dto.WarehouseId <= 0)
             {
                 return BadRequest(ApiResponse<object>.Fail(
-                    "Purchase order, supplier, warehouse, supplier invoice number, supplier invoice date, and at least one item are required.",
+                    "Purchase order, supplier, and warehouse are required.",
+                    traceId: HttpContext.TraceIdentifier));
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.SupplierInvoice))
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    "Supplier invoice number is required.",
+                    traceId: HttpContext.TraceIdentifier));
+            }
+
+            if (!dto.SupplierInvoiceDate.HasValue)
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    "Supplier invoice date is required.",
+                    traceId: HttpContext.TraceIdentifier));
+            }
+
+            if (dto.Items == null || !dto.Items.Any())
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    "At least one received item is required.",
                     traceId: HttpContext.TraceIdentifier));
             }
 
@@ -405,15 +424,20 @@ namespace IMSBackend.Controllers
                 await transaction.CommitAsync();
 
                 return Ok(ApiResponse<object>.Ok(
-    new
-    {
-        receipt.GrnId,
-        receipt.GrnNumber,
-        receipt.PoId,
-        receipt.ReceiptDate
-    },
-    "Goods received successfully.",
-    HttpContext.TraceIdentifier));
+                    new
+                    {
+                        receipt.GrnId,
+                        receipt.GrnNumber,
+                        receipt.PoId,
+                        receipt.ReceiptDate,
+                        receipt.SupplierInvoice,
+                        receipt.SupplierInvoiceDate,
+                        receipt.SupplierId,
+                        receipt.WarehouseId,
+                        receipt.Status
+                    },
+                    "Goods received successfully.",
+                    HttpContext.TraceIdentifier));
             }
             catch (DbUpdateException exception)
             {
@@ -1204,8 +1228,12 @@ namespace IMSBackend.Controllers
                 WarehouseId = grn.WarehouseId,
                 WarehouseName = warehouse?.Name,
                 ReceiptDate = grn.ReceiptDate,
-                SupplierInvoice = grn.SupplierInvoice,
-                SupplierInvoiceDate = grn.SupplierInvoiceDate,
+                SupplierInvoice = !string.IsNullOrWhiteSpace(grn.SupplierInvoice)
+                    ? grn.SupplierInvoice
+                    : (purchaseOrder != null && !string.IsNullOrWhiteSpace(purchaseOrder.PoNumber)
+                        ? $"INV-{purchaseOrder.PoNumber.Replace("PO-", "")}"
+                        : $"INV-{(grn.GrnNumber?.Replace("GRN-", "") ?? grn.GrnId.ToString("D6"))}"),
+                SupplierInvoiceDate = grn.SupplierInvoiceDate ?? grn.ReceiptDate,
                 Status = grn.Status,
                 Notes = grn.Notes,
                 Items = items

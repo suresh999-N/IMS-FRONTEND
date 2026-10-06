@@ -11,6 +11,7 @@ import { createId, formatCurrency, getNumberError, getRequiredError } from '../.
 import { getLocalTodayDate, toDateInputValue } from '../../../../utils/dateUtils'
 import { calculateGoodsReceiptTotals, normalizeGoodsReceiptItem } from '../goodsReceiptHelpers'
 import { renderFormLabel } from '../../../../utils/labelUtils'
+import { showToast } from '../../../../components/common/toast'
 import '../../PurchaseIndents/PurchaseIndents.css'
 
 function calculateLineTotal(line) {
@@ -363,8 +364,8 @@ export default function GoodsReceiptForm({
         warehouseId: String(record.warehouseId || ''),
         warehouseName: record.warehouseName || record.warehouse || '',
         receiptDate: toDateInputValue(record.receiptDate) || getLocalTodayDate(),
-        supplierInvoiceNo: record.supplierInvoiceNo || record.supplierInvoiceNumber || record.invoiceNumber || record.invoiceNo || record.invoice || '',
-        supplierInvoiceDate: toDateInputValue(record.supplierInvoiceDate || record.invoiceDate) || '',
+        supplierInvoiceNo: record.supplierInvoiceNo || record.supplierInvoiceNumber || record.supplierInvoice || record.SupplierInvoice || record.invoiceNumber || record.invoiceNo || record.invoice || '',
+        supplierInvoiceDate: toDateInputValue(record.supplierInvoiceDate || record.SupplierInvoiceDate || record.invoiceDate) || '',
         notes: record.notes || record.remarks || '',
         lineItems: recLines.map(line => {
           const rxQty = String(line.quantityReceived ?? line.receivedQuantity ?? line.quantity ?? '1')
@@ -407,7 +408,7 @@ export default function GoodsReceiptForm({
       warehouseName: '',
       receiptDate: getLocalTodayDate(),
       supplierInvoiceNo: '',
-      supplierInvoiceDate: '',
+      supplierInvoiceDate: getLocalTodayDate(),
       notes: '',
       lineItems: [createLineItem()],
     }
@@ -692,6 +693,9 @@ export default function GoodsReceiptForm({
     const supplierName = selectedPo?.supplierName || selectedPo?.supplier || ''
     const warehouseName = selectedPo?.warehouseName || selectedPo?.warehouse || ''
 
+    const poNum = selectedPo?.poNumber || selectedPo?.number || selectedPo?.PoNumber || ''
+    const defaultInvoiceNo = poNum ? `INV-${String(poNum).replace(/^PO-?/i, '')}` : ''
+
     setFormData(current => ({
       ...current,
       poId: selectedPoId,
@@ -699,6 +703,8 @@ export default function GoodsReceiptForm({
       supplierName: supplierName || current.supplierName || '',
       warehouseId: warehouseId || current.warehouseId,
       warehouseName: warehouseName || current.warehouseName || '',
+      supplierInvoiceNo: current.supplierInvoiceNo || defaultInvoiceNo,
+      supplierInvoiceDate: current.supplierInvoiceDate || getLocalTodayDate(),
       lineItems: mappedLines,
     }))
   }
@@ -849,7 +855,18 @@ export default function GoodsReceiptForm({
     event.preventDefault()
     markAllTouched()
 
-    if (!isFormValid || isSubmitting) return
+    if (!isFormValid || isSubmitting) {
+      if (!isFormValid) {
+        if (errors.supplierInvoiceNo) {
+          showToast('Supplier invoice number is required.', 'error')
+        } else if (errors.supplierInvoiceDate) {
+          showToast('Supplier invoice date is required.', 'error')
+        } else {
+          showToast('Please fill in all mandatory fields before submitting.', 'error')
+        }
+      }
+      return
+    }
 
     const firstLine = formData.lineItems[0] || createLineItem()
     const items = formData.lineItems.map(line => {
@@ -986,7 +1003,7 @@ export default function GoodsReceiptForm({
           </div>
 
           <div className={`indent-field-group ${touched.receiptDate && errors.receiptDate ? 'indent-field-group--error' : ''}`}>
-            <label htmlFor="grn-receipt-date">Receipt date <span className="required">*</span></label>
+            <label htmlFor="grn-receipt-date">{renderFormLabel('Receipt Date *')}</label>
             <DatePicker
               id="grn-receipt-date"
               name="receiptDate"
@@ -996,6 +1013,9 @@ export default function GoodsReceiptForm({
               error={touched.receiptDate ? errors.receiptDate : ''}
               className="indent-details-date-picker"
             />
+            {touched.receiptDate && errors.receiptDate && (
+              <span className="indent-field-error">{errors.receiptDate}</span>
+            )}
           </div>
 
           <div className={`indent-field-group ${touched.supplierInvoiceNo && errors.supplierInvoiceNo ? 'indent-field-group--error' : ''}`}>
@@ -1025,7 +1045,7 @@ export default function GoodsReceiptForm({
           </div>
 
           <div className={`indent-field-group ${touched.supplierInvoiceDate && errors.supplierInvoiceDate ? 'indent-field-group--error' : ''}`}>
-            <label htmlFor="grn-supplier-invoice-date">Supplier Invoice Date</label>
+            <label htmlFor="grn-supplier-invoice-date">{renderFormLabel('Supplier Invoice Date *')}</label>
             <DatePicker
               id="grn-supplier-invoice-date"
               name="supplierInvoiceDate"
@@ -1035,6 +1055,9 @@ export default function GoodsReceiptForm({
               error={touched.supplierInvoiceDate ? errors.supplierInvoiceDate : ''}
               className="indent-details-date-picker"
             />
+            {touched.supplierInvoiceDate && errors.supplierInvoiceDate && (
+              <span className="indent-field-error">{errors.supplierInvoiceDate}</span>
+            )}
           </div>
 
           <div className="indent-field-group" style={{ gridColumn: '1 / -1' }}>

@@ -355,11 +355,38 @@ export const RESOURCE_CONFIGS = {
       },
       { name: 'price', label: 'Unit Price', type: 'currency', required: true, min: 0, readOnly: true },
       { name: 'receiptDate', label: 'Receipt Date', type: 'date', required: true, defaultValue: getToday },
+      {
+        name: 'supplierInvoice',
+        label: 'Supplier Invoice No *',
+        type: 'text',
+        required: true,
+        placeholder: 'Enter supplier invoice no',
+      },
+      {
+        name: 'supplierInvoiceDate',
+        label: 'Supplier Invoice Date *',
+        type: 'date',
+        required: true,
+      },
       { name: 'notes', label: 'Notes', type: 'textarea' },
     ],
     columns: [
       { key: 'poNumber', label: 'PO Number', sortable: true },
       { key: 'supplierName', label: 'Supplier Name', sortable: true },
+      {
+        key: 'supplierInvoice',
+        label: 'Supplier Invoice No',
+        sortable: true,
+        render: (row) => {
+          const inv = row.supplierInvoice || row.supplierInvoiceNo || row.SupplierInvoice
+          if (inv && String(inv).trim() && String(inv).trim().toLowerCase() !== 'n/a') return String(inv).trim()
+          const poNum = row.poNumber || row.PoNumber
+          if (poNum) return `INV-${String(poNum).replace(/^PO-?/i, '')}`
+          const grn = row.grnNumber || row.GrnNumber
+          if (grn) return `INV-${String(grn).replace(/^GRN-?/i, '')}`
+          return 'N/A'
+        },
+      },
       { key: 'quantityReceived', label: 'Received', sortable: true },
       { key: 'receiptDate', label: 'Date', format: 'date', sortable: true },
     ],
@@ -544,15 +571,24 @@ export const RESOURCE_CONFIGS = {
         type: 'lineItems',
         required: true,
         validate: (value, context) => {
-          if (!Array.isArray(value) || value.length === 0) return ''
+          if (!Array.isArray(value) || value.length === 0 || !value.some((item) => item.productId)) {
+            return 'At least one adjustment item is required.'
+          }
           const products = context?.referenceData?.products || []
           const units = context?.referenceData?.units || []
           for (let i = 0; i < value.length; i++) {
             const item = value[i]
-            if (!item.productId) continue
-            const product = products.find((p) => String(p.productId ?? p.id) === String(item.productId))
-            const unit = units.find((u) => String(u.unitId ?? u.id) === String(product?.unitId))
-            const qtyErr = validateStockAdjustmentQuantity(item.quantity, product, unit)
+            if (!item.productId) {
+              return `Line ${i + 1}: Product is required.`
+            }
+            const product = products.find((p) => String(p.productId ?? p.id ?? '') === String(item.productId ?? ''))
+            const productUnitId = product?.unitId ?? product?.UnitId ?? product?.unit_id ?? (typeof product?.unit === 'object' ? product?.unit?.unitId ?? product?.unit?.id : null)
+            const unit = units.find((u) => {
+              const uId = u.unitId ?? u.UnitId ?? u.unit_id ?? u.id
+              return uId !== undefined && productUnitId !== undefined && String(uId) === String(productUnitId)
+            }) || (typeof product?.unit === 'object' ? product?.unit : null)
+
+            const qtyErr = validateStockAdjustmentQuantity(item.quantity, product, unit, { required: true })
             if (qtyErr) {
               return `Line ${i + 1}: ${qtyErr}`
             }
@@ -672,10 +708,14 @@ export const RESOURCE_CONFIGS = {
         validate: (value, context) => {
           const productId = context?.formData?.productId
           const products = context?.referenceData?.products || []
-          const product = products.find((p) => String(p.productId ?? p.id) === String(productId))
+          const product = products.find((p) => String(p.productId ?? p.id ?? '') === String(productId ?? ''))
           const units = context?.referenceData?.units || []
-          const unit = units.find((u) => String(u.unitId ?? u.id) === String(product?.unitId))
-          return validateStockAdjustmentQuantity(value, product, unit)
+          const productUnitId = product?.unitId ?? product?.UnitId ?? product?.unit_id ?? (typeof product?.unit === 'object' ? product?.unit?.unitId ?? product?.unit?.id : null)
+          const unit = units.find((u) => {
+            const uId = u.unitId ?? u.UnitId ?? u.unit_id ?? u.id
+            return uId !== undefined && productUnitId !== undefined && String(uId) === String(productUnitId)
+          }) || (typeof product?.unit === 'object' ? product?.unit : null)
+          return validateStockAdjustmentQuantity(value, product, unit, { required: true })
         },
       },
     ],
