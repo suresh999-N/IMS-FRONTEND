@@ -1,4 +1,4 @@
-﻿namespace IMSBackend.DTOs
+namespace IMSBackend.DTOs
 {
     public class StockAdjustmentDto
     {
@@ -7,5 +7,7 @@
         public string? AdjustmentType { get; set; }
 
         public string? Reason { get; set; }
+ 
+        public List<StockAdjustmentItemDto>? Items { get; set; }
     }
 }

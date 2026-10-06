@@ -9,29 +9,21 @@ import { useNavigate } from 'react-router-dom'
 
 import {
   AlertCircle,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
   Eye,
   Pencil,
   Plus,
   RefreshCw,
-  Search,
   Trash2,
 } from 'lucide-react'
 
 import PageHeader from '../../../components/common/PageHeader'
-import StateBlock from '../../../components/common/StateBlock'
 import { showToast } from '../../../components/common/toast'
 import FormModal from '../../../layouts/FormModal'
-import { ActionMenu } from '../../../components/erp'
-import Pagination from '../../../components/erp/Pagination'
+import { ActionMenu, DataTable, FilterBar } from '../../../components/erp'
 
 import {
   deletePurchaseReturn,
   getPurchaseReturns,
-  getPurchaseReturnGrns,
   getPurchaseReturnSuppliers,
 } from '../../../api/purchaseReturnApi'
 
@@ -42,24 +34,6 @@ import {
 
 import '../../../components/tables/TableComponent.css'
 import './PurchaseReturns.css'
-
-function getVisiblePages(currentPage, totalPages) {
-  const pages = []
-  const maxVisiblePages = 5
-  let startPage = Math.max(1, currentPage - 2)
-  const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
-
-  if (endPage - startPage + 1 < maxVisiblePages) {
-    startPage = Math.max(1, endPage - maxVisiblePages + 1)
-  }
-
-  for (let pageNumber = startPage; pageNumber <= endPage; pageNumber += 1) {
-    pages.push(pageNumber)
-  }
-
-  return pages
-}
-
 
 /**
  * Normalize API responses without hiding API errors.
@@ -90,12 +64,10 @@ const getArrayFromResponse = (response) => {
   return null
 }
 
-
 const getSupplierId = (supplier) =>
   supplier?.id ??
   supplier?.supplierId ??
   supplier?.supplier_id
-
 
 const getSupplierName = (supplier) =>
   supplier?.name ??
@@ -107,12 +79,10 @@ const getSupplierName = (supplier) =>
       : '-'
   )
 
-
 const getGrnId = (grn) =>
   grn?.id ??
   grn?.grnId ??
   grn?.grn_id
-
 
 const getGrnNumber = (grn) =>
   grn?.grnNumber ??
@@ -124,41 +94,34 @@ const getGrnNumber = (grn) =>
       : '-'
   )
 
-
 const getReturnId = (item) =>
   item?.purchaseReturnId ??
   item?.returnId ??
   item?.return_id ??
   item?.id
 
-
 const getReturnNumberDisplay = (item) =>
   item?.returnNumber ??
   item?.return_number ??
   (getReturnId(item) ? `#${getReturnId(item)}` : '-')
 
-
 const getReturnSupplierId = (item) =>
   item?.supplierId ??
   item?.supplier_id
-
 
 const getReturnGrnId = (item) =>
   item?.grnId ??
   item?.grn_id
 
-
 const getReturnDate = (item) =>
   item?.returnDate ??
   item?.return_date
-
 
 const getTotalAmount = (item) =>
   item?.totalAmount ??
   item?.total_amount ??
   item?.totalReturnAmount ??
   0
-
 
 export default function PurchaseReturns() {
   const navigate = useNavigate()
@@ -174,15 +137,10 @@ export default function PurchaseReturns() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const [searchQuery, setSearchQuery] = useState('')
   const [supplierFilter, setSupplierFilter] = useState('')
-
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
 
   const [deleteTargetId, setDeleteTargetId] = useState(null)
   const [deleting, setDeleting] = useState(false)
-
 
   // =========================================================
   // LOAD DATA
@@ -201,13 +159,8 @@ export default function PurchaseReturns() {
         getPurchaseReturnSuppliers(),
       ])
 
-
-      const returnsData =
-        getArrayFromResponse(returnsResponse)
-
-      const suppliersData =
-        getArrayFromResponse(suppliersResponse)
-
+      const returnsData = getArrayFromResponse(returnsResponse)
+      const suppliersData = getArrayFromResponse(suppliersResponse)
 
       if (returnsData === null) {
         throw new Error(
@@ -221,11 +174,9 @@ export default function PurchaseReturns() {
         )
       }
 
-
       setReturns(returnsData)
       setSuppliers(suppliersData)
       setGrns([])
-
     } catch (err) {
       console.error(
         'Purchase Returns API error:',
@@ -247,11 +198,9 @@ export default function PurchaseReturns() {
     }
   }, [])
 
-
   useEffect(() => {
     fetchData()
   }, [fetchData])
-
 
   // =========================================================
   // SUPPLIER LOOKUP
@@ -277,7 +226,6 @@ export default function PurchaseReturns() {
     return map
   }, [suppliers])
 
-
   // =========================================================
   // GRN LOOKUP
   // =========================================================
@@ -302,101 +250,78 @@ export default function PurchaseReturns() {
     return map
   }, [grns])
 
-
   // =========================================================
   // FILTER RETURNS
   // =========================================================
 
   const filteredReturns = useMemo(() => {
-    const query = searchQuery
-      .trim()
-      .toLowerCase()
+    if (!supplierFilter) {
+      return returns
+    }
 
     return returns.filter((item) => {
-      const returnId = String(
-        getReturnId(item) ?? ''
-      ).toLowerCase()
-
-      const supplierId =
-        getReturnSupplierId(item)
-
-      const grnId =
-        getReturnGrnId(item)
-
-      const supplierName = String(
-        suppliersMap[String(supplierId ?? '')] ??
-        item?.supplierName ??
-        item?.supplier_name ??
-        ''
-      ).toLowerCase()
-
-      const grnNumber = String(
-        grnsMap[String(grnId ?? '')] ??
-        item?.grnNumber ??
-        item?.grn_number ??
-        ''
-      ).toLowerCase()
-
-      const reason = String(
-        item?.reason ?? ''
-      ).toLowerCase()
-
-
-      const matchesSearch =
-        !query ||
-        returnId.includes(query) ||
-        supplierName.includes(query) ||
-        grnNumber.includes(query) ||
-        reason.includes(query)
-
-
-      const matchesSupplier =
-        !supplierFilter ||
-        String(supplierId ?? '') ===
-        String(supplierFilter)
-
-
-      return (
-        matchesSearch &&
-        matchesSupplier
-      )
+      const supplierId = getReturnSupplierId(item)
+      return String(supplierId ?? '') === String(supplierFilter)
     })
-  }, [
-    returns,
-    suppliersMap,
-    grnsMap,
-    searchQuery,
-    supplierFilter,
-  ])
+  }, [returns, supplierFilter])
 
-  // Reset page when search or supplier filter changes
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery, supplierFilter])
+  const tableRows = useMemo(() => {
+    return filteredReturns.map((row, index) => {
+      const returnId = getReturnId(row) ?? `return-${index}`
+      const supplierId = getReturnSupplierId(row)
+      const supplierName =
+        suppliersMap[String(supplierId ?? '')] ??
+        row?.supplierName ??
+        row?.supplier_name ??
+        (supplierId ? `Supplier #${supplierId}` : '-')
+      const grnId = getReturnGrnId(row)
+      const grnNumber =
+        grnsMap[String(grnId ?? '')] ??
+        row?.grnNumber ??
+        row?.grn_number ??
+        (grnId ? `GRN-${grnId}` : '-')
+      const returnNumberDisplay = getReturnNumberDisplay(row)
+      const returnDate = getReturnDate(row)
+      const totalAmount = getTotalAmount(row)
 
-  const totalPages = Math.max(1, Math.ceil(filteredReturns.length / pageSize))
-  const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages)
+      return {
+        ...row,
+        id: returnId,
+        returnId,
+        returnNumberDisplay,
+        supplierName,
+        grnNumber,
+        returnDate,
+        totalAmount,
+      }
+    })
+  }, [filteredReturns, suppliersMap, grnsMap])
 
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages)
+  // =========================================================
+  // ACTIONS
+  // =========================================================
+
+  const handleCreate = useCallback(() => {
+    navigate('/inventory/purchase-returns/create')
+  }, [navigate])
+
+  const handleView = useCallback((id) => {
+    if (id !== null && id !== undefined) {
+      navigate(`/inventory/purchase-returns/${id}`)
     }
-  }, [currentPage, totalPages])
+  }, [navigate])
 
-  const visiblePages = useMemo(
-    () => getVisiblePages(safeCurrentPage, totalPages),
-    [safeCurrentPage, totalPages]
-  )
+  const handleEdit = useCallback((id) => {
+    if (id !== null && id !== undefined) {
+      navigate(`/inventory/purchase-returns/edit/${id}`)
+    }
+  }, [navigate])
 
-  const paginatedReturns = useMemo(() => {
-    const start = (safeCurrentPage - 1) * pageSize
-    return filteredReturns.slice(start, start + pageSize)
-  }, [filteredReturns, safeCurrentPage, pageSize])
-
-
-  // =========================================================
-  // DELETE
-  // =========================================================
+  const handleDelete = useCallback((id) => {
+    if (id !== null && id !== undefined) {
+      setDeleteTargetId(id)
+    }
+  }, [])
 
   const handleDeleteConfirm = async () => {
     if (
@@ -410,19 +335,12 @@ export default function PurchaseReturns() {
     setDeleting(true)
 
     try {
-      await deletePurchaseReturn(
-        deleteTargetId
-      )
+      await deletePurchaseReturn(deleteTargetId)
 
       setReturns((previous) =>
         previous.filter((item) => {
-          const itemId =
-            getReturnId(item)
-
-          return (
-            String(itemId) !==
-            String(deleteTargetId)
-          )
+          const itemId = getReturnId(item)
+          return String(itemId) !== String(deleteTargetId)
         })
       )
 
@@ -430,7 +348,6 @@ export default function PurchaseReturns() {
         'Purchase return deleted successfully.',
         'success'
       )
-
     } catch (err) {
       console.error(
         'Delete Purchase Return error:',
@@ -450,79 +367,204 @@ export default function PurchaseReturns() {
     }
   }
 
-
   // =========================================================
-  // CREATE
-  // =========================================================
-
-  const handleCreate = () => {
-    navigate(
-      '/inventory/purchase-returns/create'
-    )
-  }
-
-
-  // =========================================================
-  // VIEW
+  // TABLE COLUMNS
   // =========================================================
 
-  const handleView = (id) => {
-    if (
-      id === null ||
-      id === undefined
-    ) {
-      return
-    }
-
-    navigate(
-      `/inventory/purchase-returns/${id}`
-    )
-  }
-
+  const columns = useMemo(() => [
+    {
+      key: 'returnNumber',
+      label: 'Return ID',
+      sortable: true,
+      mobilePrimary: true,
+      tableWidth: 150,
+      style: { width: 150, minWidth: 150 },
+      headerStyle: { width: 150, minWidth: 150 },
+      searchValue: (row) =>
+        `${row.returnNumberDisplay || getReturnNumberDisplay(row)} ${getReturnId(row)}`,
+      render: (row) => {
+        const returnId = getReturnId(row)
+        return (
+          <button
+            type="button"
+            className="link-button font-semibold text-primary"
+            onClick={() => handleView(returnId)}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+              textAlign: 'left',
+              font: 'inherit',
+            }}
+          >
+            {row.returnNumberDisplay || getReturnNumberDisplay(row)}
+          </button>
+        )
+      },
+    },
+    {
+      key: 'supplierName',
+      label: 'Supplier',
+      sortable: true,
+      tableWidth: 200,
+      style: { width: 200, minWidth: 180 },
+      headerStyle: { width: 200, minWidth: 180 },
+      searchValue: (row) => row.supplierName || '',
+      render: (row) => row.supplierName || '-',
+    },
+    {
+      key: 'grnNumber',
+      label: 'GRN',
+      align: 'center',
+      sortable: true,
+      className: 'text-center grn-cell',
+      headerClassName: 'text-center grn-header',
+      tableWidth: 140,
+      style: { width: 140, minWidth: 120, textAlign: 'center' },
+      headerStyle: { width: 140, minWidth: 120, textAlign: 'center' },
+      searchValue: (row) => row.grnNumber || '',
+      render: (row) => row.grnNumber || '-',
+    },
+    {
+      key: 'returnDate',
+      label: 'Return Date',
+      sortable: true,
+      className: 'date-cell',
+      tableWidth: 150,
+      style: { width: 150, minWidth: 130 },
+      headerStyle: { width: 150, minWidth: 130 },
+      render: (row) => (row.returnDate ? formatDate(row.returnDate) : '-'),
+    },
+    {
+      key: 'totalAmount',
+      label: 'Total Amount',
+      align: 'right',
+      sortable: true,
+      className: 'text-right font-semibold amount-cell',
+      headerClassName: 'text-right',
+      tableWidth: 160,
+      style: { width: 160, minWidth: 140, textAlign: 'right' },
+      headerStyle: { width: 160, minWidth: 140, textAlign: 'right' },
+      render: (row) => formatCurrency(row.totalAmount ?? 0),
+    },
+    {
+      key: 'reason',
+      label: 'Reason',
+      sortable: true,
+      className: 'reason-cell',
+      tableWidth: 220,
+      style: { width: 220, minWidth: 180 },
+      headerStyle: { width: 220, minWidth: 180 },
+      searchValue: (row) => row.reason || '',
+      render: (row) => {
+        const reason = row?.reason ?? ''
+        return (
+          <span className="reason-cell" title={reason}>
+            {reason ? (reason.length > 50 ? `${reason.slice(0, 50)}...` : reason) : '-'}
+          </span>
+        )
+      },
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      align: 'center',
+      searchable: false,
+      hideable: false,
+      className: 'text-center actions-cell',
+      headerClassName: 'text-center actions-header',
+      tableWidth: 80,
+      style: { width: 80, minWidth: 80, maxWidth: 80, textAlign: 'center' },
+      headerStyle: { width: 80, minWidth: 80, maxWidth: 80, textAlign: 'center' },
+      render: (row) => {
+        const returnId = getReturnId(row)
+        return (
+          <ActionMenu
+            iconOnly
+            label={`Actions for ${row.returnNumberDisplay || returnId}`}
+            menuKey={returnId}
+            actions={[
+              {
+                key: 'view',
+                label: 'View Details',
+                icon: Eye,
+                onClick: () => handleView(returnId),
+              },
+              {
+                key: 'edit',
+                label: 'Edit',
+                icon: Pencil,
+                onClick: () => handleEdit(returnId),
+              },
+              {
+                key: 'delete',
+                label: 'Delete',
+                icon: Trash2,
+                tone: 'danger',
+                onClick: () => handleDelete(returnId),
+              },
+            ]}
+          />
+        )
+      },
+    },
+  ], [handleView, handleEdit, handleDelete])
 
   // =========================================================
-  // EDIT
+  // TOOLBAR CONTENT
   // =========================================================
 
-  const handleEdit = (id) => {
-    if (
-      id === null ||
-      id === undefined
-    ) {
-      return
-    }
+  const filterContent = (
+    <FilterBar className="purchase-returns__filters" ariaLabel="Purchase return filters">
+      <div className="filter-group">
+        <label htmlFor="supplier-select">Supplier:</label>
+        <select
+          id="supplier-select"
+          value={supplierFilter}
+          onChange={(event) => setSupplierFilter(event.target.value)}
+          aria-label="Filter by supplier"
+        >
+          <option value="">All Suppliers</option>
+          {suppliers.map((supplier) => {
+            const supplierId = getSupplierId(supplier)
+            if (supplierId === null || supplierId === undefined || supplierId === '') {
+              return null
+            }
+            return (
+              <option key={String(supplierId)} value={String(supplierId)}>
+                {getSupplierName(supplier)}
+              </option>
+            )
+          })}
+        </select>
+      </div>
 
-    navigate(
-      `/inventory/purchase-returns/edit/${id}`
-    )
-  }
+      {supplierFilter ? (
+        <button
+          className="erp-button erp-button--secondary"
+          type="button"
+          onClick={() => setSupplierFilter('')}
+        >
+          Reset Filters
+        </button>
+      ) : null}
+    </FilterBar>
+  )
 
-
-  // =========================================================
-  // DELETE
-  // =========================================================
-
-  const handleDelete = (id) => {
-    if (
-      id === null ||
-      id === undefined
-    ) {
-      return
-    }
-
-    setDeleteTargetId(id)
-  }
-
-
-  // =========================================================
-  // RESET
-  // =========================================================
-
-  const handleResetFilters = () => {
-    setSearchQuery('')
-    setSupplierFilter('')
-  }
-
+  const toolbarContent = (
+    <FilterBar className="purchase-returns__toolbar-actions" ariaLabel="Purchase return table refresh actions">
+      <button
+        type="button"
+        className="button button-secondary"
+        onClick={fetchData}
+        disabled={loading}
+      >
+        <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+        Refresh
+      </button>
+    </FilterBar>
+  )
 
   // =========================================================
   // RENDER
@@ -540,111 +582,7 @@ export default function PurchaseReturns() {
         }}
       />
 
-
-      {/* TOOLBAR */}
-
-      <section className="purchase-returns-toolbar card">
-        <div className="toolbar-search">
-          <Search
-            size={16}
-            className="search-icon"
-          />
-
-          <input
-            type="text"
-            placeholder="Search by Return ID, Supplier, GRN or Reason"
-            value={searchQuery}
-            onChange={(event) =>
-              setSearchQuery(
-                event.target.value
-              )
-            }
-          />
-
-          {searchQuery && (
-            <button
-              type="button"
-              className="clear-search-btn"
-              onClick={() =>
-                setSearchQuery('')
-              }
-            >
-              Clear
-            </button>
-          )}
-        </div>
-
-
-        <div className="toolbar-filters">
-          <div className="filter-group">
-            <select
-              id="supplier-select"
-              value={supplierFilter}
-              onChange={(event) =>
-                setSupplierFilter(
-                  event.target.value
-                )
-              }
-              aria-label="Filter by supplier"
-            >
-              <option value="">
-                Supplier
-              </option>
-
-              {suppliers.map((supplier) => {
-                const supplierId =
-                  getSupplierId(supplier)
-
-                if (
-                  supplierId === null ||
-                  supplierId === undefined ||
-                  supplierId === ''
-                ) {
-                  return null
-                }
-
-                return (
-                  <option
-                    key={String(supplierId)}
-                    value={String(supplierId)}
-                  >
-                    {getSupplierName(supplier)}
-                  </option>
-                )
-              })}
-            </select>
-          </div>
-
-
-          {(searchQuery ||
-            supplierFilter) && (
-              <button
-                className="erp-button erp-button--secondary"
-                type="button"
-                onClick={
-                  handleResetFilters
-                }
-              >
-                Reset Filters
-              </button>
-            )}
-        </div>
-      </section>
-
-
-      {/* LOADING */}
-
-      {loading && (
-        <StateBlock
-          state="loading"
-          message="Loading purchase returns..."
-        />
-      )}
-
-
-      {/* ERROR */}
-
-      {!loading && error && (
+      {error ? (
         <div className="purchase-returns-error-card card">
           <AlertCircle
             size={24}
@@ -652,10 +590,7 @@ export default function PurchaseReturns() {
           />
 
           <div>
-            <h3>
-              We could not load this workspace
-            </h3>
-
+            <h3>We could not load this workspace</h3>
             <p>{error}</p>
           </div>
 
@@ -668,336 +603,75 @@ export default function PurchaseReturns() {
             Retry
           </button>
         </div>
-      )}
+      ) : null}
 
+      <div className="card purchase-returns-table-card purchases-page__table-card">
+        <DataTable
+          className="purchases-page__table purchase-returns-data-table"
+          rows={tableRows}
+          columns={columns}
+          loading={loading}
+          defaultPageSize={10}
+          defaultSortKey="returnDate"
+          defaultSortDirection="desc"
+          splitToolbar
+          filterContent={filterContent}
+          toolbarContent={toolbarContent}
+          showSearch={true}
+          showColumnControls={true}
+          columnStorageKey="ims.purchase-returns.visibleColumns.v1"
+          defaultVisibleColumnKeys={[
+            'returnNumber',
+            'supplierName',
+            'grnNumber',
+            'returnDate',
+            'totalAmount',
+            'reason',
+            'actions',
+          ]}
+          searchPlaceholder="Search by Return ID, Supplier, GRN or Reason"
+          emptyMessage="No purchase returns found."
+          keyField="returnId"
+        />
+      </div>
 
-      {/* EMPTY */}
-
-      {!loading &&
-        !error &&
-        filteredReturns.length === 0 && (
-          <div className="purchase-returns-empty card">
-            <p className="empty-title">
-              No purchase returns found
+      {deleteTargetId !== null && deleteTargetId !== undefined ? (
+        <FormModal
+          isOpen={true}
+          title="Delete Purchase Return?"
+          onClose={() => !deleting && setDeleteTargetId(null)}
+        >
+          <div className="delete-confirm-content">
+            <p>
+              This action will permanently remove this purchase return and its associated items.
             </p>
 
-            <p className="empty-subtitle">
-              {searchQuery ||
-                supplierFilter
-                ? 'No returns match your filter criteria.'
-                : 'Click "Create Purchase Return" to record your first return.'}
+            <p className="delete-warning">
+              Return ID: #{deleteTargetId}
             </p>
 
-            {!searchQuery &&
-              !supplierFilter && (
-                <button
-                  className="erp-button erp-button--primary"
-                  onClick={
-                    handleCreate
-                  }
-                  type="button"
-                >
-                  <Plus size={14} />
-                  Create Purchase Return
-                </button>
-              )}
+            <div className="form-modal-actions">
+              <button
+                className="erp-button erp-button--secondary"
+                type="button"
+                disabled={deleting}
+                onClick={() => setDeleteTargetId(null)}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="erp-button erp-button--danger"
+                type="button"
+                disabled={deleting}
+                onClick={handleDeleteConfirm}
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
           </div>
-        )}
-
-
-      {/* TABLE */}
-
-      {!loading &&
-        !error &&
-        filteredReturns.length > 0 && (
-          <section className="card purchase-returns-table-container">
-            <div className="purchase-returns-table-viewport">
-              <table className="purchase-returns-table">
-                <thead>
-                  <tr>
-                    <th>Return ID</th>
-                    <th>Supplier</th>
-                    <th className="text-center grn-header">GRN</th>
-                    <th>Return Date</th>
-                    <th className="text-right">
-                      Total Amount
-                    </th>
-                    <th>Reason</th>
-                    <th className="text-center actions-header">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {paginatedReturns.map((row) => {
-                    const returnId =
-                      getReturnId(row)
-
-                    const supplierId =
-                      getReturnSupplierId(row)
-
-                    const grnId =
-                      getReturnGrnId(row)
-
-                    const supplierName =
-                      suppliersMap[
-                      String(supplierId ?? '')
-                      ] ??
-                      row?.supplierName ??
-                      row?.supplier_name ??
-                      (
-                        supplierId
-                          ? `Supplier #${supplierId}`
-                          : '-'
-                      )
-
-                    const grnNumber =
-                      grnsMap[
-                      String(grnId ?? '')
-                      ] ??
-                      row?.grnNumber ??
-                      row?.grn_number ??
-                      (
-                        grnId
-                          ? `GRN-${grnId}`
-                          : '-'
-                      )
-
-                    const returnDate =
-                      getReturnDate(row)
-
-                    const totalAmount =
-                      getTotalAmount(row)
-
-                    const reason =
-                      row?.reason ?? ''
-
-
-                    return (
-                      <tr key={returnId}>
-                        <td className="font-semibold text-primary return-id-cell">
-                          {getReturnNumberDisplay(row)}
-                        </td>
-
-                        <td>
-                          {supplierName}
-                        </td>
-
-                        <td className="text-center grn-cell">
-                          {grnNumber}
-                        </td>
-
-                        <td className="date-cell">
-                          {returnDate
-                            ? formatDate(
-                              returnDate
-                            )
-                            : '-'}
-                        </td>
-
-                        <td className="text-right font-semibold amount-cell">
-                          {formatCurrency(
-                            totalAmount
-                          )}
-                        </td>
-
-                        <td
-                          className="reason-cell"
-                          title={reason}
-                        >
-                          {reason
-                            ? reason.length > 50
-                              ? `${reason.slice(
-                                0,
-                                50
-                              )}...`
-                              : reason
-                            : '-'}
-                        </td>
-
-                        <td className="text-center actions-cell">
-                          <ActionMenu
-                            iconOnly
-                            label={`Actions for ${getReturnNumberDisplay(row) || returnId}`}
-                            menuKey={returnId}
-                            actions={[
-                              {
-                                key: 'view',
-                                label: 'View Details',
-                                icon: Eye,
-                                onClick: () => handleView(returnId),
-                              },
-                              {
-                                key: 'edit',
-                                label: 'Edit',
-                                icon: Pencil,
-                                onClick: () => handleEdit(returnId),
-                              },
-                              {
-                                key: 'delete',
-                                label: 'Delete',
-                                icon: Trash2,
-                                tone: 'danger',
-                                onClick: () => handleDelete(returnId),
-                              },
-                            ]}
-                          />
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            <Pagination className="table-component__pagination purchase-returns-pagination">
-              <div className="table-component__pagination-metrics">
-                <label className="table-component__rows-control">
-                  <span>Rows</span>
-                  <select
-                    value={pageSize}
-                    onChange={(event) => {
-                      setPageSize(Number(event.target.value))
-                      setCurrentPage(1)
-                    }}
-                  >
-                    {[8, 10, 15, 20, 25].map((size) => (
-                      <option key={size} value={size}>
-                        {size}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <span className="table-component__status">
-                  Showing {filteredReturns.length === 0 ? 0 : (safeCurrentPage - 1) * pageSize + 1}-
-                  {Math.min(safeCurrentPage * pageSize, filteredReturns.length)} of {filteredReturns.length}
-                </span>
-                <span className="table-component__page-indicator">
-                  Page {safeCurrentPage} of {totalPages}
-                </span>
-              </div>
-
-              <div className="table-component__page-controls">
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => setCurrentPage(1)}
-                  disabled={safeCurrentPage === 1}
-                  aria-label="Go to first page"
-                >
-                  <ChevronsLeft size={16} />
-                  First
-                </button>
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() =>
-                    setCurrentPage((currentValue) =>
-                      Math.max(currentValue - 1, 1)
-                    )
-                  }
-                  disabled={safeCurrentPage === 1}
-                  aria-label="Go to previous page"
-                >
-                  <ChevronLeft size={16} />
-                  Previous
-                </button>
-                {visiblePages.map((pageNumber) => (
-                  <button
-                    key={pageNumber}
-                    type="button"
-                    className={`table-component__page-number ${pageNumber === safeCurrentPage ? 'is-active' : ''}`.trim()}
-                    onClick={() => setCurrentPage(pageNumber)}
-                    aria-current={
-                      pageNumber === safeCurrentPage ? 'page' : undefined
-                    }
-                    aria-label={`Go to page ${pageNumber}`}
-                  >
-                    {pageNumber}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() =>
-                    setCurrentPage((currentValue) =>
-                      Math.min(currentValue + 1, totalPages)
-                    )
-                  }
-                  disabled={safeCurrentPage === totalPages}
-                  aria-label="Go to next page"
-                >
-                  Next
-                  <ChevronRight size={16} />
-                </button>
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => setCurrentPage(totalPages)}
-                  disabled={safeCurrentPage === totalPages}
-                  aria-label="Go to last page"
-                >
-                  Last
-                  <ChevronsRight size={16} />
-                </button>
-              </div>
-            </Pagination>
-          </section>
-        )}
-
-
-      {/* DELETE MODAL */}
-
-      {deleteTargetId !== null &&
-        deleteTargetId !== undefined && (
-          <FormModal
-            isOpen={true}
-            title="Delete Purchase Return?"
-            onClose={() =>
-              !deleting &&
-              setDeleteTargetId(null)
-            }
-          >
-            <div className="delete-confirm-content">
-              <p>
-                This action will permanently
-                remove this purchase return
-                and its associated items.
-              </p>
-
-              <p className="delete-warning">
-                Return ID: #{deleteTargetId}
-              </p>
-
-              <div className="form-modal-actions">
-                <button
-                  className="erp-button erp-button--secondary"
-                  type="button"
-                  disabled={deleting}
-                  onClick={() =>
-                    setDeleteTargetId(null)
-                  }
-                >
-                  Cancel
-                </button>
-
-                <button
-                  className="erp-button erp-button--danger"
-                  type="button"
-                  disabled={deleting}
-                  onClick={
-                    handleDeleteConfirm
-                  }
-                >
-                  {deleting
-                    ? 'Deleting...'
-                    : 'Delete'}
-                </button>
-              </div>
-            </div>
-          </FormModal>
-        )}
+        </FormModal>
+      ) : null}
     </main>
   )
 }

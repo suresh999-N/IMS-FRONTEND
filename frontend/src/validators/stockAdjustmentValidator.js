@@ -288,39 +288,56 @@ export function getReasonPlaceholder(adjustmentType = 'increase') {
 }
 
 /**
+ * Discrete units (Pcs, Unit, Box, Pack, Set, Pair, Nos, Item, etc.) do NOT allow fractions.
+ */
+const DISCRETE_UNIT_PATTERNS = [
+  /\b(?:pc|pcs|piece|pieces|unit|units|box|boxes|bag|bags|pack|packs|packet|packets|set|sets|pair|pairs|nos|no|item|items|carton|cartons|bundle|bundles|roll|rolls|drum|drums|bottle|bottles|can|cans|barrel|barrels|strip|strips)\b/i,
+]
+
+/**
  * Known continuous / decimal-supporting units (weight, volume, length, area, etc.)
  */
 const FRACTIONAL_UNIT_PATTERNS = [
-  /^(kg|kilo|kilogram|kilograms)$/i,
-  /^(g|gram|grams)$/i,
-  /^(mg|milligram|milligrams)$/i,
-  /^(lb|lbs|pound|pounds)$/i,
-  /^(oz|ounce|ounces)$/i,
-  /^(t|ton|tons|tonne|tonnes)$/i,
-  /^(l|ltr|liter|liters|litre|litres)$/i,
-  /^(ml|milliliter|milliliters|millilitre|millitres)$/i,
-  /^(gal|gallon|gallons)$/i,
-  /^(m|meter|meters|metre|metres)$/i,
-  /^(cm|centimeter|centimeters)$/i,
-  /^(mm|millimeter|millimeters)$/i,
-  /^(ft|feet|foot)$/i,
-  /^(in|inch|inches)$/i,
-  /^(yd|yard|yards)$/i,
-  /^(sqm|sqft|sqin|cum|cuft)$/i,
+  /\b(?:kg|kilo|kilogram|kilograms)\b/i,
+  /\b(?:g|gm|gram|grams)\b/i,
+  /\b(?:mg|milligram|milligrams)\b/i,
+  /\b(?:lb|lbs|pound|pounds)\b/i,
+  /\b(?:oz|ounce|ounces)\b/i,
+  /\b(?:t|ton|tons|tonne|tonnes|quintal|qtl)\b/i,
+  /\b(?:l|ltr|liter|liters|litre|litres)\b/i,
+  /\b(?:ml|milliliter|milliliters|millilitre|millitres|cc)\b/i,
+  /\b(?:gal|gallon|gallons)\b/i,
+  /\b(?:m|meter|meters|metre|metres)\b/i,
+  /\b(?:cm|centimeter|centimeters)\b/i,
+  /\b(?:mm|millimeter|millimeters)\b/i,
+  /\b(?:ft|feet|foot)\b/i,
+  /\b(?:in|inch|inches)\b/i,
+  /\b(?:yd|yard|yards)\b/i,
+  /\b(?:sqm|sqft|sqin|cum|cuft|cu\.m|sq\.m|sq\.ft)\b/i,
 ]
 
 /**
  * Checks whether a given unit permits fractional/decimal quantities.
  * Discrete units (Pcs, Unit, Box, Pack, Set, Pair, Nos, Item, etc.) do NOT allow fractions.
+ * Weight/volume/length units (kg, g, l, ml, m, etc.) allow fractions.
  */
 export function isFractionalUnitAllowed(unitName, unitShortName) {
-  const name = String(unitName || '').trim()
-  const short = String(unitShortName || '').trim()
+  const name = String(unitName || '').trim().toLowerCase()
+  const short = String(unitShortName || '').trim().toLowerCase()
 
   if (!name && !short) {
     return false // Default: unit-based / discrete
   }
 
+  // Check discrete patterns first: if it matches a known discrete unit, fractions are forbidden
+  const isDiscrete = DISCRETE_UNIT_PATTERNS.some(
+    (pattern) => pattern.test(name) || pattern.test(short),
+  )
+  if (isDiscrete) {
+    return false
+  }
+
+  // Check continuous patterns
   return FRACTIONAL_UNIT_PATTERNS.some(
     (pattern) => pattern.test(name) || pattern.test(short),
   )
@@ -329,10 +346,11 @@ export function isFractionalUnitAllowed(unitName, unitShortName) {
 /**
  * Validates quantity for Stock Adjustment based on product unit of measure.
  * Unit-based products (e.g. Pcs, Units, Boxes, Water Pump) must be whole numbers.
+ * Weight/volume-based products (e.g. kg, g, l, ml) allow decimals.
  */
-export function validateStockAdjustmentQuantity(quantity, product, unit) {
+export function validateStockAdjustmentQuantity(quantity, product, unit, { required = false } = {}) {
   if (quantity === undefined || quantity === null || String(quantity).trim() === '') {
-    return ''
+    return required ? 'Quantity is required.' : ''
   }
 
   const num = Number(quantity)
@@ -344,14 +362,32 @@ export function validateStockAdjustmentQuantity(quantity, product, unit) {
     return 'Quantity must be a positive number greater than 0.'
   }
 
-  const unitName = unit?.name || unit?.unitName || product?.unitName || product?.unit || ''
-  const unitShortName = unit?.shortName || unit?.abbreviation || product?.unitShortName || ''
+  const unitName =
+    unit?.name ||
+    unit?.unitName ||
+    unit?.Name ||
+    product?.unitName ||
+    product?.UnitName ||
+    product?.unit_name ||
+    (typeof product?.unit === 'string' ? product?.unit : product?.unit?.name || product?.unit?.Name) ||
+    ''
+
+  const unitShortName =
+    unit?.shortName ||
+    unit?.ShortName ||
+    unit?.abbreviation ||
+    unit?.unitShortName ||
+    product?.unitShortName ||
+    product?.UnitShortName ||
+    product?.shortName ||
+    (typeof product?.unit === 'object' ? product?.unit?.shortName || product?.unit?.ShortName : '') ||
+    ''
 
   const allowDecimal = isFractionalUnitAllowed(unitName, unitShortName)
 
   if (!allowDecimal && !Number.isInteger(num)) {
     const displayUnit = unitShortName || unitName || 'unit'
-    const productName = product?.name || product?.productName || 'this product'
+    const productName = product?.name || product?.productName || product?.Name || 'this product'
     return `Quantity for '${productName}' must be a whole number for unit '${displayUnit}'. Fractional quantities (e.g. ${quantity}) are not allowed.`
   }
 

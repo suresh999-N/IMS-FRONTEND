@@ -328,6 +328,19 @@ export const RESOURCE_CONFIGS = {
       },
       { name: 'price', label: 'Unit Price', type: 'currency', required: true, min: 0, readOnly: false },
       { name: 'receiptDate', label: 'Receipt Date', type: 'date', required: true, defaultValue: getToday, min: getToday },
+      {
+        name: 'supplierInvoice',
+        label: 'Supplier Invoice No *',
+        type: 'text',
+        required: true,
+        placeholder: 'Enter supplier invoice no',
+      },
+      {
+        name: 'supplierInvoiceDate',
+        label: 'Supplier Invoice Date *',
+        type: 'date',
+        required: true,
+      },
       { name: 'notes', label: 'Notes', type: 'textarea' },
     ],
     columns: [
@@ -341,6 +354,20 @@ export const RESOURCE_CONFIGS = {
       },
       { key: 'poNumber', label: 'PO Number', sortable: false },
       { key: 'supplierName', label: 'Supplier Name', sortable: false },
+      {
+        key: 'supplierInvoice',
+        label: 'Supplier Invoice No',
+        sortable: false,
+        render: (row) => {
+          const inv = row.supplierInvoice || row.supplierInvoiceNo || row.SupplierInvoice
+          if (inv && String(inv).trim() && String(inv).trim().toLowerCase() !== 'n/a') return String(inv).trim()
+          const poNum = row.poNumber || row.PoNumber
+          if (poNum) return `INV-${String(poNum).replace(/^PO-?/i, '')}`
+          const grn = row.grnNumber || row.GrnNumber
+          if (grn) return `INV-${String(grn).replace(/^GRN-?/i, '')}`
+          return 'N/A'
+        },
+      },
       { key: 'productName', label: 'Items', sortable: false },
       { key: 'quantityReceived', label: 'Received', sortable: false },
       { key: 'totalAmount', label: 'Price', format: 'currency', sortable: false },

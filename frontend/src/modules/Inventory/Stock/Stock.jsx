@@ -1399,16 +1399,23 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
               (v) => String(v.productId) === String(item.productId)
             )
 
-            const product = productsList.find((p) => String(p.productId ?? p.id) === String(item.productId))
+            const product = productsList.find((p) => String(p.productId ?? p.id ?? '') === String(item.productId ?? ''))
             const unitsList = referenceData.units ?? []
-            const unit = unitsList.find((u) => String(u.unitId ?? u.id) === String(product?.unitId))
+            const productUnitId = product?.unitId ?? product?.UnitId ?? product?.unit_id ?? (typeof product?.unit === 'object' ? product?.unit?.unitId ?? product?.unit?.id : null)
+            const unit = unitsList.find((u) => {
+              const uId = u.unitId ?? u.UnitId ?? u.unit_id ?? u.id
+              return uId !== undefined && productUnitId !== undefined && String(uId) === String(productUnitId)
+            }) || (typeof product?.unit === 'object' ? product?.unit : null)
+
             const lineQtyError = validateStockAdjustmentQuantity(item.quantity, product, unit)
             const hasQtyError = Boolean(lineQtyError)
 
-            const unitName = unit?.name || unit?.unitName || unit?.Name || product?.unitName || product?.UnitName || product?.unit || ''
-            const unitShortName = unit?.shortName || unit?.ShortName || unit?.abbreviation || product?.unitShortName || product?.UnitShortName || ''
+            const unitName = unit?.name || unit?.unitName || unit?.Name || product?.unitName || product?.UnitName || product?.unit_name || (typeof product?.unit === 'string' ? product?.unit : '') || ''
+            const unitShortName = unit?.shortName || unit?.ShortName || unit?.abbreviation || product?.unitShortName || product?.UnitShortName || product?.shortName || ''
             const allowDecimal = isFractionalUnitAllowed(unitName, unitShortName)
             const stepVal = allowDecimal ? '0.01' : '1'
+            const minVal = allowDecimal ? '0.01' : '1'
+            const displayUnit = unitShortName || unitName || (typeof product?.unit === 'string' ? product.unit : '')
 
             return (
               <div key={`${index}-${items.length}`} style={{ marginBottom: '12px' }}>
@@ -1459,12 +1466,14 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
 
                   <input
                     type="number"
-                    min="0.01"
+                    min={minVal}
                     step={stepVal}
                     value={item.quantity}
                     onChange={(event) => updateLine(index, 'quantity', event.target.value)}
                     required
                     aria-label={`Line ${index + 1} quantity`}
+                    placeholder={allowDecimal ? '0.00' : '0'}
+                    title={displayUnit ? `Unit: ${displayUnit} (${allowDecimal ? 'Decimals allowed' : 'Whole numbers only'})` : (allowDecimal ? 'Decimals allowed' : 'Whole numbers only')}
                     style={{
                       width: '100%',
                       height: '38px',
@@ -1507,12 +1516,10 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
             Add Line
           </button>
         </div>
-        {error && !items.some(item => {
-          const product = productsList.find((p) => String(p.productId ?? p.id) === String(item.productId))
-          const unit = (referenceData.units ?? []).find((u) => String(u.unitId ?? u.id) === String(product?.unitId))
-          return Boolean(validateStockAdjustmentQuantity(item.quantity, product, unit))
-        }) ? (
-          <span className="field-error">{error}</span>
+        {error ? (
+          <div className="field-error" style={{ color: '#dc2626', fontSize: '0.8125rem', marginTop: '6px', fontWeight: 500 }}>
+            {error}
+          </div>
         ) : null}
       </div>
     )
@@ -2421,14 +2428,61 @@ function ResourcePage({ config, navigationContent = null }) {
       const { items, ...headerPayload } = payload
       const { items: changedItems, ...changedHeaderPayload } = changedPayload
 
-      response = id
-        ? await updateResource(config, id, headerPayload, changedHeaderPayload)
-        : await createResource(config, headerPayload)
+      const itemsList = Array.isArray(items) ? items : []
+      if (itemsList.length === 0 || !itemsList.some((it) => it.productId)) {
+        setIsSaving(false)
+        showToast({
+          type: 'error',
+          title: config.title,
+          message: 'At least one adjustment item is required.',
+        })
+        return
+      }
 
-      if (response.success) {
-        const adjId = id ?? response.data.adjustmentId ?? response.data.id
+      // Pre-validate all line items before sending to backend
+      const products = referenceData.products ?? []
+      const units = referenceData.units ?? []
+      for (let i = 0; i < itemsList.length; i++) {
+        const item = itemsList[i]
+        if (!item.productId) {
+          setIsSaving(false)
+          showToast({
+            type: 'error',
+            title: config.title,
+            message: `Line ${i + 1}: Please select a product.`,
+          })
+          return
+        }
+        const product = products.find((p) => String(p.productId ?? p.id ?? '') === String(item.productId ?? ''))
+        const productUnitId = product?.unitId ?? product?.UnitId ?? product?.unit_id ?? (typeof product?.unit === 'object' ? product?.unit?.unitId ?? product?.unit?.id : null)
+        const unit = units.find((u) => {
+          const uId = u.unitId ?? u.UnitId ?? u.unit_id ?? u.id
+          return uId !== undefined && productUnitId !== undefined && String(uId) === String(productUnitId)
+        }) || (typeof product?.unit === 'object' ? product?.unit : null)
 
-        if (id) {
+        const qtyErr = validateStockAdjustmentQuantity(item.quantity, product, unit, { required: true })
+        if (qtyErr) {
+          setIsSaving(false)
+          showToast({
+            type: 'error',
+            title: config.title,
+            message: `Line ${i + 1}: ${qtyErr}`,
+          })
+          return
+        }
+      }
+
+      const formattedItems = itemsList
+        .filter((it) => it.productId)
+        .map((it) => ({
+          productId: Number(it.productId),
+          variantId: it.variantId ? Number(it.variantId) : null,
+          quantity: Number(it.quantity),
+        }))
+
+      if (id) {
+        response = await updateResource(config, id, headerPayload, changedHeaderPayload)
+        if (response.success) {
           // Clean up old items for editing mode
           const oldItems = (referenceData.stockAdjustmentItems ?? []).filter(
             (item) => String(item.adjustmentId) === String(id)
@@ -2441,23 +2495,33 @@ function ResourcePage({ config, navigationContent = null }) {
               })
             }
           }
-        }
 
-        // Insert items
-        if (Array.isArray(items)) {
-          for (const item of items) {
-            if (!item.productId) continue
-            await apiRequest(API_ENDPOINTS.stockAdjustmentItems.list, {
+          // Insert items
+          for (const item of formattedItems) {
+            const itemRes = await apiRequest(API_ENDPOINTS.stockAdjustmentItems.list, {
               method: 'POST',
               body: {
-                adjustmentId: Number(adjId),
-                productId: Number(item.productId),
-                variantId: item.variantId ? Number(item.variantId) : null,
-                quantity: Number(item.quantity),
+                adjustmentId: Number(id),
+                productId: item.productId,
+                variantId: item.variantId,
+                quantity: item.quantity,
               },
             })
+            if (!itemRes.success) {
+              response = {
+                success: false,
+                error: itemRes.error || itemRes.message || 'Failed to save adjustment item.',
+              }
+              break
+            }
           }
         }
+      } else {
+        // Send items in the creation payload for atomic transaction processing
+        response = await createResource(config, {
+          ...headerPayload,
+          items: formattedItems,
+        })
       }
     } else if (config.key === 'stockTransfers') {
       const { items, ...headerPayload } = payload
