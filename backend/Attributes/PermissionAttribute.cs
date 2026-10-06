@@ -1,4 +1,4 @@
-﻿using IMSBackend.Services;
+using IMSBackend.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Security.Claims;
@@ -45,6 +45,11 @@ namespace IMSBackend.Attributes
             if (string.IsNullOrEmpty(role))
             {
                 context.Result = new UnauthorizedResult();
+                return;
+            }
+
+            if (string.Equals(role.Trim(), "Admin", StringComparison.OrdinalIgnoreCase))
+            {
                 return;
             }
 

@@ -21,38 +21,42 @@ namespace IMSBackend.Services
             string moduleKey,
             string action)
         {
-            Console.WriteLine("========== Permission Check ==========");
-            Console.WriteLine($"Role   : {roleName}");
-            Console.WriteLine($"Module : {moduleKey}");
-            Console.WriteLine($"Action : {action}");
+            if (string.IsNullOrWhiteSpace(roleName))
+            {
+                return false;
+            }
+
+            if (string.Equals(roleName.Trim(), "Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            var normalizedRole = roleName.Trim().ToLower();
+            var normalizedModule = (moduleKey ?? "").Trim().ToLower();
+            var altModule = normalizedModule.EndsWith("s")
+                ? normalizedModule[..^1]
+                : normalizedModule + "s";
 
             var permission = await _context.RolePermissions
                 .Include(x => x.Role)
                 .Include(x => x.Module)
                 .FirstOrDefaultAsync(x =>
-                    x.Role.RoleName == roleName &&
-                    x.Module.ModuleKey == moduleKey);
+                    x.Role.RoleName.ToLower() == normalizedRole &&
+                    (x.Module.ModuleKey.ToLower() == normalizedModule || x.Module.ModuleKey.ToLower() == altModule));
 
             if (permission == null || !permission.Role.IsActive)
             {
-                Console.WriteLine("Permission NOT FOUND or Role INACTIVE");
                 return false;
             }
 
-            Console.WriteLine("Permission FOUND");
-            Console.WriteLine($"DB Module : {permission.Module.ModuleKey}");
-            Console.WriteLine($"CanView   : {permission.CanView}");
-
-            var result = action.ToLower() switch
+            var result = action.Trim().ToLower() switch
             {
                 "view" => permission.CanView,
-                "add" => permission.CanAdd,
-                "edit" => permission.CanEdit,
+                "add" or "create" => permission.CanAdd,
+                "edit" or "update" => permission.CanEdit,
                 "delete" => permission.CanDelete,
                 _ => false
             };
-
-            Console.WriteLine($"Final Result = {result}");
 
             return result;
         }
@@ -63,12 +67,25 @@ namespace IMSBackend.Services
         public async Task<List<RolePermission>> GetPermissionsAsync(
             string roleName)
         {
-            return await _context.RolePermissions
+            var list = await _context.RolePermissions
                 .Include(x => x.Role)
                 .Include(x => x.Module)
-                .Where(x => x.Role.RoleName == roleName)
+                .Where(x => x.Role.RoleName.ToLower() == (roleName ?? "").ToLower())
                 .OrderBy(x => x.Module.DisplayOrder)
                 .ToListAsync();
+
+            if (string.Equals(roleName?.Trim(), "Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var p in list)
+                {
+                    p.CanView = true;
+                    p.CanAdd = true;
+                    p.CanEdit = true;
+                    p.CanDelete = true;
+                }
+            }
+
+            return list;
         }
 
         // =========================================================
@@ -107,21 +124,32 @@ namespace IMSBackend.Services
             string moduleKey,
             string action)
         {
+            var role = await _context.Roles.FirstOrDefaultAsync(r => r.RoleId == roleId);
+            if (role != null && string.Equals(role.RoleName, "Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            var normalizedModule = (moduleKey ?? "").Trim().ToLower();
+            var altModule = normalizedModule.EndsWith("s")
+                ? normalizedModule[..^1]
+                : normalizedModule + "s";
+
             var permission = await _context.RolePermissions
                 .Include(x => x.Role)
                 .Include(x => x.Module)
                 .FirstOrDefaultAsync(x =>
                     x.RoleId == roleId &&
-                    x.Module.ModuleKey == moduleKey);
+                    (x.Module.ModuleKey.ToLower() == normalizedModule || x.Module.ModuleKey.ToLower() == altModule));
 
             if (permission == null || !permission.Role.IsActive)
                 return false;
 
-            return action.ToLower() switch
+            return action.Trim().ToLower() switch
             {
                 "view" => permission.CanView,
-                "add" => permission.CanAdd,
-                "edit" => permission.CanEdit,
+                "add" or "create" => permission.CanAdd,
+                "edit" or "update" => permission.CanEdit,
                 "delete" => permission.CanDelete,
                 _ => false
             };
@@ -132,6 +160,9 @@ namespace IMSBackend.Services
         // =========================================================
         public async Task EnsurePermissionsForRoleAsync(int roleId)
         {
+            var role = await _context.Roles.FirstOrDefaultAsync(x => x.RoleId == roleId);
+            var isAdmin = role != null && string.Equals(role.RoleName, "Admin", StringComparison.OrdinalIgnoreCase);
+
             // Get all active modules
             var modules = await _context.Modules
                 .Where(x => x.IsActive)
@@ -149,29 +180,50 @@ namespace IMSBackend.Services
                 .Where(x => !existingModuleIds.Contains(x.ModuleId))
                 .ToList();
 
-            if (!missingModules.Any())
-                return;
+            if (missingModules.Any())
+            {
+                var newPermissions = missingModules
+                    .Select(module => new RolePermission
+                    {
+                        RoleId = roleId,
+                        ModuleId = module.ModuleId,
+                        CanView = isAdmin,
+                        CanAdd = isAdmin,
+                        CanEdit = isAdmin,
+                        CanDelete = isAdmin
+                    })
+                    .ToList();
 
-            var newPermissions = missingModules
-                .Select(module => new RolePermission
+                await _context.RolePermissions
+                    .AddRangeAsync(newPermissions);
+
+                await _context.SaveChangesAsync();
+            }
+
+            if (isAdmin)
+            {
+                var adminPermissions = await _context.RolePermissions
+                    .Where(x => x.RoleId == roleId)
+                    .ToListAsync();
+
+                bool changed = false;
+                foreach (var p in adminPermissions)
                 {
-                    RoleId = roleId,
-                    ModuleId = module.ModuleId,
+                    if (!p.CanView || !p.CanAdd || !p.CanEdit || !p.CanDelete)
+                    {
+                        p.CanView = true;
+                        p.CanAdd = true;
+                        p.CanEdit = true;
+                        p.CanDelete = true;
+                        changed = true;
+                    }
+                }
 
-                    // IMPORTANT:
-                    // New permission records start with
-                    // NO ACCESS.
-                    CanView = false,
-                    CanAdd = false,
-                    CanEdit = false,
-                    CanDelete = false
-                })
-                .ToList();
-
-            await _context.RolePermissions
-                .AddRangeAsync(newPermissions);
-
-            await _context.SaveChangesAsync();
+                if (changed)
+                {
+                    await _context.SaveChangesAsync();
+                }
+            }
         }
 
         // =========================================================

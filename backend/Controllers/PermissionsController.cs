@@ -1,4 +1,4 @@
-﻿using IMSBackend.Data;
+using IMSBackend.Data;
 using IMSBackend.DTOs;
 using IMSBackend.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -41,10 +41,10 @@ namespace IMSBackend.Controllers
         [HttpGet("role/{roleId}")]
         public async Task<IActionResult> GetPermissionsByRole(int roleId)
         {
-            var roleExists = await _context.Roles
-                .AnyAsync(x => x.RoleId == roleId);
+            var role = await _context.Roles
+                .FirstOrDefaultAsync(x => x.RoleId == roleId);
 
-            if (!roleExists)
+            if (role == null)
             {
                 return NotFound(new
                 {
@@ -69,6 +69,22 @@ namespace IMSBackend.Controllers
                 })
                 .OrderBy(x => x.moduleName)
                 .ToListAsync();
+
+            if (string.Equals(role.RoleName, "Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                var adminPermissions = permissions.Select(x => new
+                {
+                    x.permissionId,
+                    x.moduleName,
+                    x.moduleKey,
+                    canView = true,
+                    canAdd = true,
+                    canEdit = true,
+                    canDelete = true
+                }).ToList();
+
+                return Ok(adminPermissions);
+            }
 
             return Ok(permissions);
         }
@@ -127,6 +143,36 @@ namespace IMSBackend.Controllers
                 })
                 .OrderBy(x => x.displayOrder)
                 .ToListAsync();
+
+            if (string.Equals(role.RoleName, "Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                var adminPermissions = permissions.Select(x => new
+                {
+                    x.PermissionId,
+                    x.RoleId,
+                    x.ModuleId,
+                    x.moduleKey,
+                    x.moduleName,
+                    x.category,
+                    x.displayOrder,
+                    CanView = true,
+                    CanAdd = true,
+                    CanEdit = true,
+                    CanDelete = true
+                }).ToList();
+
+                return Ok(new
+                {
+                    role = new
+                    {
+                        role.RoleId,
+                        role.RoleName,
+                        role.Description,
+                        role.IsActive
+                    },
+                    permissions = adminPermissions
+                });
+            }
 
             return Ok(new
             {
