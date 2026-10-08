@@ -11727,9 +11727,16 @@
 }
 
 .customers-page__directory-card button.status-badge.status-critical:hover,
-.customers-page__directory-card button.status-badge.status-critical:focus-visible {
-  background: #f8d4d8 !important;
-  border-color: #eba3ab !important;
+.customers-page__directory-card button.status-badge.status-critical:focus-visible,
+.customers-page__directory-card button.status-badge.status-inactive:hover,
+.customers-page__directory-card button.status-badge.status-inactive:focus-visible,
+.customers-page__directory-card button.status-badge.status-danger:hover,
+.customers-page__directory-card button.status-badge.status-danger:focus-visible,
+.customers-page__directory-card button.status-badge.status-failed:hover,
+.customers-page__directory-card button.status-badge.status-failed:focus-visible {
+  background: #fee2e2 !important;
+  border-color: #f87171 !important;
+  color: #991b1b !important;
 }
 
 .customers-page .status-badge.status-active {
@@ -11742,9 +11749,18 @@
   color: #8a5b12 !important;
 }
 
-.customers-page .status-badge.status-critical {
-  background: #fde8ea !important;
-  color: #9d2430 !important;
+.customers-page .status-badge.status-critical,
+.customers-page .status-badge.status-inactive,
+.customers-page .status-badge.status-danger,
+.customers-page .status-badge.status-failed,
+.customers-page .status-badge--critical,
+.customers-page .status-badge--inactive,
+.customers-page .status-badge--danger,
+.customers-page .status-badge--failed {
+  background: #fef2f2 !important;
+  border: 1px solid #fecaca !important;
+  border-color: #fecaca !important;
+  color: #b91c1c !important;
 }
 
 .customer-status-modal__dialog {
@@ -22503,5 +22519,52 @@
   position: static !important;
   z-index: auto !important;
 }
+
+:is(.resource-center__page--customers, .customers-page) .status-badge:is(
+  .status-inactive,
+  .status-critical,
+  .status-danger,
+  .status-failed,
+  .status-badge--inactive,
+  .status-badge--critical,
+  .status-badge--danger,
+  .status-badge--failed
+),
+:is(.resource-center__page--customers, .customers-page) .table-container .status-badge:is(
+  .status-inactive,
+  .status-critical,
+  .status-danger,
+  .status-failed,
+  .status-badge--inactive,
+  .status-badge--critical,
+  .status-badge--danger,
+  .status-badge--failed
+),
+:is(.resource-center__page--customers, .customers-page) .table-component__table .status-badge:is(
+  .status-inactive,
+  .status-critical,
+  .status-danger,
+  .status-failed,
+  .status-badge--inactive,
+  .status-badge--critical,
+  .status-badge--danger,
+  .status-badge--failed
+),
+:is(.resource-center__page--customers, .customers-page) .customers-data-table--compact .status-badge:is(
+  .status-inactive,
+  .status-critical,
+  .status-danger,
+  .status-failed,
+  .status-badge--inactive,
+  .status-badge--critical,
+  .status-badge--danger,
+  .status-badge--failed
+) {
+  background: #fef2f2 !important;
+  border: 1px solid #fecaca !important;
+  border-color: #fecaca !important;
+  color: #b91c1c !important;
+}
+
 
 

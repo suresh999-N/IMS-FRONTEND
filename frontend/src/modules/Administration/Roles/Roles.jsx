@@ -3182,7 +3182,7 @@ function ResourcePage({ config, navigationContent = null }) {
         <header className="resource-center__inventory-header resource-center__users-header" aria-label={`${config.title} summary`}>
           <div className="resource-center__inventory-header-main">
             <div>
-              {!isUsersPage && <h1>{config.title}</h1>}
+              <h1>{config.title}</h1>
               {config.subtitle && <p className="resource-center__users-description">{config.subtitle}</p>}
             </div>
             <div className="resource-center__inventory-metrics" aria-label={`${config.title} metrics`}>

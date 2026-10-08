@@ -35,7 +35,8 @@ function getProductStatusType(product) {
   const status = getProductStatusLabel(product)
 
   if (status === 'Archived') return 'draft'
-  if (status === 'Inactive' || status === 'Out Of Stock') return 'failed'
+  if (status === 'Inactive') return 'inactive'
+  if (status === 'Out Of Stock') return 'failed'
   if (status === 'Low Stock') return 'warning'
   return 'success'
 }

@@ -69,7 +69,8 @@ export function formatNullableCurrency(formatCurrency, value) {
 export function getStatusBadgeType(status) {
   const normalized = normalizeStatusValue(status)
   if (normalized === 'archived') return 'pending'
-  if (normalized === 'blocked' || normalized === 'inactive') return 'failed'
+  if (normalized === 'blocked') return 'failed'
+  if (normalized === 'inactive') return 'inactive'
   if (!normalized || normalized === 'not set' || normalized === 'not_set') return 'draft'
   if (['paid', 'received', 'reconciled', 'active'].includes(normalized)) return 'received'
   return 'ordered'

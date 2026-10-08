@@ -140,6 +140,20 @@ export function getPasswordError(password, options = {}) {
   }
 
   if (
+    currentPassword &&
+    val.trim() === String(currentPassword).trim()
+  ) {
+    return 'New password cannot be the same as the current password.'
+  }
+
+  if (
+    oldPassword &&
+    val.trim() === String(oldPassword).trim()
+  ) {
+    return 'New password cannot be the same as the current password.'
+  }
+
+  if (
     isPasswordReused(val, {
       email,
       currentPassword,
@@ -147,7 +161,7 @@ export function getPasswordError(password, options = {}) {
       previousPasswords,
     })
   ) {
-    return 'New password cannot be the same as the old password.'
+    return 'New password cannot be the same as the current password.'
   }
 
   return ''

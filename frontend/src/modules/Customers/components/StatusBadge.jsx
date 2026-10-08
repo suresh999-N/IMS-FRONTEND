@@ -9,7 +9,7 @@ function getStatusClass(status) {
   }
 
   if (['blocked', 'disabled', 'archived', 'inactive'].includes(normalized)) {
-    return 'status-inactive'
+    return 'status-inactive status-critical'
   }
 
   if (['pending', 'prospect'].includes(normalized)) {

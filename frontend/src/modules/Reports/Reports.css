@@ -403,6 +403,7 @@
   color: #0f766e;
 }
 
+.reports-page .erp-statistics-card__body,
 .reports-page .erp-statistics-card__content {
   min-width: 0;
   overflow: hidden;
@@ -421,15 +422,17 @@
 }
 
 .reports-page .erp-statistics-card__value {
+  display: block;
+  max-width: 100%;
   margin-top: 3px;
   color: #0f172a;
-  font-size: clamp(15px, 1.2vw, 18px);
+  font-size: clamp(14px, 1.1vw, 17px);
   font-weight: 900;
   letter-spacing: -0.025em;
-  line-height: 1.05;
+  line-height: 1.1;
   white-space: nowrap;
-  overflow: visible;
-  text-overflow: clip;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .reports-page .erp-statistics-card__helper {
@@ -1459,15 +1462,17 @@
 }
 
 .reports-page .erp-statistics-card__value {
+  display: block !important;
+  max-width: 100% !important;
   margin-top: 3px !important;
   color: #0f172a !important;
   font-size: clamp(14px, 1.05vw, 17px) !important;
   font-weight: 900 !important;
   letter-spacing: -0.02em !important;
-  line-height: 1.05 !important;
+  line-height: 1.1 !important;
   white-space: nowrap !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .reports-page .erp-statistics-card__helper {
@@ -1940,7 +1945,7 @@
   grid-template-columns: 32px minmax(0, 1fr) !important;
   align-items: center !important;
   gap: 9px !important;
-  padding: 9px 11px !important;
+  padding: 9px 36px 9px 11px !important;
   border-radius: 13px !important;
   border: 1px solid #e2e8f0 !important;
   background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%) !important;
@@ -1960,6 +1965,7 @@
   border-radius: 9px !important;
 }
 
+.reports-page .erp-statistics-card__body,
 .reports-page .erp-statistics-card__content {
   min-width: 0 !important;
   overflow: hidden !important;
@@ -1976,13 +1982,19 @@
 }
 
 .reports-page .erp-statistics-card__value {
+  display: block !important;
+  max-width: 100% !important;
   margin-top: 3px !important;
-  font-size: clamp(13.5px, 1.02vw, 16px) !important;
+  font-size: clamp(13px, 1.02vw, 16px) !important;
   font-weight: 900 !important;
-  line-height: 1.05 !important;
+  line-height: 1.15 !important;
   white-space: nowrap !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.reports-page .erp-statistics-card.stat-card--top-selling .erp-statistics-card__value {
+  font-size: clamp(12px, 0.92vw, 14.5px) !important;
 }
 
 .reports-page .erp-statistics-card__helper {
@@ -2129,6 +2141,76 @@
   height: 14px !important;
   display: block !important;
   color: currentColor !important;
+}
+
+.reports-kpi-tile .reports-kpi-button .erp-statistics-card {
+  padding-right: 38px !important;
+}
+
+/* Reports KPI floating tooltip */
+.reports-kpi-tooltip {
+  position: fixed;
+  z-index: 99999;
+  transform: translate(-50%, -100%);
+  max-width: 320px;
+  padding: 6px 11px;
+  border-radius: 6px;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid rgba(51, 65, 85, 0.85);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.35);
+  pointer-events: none;
+  word-break: break-word;
+  white-space: normal;
+  text-align: center;
+  animation: reportsTooltipFadeIn 0.15s ease-out;
+}
+
+.reports-kpi-tooltip--below {
+  transform: translate(-50%, 0);
+  animation-name: reportsTooltipFadeInBelow;
+}
+
+.reports-kpi-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: #0f172a transparent transparent transparent;
+}
+
+.reports-kpi-tooltip--below::after {
+  top: auto;
+  bottom: 100%;
+  border-color: transparent transparent #0f172a transparent;
+}
+
+@keyframes reportsTooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -90%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%);
+  }
+}
+
+@keyframes reportsTooltipFadeInBelow {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 /* V17: Purchases table PO number full view without changing layout */

@@ -355,9 +355,13 @@ export default function CustomersTable({
       mobileStatus: true,
       render: (customer) => {
         const currentStatus = customer.status || 'Active'
+        const isInactive = String(currentStatus).trim().toLowerCase() === 'inactive'
 
         return (
-          <StatusBadge type={String(currentStatus).toLowerCase() === 'active' ? 'active' : 'critical'}>
+          <StatusBadge
+            type={isInactive ? 'critical' : (String(currentStatus).toLowerCase() === 'active' ? 'active' : 'info')}
+            className={isInactive ? 'status-inactive status-critical status-danger' : ''}
+          >
             {currentStatus}
           </StatusBadge>
         )

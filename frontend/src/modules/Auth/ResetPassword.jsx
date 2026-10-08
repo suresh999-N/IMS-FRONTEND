@@ -77,8 +77,14 @@ export default function ResetPassword() {
       return
     }
 
-    if (isPasswordReused(password, { email, oldPassword: location.state?.oldPassword })) {
-      setError('New password cannot be the same as the old password.')
+    if (
+      isPasswordReused(password, {
+        email,
+        oldPassword: location.state?.oldPassword,
+        currentPassword: location.state?.currentPassword,
+      })
+    ) {
+      setError('New password cannot be the same as the current password.')
       return
     }
 

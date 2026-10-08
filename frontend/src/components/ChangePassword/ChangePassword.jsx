@@ -40,6 +40,7 @@ const passwordText = {
     special: "Password must include special character",
     confirmRequired: "Confirm password is required",
     mismatch: "Passwords do not match",
+    sameAsCurrent: "New password cannot be the same as the current password",
   },
   telugu: {
     title: "పాస్‌వర్డ్ మార్చండి",
@@ -70,6 +71,7 @@ const passwordText = {
     special: "పాస్‌వర్డ్‌లో స్పెషల్ క్యారెక్టర్ ఉండాలి",
     confirmRequired: "కన్ఫర్మ్ పాస్‌వర్డ్ అవసరం",
     mismatch: "పాస్‌వర్డ్‌లు మ్యాచ్ కావడం లేదు",
+    sameAsCurrent: "కొత్త పాస్‌వర్డ్ ప్రస్తుత పాస్‌వర్డ్‌తో సమానంగా ఉండకూడదు",
   },
   hindi: {
     title: "Change Password",
@@ -100,6 +102,7 @@ const passwordText = {
     special: "Password में special character होना चाहिए",
     confirmRequired: "Confirm password required है",
     mismatch: "Passwords match नहीं हो रहे",
+    sameAsCurrent: "New password, current password के समान नहीं हो सकता",
   },
 };
 
@@ -296,9 +299,22 @@ function ChangePassword({ settingsData, onClose }) {
       }
     }
 
+    let sameError = "";
+    if (
+      updatedData.currentPassword &&
+      updatedData.newPassword &&
+      updatedData.currentPassword.trim() === updatedData.newPassword.trim()
+    ) {
+      sameError = p.sameAsCurrent || "New password cannot be the same as the current password";
+    }
+
     setErrors((previousErrors) => ({
       ...previousErrors,
       [name]: "",
+      newPassword:
+        name === "newPassword" || name === "currentPassword"
+          ? (sameError || (previousErrors.newPassword === (p.sameAsCurrent || "New password cannot be the same as the current password") ? "" : previousErrors.newPassword))
+          : previousErrors.newPassword,
       confirmPassword:
         name === "newPassword" || name === "confirmPassword"
           ? confirmError
@@ -308,12 +324,32 @@ function ChangePassword({ settingsData, onClose }) {
     setApiError("");
   };
 
+  const handleBlur = (event) => {
+    const { name } = event.target;
+    if (name === "newPassword" || name === "currentPassword") {
+      if (
+        passwordData.currentPassword &&
+        passwordData.newPassword &&
+        passwordData.currentPassword.trim() === passwordData.newPassword.trim()
+      ) {
+        setErrors((previousErrors) => ({
+          ...previousErrors,
+          newPassword: p.sameAsCurrent || "New password cannot be the same as the current password",
+        }));
+      }
+    }
+  };
+
   const validatePassword = () => {
     const newErrors = {};
 
     if (!passwordData.currentPassword) {
       newErrors.currentPassword = p.currentRequired;
     }
+
+    const isSameAsCurrent =
+      Boolean(passwordData.currentPassword && passwordData.newPassword) &&
+      passwordData.currentPassword.trim() === passwordData.newPassword.trim();
 
     if (!passwordData.newPassword) {
       newErrors.newPassword = p.newRequired;
@@ -328,11 +364,12 @@ function ChangePassword({ settingsData, onClose }) {
     } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(passwordData.newPassword)) {
       newErrors.newPassword = p.special;
     } else if (
+      isSameAsCurrent ||
       isPasswordReused(passwordData.newPassword, {
         currentPassword: passwordData.currentPassword,
       })
     ) {
-      newErrors.newPassword = "New password cannot be the same as the old password.";
+      newErrors.newPassword = p.sameAsCurrent || "New password cannot be the same as the current password";
     }
 
     if (!passwordData.confirmPassword) {
@@ -447,6 +484,7 @@ function ChangePassword({ settingsData, onClose }) {
                   name="currentPassword"
                   value={passwordData.currentPassword}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   placeholder={p.currentPlaceholder}
                   disabled={saving}
                 />
@@ -476,6 +514,7 @@ function ChangePassword({ settingsData, onClose }) {
                   name="newPassword"
                   value={passwordData.newPassword}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   placeholder={p.newPlaceholder}
                   disabled={saving}
                 />

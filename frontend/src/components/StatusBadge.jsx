@@ -20,6 +20,7 @@ const STATUS_TYPE_MAP = {
   cancelled: 'cancelled',
   canceled: 'cancelled',
   critical: 'failed',
+  danger: 'failed',
   disabled: 'failed',
   failed: 'failed',
   inactive: 'inactive',
@@ -45,9 +46,13 @@ function normalizeStatusKey(value) {
     .replace(/[_\s]+/g, '-')
 }
 
-function getStatusType(status, fallbackType) {
+function getStatusType(status, explicitType) {
+  if (explicitType) {
+    const typeKey = normalizeStatusKey(explicitType)
+    return STATUS_TYPE_MAP[typeKey] || explicitType
+  }
   const key = normalizeStatusKey(status)
-  return STATUS_TYPE_MAP[key] || fallbackType || 'info'
+  return STATUS_TYPE_MAP[key] || 'info'
 }
 
 export default function StatusBadge({

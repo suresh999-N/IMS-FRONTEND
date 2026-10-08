@@ -78,7 +78,7 @@ export async function generateBarcode(productId, products = []) {
 }
 
 export function normalizeBarcode(item = {}, products = []) {
-  const id = String(item.id || item.barcodeId || item.BarcodeId || '')
+  const rawId = String(item.id || item.barcodeId || item.BarcodeId || '')
   let productId = String(item.productId || item.ProductId || '')
   const rawProductName = item.productName || item.ProductName || ''
   const product = products.find(
@@ -96,6 +96,7 @@ export function normalizeBarcode(item = {}, products = []) {
   const codeType = item.codeType || item.CodeType || (rawValue.startsWith('QR:') ? 'QR Code' : 'Barcode')
   const dateVal = item.date || item.Date || item.createdAt || item.CreatedAt || new Date().toISOString().split('T')[0]
   const date = String(dateVal).split('T')[0]
+  const id = rawId || String(productId ? `barcode-prod-${productId}` : `${productName}-${rawValue || date}`)
 
   return {
     ...item,

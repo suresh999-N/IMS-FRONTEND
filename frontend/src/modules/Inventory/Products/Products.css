@@ -81,7 +81,10 @@
 .resource-center__page--products .resource-center__inventory-metric--neutral,
 .resource-center__page--products .resource-center__inventory-metric--archived { border-color: #cbd5e1; background: #f1f5f9; color: #475569; }
 
-.resource-center__page--products .status-badge.status-inactive {
+.resource-center__page--products .status-badge.status-inactive,
+.resource-center__page--products .status-badge.status-badge--inactive,
+.products-col-status .status-badge.status-inactive,
+.products-col-status .status-badge.status-badge--inactive {
   border-color: #cbd5e1 !important;
   background: #f1f5f9 !important;
   color: #475569 !important;
@@ -110,15 +113,15 @@
   color: #9a3412;
 }
 
-.resource-center__page--products .resource-center__inventory-metric--danger.is-active,
-.resource-center__page--products .resource-center__inventory-metric--inactive.is-active {
+.resource-center__page--products .resource-center__inventory-metric--danger.is-active {
   border-color: #dc2626;
   background: #fee2e2;
   color: #991b1b;
 }
 
 .resource-center__page--products .resource-center__inventory-metric--neutral.is-active,
-.resource-center__page--products .resource-center__inventory-metric--archived.is-active {
+.resource-center__page--products .resource-center__inventory-metric--archived.is-active,
+.resource-center__page--products .resource-center__inventory-metric--inactive.is-active {
   border-color: #475569;
   background: #e2e8f0;
   color: #1e293b;

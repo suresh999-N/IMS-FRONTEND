@@ -1760,6 +1760,7 @@ function ResourcePage({ config, tabsContent = null }) {
   const [isDraftClosePromptOpen, setIsDraftClosePromptOpen] = useState(false)
   const [notificationFilters, setNotificationFilters] = useState({ read: 'all', type: 'all' })
   const [selectedSubCategoryIds, setSelectedSubCategoryIds] = useState([])
+  const [selectedRowIds, setSelectedRowIds] = useState([])
 
   const canCreate = (config.canCreate ?? true) && hasPermission(config.permissionKey, 'create')
   const canUpdate = (config.canUpdate ?? true) && hasPermission(config.permissionKey, 'edit')
@@ -2007,12 +2008,12 @@ function ResourcePage({ config, tabsContent = null }) {
   const hasSelectedSubCategories = selectedSubCategories.length > 0
 
   useEffect(() => {
-    if (!isSubCategoriesPage) {
-      return
-    }
-
     const visibleIdSet = new Set(rows.map((row) => String(row.id || '')))
-    setSelectedSubCategoryIds((currentValue) => currentValue.filter((id) => visibleIdSet.has(String(id))))
+    if (isSubCategoriesPage) {
+      setSelectedSubCategoryIds((currentValue) => currentValue.filter((id) => visibleIdSet.has(String(id))))
+    } else {
+      setSelectedRowIds((currentValue) => currentValue.filter((id) => visibleIdSet.has(String(id))))
+    }
   }, [isSubCategoriesPage, rows])
 
   async function handleSave({ payload, changedPayload }) {
@@ -2960,9 +2961,9 @@ function ResourcePage({ config, tabsContent = null }) {
           rowClassName={isNotificationsPage ? (row) => (getNotificationReadState(row) ? 'is-read' : 'is-unread') : undefined}
           defaultSortKey={isSubCategoriesPage ? 'name' : isInventoryCompactPage ? config.columns?.[0]?.key || '' : isNotificationsPage ? 'createdAt' : isInvoicesPage ? 'invoiceDate' : ''}
           defaultSortDirection={isNotificationsPage || isInvoicesPage ? 'desc' : 'asc'}
-          enableRowSelection={isSubCategoriesPage}
-          selectedRowKeys={isSubCategoriesPage ? selectedSubCategoryIds : undefined}
-          onSelectionChange={isSubCategoriesPage ? setSelectedSubCategoryIds : undefined}
+          enableRowSelection={true}
+          selectedRowKeys={isSubCategoriesPage ? selectedSubCategoryIds : selectedRowIds}
+          onSelectionChange={isSubCategoriesPage ? setSelectedSubCategoryIds : setSelectedRowIds}
           keyField="id"
         />
       </div>

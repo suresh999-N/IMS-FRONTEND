@@ -2147,6 +2147,7 @@ function ResourcePage({ config, navigationContent = null }) {
   const [selectedProductStyleRowIds, setSelectedProductStyleRowIds] = useState([])
   const [selectedStockAdjustmentIds, setSelectedStockAdjustmentIds] = useState([])
   const [selectedStockIds, setSelectedStockIds] = useState([])
+  const [selectedRowIds, setSelectedRowIds] = useState([])
 
   const canCreate = (config.canCreate ?? true) && hasPermission(config.permissionKey, 'create')
   const canUpdate = (config.canUpdate ?? true) && hasPermission(config.permissionKey, 'edit')
@@ -3930,9 +3931,9 @@ function ResourcePage({ config, navigationContent = null }) {
           rowClassName={isNotificationsPage ? (row) => (getNotificationReadState(row) ? 'is-read' : 'is-unread') : undefined}
           defaultSortKey={isProductStylePage ? config.columns?.[0]?.key || '' : isSubCategoriesPage ? 'name' : isInventoryCompactPage ? config.columns?.[0]?.key || '' : isNotificationsPage ? 'createdAt' : isInvoicesPage ? 'invoiceDate' : ''}
           defaultSortDirection={isNotificationsPage || isInvoicesPage ? 'desc' : 'asc'}
-          enableRowSelection={isSubCategoriesPage || isProductStylePage || isStockAdjustmentsPage || isStockPage}
-          selectedRowKeys={isStockPage ? selectedStockIds : isStockAdjustmentsPage ? selectedStockAdjustmentIds : isSubCategoriesPage ? selectedSubCategoryIds : isProductStylePage ? selectedProductStyleRowIds : undefined}
-          onSelectionChange={isStockPage ? setSelectedStockIds : isStockAdjustmentsPage ? setSelectedStockAdjustmentIds : isSubCategoriesPage ? setSelectedSubCategoryIds : isProductStylePage ? setSelectedProductStyleRowIds : undefined}
+          enableRowSelection={true}
+          selectedRowKeys={isStockPage ? selectedStockIds : isStockAdjustmentsPage ? selectedStockAdjustmentIds : isSubCategoriesPage ? selectedSubCategoryIds : isProductStylePage ? selectedProductStyleRowIds : selectedRowIds}
+          onSelectionChange={isStockPage ? setSelectedStockIds : isStockAdjustmentsPage ? setSelectedStockAdjustmentIds : isSubCategoriesPage ? setSelectedSubCategoryIds : isProductStylePage ? setSelectedProductStyleRowIds : setSelectedRowIds}
           keyField={isStockPage ? 'stockId' : isStockAdjustmentsPage ? 'adjustmentId' : isProductStylePage ? '__resourceSelectionKey' : 'id'}
         />
       </div>

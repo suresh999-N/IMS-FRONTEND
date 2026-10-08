@@ -141,6 +141,7 @@ export default function PurchaseReturns() {
 
   const [deleteTargetId, setDeleteTargetId] = useState(null)
   const [deleting, setDeleting] = useState(false)
+  const [selectedReturnIds, setSelectedReturnIds] = useState([])
 
   // =========================================================
   // LOAD DATA
@@ -631,6 +632,9 @@ export default function PurchaseReturns() {
           ]}
           searchPlaceholder="Search by Return ID, Supplier, GRN or Reason"
           emptyMessage="No purchase returns found."
+          enableRowSelection={true}
+          selectedRowKeys={selectedReturnIds}
+          onSelectionChange={setSelectedReturnIds}
           keyField="returnId"
         />
       </div>

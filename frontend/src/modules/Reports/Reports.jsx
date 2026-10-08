@@ -1011,7 +1011,7 @@ function SummaryCard({ title, value, caption, icon: Icon, trend, tone = 'neutral
               <span>{caption}</span>
             </span>
           }
-          className="stat-card"
+          className={`stat-card ${title === 'Top Selling Item' ? 'stat-card--top-selling' : ''}`.trim()}
         />
       </button>
 

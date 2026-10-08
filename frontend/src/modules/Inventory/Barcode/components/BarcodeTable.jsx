@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import { Printer, RefreshCw } from 'lucide-react'
 import CodePreview from './CodePreview'
 import { DataTable, ActionMenu, FilterBar } from '../../../../components/erp'
@@ -149,9 +150,28 @@ function handlePrintBarcode(item) {
   printWindow.print()
 }
 
-export default function BarcodeTable({ barcodes, onRefresh, isLoading }) {
+export default function BarcodeTable({ barcodes = [], onRefresh, isLoading }) {
+  const [selectedBarcodeIds, setSelectedBarcodeIds] = useState([])
+
+  const selectedBarcodes = useMemo(() => {
+    const selectedSet = new Set(selectedBarcodeIds.map(String))
+    return barcodes.filter((item) => selectedSet.has(String(item.id)))
+  }, [barcodes, selectedBarcodeIds])
+
   const toolbarContent = (
     <FilterBar className="barcode-page__toolbar-actions" ariaLabel="Barcode table refresh actions">
+      {selectedBarcodes.length > 0 ? (
+        <button
+          type="button"
+          className="button button-secondary"
+          onClick={() => {
+            selectedBarcodes.forEach((item) => handlePrintBarcode(item))
+          }}
+        >
+          <Printer size={16} />
+          Print Selected ({selectedBarcodes.length})
+        </button>
+      ) : null}
       <button
         type="button"
         className="button button-secondary"
@@ -217,6 +237,7 @@ export default function BarcodeTable({ barcodes, onRefresh, isLoading }) {
       <DataTable
         rows={barcodes}
         columns={columns}
+        loading={isLoading}
         defaultPageSize={8}
         splitToolbar
         showColumnControls={true}
@@ -225,6 +246,10 @@ export default function BarcodeTable({ barcodes, onRefresh, isLoading }) {
         toolbarContent={toolbarContent}
         searchPlaceholder="Search product or code"
         emptyMessage="No barcode or QR records available."
+        enableRowSelection={true}
+        selectedRowKeys={selectedBarcodeIds}
+        onSelectionChange={setSelectedBarcodeIds}
+        keyField="id"
       />
     </div>
   )

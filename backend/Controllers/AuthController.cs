@@ -860,12 +860,13 @@ namespace IMSBackend.Controllers
 
 
 
-            // Prevent using the same password again
-            if (BCrypt.Net.BCrypt.Verify(dto.NewPassword, user.PasswordHash))
+            // Prevent using the same password again
+            if (string.Equals(dto.CurrentPassword?.Trim(), dto.NewPassword?.Trim(), StringComparison.Ordinal) ||
+                BCrypt.Net.BCrypt.Verify(dto.NewPassword, user.PasswordHash))
             {
                 return BadRequest(ApiResponse<object>.Fail(
-                "New password cannot be the same as the current password.",
-                traceId: HttpContext.TraceIdentifier));
+                    "New password cannot be the same as the current password.",
+                    traceId: HttpContext.TraceIdentifier));
             }
 
             if (!System.Text.RegularExpressions.Regex.IsMatch(dto.NewPassword, @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\d\s]).{8,}$"))
@@ -1054,6 +1055,14 @@ namespace IMSBackend.Controllers
             {
                 return BadRequest(ApiResponse<object>.Fail(
                     "Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.",
+                    traceId: HttpContext.TraceIdentifier));
+            }
+
+            // Prevent using the current password again during reset
+            if (BCrypt.Net.BCrypt.Verify(dto.NewPassword, user.PasswordHash))
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    "New password cannot be the same as the current password.",
                     traceId: HttpContext.TraceIdentifier));
             }
 
