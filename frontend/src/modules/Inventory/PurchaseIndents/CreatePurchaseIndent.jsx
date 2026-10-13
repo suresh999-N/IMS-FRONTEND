@@ -1159,7 +1159,7 @@ function PurchaseIndentForm({
                 <th style={{ width: '25%' }}>Item Name <span className="required-asterisk">*</span></th>
                 <th style={{ width: '10%', textAlign: 'center' }}>Required Qty <span className="required-asterisk">*</span></th>
                 <th style={{ width: '8%', textAlign: 'center' }}>Unit</th>
-                <th style={{ width: '12%', textAlign: 'center' }}>Unit Price (₹)</th>
+                <th style={{ width: '12%', textAlign: 'right', paddingRight: '12px' }}>Unit Price (₹)</th>
                 <th style={{ width: '9%', textAlign: 'center' }}>Discount (%)</th>
                 <th style={{ width: '8%', textAlign: 'center' }}>Tax (%)</th>
                 <th style={{ width: '11%', textAlign: 'center' }}>Available Stock</th>

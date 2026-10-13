@@ -156,17 +156,21 @@ export default function Login({ onLoginSuccess, isSwitchMode = false }) {
           } catch {}
         }
 
-        const msg = result?.message || ''
-        const lowerMsg = msg.toLowerCase()
-        const fieldErrorMap = {}
-        if (lowerMsg.includes('email') || lowerMsg.includes('user') || lowerMsg.includes('identifier')) {
-          fieldErrorMap.email = msg
-        } else if (lowerMsg.includes('password') || lowerMsg.includes('credential')) {
-          fieldErrorMap.password = msg
-        }
-        setServerFieldErrors(fieldErrorMap)
+        // Technical API responses should be logged internally and not displayed to end users
+        console.error('[Login] Authentication request failed:', {
+          status: result?.status,
+          message: result?.message,
+          error: result?.error,
+          errors: result?.errors,
+          traceId: result?.traceId,
+        })
 
-        setError(getAuthErrorMessage(result?.message, 'Check your credentials and password.'))
+        const rawMsg = result?.message || result?.error || ''
+        const friendlyError = getAuthErrorMessage(rawMsg, 'Invalid email or password.')
+
+        // Clear field-level server errors to prevent raw responses leaking into form fields
+        setServerFieldErrors({})
+        setError(friendlyError)
         return
       }
 
@@ -187,8 +191,9 @@ export default function Login({ onLoginSuccess, isSwitchMode = false }) {
  
       const targetPath = getDefaultPath(result.user, roles)
       navigate(targetPath, { replace: true })
-    } catch {
-      setError('Unable to connect to the server.')
+    } catch (err) {
+      console.error('[Login] Unexpected error during authentication:', err)
+      setError('Service is currently unavailable.')
     } finally {
       setLoading(false)
     }

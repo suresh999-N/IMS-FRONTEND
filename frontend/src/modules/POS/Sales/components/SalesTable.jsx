@@ -1,6 +1,6 @@
 import { Trash2 } from 'lucide-react'
 import { ActionButtons, DataTable, StatusBadge } from '../../../../components/erp'
-import { formatCurrency } from '../../../../utils/helpers'
+import { formatCurrency, formatDate } from '../../../../utils/helpers'
 
 export default function SalesTable({ sales, canDelete, onDelete }) {
   const columns = [
@@ -21,7 +21,13 @@ export default function SalesTable({ sales, canDelete, onDelete }) {
       sortable: true,
       render: (sale) => formatCurrency(sale.total),
     },
-    { key: 'date', label: 'Date', sortable: true },
+    {
+      key: 'date',
+      label: 'Date',
+      format: 'date',
+      sortable: true,
+      render: (sale) => formatDate(sale.date),
+    },
     {
       key: 'status',
       label: 'Status',

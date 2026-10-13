@@ -46,6 +46,7 @@ import SupplierBankAccountsTab from '../../Suppliers/components/SupplierBankAcco
 import SupplierContactsTab from '../../Suppliers/components/SupplierContactsTab'
 import SupplierPaymentTermsTab from '../../Suppliers/components/SupplierPaymentTermsTab'
 import { getIfscBankMismatchError } from '../../Suppliers/components/SupplierForm'
+import { formatDateTime } from '../../../utils/helpers'
 import {
   DEPARTMENT_OPTIONS,
   IFSC_PATTERN,
@@ -671,18 +672,6 @@ function getComparablePayload(values) {
     paymentTerms: JSON.stringify(payload.paymentTerms),
     bankDetails: JSON.stringify(payload.bankDetails),
   }
-}
-
-function formatDateTime(value) {
-  const date = new Date(value)
-  if (!value || Number.isNaN(date.getTime())) return ''
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date)
 }
 
 function Section({ title, subtitle, children, className = '' }) {

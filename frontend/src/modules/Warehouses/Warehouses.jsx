@@ -1378,6 +1378,16 @@ export default function Warehouses({
       return
     }
 
+    if (transferForm.date < getToday()) {
+      const result = {
+        success: false,
+        message: 'Transfer Date cannot be in the past.',
+      }
+      setMessage(result)
+      notify(result)
+      return
+    }
+
     if (transferForm.fromWarehouseId === transferForm.toWarehouseId) {
       const result = {
         success: false,
@@ -1693,8 +1703,8 @@ export default function Warehouses({
                 label="Transfer Date"
                 value={transferForm.date}
                 placeholder="Select Transfer Date"
+                minDate={getToday()}
                 onChange={handleTransferChange}
-                placeholder="Select Transfer Date"
               />
 
               <div className="button-row">

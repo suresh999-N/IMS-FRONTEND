@@ -24,6 +24,7 @@ import {
 import {
   formatCurrency,
   formatDate,
+  formatPurchaseReturnNumber,
 } from '../../../utils/helpers'
 
 import './PurchaseReturns.css'
@@ -223,9 +224,7 @@ export default function PurchaseReturnDetails() {
     id
 
   const displayId =
-    record?.returnNumber ??
-    record?.return_number ??
-    (returnId ? `#${returnId}` : '')
+    formatPurchaseReturnNumber(record, returnId)
 
   const supplierId =
     record?.supplierId ??
@@ -246,7 +245,7 @@ export default function PurchaseReturnDetails() {
     return (
       <>
         <PageHeader
-          title={`Purchase Return #${id}`}
+          title={`Purchase Return ${formatPurchaseReturnNumber(null, id)}`}
           subtitle="View purchase return details."
           primaryAction={{
             icon: ArrowLeft,
@@ -271,7 +270,7 @@ export default function PurchaseReturnDetails() {
     return (
       <>
         <PageHeader
-          title={`Purchase Return #${id}`}
+          title={`Purchase Return ${formatPurchaseReturnNumber(null, id)}`}
           subtitle="View purchase return details."
           primaryAction={{
             icon: ArrowLeft,
@@ -314,7 +313,7 @@ export default function PurchaseReturnDetails() {
   return (
     <>
       <PageHeader
-        title={`Purchase Return ${displayId.startsWith('#') ? displayId : `#${displayId}`}`}
+        title={`Purchase Return ${displayId}`}
         subtitle="View purchase return details."
         primaryAction={{
           icon: ArrowLeft,

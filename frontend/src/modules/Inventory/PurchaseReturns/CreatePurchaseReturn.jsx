@@ -31,7 +31,7 @@ import {
   updatePurchaseReturn,
 } from '../../../api/purchaseReturnApi'
 
-import { formatCurrency } from '../../../utils/helpers'
+import { formatCurrency, formatPurchaseReturnNumber } from '../../../utils/helpers'
 
 import './PurchaseReturns.css'
 
@@ -270,6 +270,8 @@ export default function CreatePurchaseReturn() {
   const isEditMode =
     Boolean(id)
 
+  const [returnNumber, setReturnNumber] =
+    useState('')
 
   const [suppliers, setSuppliers] =
     useState([])
@@ -369,6 +371,11 @@ export default function CreatePurchaseReturn() {
             )
           }
 
+          setReturnNumber(
+            record?.returnNumber ??
+            record?.return_number ??
+            ''
+          )
 
           const recordSupplierId =
             record?.supplierId ??
@@ -992,6 +999,13 @@ export default function CreatePurchaseReturn() {
     }
 
 
+  const displayReturnNumber =
+    formatPurchaseReturnNumber(
+      returnNumber || null,
+      id
+    )
+
+
   // =========================================================
   // LOADING
   // =========================================================
@@ -1002,7 +1016,7 @@ export default function CreatePurchaseReturn() {
         <PageHeader
           title={
             isEditMode
-              ? `Edit Purchase Return #${id}`
+              ? `Edit Purchase Return ${displayReturnNumber}`
               : 'Create Purchase Return'
           }
           subtitle="Manage supplier goods returns against actual goods receipts."
@@ -1036,7 +1050,7 @@ export default function CreatePurchaseReturn() {
         <PageHeader
           title={
             isEditMode
-              ? `Edit Purchase Return #${id}`
+              ? `Edit Purchase Return ${displayReturnNumber}`
               : 'Create Purchase Return'
           }
           subtitle="Manage supplier goods returns against actual goods receipts."
@@ -1089,7 +1103,7 @@ export default function CreatePurchaseReturn() {
       <PageHeader
         title={
           isEditMode
-            ? `Edit Purchase Return #${id}`
+            ? `Edit Purchase Return ${displayReturnNumber}`
             : 'Create Purchase Return'
         }
         subtitle={

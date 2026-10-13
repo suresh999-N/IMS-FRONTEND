@@ -15,42 +15,62 @@ import SearchableSelect from '../../../components/SearchableSelect'
 import {
   CITY_TO_STATE_MAP,
   INDIA_STATES,
-  MAJOR_CITIES_BY_STATE,
 } from '../../Suppliers/supplierMasterData'
 import { renderFormLabel } from '../../../utils/labelUtils'
 import './WarehouseForm.css'
 
-export const PREDEFINED_LOCATIONS = Array.from(
-  new Set([
-    'Bengaluru',
-    'Delhi NCR',
-    'Mumbai',
-    'Hyderabad',
-    'Chennai',
-    'Pune',
-    'Kolkata',
-    'Ahmedabad',
-    'Jaipur',
-    'Surat',
-    'Lucknow',
-    'Chandigarh',
-    'Visakhapatnam',
-    'Indore',
-    'Bhopal',
-    'Kochi',
-    'Coimbatore',
-    'Vadodara',
-    'Patna',
-    'Nagpur',
-    'Ludhiana',
-    'Agra',
-    'Nashik',
-    'Noida',
-    'Gurugram',
-    ...Object.values(MAJOR_CITIES_BY_STATE).flat(),
-    ...INDIA_STATES,
-  ])
-).sort((a, b) => a.localeCompare(b))
+export const PREDEFINED_LOCATIONS = [
+  'Agra',
+  'Ahmedabad',
+  'Amritsar',
+  'Bengaluru',
+  'Bhopal',
+  'Bhubaneswar',
+  'Chandigarh',
+  'Chennai',
+  'Coimbatore',
+  'Dehradun',
+  'Delhi NCR',
+  'Faridabad',
+  'Ghaziabad',
+  'Gurugram',
+  'Guwahati',
+  'Gwalior',
+  'Hubballi',
+  'Hyderabad',
+  'Indore',
+  'Jaipur',
+  'Jamshedpur',
+  'Jodhpur',
+  'Kanpur',
+  'Kochi',
+  'Kolkata',
+  'Kozhikode',
+  'Lucknow',
+  'Ludhiana',
+  'Madurai',
+  'Mangaluru',
+  'Mumbai',
+  'Mysuru',
+  'Nagpur',
+  'Nashik',
+  'Navi Mumbai',
+  'Noida',
+  'Patna',
+  'Pune',
+  'Raipur',
+  'Rajkot',
+  'Ranchi',
+  'Salem',
+  'Surat',
+  'Thane',
+  'Thiruvananthapuram',
+  'Tiruchirappalli',
+  'Vadodara',
+  'Varanasi',
+  'Vijayawada',
+  'Visakhapatnam',
+]
 
 const emptyForm = {
   name: '',
@@ -160,14 +180,19 @@ function getLocationError(value) {
   }
 
   const key = cleanValue.replace(/[\s\-_]/g, '').toLowerCase()
+
+  const isIndianState = INDIA_STATES.some(
+    (s) => s.replace(/[\s\-_]/g, '').toLowerCase() === key && !['delhi', 'chandigarh', 'puducherry'].includes(key)
+  )
+  if (isIndianState) {
+    return 'Please select a specific warehouse city/location, not a state name.'
+  }
+
   const isPredefined = PREDEFINED_LOCATIONS.some(
     (loc) => loc.replace(/[\s\-_]/g, '').toLowerCase() === key
   )
-  const isIndianState = INDIA_STATES.some(
-    (s) => s.replace(/[\s\-_]/g, '').toLowerCase() === key
-  )
 
-  if (!isPredefined && !CITY_TO_STATE_MAP[key] && !isIndianState) {
+  if (!isPredefined && !CITY_TO_STATE_MAP[key]) {
     return 'Location must be a valid geographic location.'
   }
 
@@ -218,6 +243,19 @@ export default function WarehouseForm({
   }))
   const [touched, setTouched] = useState({})
   const [submitted, setSubmitted] = useState(false)
+
+  const locationOptions = useMemo(() => {
+    const existingLocations = warehouses
+      .map((w) => w.location?.trim())
+      .filter((loc) => Boolean(loc) && !INDIA_STATES.some((s) => s.toLowerCase() === loc.toLowerCase()))
+    const initialLocation = initialValues?.location?.trim()
+    const optionsSet = new Set([
+      ...PREDEFINED_LOCATIONS,
+      ...existingLocations,
+      ...(initialLocation && !INDIA_STATES.some((s) => s.toLowerCase() === initialLocation.toLowerCase()) ? [initialLocation] : []),
+    ])
+    return Array.from(optionsSet).sort((a, b) => a.localeCompare(b))
+  }, [warehouses, initialValues?.location])
 
   const errors = useMemo(() => {
     let emailErr = getEmailError(formData.email, { required: true })
@@ -442,7 +480,7 @@ export default function WarehouseForm({
             onBlur={() => {
               setTouched((prev) => ({ ...prev, location: true }))
             }}
-            options={PREDEFINED_LOCATIONS}
+            options={locationOptions}
             placeholder="Select location"
             searchPlaceholder="Search location..."
             error={getVisibleError('location')}

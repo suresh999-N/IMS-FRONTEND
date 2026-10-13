@@ -13,9 +13,11 @@ import {
   FileText,
   FolderTree,
   Hash,
+  History,
   Layers3,
   LoaderCircle,
   Mail,
+  PackageSearch,
   Pencil,
   Plus,
   Printer,
@@ -464,6 +466,22 @@ function getFieldError(field, value, mode, context = {}) {
     const customError = field.validate(value, context)
     if (customError) {
       return customError
+    }
+  }
+
+  if (field.type === 'date') {
+    const rawMin = field.min ?? field.minDate
+    const resolvedMin = typeof rawMin === 'function' ? rawMin() : rawMin
+    const minIso = resolvedMin === 'today' ? new Date().toISOString().slice(0, 10) : (resolvedMin ? String(resolvedMin).slice(0, 10) : '')
+    if (minIso && String(value).slice(0, 10) < minIso) {
+      return field.minMessage || `${label} cannot be in the past.`
+    }
+
+    const rawMax = field.max ?? field.maxDate
+    const resolvedMax = typeof rawMax === 'function' ? rawMax() : rawMax
+    const maxIso = resolvedMax === 'today' ? new Date().toISOString().slice(0, 10) : (resolvedMax ? String(resolvedMax).slice(0, 10) : '')
+    if (maxIso && String(value).slice(0, 10) > maxIso) {
+      return field.maxMessage || `${label} cannot be in the future.`
     }
   }
 
@@ -1919,8 +1937,8 @@ function ResourceForm({
           onChange={handleChange}
           onBlur={handleBlur}
           error={error}
-          minDate={field.min ? (typeof field.min === 'function' ? field.min() : field.min) : undefined}
-          maxDate={field.max ? (typeof field.max === 'function' ? field.max() : field.max) : undefined}
+          minDate={(field.min ?? field.minDate) ? (typeof (field.min ?? field.minDate) === 'function' ? (field.min ?? field.minDate)() : (field.min ?? field.minDate)) : undefined}
+          maxDate={(field.max ?? field.maxDate) ? (typeof (field.max ?? field.maxDate) === 'function' ? (field.max ?? field.maxDate)() : (field.max ?? field.maxDate)) : undefined}
           readOnly={field.readOnly}
           className={getResourceFieldClassName(config, field)}
         />
@@ -2064,6 +2082,8 @@ function ResourcePage({ config, navigationContent = null }) {
   const [viewingAdjustment, setViewingAdjustment] = useState(null)
   const [viewingTransfer, setViewingTransfer] = useState(null)
   const [viewingAudit, setViewingAudit] = useState(null)
+  const [viewingMovement, setViewingMovement] = useState(null)
+  const [viewingLedger, setViewingLedger] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [serverErrors, setServerErrors] = useState(null)
@@ -2633,6 +2653,45 @@ function ResourcePage({ config, navigationContent = null }) {
           }
         }
       }
+    } else if (config.key === 'goodsReceipts') {
+      if (!id) {
+        const supplierInvoiceNo = String(
+          payload.supplierInvoice ||
+          payload.supplierInvoiceNo ||
+          payload.supplierInvoiceNumber ||
+          payload.invoiceNo ||
+          payload.invoiceNumber ||
+          ''
+        ).trim()
+        const rawSupplierInvoiceDate = payload.supplierInvoiceDate || payload.invoiceDate || null
+
+        if (!supplierInvoiceNo || supplierInvoiceNo.toUpperCase() === 'N/A') {
+          setIsSaving(false)
+          showToast({
+            type: 'error',
+            title: config.title,
+            message: 'Supplier Invoice Number is required.',
+          })
+          return
+        }
+
+        if (!rawSupplierInvoiceDate || String(rawSupplierInvoiceDate).trim().toUpperCase() === 'N/A') {
+          setIsSaving(false)
+          showToast({
+            type: 'error',
+            title: config.title,
+            message: 'Supplier Invoice Date is required.',
+          })
+          return
+        }
+
+        payload.supplierInvoice = supplierInvoiceNo
+        payload.supplierInvoiceDate = rawSupplierInvoiceDate
+      }
+
+      response = id
+        ? await updateResource(config, id, payload, changedPayload)
+        : await createResource(config, payload)
     } else {
       response = id
         ? await updateResource(config, id, payload, changedPayload)
@@ -3334,11 +3393,23 @@ function ResourcePage({ config, navigationContent = null }) {
                   icon: Eye,
                   onClick: () => setViewingStock(row),
                 } : null,
+                config.key === 'stock' ? {
+                  key: 'print',
+                  label: 'Print',
+                  icon: Printer,
+                  onClick: () => printResourceRows(config, [row]),
+                } : null,
                 config.key === 'stockAdjustments' ? {
                   key: 'view',
                   label: 'View Details',
                   icon: FileText,
                   onClick: () => setViewingAdjustment(row),
+                } : null,
+                config.key === 'stockAdjustments' ? {
+                  key: 'print',
+                  label: 'Print',
+                  icon: Printer,
+                  onClick: () => printResourceRows(config, [row]),
                 } : null,
                 config.key === 'stockTransfers' ? {
                   key: 'view',
@@ -3346,11 +3417,47 @@ function ResourcePage({ config, navigationContent = null }) {
                   icon: FileText,
                   onClick: () => setViewingTransfer(row),
                 } : null,
+                config.key === 'stockTransfers' ? {
+                  key: 'print',
+                  label: 'Print',
+                  icon: Printer,
+                  onClick: () => printResourceRows(config, [row]),
+                } : null,
                 config.key === 'stockAudits' ? {
                   key: 'view',
                   label: 'View Details',
                   icon: FileText,
                   onClick: () => setViewingAudit(row),
+                } : null,
+                config.key === 'stockAudits' ? {
+                  key: 'print',
+                  label: 'Print',
+                  icon: Printer,
+                  onClick: () => printResourceRows(config, [row]),
+                } : null,
+                config.key === 'stockMovements' ? {
+                  key: 'view',
+                  label: 'View Details',
+                  icon: Eye,
+                  onClick: () => setViewingMovement(row),
+                } : null,
+                config.key === 'stockMovements' ? {
+                  key: 'print',
+                  label: 'Print',
+                  icon: Printer,
+                  onClick: () => printResourceRows(config, [row]),
+                } : null,
+                config.key === 'stockLedger' ? {
+                  key: 'view',
+                  label: 'View Details',
+                  icon: Eye,
+                  onClick: () => setViewingLedger(row),
+                } : null,
+                config.key === 'stockLedger' ? {
+                  key: 'print',
+                  label: 'Print',
+                  icon: Printer,
+                  onClick: () => printResourceRows(config, [row]),
                 } : null,
                 ...(config.rowActions ?? [])
                   .filter((action) => (action.shouldShow ? action.shouldShow(row) : true))
@@ -4117,6 +4224,60 @@ function ResourcePage({ config, navigationContent = null }) {
             { label: 'Last Updated', value: readResourceValue(viewingStock, 'updatedAt') ? formatDate(readResourceValue(viewingStock, 'updatedAt')) : readResourceValue(viewingStock, 'createdAt') ? formatDate(readResourceValue(viewingStock, 'createdAt')) : 'Not set' },
           ]}
           onClose={() => setViewingStock(null)}
+        />
+      ) : null}
+
+      {viewingMovement ? (
+        <RecordDetailsView
+          modalTitle="Stock Movement Details"
+          heroTitle={viewingMovement.productName || readResourceValue(viewingMovement, 'productName', 'Stock Movement')}
+          heroSubtitle={`Warehouse: ${viewingMovement.warehouseName || readResourceValue(viewingMovement, 'warehouseName', 'Not set')}`}
+          icon={PackageSearch}
+          status={viewingMovement.movementTypeLabel || formatStatusLabel(viewingMovement.movementType || 'Movement')}
+          fields={[
+            { label: 'Movement ID', value: `ID ${readResourceValue(viewingMovement, 'movementId', readResourceValue(viewingMovement, 'id', '—'))}` },
+            { label: 'Product Name', value: readResourceValue(viewingMovement, 'productName', '—') },
+            { label: 'Warehouse Name', value: readResourceValue(viewingMovement, 'warehouseName', '—') },
+            { label: 'Variant Name', value: readResourceValue(viewingMovement, 'variantName', 'Standard') },
+            { label: 'Movement Type', render: () => (
+              <StatusBadge type={getStatusType(viewingMovement.movementType || viewingMovement.movementTypeLabel)}>
+                {viewingMovement.movementTypeLabel || formatStatusLabel(viewingMovement.movementType || '—')}
+              </StatusBadge>
+            ) },
+            { label: 'Quantity', value: String(readResourceValue(viewingMovement, 'quantity', 0)) },
+            { label: 'Reference', value: String(readResourceValue(viewingMovement, 'referenceDisplay', readResourceValue(viewingMovement, 'referenceId', 'N/A'))) },
+            { label: 'Reference Type', value: String(readResourceValue(viewingMovement, 'referenceType', 'N/A')) },
+            { label: 'Created Date', value: readResourceValue(viewingMovement, 'createdAt') ? formatDate(readResourceValue(viewingMovement, 'createdAt')) : readResourceValue(viewingMovement, 'date') ? formatDate(readResourceValue(viewingMovement, 'date')) : 'Not set' },
+            { label: 'Notes', value: readResourceValue(viewingMovement, 'notes', 'N/A'), fullWidth: true },
+          ]}
+          onClose={() => setViewingMovement(null)}
+        />
+      ) : null}
+
+      {viewingLedger ? (
+        <RecordDetailsView
+          modalTitle="Stock Ledger Details"
+          heroTitle={viewingLedger.productName || readResourceValue(viewingLedger, 'productName', 'Ledger Entry')}
+          heroSubtitle={`Warehouse: ${viewingLedger.warehouseName || readResourceValue(viewingLedger, 'warehouseName', 'Not set')}`}
+          icon={History}
+          status={viewingLedger.transactionType || 'Transaction'}
+          fields={[
+            { label: 'Ledger ID', value: `ID ${readResourceValue(viewingLedger, 'ledgerId', readResourceValue(viewingLedger, 'id', '—'))}` },
+            { label: 'Product Name', value: readResourceValue(viewingLedger, 'productName', '—') },
+            { label: 'Warehouse Name', value: readResourceValue(viewingLedger, 'warehouseName', '—') },
+            { label: 'Variant Name', value: readResourceValue(viewingLedger, 'variantName', 'Standard') },
+            { label: 'Transaction Type', render: () => (
+              <StatusBadge type={getStatusType(viewingLedger.transactionType)}>
+                {formatStatusLabel(viewingLedger.transactionType || 'Transaction')}
+              </StatusBadge>
+            ) },
+            { label: 'Transaction / Ref', value: String(readResourceValue(viewingLedger, 'transactionDisplay', readResourceValue(viewingLedger, 'transactionId', '—'))) },
+            { label: 'Opening Quantity', value: String(readResourceValue(viewingLedger, 'openingQty', 0)) },
+            { label: 'Change Quantity', value: `${Number(readResourceValue(viewingLedger, 'changeQty', 0)) > 0 ? '+' : ''}${readResourceValue(viewingLedger, 'changeQty', 0)}` },
+            { label: 'Closing Quantity', value: String(readResourceValue(viewingLedger, 'closingQty', 0)) },
+            { label: 'Date', value: readResourceValue(viewingLedger, 'createdAt') ? formatDate(readResourceValue(viewingLedger, 'createdAt')) : readResourceValue(viewingLedger, 'date') ? formatDate(readResourceValue(viewingLedger, 'date')) : 'Not set' },
+          ]}
+          onClose={() => setViewingLedger(null)}
         />
       ) : null}
 

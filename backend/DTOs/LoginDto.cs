@@ -4,9 +4,11 @@ namespace IMSBackend.DTOs
 {
     public class LoginDto
     {
-        [Required]
         [MaxLength(256)]
         public string EmailOrPhone { get; set; } = string.Empty;
+
+        [MaxLength(256)]
+        public string? Email { get; set; }
 
         [Required]
         [MinLength(8)]

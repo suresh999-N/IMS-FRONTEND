@@ -1082,6 +1082,17 @@ export default function SupplierForm({
 
   const addressWarnings = useMemo(() => supplier.addresses.map(() => ({})), [supplier.addresses])
 
+  const isBankTransfer = cleanString(supplier.paymentTerm?.preferredPaymentMethod).toLowerCase() === 'bank transfer'
+
+  const hasValidBankAccount = supplier.bankAccounts.some(
+    (account) =>
+      !isBlankBankAccount(account) &&
+      cleanString(account.accountName) &&
+      cleanString(account.accountNumber) &&
+      cleanString(account.bankName) &&
+      cleanString(account.ifscCode)
+  )
+
   const bankErrors = useMemo(() => {
     const accountNumbers = supplier.bankAccounts.map((account) => onlyDigits(account.accountNumber)).filter(Boolean)
     const accountIfscPairs = supplier.bankAccounts
@@ -1092,8 +1103,18 @@ export default function SupplierForm({
       .filter((account) => account.accountNumber && account.ifscCode)
       .map((account) => `${account.accountNumber}|${account.ifscCode}`)
 
-    return supplier.bankAccounts.map((account) => {
+    const hasAnyNonBlankAccount = supplier.bankAccounts.some((account) => !isBlankBankAccount(account))
+
+    return supplier.bankAccounts.map((account, index) => {
       if (isBlankBankAccount(account)) {
+        if (isBankTransfer && !hasAnyNonBlankAccount && index === 0) {
+          return {
+            accountName: 'Account name is required when Bank Transfer is selected.',
+            accountNumber: 'Account number is required when Bank Transfer is selected.',
+            bankName: 'Bank name is required when Bank Transfer is selected.',
+            ifscCode: 'IFSC code is required when Bank Transfer is selected.',
+          }
+        }
         return {}
       }
 
@@ -1113,12 +1134,15 @@ export default function SupplierForm({
         upiId: getUpiError(account.upiId),
       }
     })
-  }, [supplier.bankAccounts])
+  }, [supplier.bankAccounts, isBankTransfer])
 
   const paymentTermErrors = {
     creditDays: getNonNegativeNumberError(supplier.paymentTerm.creditDays, 'Credit days', { max: 365, allowDecimal: false }),
     creditLimit: getNonNegativeNumberError(supplier.paymentTerm.creditLimit, 'Credit limit', { max: 999999999.99 }),
-    preferredPaymentMethod: '',
+    preferredPaymentMethod:
+      isBankTransfer && !hasValidBankAccount
+        ? 'Bank account details are required when Bank Transfer is selected.'
+        : '',
     currency: '',
     taxType: '',
     notes: cleanString(supplier.paymentTerm.notes).length > INPUT_LIMITS.notes ? `Notes cannot exceed ${INPUT_LIMITS.notes} characters.` : '',
@@ -1130,14 +1154,14 @@ export default function SupplierForm({
     ...contactErrors.flatMap((item) => Object.values(item)),
     ...addressErrors.flatMap((item) => Object.values(item)),
     ...bankErrors.flatMap((item) => Object.values(item)),
-  ].every((value) => !value)
+  ].every((value) => !value) && (!isBankTransfer || hasValidBankAccount)
   const isDirty = initialSnapshot !== getSupplierDirtySnapshot(supplier)
   const tabErrors = {
     basic: Object.values(basicErrors).some(Boolean),
     contacts: contactErrors.some((item) => Object.values(item).some(Boolean)),
     addresses: addressErrors.some((item) => Object.values(item).some(Boolean)),
     paymentTerms: Object.values(paymentTermErrors).some(Boolean),
-    bankAccounts: bankErrors.some((item) => Object.values(item).some(Boolean)),
+    bankAccounts: bankErrors.some((item) => Object.values(item).some(Boolean)) || (isBankTransfer && !hasValidBankAccount),
     documents: false,
   }
 

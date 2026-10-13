@@ -41,7 +41,7 @@ import ResponsiveChart from '../../components/charts/ResponsiveChart'
 import DatePicker from '../../components/DatePicker'
 import { DataTable, ExportMenu, StatisticsCard, StatusBadge } from '../../components/erp'
 import { showToast } from '../../components/common/toast'
-import { formatCreditLimit, formatCurrency, formatDate } from '../../utils/helpers'
+import { formatCreditLimit, formatCurrency, formatDate, formatDateTime } from '../../utils/helpers'
 import { formatPersonName } from '../../validators/nameValidator'
 import {
   buildCustomerOutstandingReport,
@@ -561,13 +561,7 @@ function createPremiumKpiPdfBlob({ title, value, trend, caption, dateRangeLabel,
   const tableWidth = pageWidth - (margin * 2)
   const exportColumns = (columns || []).filter(Boolean)
   const exportRows = rows || []
-  const generatedOn = new Date().toLocaleString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const generatedOn = formatDateTime(new Date())
   const safeTitle = normalizePdfText(title || 'KPI Report')
   const safeValue = normalizePdfText(value || '-')
   const safeTrend = normalizePdfText(trend || '-')

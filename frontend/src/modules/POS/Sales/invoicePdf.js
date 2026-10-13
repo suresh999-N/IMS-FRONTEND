@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf'
 import { autoTable } from 'jspdf-autotable'
 import { formatInvoiceCurrency } from './invoiceDocumentModel.js'
+import { formatDate } from '../../../utils/helpers'
 
 const PAGE_WIDTH = 210
 const PAGE_HEIGHT = 297
@@ -26,19 +27,10 @@ const COLORS = {
   white: [255, 255, 255],
 }
 
-const pdfDateFormatter = new Intl.DateTimeFormat('en-US', {
-  month: 'short',
-  day: '2-digit',
-  year: 'numeric',
-})
-
 function formatPdfDate(value) {
   if (!value) return ''
-  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) {
-    const [year, month, day] = value.slice(0, 10).split('-').map(Number)
-    return pdfDateFormatter.format(new Date(year, month - 1, day))
-  }
-  return pdfDateFormatter.format(new Date(value))
+  const formatted = formatDate(value)
+  return formatted && formatted !== '-' ? formatted : ''
 }
 
 function safeFilename(value) {

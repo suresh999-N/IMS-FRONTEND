@@ -1024,11 +1024,11 @@ function getGoodsReceiptDetailItems(record = {}) {
   const rawInvoiceNo = String(supplierInvoiceNo ?? '').trim()
   const displayInvoiceNo = (rawInvoiceNo && rawInvoiceNo.toLowerCase() !== 'n/a')
     ? rawInvoiceNo
-    : (poNum ? `INV-${String(poNum).replace(/^PO-?/i, '')}` : (grnNum && grnNum !== 'N/A' ? `INV-${String(grnNum).replace(/^GRN-?/i, '')}` : 'N/A'))
+    : 'N/A'
 
   const rawInvoiceDate = (supplierInvoiceDate && String(supplierInvoiceDate).toLowerCase() !== 'n/a')
     ? supplierInvoiceDate
-    : (receiptDate || record?.createdAt || record?.CreatedAt)
+    : null
   const displayInvoiceDate = rawInvoiceDate ? formatDate(rawInvoiceDate) : 'N/A'
 
   return [
@@ -3749,6 +3749,47 @@ function ResourcePage({ config, navigationContent = null }) {
       const id = editingRecord?.id
       let response
 
+      if (config.key === 'goodsReceipts' && !id) {
+        const supplierInvoiceNo = String(
+          payload.supplierInvoice ||
+          payload.supplierInvoiceNo ||
+          payload.supplierInvoiceNumber ||
+          payload.invoiceNo ||
+          payload.invoiceNumber ||
+          ''
+        ).trim()
+
+        const rawSupplierInvoiceDate = payload.supplierInvoiceDate || payload.invoiceDate || null
+
+        if (!supplierInvoiceNo || supplierInvoiceNo.toUpperCase() === 'N/A') {
+          setIsSaving(false)
+          saveInFlightRef.current = false
+          if (goodsReceiptSubmissionKey) {
+            GOODS_RECEIPT_SUBMISSION_LOCKS.delete(goodsReceiptSubmissionKey)
+          }
+          showToast({
+            type: 'error',
+            title: config.title,
+            message: 'Supplier Invoice Number is required.',
+          })
+          return { success: false, error: 'Supplier Invoice Number is required.' }
+        }
+
+        if (!rawSupplierInvoiceDate || String(rawSupplierInvoiceDate).trim().toUpperCase() === 'N/A') {
+          setIsSaving(false)
+          saveInFlightRef.current = false
+          if (goodsReceiptSubmissionKey) {
+            GOODS_RECEIPT_SUBMISSION_LOCKS.delete(goodsReceiptSubmissionKey)
+          }
+          showToast({
+            type: 'error',
+            title: config.title,
+            message: 'Supplier Invoice Date is required.',
+          })
+          return { success: false, error: 'Supplier Invoice Date is required.' }
+        }
+      }
+
       if (config.key === 'goodsReceipts' && !id && (payload?.poId || payload?.purchaseOrderId)) {
         const poId = payload.poId || payload.purchaseOrderId
         const [livePurchaseOrderResponse, existingReceiptsResponse] = await Promise.all([
@@ -3774,34 +3815,6 @@ function ResourcePage({ config, navigationContent = null }) {
         ).trim()
 
         const rawSupplierInvoiceDate = payload.supplierInvoiceDate || payload.invoiceDate || null
-
-        if (!supplierInvoiceNo) {
-          setIsSaving(false)
-          saveInFlightRef.current = false
-          if (goodsReceiptSubmissionKey) {
-            GOODS_RECEIPT_SUBMISSION_LOCKS.delete(goodsReceiptSubmissionKey)
-          }
-          showToast({
-            type: 'error',
-            title: config.title,
-            message: 'Supplier Invoice Number is required.',
-          })
-          return { success: false, error: 'Supplier Invoice Number is required.' }
-        }
-
-        if (!rawSupplierInvoiceDate) {
-          setIsSaving(false)
-          saveInFlightRef.current = false
-          if (goodsReceiptSubmissionKey) {
-            GOODS_RECEIPT_SUBMISSION_LOCKS.delete(goodsReceiptSubmissionKey)
-          }
-          showToast({
-            type: 'error',
-            title: config.title,
-            message: 'Supplier Invoice Date is required.',
-          })
-          return { success: false, error: 'Supplier Invoice Date is required.' }
-        }
 
         const knownReceiptIds = new Set(
           (existingReceiptsResponse.rows || [])

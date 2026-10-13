@@ -51,6 +51,9 @@ namespace IMSBackend.Controllers
             if (dto.Quantity <= 0)
                 return ValidationError("Quantity must be greater than zero.");
 
+            if (dto.TransferDate != default && dto.TransferDate.Date < DateTime.UtcNow.Date)
+                return ValidationError("Transfer date cannot be in the past.");
+
             var productExists = await _context.Products
                 .AsNoTracking()
                 .AnyAsync(item => item.ProductId == dto.ProductId && !item.IsDeleted, cancellationToken);
@@ -328,7 +331,12 @@ namespace IMSBackend.Controllers
                 transfer.ToWarehouseId = dto.ToWarehouseId;
 
             if (dto.TransferDate != default)
+            {
+                if (dto.TransferDate.Date < DateTime.UtcNow.Date)
+                    return ValidationError("Transfer date cannot be in the past.");
+
                 transfer.TransferDate = dto.TransferDate;
+            }
 
             if (!string.IsNullOrWhiteSpace(dto.Status))
                 transfer.Status = NormalizeStatus(dto.Status);

@@ -383,6 +383,22 @@ function getFieldError(field, value, mode, context = {}) {
     }
   }
 
+  if (field.type === 'date') {
+    const rawMin = field.min ?? field.minDate
+    const resolvedMin = typeof rawMin === 'function' ? rawMin() : rawMin
+    const minIso = resolvedMin === 'today' ? new Date().toISOString().slice(0, 10) : (resolvedMin ? String(resolvedMin).slice(0, 10) : '')
+    if (minIso && String(value).slice(0, 10) < minIso) {
+      return field.minMessage || `${label} cannot be in the past.`
+    }
+
+    const rawMax = field.max ?? field.maxDate
+    const resolvedMax = typeof rawMax === 'function' ? rawMax() : rawMax
+    const maxIso = resolvedMax === 'today' ? new Date().toISOString().slice(0, 10) : (resolvedMax ? String(resolvedMax).slice(0, 10) : '')
+    if (maxIso && String(value).slice(0, 10) > maxIso) {
+      return field.maxMessage || `${label} cannot be in the future.`
+    }
+  }
+
   if (field.type === 'number' || field.type === 'currency' || field.valueType === 'number') {
     const numericValue = Number(value)
 
@@ -1603,6 +1619,8 @@ function ResourceForm({
           onChange={handleChange}
           onBlur={handleBlur}
           error={error}
+          minDate={(field.min ?? field.minDate) ? (typeof (field.min ?? field.minDate) === 'function' ? (field.min ?? field.minDate)() : (field.min ?? field.minDate)) : undefined}
+          maxDate={(field.max ?? field.maxDate) ? (typeof (field.max ?? field.maxDate) === 'function' ? (field.max ?? field.maxDate)() : (field.max ?? field.maxDate)) : undefined}
           readOnly={field.readOnly}
           className={getResourceFieldClassName(config, field)}
         />
@@ -2556,6 +2574,12 @@ function ResourcePage({ config, tabsContent = null }) {
                   label: 'View Details',
                   icon: Eye,
                   onClick: () => setViewingRecord(row),
+                },
+                {
+                  key: 'print',
+                  label: 'Print',
+                  icon: Printer,
+                  onClick: () => printResourceRows(config, [row]),
                 },
                 ...(config.rowActions ?? [])
                   .filter((action) => (action.shouldShow ? action.shouldShow(row) : true))

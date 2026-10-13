@@ -166,7 +166,7 @@
   margin-bottom: 3px;
 }
 
-.form-modal :where(.input-with-icon, input:not(.input-with-icon input), textarea:not(.input-with-icon textarea), select, .searchable-select__trigger) {
+.form-modal :where(.input-with-icon, input:not(.input-with-icon input):not(.searchable-select__search input), textarea:not(.input-with-icon textarea), select, .searchable-select__trigger) {
   border: 1px solid rgba(203, 213, 225, 0.68);
   border-radius: 8px;
   font-size: 13px;
@@ -198,12 +198,12 @@
   box-sizing: border-box !important;
 }
 
-.form-modal :where(.input-with-icon:hover, input:hover:not(:disabled):not(:focus), textarea:hover:not(:disabled):not(:focus), select:hover:not(:disabled):not(:focus)) {
+.form-modal :where(.input-with-icon:hover, input:hover:not(:disabled):not(:focus):not(.searchable-select__search input), textarea:hover:not(:disabled):not(:focus), select:hover:not(:disabled):not(:focus)) {
   border-color: var(--ims-success, #059669);
   background-color: #f8fafc;
 }
 
-.form-modal :where(.input-with-icon:focus-within, input:focus, textarea:focus, select:focus, .searchable-select__trigger:focus-visible, .searchable-select__trigger.is-open) {
+.form-modal :where(.input-with-icon:focus-within, input:focus:not(.searchable-select__search input), textarea:focus, select:focus, .searchable-select__trigger:focus-visible, .searchable-select__trigger.is-open) {
   border-color: var(--ims-success, #059669) !important;
   background-color: #ffffff !important;
   box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12) !important;

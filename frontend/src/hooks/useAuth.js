@@ -113,10 +113,12 @@ export function AuthProvider({ children, roles = [] }) {
 
   const login = useCallback(
     async function login({ emailOrPhone, password }) {
+      const trimmedIdentifier = emailOrPhone.trim();
       const result = await apiRequest(API_ENDPOINTS.auth.login, {
         method: "POST",
         body: {
-          emailOrPhone: emailOrPhone.trim(),
+          emailOrPhone: trimmedIdentifier,
+          email: trimmedIdentifier,
           password,
         },
       });
@@ -124,7 +126,11 @@ export function AuthProvider({ children, roles = [] }) {
       if (!result.success) {
         return {
           success: false,
-          message: result.error || "Check your email and password.",
+          status: result.status,
+          error: result.error,
+          message: result.message || result.error || "Invalid email or password.",
+          errors: result.errors,
+          traceId: result.traceId,
         };
       }
 

@@ -580,20 +580,35 @@
   border-bottom-color: var(--ims-success-border, #a7f3d0);
   background: color-mix(in srgb, var(--ims-success-soft, #dffaf0) 34%, #fff);
   box-shadow: 0 8px 18px rgba(5, 150, 105, .06);
+  height: auto !important;
+  min-height: 52px !important;
+  max-height: none !important;
+  flex-wrap: wrap !important;
+  padding: 8px 12px !important;
 }
 
 .resource-center__page--categories .resource-center__inventory-table .table-component__toolbar:has(.catalog-selection-summary) .table-component__columns-menu {
-  display: flex;
+  display: none !important;
+}
+
+.resource-center__page--categories .resource-center__inventory-table .table-component__toolbar:has(.catalog-selection-summary) .table-component__toolbar-left {
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.resource-center__page--categories .resource-center__inventory-table .table-component__toolbar:has(.catalog-selection-summary) :where(.erp-search-bar, .search-input-container) {
+  flex: 0 1 240px !important;
+  width: min(100%, 240px) !important;
+  min-width: 160px !important;
 }
 
 .catalog-table__selection-actions {
   display: flex !important;
   align-items: center !important;
-  flex-wrap: nowrap !important;
+  flex-wrap: wrap !important;
   gap: 6px !important;
-  white-space: nowrap !important;
   min-width: 0 !important;
-  flex-shrink: 0 !important;
 }
 
 .catalog-selection-summary {
@@ -623,6 +638,26 @@
   flex-shrink: 0 !important;
 }
 .resource-center__page--categories .catalog-table__selection-button:hover { border-color: #059669; background: #ecfdf5; color: #059669; }
+.resource-center__page--categories .catalog-table__selection-button--activate {
+  border-color: #a7f3d0 !important;
+  background: #ecfdf5 !important;
+  color: #059669 !important;
+}
+.resource-center__page--categories .catalog-table__selection-button--activate:hover {
+  border-color: #059669 !important;
+  background: #d1fae5 !important;
+  color: #047857 !important;
+}
+.resource-center__page--categories .catalog-table__selection-button--deactivate {
+  border-color: #fde68a !important;
+  background: #fffbeb !important;
+  color: #d97706 !important;
+}
+.resource-center__page--categories .catalog-table__selection-button--deactivate:hover {
+  border-color: #d97706 !important;
+  background: #fef3c7 !important;
+  color: #b45309 !important;
+}
 .resource-center__page--categories .catalog-table__selection-button--danger { border-color: #fca5a5; background: #fef2f2; color: #dc2626; }
 .resource-center__page--categories .catalog-table__selection-button--danger:hover { border-color: #dc2626; background: #fee2e2; color: #b91c1c; }
 

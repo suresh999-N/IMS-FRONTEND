@@ -27,7 +27,7 @@ import { getProducts } from '../../../api/productApi'
 import { showToast } from '../../../components/common/toast'
 import FormModal from '../../../layouts/FormModal'
 import { useAuth } from '../../../hooks/useAuth'
-import { formatDate, formatIndentNumber, getLogicalRequiredDate } from '../../../utils/helpers'
+import { formatDate, formatDateTime, formatIndentNumber, getLogicalRequiredDate } from '../../../utils/helpers'
 import { getLocalTodayDate } from '../../../utils/dateUtils'
 import {
   emailInputProps,
@@ -2214,7 +2214,7 @@ function openPrintableDocument(title, bodyHtml, extraStyles = '') {
 
 function printPurchaseIndents(rows, generatedBy = NOT_AVAILABLE) {
   const title = 'Selected Purchase Indents'
-  const generatedTime = new Date().toLocaleString()
+  const generatedTime = formatDateTime(new Date())
   const headers = ['Indent Number', 'Status', 'Priority', 'Department', 'Supplier', 'Required Date', 'Quantity']
   const tableHeaders = headers.map(h => `<th>${escapeHtml(h)}</th>`).join('')
   const tableRows = rows.map(row => `

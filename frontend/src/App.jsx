@@ -1107,19 +1107,21 @@ function App() {
           (item) => String(item.id) === String(values.supplierId || values.supplier_id),
         )
         const existingReturns = currentValue.purchaseReturns || []
-        let returnId = values.id || values.returnId
+        let returnId = values.id || values.returnId || values.returnNumber || values.return_number
         if (!returnId) {
           const maxNum = existingReturns.reduce((max, r) => {
-            const match = String(r.id || r.returnId || '').match(/\d+/)
+            const match = String(r.id || r.returnId || r.returnNumber || r.return_number || '').match(/\d+/)
             const num = match ? parseInt(match[0], 10) : 0
             return Math.max(max, num)
-          }, 1000)
-          returnId = `PRR-${maxNum + 1}`
+          }, 0)
+          returnId = `PR-${String(maxNum + 1).padStart(5, '0')}`
         }
 
         const nextPurchaseReturn = {
           id: returnId,
           returnId,
+          returnNumber: returnId,
+          return_number: returnId,
           supplierId: values.supplierId || values.supplier_id,
           supplierName: supplier?.name || values.supplierName || 'Supplier',
           grnId: values.grnId || values.grn_id,

@@ -4,6 +4,7 @@ import {
   formatPurchaseIndentCurrency,
   getPurchaseIndentPdfFilename,
 } from './purchaseIndentDocumentModel.js'
+import { formatDate } from '../../../utils/helpers'
 
 const PAGE_WIDTH = 210
 const PAGE_HEIGHT = 297
@@ -28,25 +29,9 @@ const COLORS = {
   white: [255, 255, 255],
 }
 
-const pdfDateFormatter = new Intl.DateTimeFormat('en-US', {
-  month: 'short',
-  day: '2-digit',
-  year: 'numeric',
-})
-
 function formatPdfDate(value) {
   if (!value) return '-'
-
-  try {
-    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) {
-      const [year, month, day] = value.slice(0, 10).split('-').map(Number)
-      return pdfDateFormatter.format(new Date(year, month - 1, day))
-    }
-
-    return pdfDateFormatter.format(new Date(value))
-  } catch {
-    return '-'
-  }
+  return formatDate(value, '-')
 }
 
 function getInitials(value) {
@@ -293,15 +278,15 @@ function drawItemsTable(doc, model, startY) {
     pageBreak: 'auto',
     theme: 'grid',
     head: [[
-      'S.NO.',
-      'PRODUCT NAME',
-      'SKU',
-      'AVAILABLE',
-      'QTY',
-      'UNIT',
-      'RATE',
-      'AMOUNT',
-      'REQUIRED DATE',
+      { content: 'S.NO.', styles: { halign: 'center' } },
+      { content: 'PRODUCT NAME', styles: { halign: 'left' } },
+      { content: 'SKU', styles: { halign: 'left' } },
+      { content: 'AVAILABLE', styles: { halign: 'right' } },
+      { content: 'QTY', styles: { halign: 'right' } },
+      { content: 'UNIT', styles: { halign: 'left' } },
+      { content: 'RATE', styles: { halign: 'right' } },
+      { content: 'AMOUNT', styles: { halign: 'right' } },
+      { content: 'REQUIRED DATE', styles: { halign: 'left' } },
     ]],
     body: model.items.map((item) => [
       String(item.serialNumber),
@@ -337,14 +322,23 @@ function drawItemsTable(doc, model, startY) {
     },
     columnStyles: {
       0: { cellWidth: 8, halign: 'center' },
-      1: { cellWidth: 38, fontStyle: 'bold' },
-      2: { cellWidth: 18 },
-      3: { cellWidth: 15, halign: 'right' },
-      4: { cellWidth: 13, halign: 'right' },
-      5: { cellWidth: 12 },
-      6: { cellWidth: 21, halign: 'right' },
-      7: { cellWidth: 25, halign: 'right', fontStyle: 'bold' },
-      8: { cellWidth: 36 },
+      1: { cellWidth: 40, fontStyle: 'bold' },
+      2: { cellWidth: 20 },
+      3: { cellWidth: 14, halign: 'right' },
+      4: { cellWidth: 11, halign: 'right' },
+      5: { cellWidth: 14 },
+      6: { cellWidth: 24, halign: 'right' },
+      7: { cellWidth: 26, halign: 'right', fontStyle: 'bold' },
+      8: { cellWidth: 29 },
+    },
+    didParseCell: (data) => {
+      if (data.section === 'head') {
+        if (data.column.index === 0) data.cell.styles.halign = 'center'
+        if ([3, 4, 6, 7].includes(data.column.index)) data.cell.styles.halign = 'right'
+      }
+      if (data.section === 'body') {
+        if ([3, 4, 6, 7].includes(data.column.index)) data.cell.styles.halign = 'right'
+      }
     },
   })
 

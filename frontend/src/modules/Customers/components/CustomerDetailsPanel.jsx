@@ -16,30 +16,10 @@ import {
 import { useState } from 'react'
 import StateBlock from '../../../components/common/StateBlock'
 import { DataTable } from '../../../components/erp'
-import { formatCreditLimit, formatCurrency } from '../../../utils/helpers'
+import { formatCreditLimit, formatCurrency, formatDate, formatDateTime } from '../../../utils/helpers'
 import { formatPersonName } from '../../../validators/nameValidator'
 import CustomerDetailCard from './CustomerDetailCard'
 import StatusBadge from './StatusBadge'
-
-function formatDate(value) {
-  if (value === undefined || value === null || value === '') {
-    return '-'
-  }
-
-  const date = new Date(value)
-
-  if (Number.isNaN(date.getTime())) {
-    return '-'
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date)
-}
 
 function getDateSortValue(value) {
   if (value === undefined || value === null || value === '') {
@@ -85,7 +65,7 @@ export default function CustomerDetailsPanel({
       label: 'Date',
       sortable: true,
       sortValue: (item) => getDateSortValue(item.date),
-      render: (item) => formatDate(item.date),
+      render: (item) => formatDateTime(item.date),
     },
     {
       key: 'type',
@@ -257,7 +237,7 @@ export default function CustomerDetailsPanel({
                   />
                   <CustomerDetailCard
                     label="Last Activity"
-                    value={formatDate(latestActivity)}
+                    value={formatDateTime(latestActivity)}
                     helper="Most recent customer activity."
                   />
                   <CustomerDetailCard
@@ -300,7 +280,7 @@ export default function CustomerDetailsPanel({
                       </div>
                       <div>
                         <dt>Last touch</dt>
-                        <dd>{formatDate(latestActivity)}</dd>
+                        <dd>{formatDateTime(latestActivity)}</dd>
                       </div>
                     </dl>
                   </section>
@@ -325,7 +305,7 @@ export default function CustomerDetailsPanel({
                             <div>
                               <strong>{item.type}</strong>
                               <p>{item.description}</p>
-                              <time>{formatDate(item.date)}</time>
+                              <time>{formatDateTime(item.date)}</time>
                             </div>
                           </li>
                         ))}
@@ -364,7 +344,7 @@ export default function CustomerDetailsPanel({
                         <div>
                           <strong>{item.type}</strong>
                           <p>{item.description}</p>
-                          <time>{formatDate(item.date)}</time>
+                          <time>{formatDateTime(item.date)}</time>
                         </div>
                       </li>
                     ))}

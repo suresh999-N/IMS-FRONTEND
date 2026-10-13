@@ -29,9 +29,28 @@ namespace IMSBackend.Controllers
         [Permission("barcode", "view")]
         public async Task<IActionResult> GetBarcodes()
         {
-            var data = await _context.Barcodes
-                .OrderByDescending(x => x.CreatedAt)
-                .ToListAsync();
+            var data = await (from b in _context.Barcodes
+                              join p in _context.Products on b.ProductId equals p.ProductId into productGroup
+                              from prod in productGroup.DefaultIfEmpty()
+                              orderby b.CreatedAt descending
+                              select new
+                              {
+                                  b.BarcodeId,
+                                  b.ProductId,
+                                  ProductName = prod != null ? prod.Name : string.Empty,
+                                  CodeValue = !string.IsNullOrWhiteSpace(b.CodeValue)
+                                      ? b.CodeValue
+                                      : (prod != null
+                                          ? (!string.IsNullOrWhiteSpace(prod.Barcode)
+                                              ? prod.Barcode
+                                              : (!string.IsNullOrWhiteSpace(prod.SKU)
+                                                  ? prod.SKU
+                                                  : $"PRD-{prod.ProductId}"))
+                                          : string.Empty),
+                                  b.CodeType,
+                                  b.ImageUrl,
+                                  b.CreatedAt
+                              }).ToListAsync();
 
             return Ok(data);
         }
@@ -69,7 +88,13 @@ namespace IMSBackend.Controllers
                 }
             };
 
-            var pixelData = writer.Write(product.Barcode);
+            var resolvedCode = !string.IsNullOrWhiteSpace(product.Barcode)
+                ? product.Barcode
+                : (!string.IsNullOrWhiteSpace(product.SKU)
+                    ? product.SKU
+                    : $"PRD-{product.ProductId}");
+
+            var pixelData = writer.Write(resolvedCode);
 
             using var bitmap = new Bitmap(
                 pixelData.Width,
@@ -116,7 +141,7 @@ namespace IMSBackend.Controllers
             var barcode = new Barcode
             {
                 ProductId = product.ProductId,
-                CodeValue = product.Barcode,
+                CodeValue = resolvedCode,
                 CodeType = "Barcode",
                 ImageUrl = imageUrl,
                 CreatedAt = DateTime.UtcNow
@@ -129,7 +154,16 @@ namespace IMSBackend.Controllers
             return Ok(new
             {
                 message = "Barcode generated successfully",
-                data = barcode
+                data = new
+                {
+                    barcode.BarcodeId,
+                    barcode.ProductId,
+                    ProductName = product.Name,
+                    CodeValue = barcode.CodeValue,
+                    barcode.CodeType,
+                    barcode.ImageUrl,
+                    barcode.CreatedAt
+                }
             });
         }
     }

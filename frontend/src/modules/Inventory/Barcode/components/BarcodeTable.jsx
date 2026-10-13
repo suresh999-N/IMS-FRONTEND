@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Printer, RefreshCw } from 'lucide-react'
 import CodePreview from './CodePreview'
 import { DataTable, ActionMenu, FilterBar } from '../../../../components/erp'
+import { formatDate } from '../../../../utils/helpers'
 import { getBarcodeBars, getQrCells } from '../utils/preview'
 
 function escapeHtml(value) {
@@ -13,35 +14,71 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;')
 }
 
-function handlePrintBarcode(item) {
-  if (!item) return
+function handlePrintBarcode(input) {
+  if (!input) return
+  const items = Array.isArray(input) ? input : [input]
+  if (items.length === 0) return
 
-  const isQr = item.codeType === 'QR Code'
   const printWindow = window.open('', '_blank')
   if (!printWindow) return
 
-  let visualHtml = ''
-  if (isQr) {
-    const cells = getQrCells(item.value)
-    visualHtml = `
-      <div style="display: grid; grid-template-columns: repeat(21, 8px); gap: 1px; justify-content: center; background: #ffffff; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; margin: 0 auto; width: fit-content;">
-        ${cells.map(c => `<span style="width: 8px; height: 8px; background-color: ${c.dark ? '#000000' : '#ffffff'}; display: block;"></span>`).join('')}
+  const primaryItem = items[0]
+  const title = items.length === 1
+    ? `Print Code - ${escapeHtml(primaryItem.productName || 'Barcode')}`
+    : `Print Codes (${items.length} items)`
+
+  const cardsHtml = items.map((item) => {
+    const isQr = item.codeType === 'QR Code'
+    const itemValue =
+      item.value ||
+      item.codeValue ||
+      item.barcode ||
+      item.sku ||
+      (item.productId ? `PRD-${item.productId}` : '')
+    let visualHtml = ''
+    if (isQr) {
+      const cells = getQrCells(itemValue)
+      visualHtml = `
+        <div class="code-box qr-box">
+          <div class="qr-grid">
+            ${cells.map(c => `<span class="qr-cell ${c.dark ? 'is-dark' : ''}"></span>`).join('')}
+          </div>
+        </div>
+      `
+    } else {
+      const bars = getBarcodeBars(itemValue)
+      visualHtml = `
+        <div class="code-box barcode-box">
+          <div class="barcode-bars">
+            ${bars.map(b => `<span class="barcode-bar" style="width: ${Math.max(2, Math.round(b.width * 2.2))}px; height: ${Math.max(20, Math.round(b.height * 1.15))}px;"></span>`).join('')}
+          </div>
+        </div>
+      `
+    }
+
+    return `
+      <div class="label-card">
+        <div class="label-header">
+          <h2 class="product-title">${escapeHtml(item.productName || 'Product')}</h2>
+          <span class="code-type-tag">${escapeHtml(item.codeType || 'Barcode')}</span>
+        </div>
+        <div class="visual-wrapper">
+          ${visualHtml}
+          ${itemValue ? `<div class="code-value">${escapeHtml(itemValue)}</div>` : ''}
+        </div>
+        <div class="label-footer">
+          <span>Date: ${escapeHtml(item.date ? formatDate(item.date) : '')}</span>
+          <span>IMS Inventory</span>
+        </div>
       </div>
     `
-  } else {
-    const bars = getBarcodeBars(item.value)
-    visualHtml = `
-      <div style="display: flex; align-items: flex-end; justify-content: center; gap: 2px; height: 64px; padding: 12px 16px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; margin: 0 auto; width: fit-content;">
-        ${bars.map(b => `<span style="width: ${Math.max(2, b.width * 2.2)}px; height: ${Math.max(20, b.height * 1.15)}px; background-color: #000000; display: inline-block;"></span>`).join('')}
-      </div>
-    `
-  }
+  }).join('\n')
 
   printWindow.document.write(`<!doctype html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Print Code - ${escapeHtml(item.productName || 'Barcode')}</title>
+  <title>${escapeHtml(title)}</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -53,7 +90,14 @@ function handlePrintBarcode(item) {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
+    .labels-container {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      align-items: center;
+    }
     .label-card {
+      width: 100%;
       max-width: 360px;
       margin: 0 auto;
       border: 2px solid #0f172a;
@@ -64,41 +108,77 @@ function handlePrintBarcode(item) {
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
     .label-header {
+      border-bottom: 1.5px solid #e2e8f0;
+      padding-bottom: 14px;
       margin-bottom: 18px;
     }
     .product-title {
       font-size: 19px;
       font-weight: 800;
       color: #0f172a;
-      margin: 0 0 14px;
+      margin: 0 0 10px;
       letter-spacing: -0.01em;
       line-height: 1.35;
     }
-    .code-type-divider {
-      position: relative;
-      text-align: center;
-      margin: 14px 0 0;
-    }
-    .code-type-divider::before {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 0;
-      right: 0;
-      border-top: 1px solid #cbd5e1;
-      z-index: 1;
-    }
-    .code-type-divider span {
-      position: relative;
-      z-index: 2;
-      background: #ffffff;
-      padding: 0 10px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #0f172a;
+    .code-type-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #047857;
+      background: #ecfdf5;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      border: 1px solid #a7f3d0;
     }
     .visual-wrapper {
       margin: 18px 0;
+    }
+    .code-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      margin: 0 auto;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .barcode-box {
+      padding: 14px 20px;
+    }
+    .barcode-bars {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 2px;
+      box-sizing: border-box;
+    }
+    .barcode-bar {
+      background-color: #000000;
+      display: inline-block;
+      border-radius: 0.5px;
+    }
+    .qr-box {
+      padding: 12px;
+    }
+    .qr-grid {
+      display: grid;
+      grid-template-columns: repeat(21, 8px);
+      gap: 1px;
+      justify-content: center;
+    }
+    .qr-cell {
+      width: 8px;
+      height: 8px;
+      background-color: #ffffff;
+      display: block;
+    }
+    .qr-cell.is-dark {
+      background-color: #000000;
     }
     .code-value {
       font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
@@ -121,26 +201,23 @@ function handlePrintBarcode(item) {
     }
     @media print {
       body { padding: 10mm; }
-      .label-card { border-color: #000000; box-shadow: none; }
+      .label-card {
+        border-color: #000000;
+        box-shadow: none;
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      .label-card:not(:last-child) {
+        page-break-after: always;
+        break-after: page;
+        margin-bottom: 0;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="label-card">
-    <div class="label-header">
-      <h2 class="product-title">${escapeHtml(item.productName || 'Product')}</h2>
-      <div class="code-type-divider">
-        <span>${escapeHtml(item.codeType || 'Barcode')}:</span>
-      </div>
-    </div>
-    <div class="visual-wrapper">
-      ${visualHtml}
-      <div class="code-value">${escapeHtml(item.value || '')}</div>
-    </div>
-    <div class="label-footer">
-      <span>Date: ${escapeHtml(item.date || '')}</span>
-      <span>IMS Inventory</span>
-    </div>
+  <div class="labels-container">
+    ${cardsHtml}
   </div>
 </body>
 </html>`)
@@ -165,7 +242,7 @@ export default function BarcodeTable({ barcodes = [], onRefresh, isLoading }) {
           type="button"
           className="button button-secondary"
           onClick={() => {
-            selectedBarcodes.forEach((item) => handlePrintBarcode(item))
+            handlePrintBarcode(selectedBarcodes)
           }}
         >
           <Printer size={16} />
@@ -185,13 +262,14 @@ export default function BarcodeTable({ barcodes = [], onRefresh, isLoading }) {
   )
 
   const columns = [
-    { key: 'date', label: 'Date', sortable: true },
+    { key: 'date', label: 'Date', format: 'date', sortable: true, render: (item) => formatDate(item.date) },
     {
       key: 'productName',
       label: 'Product',
       sortable: true,
       mobilePrimary: true,
-      searchValue: (item) => `${item.productName} ${item.codeType} ${item.value}`,
+      searchValue: (item) =>
+        `${item.productName} ${item.codeType} ${item.value || item.codeValue || item.barcode || item.sku || ''}`,
     },
     { key: 'codeType', label: 'Type', sortable: true, mobileStatus: true },
     {
@@ -199,13 +277,30 @@ export default function BarcodeTable({ barcodes = [], onRefresh, isLoading }) {
       label: 'Value',
       sortable: true,
       className: 'barcode-page__code',
+      render: (item) => {
+        const displayValue =
+          item.value ||
+          item.codeValue ||
+          item.barcode ||
+          item.sku ||
+          (item.productId ? `PRD-${item.productId}` : '-')
+        return <span className="font-mono">{displayValue}</span>
+      },
     },
     {
       key: 'preview',
       label: 'Preview',
       searchable: false,
       mobileHidden: true,
-      render: (item) => <CodePreview codeType={item.codeType} value={item.value} compact={true} />,
+      render: (item) => {
+        const displayValue =
+          item.value ||
+          item.codeValue ||
+          item.barcode ||
+          item.sku ||
+          (item.productId ? `PRD-${item.productId}` : 'BARCODE')
+        return <CodePreview codeType={item.codeType} value={displayValue} compact={true} />
+      },
       className: 'barcode-page__preview',
     },
     {

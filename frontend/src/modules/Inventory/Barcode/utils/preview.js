@@ -65,7 +65,16 @@ export function getPreviewValue(product, codeType) {
     return ''
   }
 
+  const baseValue =
+    product.barcode ||
+    product.Barcode ||
+    product.sku ||
+    product.SKU ||
+    product.productCode ||
+    product.ProductCode ||
+    (product.id ? `PRD-${product.id}` : product.name || 'BARCODE')
+
   return codeType === 'QR Code'
-    ? `QR:${product.id}:${product.sku || product.name}`
-    : `${product.sku || product.name}-STATIC`
+    ? `QR:${product.id || ''}:${baseValue}`
+    : baseValue
 }

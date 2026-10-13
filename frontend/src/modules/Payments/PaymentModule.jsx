@@ -33,7 +33,7 @@ import { showToast } from '../../components/common/toast'
 import PortalDropdown from '../../components/layout/PortalDropdown'
 import FormModal from '../../layouts/FormModal'
 import { useAuth } from '../../hooks/useAuth'
-import { formatCurrency, formatDate, getNumberError, getRequiredError, getToday } from '../../utils/helpers'
+import { formatCurrency, formatDate, formatDateTime, getNumberError, getRequiredError, getToday } from '../../utils/helpers'
 import { formatPersonName } from '../../validators/nameValidator'
 import { getInvoices, getPurchaseOrders } from '../../api/businessApi'
 import './Payments.css'
@@ -403,13 +403,7 @@ async function copyToClipboard(value) {
 }
 
 function getGeneratedTimestamp() {
-  return new Date().toLocaleString('en-IN', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return formatDateTime(new Date())
 }
 
 function formatReceiptCurrency(value) {
@@ -423,17 +417,8 @@ function formatReceiptCurrency(value) {
 
 function formatReceiptDate(value) {
   if (!value) return 'N/A'
-
-  const date = new Date(`${value}T00:00:00`)
-  if (Number.isNaN(date.getTime())) {
-    return formatDate(value) || 'N/A'
-  }
-
-  return date.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).replaceAll(' ', '-')
+  const formatted = formatDate(value)
+  return formatted && formatted !== '-' ? formatted : 'N/A'
 }
 
 function getReceiptCompanyLines() {

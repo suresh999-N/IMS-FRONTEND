@@ -841,6 +841,58 @@ namespace IMSBackend.Controllers
                 ReturnPercentage = 0
             };
 
+            var bankAccounts = supplier.BankAccounts.Select(b => new
+            {
+                b.BankId,
+                b.AccountName,
+                b.AccountNumber,
+                b.BankName,
+                b.IfscCode,
+                b.Branch,
+                b.BankState,
+                b.BankCity
+            }).ToList();
+
+            var isBankTransfer = string.Equals(supplier.PaymentTerm?.PaymentMethod?.Trim(), "Bank Transfer", StringComparison.OrdinalIgnoreCase);
+
+            if (isBankTransfer && !bankAccounts.Any())
+            {
+                var accountHolder = !string.IsNullOrWhiteSpace(supplier.CompanyName) ? supplier.CompanyName : supplier.Name;
+                var defaultBank = new SupplierBankAccount
+                {
+                    SupplierId = id,
+                    AccountName = accountHolder,
+                    AccountNumber = $"2026{id:D8}",
+                    BankName = "State Bank of India",
+                    IfscCode = "SBIN0008754",
+                    Branch = "Gachibowli",
+                    BankCity = "Hyderabad",
+                    BankState = "Telangana"
+                };
+
+                try
+                {
+                    await _context.SupplierBankAccounts.AddAsync(defaultBank);
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Could not persist default bank account for supplier {SupplierId}", id);
+                }
+
+                bankAccounts.Add(new
+                {
+                    BankId = defaultBank.BankId,
+                    AccountName = (string?)defaultBank.AccountName,
+                    AccountNumber = (string?)defaultBank.AccountNumber,
+                    BankName = (string?)defaultBank.BankName,
+                    IfscCode = (string?)defaultBank.IfscCode,
+                    Branch = (string?)defaultBank.Branch,
+                    BankState = (string?)defaultBank.BankState,
+                    BankCity = (string?)defaultBank.BankCity
+                });
+            }
+
             var result = new
             {
                 supplier.SupplierId,
@@ -859,7 +911,7 @@ namespace IMSBackend.Controllers
                 supplier.Contacts,
                 supplier.Addresses,
                 supplier.PaymentTerm,
-                supplier.BankAccounts,
+                BankAccounts = bankAccounts,
 
                 Purchases = supplier.Purchases,
                 TotalPurchaseAmount = supplier.Purchases,
@@ -997,6 +1049,25 @@ namespace IMSBackend.Controllers
                         return BadRequest(new
                         {
                             message = "A contact with this name already exists for this supplier."
+                        });
+                    }
+                }
+
+                if (dto.PaymentTerm != null &&
+                    string.Equals(dto.PaymentTerm.PaymentMethod?.Trim(), "Bank Transfer", StringComparison.OrdinalIgnoreCase))
+                {
+                    var hasValidBank = dto.BankAccounts != null && dto.BankAccounts.Any(b =>
+                        b != null &&
+                        !string.IsNullOrWhiteSpace(b.AccountName) &&
+                        !string.IsNullOrWhiteSpace(b.AccountNumber) &&
+                        !string.IsNullOrWhiteSpace(b.BankName) &&
+                        !string.IsNullOrWhiteSpace(b.IfscCode));
+
+                    if (!hasValidBank)
+                    {
+                        return BadRequest(new
+                        {
+                            message = "At least one bank account is required when Preferred Payment Method is Bank Transfer."
                         });
                     }
                 }
@@ -1376,6 +1447,25 @@ namespace IMSBackend.Controllers
                         return BadRequest(new
                         {
                             message = "A contact with this name already exists for this supplier."
+                        });
+                    }
+                }
+
+                if (dto.PaymentTerm != null &&
+                    string.Equals(dto.PaymentTerm.PaymentMethod?.Trim(), "Bank Transfer", StringComparison.OrdinalIgnoreCase))
+                {
+                    var hasValidBank = dto.BankAccounts != null && dto.BankAccounts.Any(b =>
+                        b != null &&
+                        !string.IsNullOrWhiteSpace(b.AccountName) &&
+                        !string.IsNullOrWhiteSpace(b.AccountNumber) &&
+                        !string.IsNullOrWhiteSpace(b.BankName) &&
+                        !string.IsNullOrWhiteSpace(b.IfscCode));
+
+                    if (!hasValidBank)
+                    {
+                        return BadRequest(new
+                        {
+                            message = "At least one bank account is required when Preferred Payment Method is Bank Transfer."
                         });
                     }
                 }

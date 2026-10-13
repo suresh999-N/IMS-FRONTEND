@@ -249,6 +249,19 @@ export const RESOURCE_CONFIGS = {
       },
       { name: 'price', label: 'Unit Price', type: 'currency', required: true, min: 0, readOnly: false },
       { name: 'receiptDate', label: 'Receipt Date', type: 'date', required: true, defaultValue: getToday },
+      {
+        name: 'supplierInvoice',
+        label: 'Supplier Invoice No *',
+        type: 'text',
+        required: true,
+        placeholder: 'Enter supplier invoice no',
+      },
+      {
+        name: 'supplierInvoiceDate',
+        label: 'Supplier Invoice Date *',
+        type: 'date',
+        required: true,
+      },
       { name: 'notes', label: 'Notes', type: 'textarea' },
     ],
     columns: [
@@ -667,6 +680,18 @@ export const RESOURCE_CONFIGS = {
         label: 'Transfer Date *',
         type: 'date',
         required: true,
+        min: getToday,
+        minDate: getToday,
+        minMessage: 'Transfer Date cannot be in the past.',
+        validate: (value) => {
+          if (!value) return ''
+          const today = getToday()
+          const dateStr = String(value).slice(0, 10)
+          if (dateStr < today) {
+            return 'Transfer Date cannot be in the past.'
+          }
+          return ''
+        },
         placeholder: 'Select Transfer Date',
       },
       { name: 'status', label: 'Status *', type: 'select', required: true, options: documentStatusOptions, placeholder: 'Select Status' },

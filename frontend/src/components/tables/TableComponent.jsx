@@ -18,6 +18,7 @@ import SearchBar from '../erp/SearchBar'
 import TableToolbar from '../erp/TableToolbar'
 import TruncatedCellTooltip from './TruncatedCellTooltip'
 import { validateSearchQuery } from '../../utils/searchValidationUtils'
+import { formatDate, formatDateTime, formatPurchaseReturnNumber } from '../../utils/helpers'
 import './TableComponent.css'
 
 function extractTextFromReactNode(node) {
@@ -249,6 +250,10 @@ function getSearchableText(row, columns, searchKeys) {
             }
           } else {
             parts.push(String(value).toLowerCase())
+            const formatted = formatCellValue(column, value)
+            if (formatted && formatted !== value) {
+              parts.push(String(formatted).toLowerCase())
+            }
           }
         }
       }
@@ -305,10 +310,48 @@ function isStatusColumn(column) {
   return ['status', 'state', 'active', 'priority'].some((token) => value.includes(token))
 }
 
+function formatCellValue(column, value) {
+  if (value === null || value === undefined || value === '') {
+    return value
+  }
+
+  if (column.format === 'date') {
+    return formatDate(value)
+  }
+
+  if (column.format === 'datetime') {
+    return formatDateTime(value)
+  }
+
+  const keyLower = String(column.key || '').toLowerCase()
+  if (
+    keyLower === 'date' ||
+    keyLower === 'orderdate' ||
+    keyLower === 'receiptdate' ||
+    keyLower === 'transferdate' ||
+    keyLower === 'invoicedate' ||
+    keyLower === 'duedate' ||
+    keyLower === 'auditdate' ||
+    keyLower === 'indentdate' ||
+    keyLower === 'createdat' ||
+    keyLower === 'updatedat'
+  ) {
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+      return formatDate(value)
+    }
+  }
+
+  if (keyLower === 'returnnumber' || keyLower === 'return_number') {
+    return formatPurchaseReturnNumber(value)
+  }
+
+  return value
+}
+
 function renderCellContent(column, row) {
   return typeof column.render === 'function'
     ? column.render(row)
-    : row[column.key]
+    : formatCellValue(column, row[column.key])
 }
 
 function getMobilePrimaryColumn(columns) {
@@ -1213,7 +1256,7 @@ export default function TableComponent({
                       const sNo = (currentPage - 1) * pageSize + index + 1
                       const cellContent = typeof column.render === 'function'
                         ? column.render(row, index, sNo)
-                        : row[column.key]
+                        : formatCellValue(column, row[column.key])
                       const isPlainText = typeof cellContent === 'string' || typeof cellContent === 'number'
                       const textValue = isPlainText ? String(cellContent) : undefined
 

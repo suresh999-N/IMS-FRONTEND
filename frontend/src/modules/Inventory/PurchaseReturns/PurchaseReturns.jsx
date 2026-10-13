@@ -30,6 +30,7 @@ import {
 import {
   formatCurrency,
   formatDate,
+  formatPurchaseReturnNumber,
 } from '../../../utils/helpers'
 
 import '../../../components/tables/TableComponent.css'
@@ -101,9 +102,7 @@ const getReturnId = (item) =>
   item?.id
 
 const getReturnNumberDisplay = (item) =>
-  item?.returnNumber ??
-  item?.return_number ??
-  (getReturnId(item) ? `#${getReturnId(item)}` : '-')
+  formatPurchaseReturnNumber(item, getReturnId(item))
 
 const getReturnSupplierId = (item) =>
   item?.supplierId ??
@@ -651,7 +650,7 @@ export default function PurchaseReturns() {
             </p>
 
             <p className="delete-warning">
-              Return ID: #{deleteTargetId}
+              Return ID: {getReturnNumberDisplay(returns.find((r) => String(getReturnId(r)) === String(deleteTargetId))) || formatPurchaseReturnNumber(null, deleteTargetId)}
             </p>
 
             <div className="form-modal-actions">

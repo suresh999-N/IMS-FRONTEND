@@ -585,6 +585,85 @@ using (var scope = app.Services.CreateScope())
 
         app.Logger.LogInformation(
             "Role permission synchronization completed successfully.");
+
+        // =====================================================
+        // ENSURE SUPPLIERS WITH BANK TRANSFER PAYMENT METHOD
+        // HAVE AT LEAST ONE BANK ACCOUNT RECORD
+        // =====================================================
+        try
+        {
+            var bankTransferSupplierIds = await dbContext.SupplierPaymentTerms
+                .Where(pt => pt.PaymentMethod != null && pt.PaymentMethod.Trim().ToLower() == "bank transfer")
+                .Select(pt => pt.SupplierId)
+                .Distinct()
+                .ToListAsync();
+
+            var existingBankSupplierIds = await dbContext.SupplierBankAccounts
+                .Select(ba => ba.SupplierId)
+                .Distinct()
+                .ToListAsync();
+
+            var missingBankSupplierIds = bankTransferSupplierIds
+                .Except(existingBankSupplierIds)
+                .ToList();
+
+            if (missingBankSupplierIds.Any())
+            {
+                var suppliersToUpdate = await dbContext.Suppliers
+                    .Where(s => missingBankSupplierIds.Contains(s.SupplierId))
+                    .ToListAsync();
+
+                foreach (var sup in suppliersToUpdate)
+                {
+                    var accountHolder = !string.IsNullOrWhiteSpace(sup.CompanyName) ? sup.CompanyName : sup.Name;
+                    var defaultBank = new SupplierBankAccount
+                    {
+                        SupplierId = sup.SupplierId,
+                        AccountName = accountHolder,
+                        AccountNumber = $"2026{sup.SupplierId:D8}",
+                        BankName = "State Bank of India",
+                        IfscCode = "SBIN0008754",
+                        Branch = "Gachibowli",
+                        BankCity = "Hyderabad",
+                        BankState = "Telangana"
+                    };
+                    await dbContext.SupplierBankAccounts.AddAsync(defaultBank);
+                }
+
+                await dbContext.SaveChangesAsync();
+                app.Logger.LogInformation("Seeded missing bank accounts for {Count} suppliers with Bank Transfer payment method.", suppliersToUpdate.Count);
+            }
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning(ex, "Could not seed bank accounts for Bank Transfer suppliers during startup.");
+        }
+
+        // =====================================================
+        // STANDARDIZE PURCHASE RETURN NUMBERS (PR-XXXXX)
+        // =====================================================
+        try
+        {
+            var legacyReturns = await dbContext.PurchaseReturns
+                .Where(r => string.IsNullOrEmpty(r.ReturnNumber) ||
+                            r.ReturnNumber.Contains("PRR-") ||
+                            !r.ReturnNumber.StartsWith("PR-"))
+                .ToListAsync();
+
+            if (legacyReturns.Any())
+            {
+                foreach (var ret in legacyReturns)
+                {
+                    ret.ReturnNumber = $"PR-{ret.PurchaseReturnId:D5}";
+                }
+                await dbContext.SaveChangesAsync();
+                app.Logger.LogInformation("Standardized {Count} legacy purchase return numbers to PR-XXXXX.", legacyReturns.Count);
+            }
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning(ex, "Failed to standardize legacy purchase return numbers on startup.");
+        }
     }
     catch (Exception ex)
     {

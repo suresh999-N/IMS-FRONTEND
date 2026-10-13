@@ -25,6 +25,7 @@ import {
   SUPPLIER_SINGLE_DOCUMENT_TYPES,
 } from '../supplierDocumentTypes'
 import { SupplierSection } from './SupplierFormSections'
+import { formatDateTime } from '../../../utils/helpers'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 const ALLOWED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png']
@@ -84,10 +85,7 @@ function formatUploadedAt(value) {
     return String(value)
   }
 
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date)
+  return formatDateTime(date)
 }
 
 function saveBlob(blob, filename) {

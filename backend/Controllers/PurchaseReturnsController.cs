@@ -40,15 +40,36 @@ namespace IMSBackend.Controllers
                    "System";
         }
 
+        public static string StandardizeReturnNumber(string? returnNumber, int returnId)
+        {
+            if (string.IsNullOrWhiteSpace(returnNumber) ||
+                returnNumber.StartsWith("#PRR-", StringComparison.OrdinalIgnoreCase) ||
+                returnNumber.StartsWith("PRR-", StringComparison.OrdinalIgnoreCase))
+            {
+                return returnId > 0 ? $"PR-{returnId:D5}" : "PR-00001";
+            }
+
+            var prMatch = System.Text.RegularExpressions.Regex.Match(returnNumber, @"^#?PR-(\d+)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (prMatch.Success && int.TryParse(prMatch.Groups[1].Value, out int num))
+            {
+                return $"PR-{num:D5}";
+            }
+
+            if (int.TryParse(returnNumber, out int directId))
+            {
+                return $"PR-{directId:D5}";
+            }
+
+            return returnId > 0 ? $"PR-{returnId:D5}" : returnNumber;
+        }
+
         private static PurchaseReturnResponseDto MapToDto(PurchaseReturn r)
         {
             return new PurchaseReturnResponseDto
             {
                 ReturnId = r.PurchaseReturnId,
 
-                ReturnNumber = !string.IsNullOrWhiteSpace(r.ReturnNumber)
-                    ? r.ReturnNumber
-                    : $"PR-{r.PurchaseReturnId:D5}",
+                ReturnNumber = StandardizeReturnNumber(r.ReturnNumber, r.PurchaseReturnId),
 
                 SupplierId = r.SupplierId,
 

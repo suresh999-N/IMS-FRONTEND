@@ -813,3 +813,42 @@ export function formatIndentNumber(rawIndent, rawDate) {
 
   return str.toUpperCase()
 }
+
+export function formatPurchaseReturnNumber(rawReturn, rawId) {
+  const returnObj = typeof rawReturn === 'object' && rawReturn !== null ? rawReturn : null
+  const str = String(
+    returnObj?.returnNumber ||
+    returnObj?.return_number ||
+    returnObj?.returnNumberDisplay ||
+    (typeof rawReturn === 'string' || typeof rawReturn === 'number' ? rawReturn : '')
+  ).trim()
+
+  const idVal = returnObj?.purchaseReturnId ?? returnObj?.returnId ?? returnObj?.id ?? rawId
+
+  // Standard PR-00001 format
+  const prMatch = str.match(/^#?PR-(\d+)$/i)
+  if (prMatch) {
+    const num = parseInt(prMatch[1], 10)
+    return `PR-${String(num).padStart(5, '0')}`
+  }
+
+  // Handle legacy PRR- or other format like #PRR-SIC3BV or #PRR-IXPJ46
+  if (str.startsWith('#PRR-') || str.startsWith('PRR-') || str.startsWith('#PR-') || str.startsWith('#')) {
+    if (idVal && !isNaN(parseInt(idVal, 10)) && parseInt(idVal, 10) > 0) {
+      return `PR-${String(parseInt(idVal, 10)).padStart(5, '0')}`
+    }
+  }
+
+  // Purely numeric string
+  if (/^\d+$/.test(str)) {
+    return `PR-${str.padStart(5, '0')}`
+  }
+
+  // Fallback to numeric idVal if present
+  if (idVal && !isNaN(parseInt(idVal, 10)) && parseInt(idVal, 10) > 0) {
+    return `PR-${String(parseInt(idVal, 10)).padStart(5, '0')}`
+  }
+
+  return str || (idVal ? `PR-${String(idVal).padStart(5, '0')}` : '-')
+}
+

@@ -1,6 +1,7 @@
 import { ArrowRightLeft, Check, Download, Eye, MoveRight, Pencil, Printer, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionMenu, DataTable, FilterBar, StatusBadge, Modal } from '../../../components/erp'
+import { formatDate } from '../../../utils/helpers'
 
 const STATUS_OPTIONS = ['Active', 'Inactive']
 const WAREHOUSE_COLUMNS_STORAGE_KEY = 'ims.warehouses.visibleColumns.v4'
@@ -25,23 +26,6 @@ const WAREHOUSE_COLUMN_WIDTHS = {
   status: 96,
   updatedAt: 170,
   actions: 72,
-}
-
-function formatDate(value) {
-  if (!value) {
-    return '-'
-  }
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return '-'
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(date)
 }
 
 function normalizeStatus(value) {
@@ -357,7 +341,7 @@ function printWarehouses(warehouses, productsCatalog = []) {
     <div class="header">
       <div class="header-left">
         <h1>Warehouses Report</h1>
-        <p class="meta">Printed on ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} • Total Records: ${warehouses.length}</p>
+        <p class="meta">Printed on ${formatDate(new Date())} • Total Records: ${warehouses.length}</p>
       </div>
     </div>
     <table>
@@ -773,8 +757,8 @@ export default function WarehousesTable({
       label: 'Actions',
       className: 'warehouses-col-actions',
       tableWidth: WAREHOUSE_COLUMN_WIDTHS.actions,
-      style: { width: WAREHOUSE_COLUMN_WIDTHS.actions, minWidth: WAREHOUSE_COLUMN_WIDTHS.actions, maxWidth: WAREHOUSE_COLUMN_WIDTHS.actions },
-      headerStyle: { width: WAREHOUSE_COLUMN_WIDTHS.actions, minWidth: WAREHOUSE_COLUMN_WIDTHS.actions, maxWidth: WAREHOUSE_COLUMN_WIDTHS.actions },
+      style: { width: WAREHOUSE_COLUMN_WIDTHS.actions, minWidth: WAREHOUSE_COLUMN_WIDTHS.actions, maxWidth: WAREHOUSE_COLUMN_WIDTHS.actions, borderRight: '1px solid #cbd5e1' },
+      headerStyle: { width: WAREHOUSE_COLUMN_WIDTHS.actions, minWidth: WAREHOUSE_COLUMN_WIDTHS.actions, maxWidth: WAREHOUSE_COLUMN_WIDTHS.actions, borderRight: '1px solid #cbd5e1' },
       searchable: false,
       render: (warehouse) => (
         <ActionMenu

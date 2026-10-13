@@ -68,7 +68,7 @@ export default function SupplierPaymentTermsTab({
             placeholder="Select payment method"
             searchPlaceholder="Search payment method"
             error={errors.preferredPaymentMethod}
-            showError={showErrors}
+            showError={showErrors || Boolean(errors.preferredPaymentMethod)}
             className="supplier-payment-field supplier-payment-select"
             disabled={readOnly}
           />

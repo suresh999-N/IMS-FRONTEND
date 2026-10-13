@@ -364,8 +364,15 @@ export default function GoodsReceiptForm({
         warehouseId: String(record.warehouseId || ''),
         warehouseName: record.warehouseName || record.warehouse || '',
         receiptDate: toDateInputValue(record.receiptDate) || getLocalTodayDate(),
-        supplierInvoiceNo: record.supplierInvoiceNo || record.supplierInvoiceNumber || record.supplierInvoice || record.SupplierInvoice || record.invoiceNumber || record.invoiceNo || record.invoice || '',
-        supplierInvoiceDate: toDateInputValue(record.supplierInvoiceDate || record.SupplierInvoiceDate || record.invoiceDate) || '',
+        supplierInvoiceNo: (() => {
+          const inv = record.supplierInvoiceNo || record.supplierInvoiceNumber || record.supplierInvoice || record.SupplierInvoice || record.invoiceNumber || record.invoiceNo || record.invoice || ''
+          return String(inv).trim().toUpperCase() === 'N/A' ? '' : inv
+        })(),
+        supplierInvoiceDate: (() => {
+          const dt = record.supplierInvoiceDate || record.SupplierInvoiceDate || record.invoiceDate
+          if (!dt || String(dt).trim().toUpperCase() === 'N/A') return ''
+          return toDateInputValue(dt) || ''
+        })(),
         notes: record.notes || record.remarks || '',
         lineItems: recLines.map(line => {
           const rxQty = String(line.quantityReceived ?? line.receivedQuantity ?? line.quantity ?? '1')
@@ -408,7 +415,7 @@ export default function GoodsReceiptForm({
       warehouseName: '',
       receiptDate: getLocalTodayDate(),
       supplierInvoiceNo: '',
-      supplierInvoiceDate: getLocalTodayDate(),
+      supplierInvoiceDate: '',
       notes: '',
       lineItems: [createLineItem()],
     }
@@ -693,9 +700,6 @@ export default function GoodsReceiptForm({
     const supplierName = selectedPo?.supplierName || selectedPo?.supplier || ''
     const warehouseName = selectedPo?.warehouseName || selectedPo?.warehouse || ''
 
-    const poNum = selectedPo?.poNumber || selectedPo?.number || selectedPo?.PoNumber || ''
-    const defaultInvoiceNo = poNum ? `INV-${String(poNum).replace(/^PO-?/i, '')}` : ''
-
     setFormData(current => ({
       ...current,
       poId: selectedPoId,
@@ -703,8 +707,8 @@ export default function GoodsReceiptForm({
       supplierName: supplierName || current.supplierName || '',
       warehouseId: warehouseId || current.warehouseId,
       warehouseName: warehouseName || current.warehouseName || '',
-      supplierInvoiceNo: current.supplierInvoiceNo || defaultInvoiceNo,
-      supplierInvoiceDate: current.supplierInvoiceDate || getLocalTodayDate(),
+      supplierInvoiceNo: current.supplierInvoiceNo || '',
+      supplierInvoiceDate: current.supplierInvoiceDate || '',
       lineItems: mappedLines,
     }))
   }
@@ -788,8 +792,16 @@ export default function GoodsReceiptForm({
     supplierId: getRequiredError(formData.supplierId, 'Supplier'),
     warehouseId: getRequiredError(formData.warehouseId, 'Warehouse'),
     receiptDate: getRequiredError(formData.receiptDate, 'Receipt date'),
-    supplierInvoiceNo: getRequiredError(formData.supplierInvoiceNo, 'Supplier Invoice No'),
-    supplierInvoiceDate: getRequiredError(formData.supplierInvoiceDate, 'Supplier Invoice Date'),
+    supplierInvoiceNo: (() => {
+      const inv = String(formData.supplierInvoiceNo || '').trim()
+      if (!inv || inv.toUpperCase() === 'N/A') return 'Supplier invoice number is required.'
+      return null
+    })(),
+    supplierInvoiceDate: (() => {
+      const dt = String(formData.supplierInvoiceDate || '').trim()
+      if (!dt || dt.toUpperCase() === 'N/A') return 'Supplier invoice date is required.'
+      return null
+    })(),
     lineItems: formData.lineItems.map(item => {
       const ordQty = Number(item.orderedQuantity || 0)
       const prevRx = Number(item.previouslyReceivedQuantity || 0)

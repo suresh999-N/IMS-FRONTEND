@@ -114,7 +114,6 @@ function IndentInformationBlock({ model }) {
       <div className="invoice-document__detail-list">
         <DetailRow label="Department" value={model.department || 'Department not assigned'} />
         <DetailRow label="Requested by" value={model.requestedBy} />
-        <DetailRow label="Priority" value={model.priority} />
         <DetailRow label="Required by" value={model.requiredDate ? displayDate(model.requiredDate) : ''} />
         <DetailRow label="Reference" value={model.reference} />
         {isRejected && hasText(model.remarks) ? (

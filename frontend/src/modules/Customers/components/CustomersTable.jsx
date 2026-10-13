@@ -1,7 +1,7 @@
 import { Check, Eye, Pencil, Printer, RefreshCw, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionMenu, DataTable, FilterBar, StatusBadge } from '../../../components/erp'
-import { formatCreditLimit, formatCurrency } from '../../../utils/helpers'
+import { formatCreditLimit, formatCurrency, formatDate } from '../../../utils/helpers'
 import { formatPersonName } from '../../../validators/nameValidator'
 
 const COLUMN_STORAGE_KEY = 'ims.customers.visibleColumns.supplierImageParity.v1'
@@ -138,24 +138,6 @@ function printCustomers(customers) {
 
 function getCustomerId(customer) {
   return customer?.id ?? customer?.customerId ?? customer?.customerCode ?? ''
-}
-
-function formatDate(value) {
-  if (value === undefined || value === null || value === '') {
-    return '-'
-  }
-
-  const date = new Date(value)
-
-  if (Number.isNaN(date.getTime())) {
-    return '-'
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(date)
 }
 
 function getDateSortValue(value) {

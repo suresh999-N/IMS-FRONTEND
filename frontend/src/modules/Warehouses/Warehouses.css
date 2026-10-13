@@ -2,11 +2,13 @@
   gap: 8px;
   min-width: 0;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: calc(100dvh - var(--ims-header-height, 68px) - 28px);
   min-height: 0;
+  padding-bottom: 8px;
+  box-sizing: border-box;
 }
 
 .warehouses-page__summary-grid {
@@ -1162,6 +1164,7 @@
   width: 70px !important;
   min-width: 70px !important;
   text-align: center !important;
+  border-right: 1px solid #cbd5e1 !important;
 }
 
 /* Warehouse table parity with People modules. */
@@ -1324,6 +1327,7 @@
   width: 72px !important;
   min-width: 72px !important;
   max-width: 72px !important;
+  border-right: 1px solid #cbd5e1 !important;
 }
 
 .warehouses-page__table-card :where(th, td).table-component__selection-cell {
@@ -1415,6 +1419,13 @@
 
   .warehouses-page__toolbar-actions .button {
     flex: 1 1 0 !important;
+  }
+
+  .warehouses-page {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    padding-bottom: 16px !important;
   }
 }
 
@@ -1711,6 +1722,11 @@
   min-width: 72px !important;
   max-width: 72px !important;
   text-align: center !important;
+  border-right: 1px solid #cbd5e1 !important;
+}
+
+.warehouses-page .warehouses-data-table--compact .table-component__table thead th:last-child {
+  border-right: 1px solid #cbd5e1 !important;
 }
 
 .warehouses-page .warehouses-data-table--compact .warehouses-page__table-stack {
@@ -1833,11 +1849,13 @@
 /* Table Card Container */
 .warehouses-page .warehouses-page__table-card {
   align-self: stretch !important;
-  height: 100% !important;
+  flex: 1 1 auto !important;
+  height: auto !important;
   min-height: 0 !important;
-  margin-bottom: 0 !important;
+  margin-bottom: 12px !important;
   padding: 0 !important; /* Eliminate internal padding to flush component borders to card edges */
   border: 1px solid #e2e8f0 !important;
+  border-bottom: 1px solid #cbd5e1 !important;
   border-radius: 8px !important;
   background: #ffffff !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
@@ -1905,6 +1923,7 @@
   padding: 3px 10px !important;
   border: 0 !important;
   border-top: 1px solid #e2e8f0 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
   border-radius: 0 0 8px 8px !important;
   background: #f8fafc !important;
   box-shadow: none !important;

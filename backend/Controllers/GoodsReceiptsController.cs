@@ -167,6 +167,11 @@ namespace IMSBackend.Controllers
                     traceId: HttpContext.TraceIdentifier));
             }
 
+            if (dto.PoId <= 0 && dto.PurchaseOrderId.GetValueOrDefault() > 0)
+            {
+                dto.PoId = dto.PurchaseOrderId.GetValueOrDefault();
+            }
+
             if (dto.PoId <= 0 || dto.SupplierId <= 0 || dto.WarehouseId <= 0)
             {
                 return BadRequest(ApiResponse<object>.Fail(
@@ -174,19 +179,33 @@ namespace IMSBackend.Controllers
                     traceId: HttpContext.TraceIdentifier));
             }
 
-            if (string.IsNullOrWhiteSpace(dto.SupplierInvoice))
+            var invoiceNo = !string.IsNullOrWhiteSpace(dto.SupplierInvoice)
+                ? dto.SupplierInvoice.Trim()
+                : (!string.IsNullOrWhiteSpace(dto.SupplierInvoiceNo)
+                    ? dto.SupplierInvoiceNo.Trim()
+                    : (!string.IsNullOrWhiteSpace(dto.SupplierInvoiceNumber)
+                        ? dto.SupplierInvoiceNumber.Trim()
+                        : (!string.IsNullOrWhiteSpace(dto.InvoiceNo)
+                            ? dto.InvoiceNo.Trim()
+                            : dto.InvoiceNumber?.Trim())));
+
+            if (string.IsNullOrWhiteSpace(invoiceNo) || string.Equals(invoiceNo, "N/A", StringComparison.OrdinalIgnoreCase))
             {
                 return BadRequest(ApiResponse<object>.Fail(
                     "Supplier invoice number is required.",
                     traceId: HttpContext.TraceIdentifier));
             }
 
-            if (!dto.SupplierInvoiceDate.HasValue)
+            var invoiceDate = dto.SupplierInvoiceDate ?? dto.InvoiceDate;
+            if (!invoiceDate.HasValue)
             {
                 return BadRequest(ApiResponse<object>.Fail(
                     "Supplier invoice date is required.",
                     traceId: HttpContext.TraceIdentifier));
             }
+
+            dto.SupplierInvoice = invoiceNo;
+            dto.SupplierInvoiceDate = invoiceDate;
 
             if (dto.Items == null || !dto.Items.Any())
             {

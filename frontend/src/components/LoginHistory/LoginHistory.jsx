@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
+import { formatDate } from "../../utils/helpers";
 import "./LoginHistory.css";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '').replace(/\/api$/, '');
@@ -268,11 +269,7 @@ function formatDateTime(value) {
   }
 
   return {
-    date: dateObject.toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }),
+    date: formatDate(dateObject),
     time: dateObject.toLocaleTimeString("en-IN", {
       hour: "2-digit",
       minute: "2-digit",

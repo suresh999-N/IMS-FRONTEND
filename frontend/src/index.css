@@ -2424,7 +2424,8 @@ input[type="password"]::-ms-clear {
   .app-header__search input,
   .global-search .app-header__search input,
   .global-search__trigger input,
-  .search-wrapper input
+  .search-wrapper input,
+  .searchable-select__search input
 ) {
   border: 0 !important;
   outline: none !important;
@@ -2432,6 +2433,20 @@ input[type="password"]::-ms-clear {
   background-color: transparent !important;
   box-shadow: none !important;
   border-radius: 0 !important;
+}
+
+:is(#root, body) :is(
+  .app-header__search input,
+  .global-search .app-header__search input,
+  .global-search__trigger input,
+  .search-wrapper input,
+  .searchable-select__search input
+):is(:focus, :hover, :focus-visible) {
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 .global-search,

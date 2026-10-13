@@ -1,4 +1,4 @@
-import { formatCurrency } from '../../../utils/helpers'
+import { formatCurrency, formatDate } from '../../../utils/helpers'
 import { DataTable, StatusBadge } from '../../../components/erp'
 
 export default function AccountingTable({ invoices }) {
@@ -22,7 +22,13 @@ export default function AccountingTable({ invoices }) {
       sortable: true,
       render: (invoice) => formatCurrency(invoice.amount),
     },
-    { key: 'date', label: 'Date', sortable: true },
+    {
+      key: 'date',
+      label: 'Date',
+      format: 'date',
+      sortable: true,
+      render: (invoice) => formatDate(invoice.date),
+    },
     {
       key: 'status',
       label: 'Status',

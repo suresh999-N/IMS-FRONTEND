@@ -212,12 +212,27 @@ async function parseResponse(response) {
     return null
   }
  
-  if (contentType.includes('application/json')) {
-    return response.json()
+  if (contentType.includes('json')) {
+    try {
+      return await response.json()
+    } catch {
+      // fallback to reading as text below
+    }
   }
  
   const text = await response.text()
-  return text || null
+  if (text) {
+    const trimmed = text.trim()
+    if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+      try {
+        return JSON.parse(trimmed)
+      } catch {
+        return text
+      }
+    }
+    return text
+  }
+  return null
 }
  
 function getErrorMessage(payload, fallback) {
@@ -226,6 +241,15 @@ function getErrorMessage(payload, fallback) {
   }
  
   if (typeof payload === 'string') {
+    const trimmed = payload.trim()
+    if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+      try {
+        const parsed = JSON.parse(trimmed)
+        if (parsed && typeof parsed === 'object') {
+          return getErrorMessage(parsed, fallback)
+        }
+      } catch {}
+    }
     return sanitizeApiError(payload)
   }
 
@@ -254,18 +278,18 @@ function getErrorMessage(payload, fallback) {
 
 function getStatusErrorMessage(status, payload) {
   const fallbackByStatus = {
-    400: 'The request could not be completed. Review the form and try again.',
-    401: 'Your session has expired. Please sign in again.',
+    400: 'Unable to process your request. Please try again later.',
+    401: 'Invalid email or password.',
     403: 'You do not have access to complete this action.',
     404: 'We could not find that record.',
     409: 'This record conflicts with existing data.',
-    500: 'We are having trouble loading data right now.',
-    502: 'Unable to connect to the server.',
-    503: 'Unable to connect to the server.',
-    504: 'Unable to connect to the server.',
+    500: 'Unable to process your request. Please try again later.',
+    502: 'Service is currently unavailable.',
+    503: 'Service is currently unavailable.',
+    504: 'Service is currently unavailable.',
   }
 
-  const message = getErrorMessage(payload, fallbackByStatus[status] || 'The request could not be completed. Please try again.')
+  const message = getErrorMessage(payload, fallbackByStatus[status] || 'Unable to process your request. Please try again later.')
 
   return sanitizeApiError(message, status)
 }
@@ -279,6 +303,48 @@ export function sanitizeApiError(message, status = 0) {
 
   const lower = rawMessage.toLowerCase()
 
+  // Detect raw JSON strings, ProblemDetails, RFC specs, or technical serialization
+  if (
+    (rawMessage.startsWith('{') && rawMessage.endsWith('}')) ||
+    (rawMessage.startsWith('[') && rawMessage.endsWith(']')) ||
+    lower.includes('rfc9110') ||
+    lower.includes('tools.ietf.org') ||
+    lower.includes('traceid') ||
+    lower.includes('problemdetails')
+  ) {
+    try {
+      const parsed = JSON.parse(rawMessage)
+      if (parsed) {
+        if (parsed.errors && typeof parsed.errors === 'object') {
+          const firstErr = Object.values(parsed.errors).flat().find(Boolean)
+          if (firstErr && typeof firstErr === 'string' && !firstErr.includes('{')) {
+            return sanitizeApiError(firstErr, status)
+          }
+        }
+        if (parsed.message) return sanitizeApiError(parsed.message, status)
+        if (parsed.title && !parsed.title.toLowerCase().includes('validation errors occurred')) {
+          return sanitizeApiError(parsed.title, status)
+        }
+      }
+    } catch {}
+    return 'Unable to process your request. Please try again later.'
+  }
+
+  // Detect server unavailability / gateway / proxy errors
+  const isUnavailable =
+    lower.includes('service unavailable') ||
+    lower.includes('bad gateway') ||
+    lower.includes('gateway timeout') ||
+    lower.includes('econnrefused') ||
+    lower.includes('etimedout') ||
+    status === 502 ||
+    status === 503 ||
+    status === 504
+
+  if (isUnavailable) {
+    return 'Service is currently unavailable.'
+  }
+
   // Detect HTML/XML tags, DOCTYPE, ngrok error codes/domains, localhost, ports, tunnels, or proxy/infrastructure details
   const isInfraError =
     /<[a-z!][\s\S]*>/i.test(rawMessage) ||
@@ -290,45 +356,40 @@ export function sanitizeApiError(message, status = 0) {
     lower.includes('127.0.0.1') ||
     lower.includes('0.0.0.0') ||
     lower.includes('upstream') ||
-    lower.includes('bad gateway') ||
-    lower.includes('gateway timeout') ||
-    lower.includes('service unavailable') ||
     lower.includes('connection refused') ||
-    lower.includes('econnrefused') ||
-    lower.includes('etimedout') ||
     /:\d{4,5}\b/.test(rawMessage) ||
     /vite_api_base_url|backend server|ims api|failed to fetch|networkerror|load failed/i.test(rawMessage)
 
   if (isInfraError) {
-    return 'Unable to connect to the server.'
+    return 'Service is currently unavailable.'
   }
 
   if (/timeout|aborted/i.test(rawMessage)) {
-    return 'Unable to connect to the server.'
+    return 'Unable to process your request. Please try again later.'
   }
 
-  if (rawMessage.length > 250 && /stack trace|exception|system\.|microsoft\.|sql|database|unknown column|unknown table|mysql|syntax near/i.test(rawMessage)) {
-    return 'We are having trouble completing this request right now.'
+  if (
+    status >= 500 ||
+    /stack trace|exception|system\.|microsoft\.|sql|database|unknown column|unknown table|mysql|syntax near/i.test(rawMessage) ||
+    /is\s+not\s+defined|referenceerror|typeerror|syntaxerror|cannot\s+read\s+propert|is\s+not\s+a\s+function/i.test(rawMessage)
+  ) {
+    return 'Unable to process your request. Please try again later.'
   }
 
   if (/normalizeCategory\s+is\s+not\s+defined/i.test(rawMessage)) {
     return 'Invalid category name. Please select from predefined categories.'
   }
 
-  if (/is\s+not\s+defined|referenceerror|typeerror|syntaxerror|cannot\s+read\s+propert|is\s+not\s+a\s+function/i.test(rawMessage)) {
-    return 'We are having trouble completing this request right now.'
-  }
-
   if (/the\s+dto\s+field\s+is\s+required/i.test(rawMessage)) {
-    return 'Please fill in all mandatory Goods Receipt fields.'
+    return 'Please fill in all mandatory fields.'
   }
 
   if (/\bdto\b/i.test(rawMessage)) {
     return rawMessage.replace(/\bthe\s+dto\s+field\b/gi, 'The required form field').replace(/\bdto\b/gi, 'form data')
   }
 
-  if (/request failed with status/i.test(rawMessage)) {
-    return 'The request could not be completed. Please try again.'
+  if (/request failed with status|one or more validation errors/i.test(rawMessage)) {
+    return 'Unable to process your request. Please try again later.'
   }
 
   return rawMessage

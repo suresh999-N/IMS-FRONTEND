@@ -47,8 +47,20 @@ export async function getBarcodes(products = []) {
     return response
   }
 
+  let productList = Array.isArray(products) && products.length > 0 ? products : []
+  if (productList.length === 0) {
+    try {
+      const prodRes = await apiRequest(API_ENDPOINTS.products.list)
+      if (prodRes?.success) {
+        productList = getResponseList(prodRes)
+      }
+    } catch {
+      // Ignore fallback fetch error
+    }
+  }
+
   const rawBarcodes = getResponseList(response)
-  const normalizedBarcodes = rawBarcodes.map((item) => normalizeBarcode(item, products))
+  const normalizedBarcodes = rawBarcodes.map((item) => normalizeBarcode(item, productList))
 
   return {
     ...response,
@@ -68,8 +80,20 @@ export async function generateBarcode(productId, products = []) {
     return response
   }
 
+  let productList = Array.isArray(products) && products.length > 0 ? products : []
+  if (productList.length === 0) {
+    try {
+      const prodRes = await apiRequest(API_ENDPOINTS.products.list)
+      if (prodRes?.success) {
+        productList = getResponseList(prodRes)
+      }
+    } catch {
+      // Ignore fallback fetch error
+    }
+  }
+
   const rawBarcode = getResponseData(response, {})
-  const normalizedBarcode = normalizeBarcode(rawBarcode, products)
+  const normalizedBarcode = normalizeBarcode(rawBarcode, productList)
 
   return {
     ...response,
@@ -92,8 +116,27 @@ export function normalizeBarcode(item = {}, products = []) {
   }
 
   const productName = rawProductName || product?.name || 'Unknown Product'
-  const rawValue = item.value || item.Value || item.code || item.Code || ''
-  const codeType = item.codeType || item.CodeType || (rawValue.startsWith('QR:') ? 'QR Code' : 'Barcode')
+  const rawValue =
+    item.value ||
+    item.Value ||
+    item.codeValue ||
+    item.CodeValue ||
+    item.code_value ||
+    item.code ||
+    item.Code ||
+    item.barcode ||
+    item.Barcode ||
+    product?.barcode ||
+    product?.Barcode ||
+    product?.sku ||
+    product?.SKU ||
+    product?.productCode ||
+    product?.ProductCode ||
+    (productId ? `PRD-${productId}` : '') ||
+    (rawId ? `BC-${rawId}` : '') ||
+    ''
+
+  const codeType = item.codeType || item.CodeType || (String(rawValue).startsWith('QR:') ? 'QR Code' : 'Barcode')
   const dateVal = item.date || item.Date || item.createdAt || item.CreatedAt || new Date().toISOString().split('T')[0]
   const date = String(dateVal).split('T')[0]
   const id = rawId || String(productId ? `barcode-prod-${productId}` : `${productName}-${rawValue || date}`)

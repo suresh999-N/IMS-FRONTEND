@@ -284,8 +284,18 @@ namespace IMSBackend.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto, CancellationToken cancellationToken)
         {
-            var loginValue = dto.EmailOrPhone.Trim();
+            var rawIdentifier = !string.IsNullOrWhiteSpace(dto.EmailOrPhone)
+                ? dto.EmailOrPhone
+                : dto.Email ?? string.Empty;
 
+            if (string.IsNullOrWhiteSpace(rawIdentifier))
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    "Invalid email or password.",
+                    traceId: HttpContext.TraceIdentifier));
+            }
+
+            var loginValue = rawIdentifier.Trim();
 
             var normalizedEmail = loginValue.ToLowerInvariant();
 
@@ -294,8 +304,8 @@ namespace IMSBackend.Controllers
                     .Where(char.IsDigit)
                     .ToArray());
 
-            var email = dto.EmailOrPhone.Trim().ToLower();
-            var phone = new string(dto.EmailOrPhone.Where(char.IsDigit).ToArray());
+            var email = normalizedEmail;
+            var phone = normalizedPhone;
 
 
 

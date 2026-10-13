@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Boxes,
   Check,
+  CheckCircle2,
   ChevronDown,
   ChevronRight,
   ClipboardList,
@@ -18,6 +19,7 @@ import {
   Save,
   SlidersHorizontal,
   Trash2,
+  XCircle,
 } from 'lucide-react'
 import {
   createCategory,
@@ -36,6 +38,7 @@ import SearchableSelect from '../../../components/SearchableSelect'
 import { ActionMenu, DataTable, FilterBar, StatusBadge } from '../../../components/erp'
 import { showToast } from '../../../components/common/toast'
 import { useAuth } from '../../../hooks/useAuth'
+import { formatDate } from '../../../utils/helpers'
 import './Categories.css'
 
 const CATALOG_STRUCTURE_UPDATED_EVENT = 'ims:catalog-structure-updated'
@@ -352,23 +355,6 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;')
 }
 
-function formatDate(value) {
-  if (!value) {
-    return '-'
-  }
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return '-'
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(date)
-}
-
 function categoryParentLabel(categories, category) {
   if (category.rowType === 'subcategory') {
     return category.parentName || category.categoryName || 'Parent category'
@@ -661,6 +647,9 @@ export default function Categories() {
   const [formState, setFormState] = useState(null)
   const [viewingCategory, setViewingCategory] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [bulkDeleteTargets, setBulkDeleteTargets] = useState([])
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isBulkStatusUpdating, setIsBulkStatusUpdating] = useState(false)
   const [subcategoriesViewTarget, setSubcategoriesViewTarget] = useState(null)
   const [selectedCategoryIds, setSelectedCategoryIds] = useState([])
   const [statusFilter, setStatusFilter] = useState('all')
@@ -994,19 +983,152 @@ export default function Categories() {
     setDeleteTarget(category)
   }
 
-  function handleBulkDeleteClick() {
-    const deletableCategories = selectedCategories.filter((category) => category.rowType === 'category')
+  async function handleBulkStatusChange(targetStatus) {
+    if (!canEdit || selectedCategories.length === 0) return
 
-    if (deletableCategories.length !== 1 || selectedCategories.length !== 1) {
+    const targetCategories = selectedCategories.filter((category) => category.rowType === 'category')
+    if (targetCategories.length === 0) {
       showToast({
         type: 'error',
         title: 'Categories',
-        message: 'Select one main category at a time to delete.',
+        message: 'No main categories selected for status update.',
       })
       return
     }
 
-    handleDeleteClick(deletableCategories[0])
+    setIsBulkStatusUpdating(true)
+    let updatedCount = 0
+    let failedCount = 0
+    let firstErrorMessage = ''
+
+    for (const cat of targetCategories) {
+      const catId = categoryIdOf(cat)
+      if (comparable(cat.status) === comparable(targetStatus)) {
+        continue
+      }
+
+      const response = await updateCategory(catId, {
+        name: cat.name,
+        parentId: cat.parentId ? Number(cat.parentId) : null,
+        description: cat.description || '',
+        status: targetStatus,
+      })
+
+      if (response.success) {
+        updatedCount++
+      } else {
+        failedCount++
+        if (!firstErrorMessage) {
+          firstErrorMessage = response.error || `Unable to set "${cat.name}" to ${targetStatus}.`
+        }
+      }
+    }
+
+    setIsBulkStatusUpdating(false)
+    setSelectedCategoryIds([])
+    await loadCategories({ force: true })
+
+    if (failedCount === 0) {
+      showToast({
+        type: 'success',
+        title: 'Categories',
+        message: `${updatedCount > 0 ? updatedCount : targetCategories.length} category ${updatedCount === 1 ? 'record' : 'records'} set to ${targetStatus}.`,
+      })
+    } else if (updatedCount > 0) {
+      showToast({
+        type: 'warning',
+        title: 'Categories',
+        message: `${updatedCount} updated. ${failedCount} could not be updated (${firstErrorMessage}).`,
+      })
+    } else {
+      showToast({
+        type: 'error',
+        title: 'Categories',
+        message: firstErrorMessage || 'Unable to update category status.',
+      })
+    }
+  }
+
+  function handleBulkDeleteClick() {
+    const deletableCategories = selectedCategories.filter((category) => category.rowType === 'category')
+
+    if (deletableCategories.length === 0) {
+      showToast({
+        type: 'error',
+        title: 'Categories',
+        message: 'No main categories selected for deletion.',
+      })
+      return
+    }
+
+    setBulkDeleteTargets(deletableCategories)
+  }
+
+  async function confirmBulkDelete() {
+    if (!canDelete || bulkDeleteTargets.length === 0) return
+
+    setIsDeleting(true)
+    let deletedCount = 0
+    let failedCount = 0
+    let firstErrorMessage = ''
+    const successfullyDeletedIds = []
+
+    for (const target of bulkDeleteTargets) {
+      const childCount = getCategoryChildCount(target, categories)
+      if (childCount > 0) {
+        failedCount++
+        if (!firstErrorMessage) {
+          firstErrorMessage = `"${target.name}" has subcategories and cannot be deleted.`
+        }
+        continue
+      }
+
+      const response = await deleteCategory(target.id)
+      if (response.success) {
+        deletedCount++
+        successfullyDeletedIds.push(String(target.id))
+      } else {
+        failedCount++
+        if (!firstErrorMessage) {
+          firstErrorMessage = response.error || `Unable to delete "${target.name}".`
+        }
+      }
+    }
+
+    setIsDeleting(false)
+    setBulkDeleteTargets([])
+
+    if (deletedCount > 0) {
+      setSelectedCategoryIds((prev) =>
+        prev.filter((id) => !successfullyDeletedIds.includes(String(id)))
+      )
+      window.dispatchEvent(
+        new CustomEvent(CATALOG_STRUCTURE_UPDATED_EVENT, {
+          detail: { resource: 'categories', action: 'deleted' },
+        })
+      )
+      await loadCategories({ force: true })
+    }
+
+    if (failedCount === 0) {
+      showToast({
+        type: 'success',
+        title: 'Categories',
+        message: `${deletedCount} ${deletedCount === 1 ? 'category' : 'categories'} deleted successfully.`,
+      })
+    } else if (deletedCount > 0) {
+      showToast({
+        type: 'warning',
+        title: 'Categories',
+        message: `${deletedCount} category deleted. ${failedCount} could not be deleted (${firstErrorMessage}).`,
+      })
+    } else {
+      showToast({
+        type: 'error',
+        title: 'Categories',
+        message: firstErrorMessage || 'Unable to delete selected categories.',
+      })
+    }
   }
 
   async function confirmDelete() {
@@ -1347,6 +1469,42 @@ export default function Categories() {
         <Check size={15} />
         <strong>{selectedCategories.length} selected</strong>
       </div>
+      {canEdit ? (
+        <>
+          <button
+            type="button"
+            className="button button-secondary catalog-table__selection-button catalog-table__selection-button--activate"
+            onClick={() => handleBulkStatusChange('Active')}
+            disabled={isBulkStatusUpdating}
+            title="Set selected categories to Active"
+          >
+            <CheckCircle2 size={15} />
+            Activate
+          </button>
+          <button
+            type="button"
+            className="button button-secondary catalog-table__selection-button catalog-table__selection-button--deactivate"
+            onClick={() => handleBulkStatusChange('Inactive')}
+            disabled={isBulkStatusUpdating}
+            title="Set selected categories to Inactive"
+          >
+            <XCircle size={15} />
+            Deactivate
+          </button>
+        </>
+      ) : null}
+      {canDelete ? (
+        <button
+          type="button"
+          className="button button-secondary catalog-table__selection-button catalog-table__selection-button--danger"
+          onClick={handleBulkDeleteClick}
+          disabled={isDeleting}
+          title="Delete selected categories"
+        >
+          <Trash2 size={15} />
+          Delete
+        </button>
+      ) : null}
       <button
         type="button"
         className="button button-secondary catalog-table__selection-button"
@@ -1363,16 +1521,6 @@ export default function Categories() {
         <Printer size={15} />
         Print
       </button>
-      {canDelete ? (
-        <button
-          type="button"
-          className="button button-secondary catalog-table__selection-button catalog-table__selection-button--danger"
-          onClick={handleBulkDeleteClick}
-        >
-          <Trash2 size={15} />
-          Delete
-        </button>
-      ) : null}
     </FilterBar>
   ) : null
 
@@ -1434,35 +1582,37 @@ export default function Categories() {
           splitToolbar
           filterContent={categoryFilterContent}
           toolbarContent={
-            <FilterBar className="categories-list-page__toolbar-actions" ariaLabel="Category table actions">
-              <button
-                type="button"
-                className={`button button-secondary categories-toolbar-btn ${viewMode === 'grid' ? 'is-active' : ''}`}
-                onClick={() => setViewMode('grid')}
-                title="Tabular Grid View (Uniform main categories table)"
-              >
-                <LayoutGrid size={15} />
-                Grid View
-              </button>
-              <button
-                type="button"
-                className={`button button-secondary categories-toolbar-btn ${viewMode === 'tree' ? 'is-active' : ''}`}
-                onClick={() => setViewMode('tree')}
-                title="Expandable Tree View (Nested hierarchy)"
-              >
-                <FolderTree size={15} />
-                Tree View
-              </button>
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => loadCategories({ force: true, showLoading: true })}
-                disabled={isLoading}
-              >
-                <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
-                Refresh
-              </button>
-            </FilterBar>
+            hasSelectedCategories ? null : (
+              <FilterBar className="categories-list-page__toolbar-actions" ariaLabel="Category table actions">
+                <button
+                  type="button"
+                  className={`button button-secondary categories-toolbar-btn ${viewMode === 'grid' ? 'is-active' : ''}`}
+                  onClick={() => setViewMode('grid')}
+                  title="Tabular Grid View (Uniform main categories table)"
+                >
+                  <LayoutGrid size={15} />
+                  Grid View
+                </button>
+                <button
+                  type="button"
+                  className={`button button-secondary categories-toolbar-btn ${viewMode === 'tree' ? 'is-active' : ''}`}
+                  onClick={() => setViewMode('tree')}
+                  title="Expandable Tree View (Nested hierarchy)"
+                >
+                  <FolderTree size={15} />
+                  Tree View
+                </button>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => loadCategories({ force: true, showLoading: true })}
+                  disabled={isLoading}
+                >
+                  <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+                  Refresh
+                </button>
+              </FilterBar>
+            )
           }
           searchPlaceholder="Search categories by name, parent"
           emptyMessage="No categories found."
@@ -1519,6 +1669,50 @@ export default function Categories() {
               <button type="button" className="button button-danger" onClick={confirmDelete}>
                 <Trash2 size={16} />
                 Delete
+              </button>
+            </div>
+          </div>
+        </FormModal>
+      ) : null}
+
+      {bulkDeleteTargets.length > 0 ? (
+        <FormModal
+          title={`Delete ${bulkDeleteTargets.length === 1 ? 'Category' : `${bulkDeleteTargets.length} Categories`}`}
+          className="form-modal--category-delete"
+          dialogClassName="catalog-category-delete-modal"
+          bodyClassName="catalog-category-delete-modal__body"
+          onClose={() => !isDeleting && setBulkDeleteTargets([])}
+        >
+          <div className="catalog-form__delete-dialog">
+            <div className="catalog-form__delete-copy">
+              <p>
+                Are you sure you want to delete {bulkDeleteTargets.length === 1 ? (
+                  <strong>{bulkDeleteTargets[0].name}</strong>
+                ) : (
+                  <><strong>{bulkDeleteTargets.length}</strong> selected categories</>
+                )}?
+              </p>
+              <p className="catalog-form__delete-warning">
+                Categories with assigned subcategories or products cannot be deleted and will be skipped.
+              </p>
+            </div>
+            <div className="button-row catalog-form__delete-actions">
+              <button
+                className="button button-cancel button-secondary"
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setBulkDeleteTargets([])}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="button button-danger"
+                disabled={isDeleting}
+                onClick={confirmBulkDelete}
+              >
+                <Trash2 size={16} />
+                {isDeleting ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>

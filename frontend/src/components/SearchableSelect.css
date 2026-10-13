@@ -103,17 +103,29 @@
 }
 
 .searchable-select__search {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-input);
-  padding: 0 8px;
-  min-width: 0;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  border: 1px solid var(--border, rgba(203, 213, 225, 0.72)) !important;
+  border-radius: var(--radius-input, 8px) !important;
+  padding: 0 10px !important;
+  min-height: 36px !important;
+  height: 36px !important;
+  min-width: 0 !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
 }
 
-.searchable-select__search--invalid {
+.searchable-select__search:focus-within {
+  border-color: var(--ims-success, #059669) !important;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12) !important;
+}
+
+.searchable-select__search--invalid,
+.searchable-select__search--invalid:focus-within {
   border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
 }
 
 .searchable-select__empty--invalid {
@@ -121,18 +133,35 @@
   font-weight: 550;
 }
 
-.searchable-select__search input {
-  border: 0;
-  width: 100%;
-  padding: 7px 0;
-  background: transparent;
-  color: var(--text);
-  font-size: 13px;
+.searchable-select__search svg {
+  flex-shrink: 0 !important;
+  color: #64748b !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin: 0 !important;
 }
 
-.searchable-select__search input:focus {
-  outline: none;
-  box-shadow: none;
+.searchable-select__search input,
+.searchable-select__search input:hover,
+.searchable-select__search input:focus,
+.searchable-select__search input:focus-visible {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 6px 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  color: var(--text, #1e293b) !important;
+  font-size: 13px !important;
+  line-height: normal !important;
 }
 
 .searchable-select__options {
