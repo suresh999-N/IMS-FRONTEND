@@ -38,6 +38,15 @@ const OTHER_DOCUMENT_OPTION = SUPPLIER_DOCUMENT_TYPE_OPTIONS.find(({ value }) =>
   normalizeSupplierDocumentType(value) === SUPPLIER_DOCUMENT_TYPES.OTHER
 ))
 
+function isPersistedSupplierId(id) {
+  if (!id) return false
+  const str = String(id).trim().toLowerCase()
+  if (str === '' || str === '0' || str === 'new' || str === 'null' || str === 'undefined' || str.startsWith('temp')) {
+    return false
+  }
+  return true
+}
+
 function getDocumentId(document) {
   return String(document?.documentId || document?.id || document?.supplierDocumentId || '')
 }
@@ -177,7 +186,7 @@ export default function SupplierDocumentsTab({
   const documentsByType = useMemo(() => buildDocumentsByType(documentList), [documentList])
 
   const refreshDocuments = useCallback(async () => {
-    if (!supplierId) return []
+    if (!isPersistedSupplierId(supplierId)) return []
 
     setIsRefreshing(true)
     setRefreshError('')
@@ -202,7 +211,7 @@ export default function SupplierDocumentsTab({
   }, [supplierId])
 
   useEffect(() => {
-    if (!supplierId) return
+    if (!isPersistedSupplierId(supplierId)) return
     refreshDocuments().catch(() => {})
   }, [refreshDocuments, supplierId])
 
@@ -253,7 +262,7 @@ export default function SupplierDocumentsTab({
       return nextValue
     })
 
-    if (!supplierId) {
+    if (!isPersistedSupplierId(supplierId)) {
       const normalizedType = normalizeSupplierDocumentType(type)
       const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`
       const stagedDocument = {
@@ -273,18 +282,26 @@ export default function SupplierDocumentsTab({
         file,
       }
 
-      setDocumentList((currentList) => {
-        let nextList
-        if (SUPPLIER_SINGLE_DOCUMENT_TYPES.includes(normalizedType)) {
-          nextList = [
-            ...currentList.filter((doc) => getDocumentType(doc) !== normalizedType),
-            stagedDocument,
-          ]
-        } else {
-          nextList = [...currentList, stagedDocument]
-        }
-        onDocumentsChange?.(nextList)
-        return nextList
+      const replaceTarget = replaceTargetByType[type]
+      const replaceTargetId = getDocumentId(replaceTarget)
+      let nextList
+      if (SUPPLIER_SINGLE_DOCUMENT_TYPES.includes(normalizedType)) {
+        nextList = [
+          ...documentList.filter((doc) => getDocumentType(doc) !== normalizedType),
+          stagedDocument,
+        ]
+      } else if (replaceTargetId) {
+        nextList = documentList.map((doc) => getDocumentId(doc) === replaceTargetId ? stagedDocument : doc)
+      } else {
+        nextList = [...documentList, stagedDocument]
+      }
+
+      setDocumentList(nextList)
+      onDocumentsChange?.(nextList)
+      setReplaceTargetByType((currentValue) => {
+        const nextValue = { ...currentValue }
+        delete nextValue[type]
+        return nextValue
       })
 
       showToast({
@@ -437,7 +454,13 @@ export default function SupplierDocumentsTab({
     const documentId = getDocumentId(document)
     if (!documentId) return
 
-    const isStagedOrTemp = Boolean(document?.file instanceof File || document?.isTemporary || String(documentId).startsWith('temp-') || !supplierId)
+    const isStagedOrTemp = Boolean(
+      document?.file instanceof File ||
+      document?.file instanceof Blob ||
+      document?.isTemporary ||
+      String(documentId).startsWith('temp-') ||
+      !isPersistedSupplierId(supplierId)
+    )
 
     if (isStagedOrTemp) {
       const nextDocuments = documentList.filter((item) => getDocumentId(item) !== documentId)
@@ -709,7 +732,7 @@ export default function SupplierDocumentsTab({
       title="Documents"
       className="supplier-documents-section"
       actions={(
-        <button type="button" className="button button-secondary supplier-document-refresh" onClick={refreshDocuments} disabled={isRefreshing || !supplierId}>
+        <button type="button" className="button button-secondary supplier-document-refresh" onClick={refreshDocuments} disabled={isRefreshing || !isPersistedSupplierId(supplierId)}>
           {isRefreshing ? <LoaderCircle size={15} className="animate-spin" /> : <RotateCcw size={15} />}
           {isRefreshing ? 'Refreshing...' : 'Refresh'}
         </button>

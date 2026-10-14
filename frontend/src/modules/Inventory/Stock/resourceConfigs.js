@@ -308,12 +308,58 @@ export const RESOURCE_CONFIGS = {
     endpoint: API_ENDPOINTS.stockMovements.list,
     byId: API_ENDPOINTS.stockMovements.byId,
     canCreate: false,
-    canUpdate: false,
+    canUpdate: true,
     canDelete: false,
     statuslessRowsAreActive: true,
     idFields: ['movementId'],
+    referenceEndpoints: {
+      products: API_ENDPOINTS.products.list,
+      productVariants: API_ENDPOINTS.productVariants.list,
+      warehouses: API_ENDPOINTS.warehouses.list,
+    },
+    referenceListKeys: {
+      products: 'products',
+      productVariants: 'productVariants',
+      warehouses: 'warehouses',
+    },
     fields: [
-      ...stockIdentityFields,
+      {
+        name: 'productId',
+        label: 'Product *',
+        type: 'searchableSelect',
+        valueType: 'number',
+        required: true,
+        min: 1,
+        optionsFrom: 'products',
+        optionValue: ['productId', 'id'],
+        optionLabel: ['name', 'productName', 'title'],
+        placeholder: 'Select product',
+        searchPlaceholder: 'Search products',
+      },
+      {
+        name: 'variantId',
+        label: 'Variant',
+        type: 'searchableSelect',
+        valueType: 'number',
+        optionsFrom: 'productVariants',
+        optionValue: ['variantId', 'id'],
+        optionLabel: (item) => item.variantName ? `${item.variantName} (${item.sku || ''})` : item.sku || 'Default',
+        placeholder: 'Select variant',
+        searchPlaceholder: 'Search variants',
+      },
+      {
+        name: 'warehouseId',
+        label: 'Warehouse *',
+        type: 'searchableSelect',
+        valueType: 'number',
+        required: true,
+        min: 1,
+        optionsFrom: 'warehouses',
+        optionValue: ['warehouseId', 'id'],
+        optionLabel: ['name', 'warehouseName', 'title'],
+        placeholder: 'Select warehouse',
+        searchPlaceholder: 'Search warehouses',
+      },
       {
         name: 'movementType',
         label: 'Movement Type',
@@ -328,6 +374,9 @@ export const RESOURCE_CONFIGS = {
           { value: 'ADJUSTMENT', label: 'Adjustment' },
           { value: 'TRANSFER', label: 'Transfer' },
           { value: 'OPENING', label: 'Opening Stock' },
+          { value: 'PUTAWAY', label: 'Putaway' },
+          { value: 'PURCHASE_RETURN', label: 'Purchase Return' },
+          { value: 'SALES_RETURN', label: 'Sales Return' },
         ],
       },
       { name: 'quantity', label: 'Quantity', type: 'number', required: true, min: 0.01 },
@@ -353,7 +402,7 @@ export const RESOURCE_CONFIGS = {
     endpoint: API_ENDPOINTS.stockLedger.list,
     byId: API_ENDPOINTS.stockLedger.byId,
     canCreate: false,
-    canUpdate: false,
+    canUpdate: true,
     canDelete: false,
     statuslessRowsAreActive: true,
     idFields: ['ledgerId'],
@@ -440,15 +489,15 @@ export const RESOURCE_CONFIGS = {
         type: 'lineItems',
         required: true,
         validate: (value, context) => {
-          if (!Array.isArray(value) || value.length === 0 || !value.some((item) => item.productId)) {
+          if (!Array.isArray(value) || value.length === 0) {
             return 'At least one adjustment item is required.'
           }
           const products = context?.referenceData?.products || []
           const units = context?.referenceData?.units || []
           for (let i = 0; i < value.length; i++) {
             const item = value[i]
-            if (!item.productId) {
-              return `Line ${i + 1}: Product is required.`
+            if (!item.productId || String(item.productId).trim() === '' || Number(item.productId) <= 0) {
+              return value.length === 1 ? 'Product is required.' : `Line ${i + 1}: Product is required.`
             }
             const product = products.find((p) => String(p.productId ?? p.id ?? '') === String(item.productId ?? ''))
             const productUnitId = product?.unitId ?? product?.UnitId ?? product?.unit_id ?? (typeof product?.unit === 'object' ? product?.unit?.unitId ?? product?.unit?.id : null)
@@ -459,7 +508,7 @@ export const RESOURCE_CONFIGS = {
 
             const qtyErr = validateStockAdjustmentQuantity(item.quantity, product, unit, { required: true })
             if (qtyErr) {
-              return `Line ${i + 1}: ${qtyErr}`
+              return value.length === 1 ? qtyErr : `Line ${i + 1}: ${qtyErr}`
             }
           }
           return ''
@@ -683,8 +732,9 @@ export const RESOURCE_CONFIGS = {
         min: getToday,
         minDate: getToday,
         minMessage: 'Transfer Date cannot be in the past.',
-        validate: (value) => {
+        validate: (value, context) => {
           if (!value) return ''
+          if (context?.mode === 'edit') return ''
           const today = getToday()
           const dateStr = String(value).slice(0, 10)
           if (dateStr < today) {

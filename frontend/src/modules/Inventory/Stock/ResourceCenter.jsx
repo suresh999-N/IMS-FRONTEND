@@ -1089,6 +1089,8 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
             const product = productsList.find((p) => String(p.productId ?? p.id) === String(item.productId))
             const unitsList = referenceData.units ?? []
             const unit = unitsList.find((u) => String(u.unitId ?? u.id) === String(product?.unitId))
+            const isProductMissing = !item.productId || String(item.productId).trim() === '' || Number(item.productId) <= 0
+            const hasProductError = isProductMissing && (Boolean(error) || Boolean(item.quantity) || Boolean(item.variantId) || items.length > 1)
             const lineQtyError = validateStockAdjustmentQuantity(item.quantity, product, unit)
             const hasQtyError = Boolean(lineQtyError)
 
@@ -1110,8 +1112,16 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
                     }}
                     required
                     aria-label={`Line ${index + 1} product`}
-                    className="select-input"
-                    style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #dbe4f0', padding: '0 8px' }}
+                    className={`select-input ${hasProductError ? 'field--error' : ''}`}
+                    style={{
+                      width: '100%',
+                      height: '38px',
+                      borderRadius: '4px',
+                      border: hasProductError ? '1.5px solid #dc2626' : '1px solid #dbe4f0',
+                      backgroundColor: hasProductError ? '#fef2f2' : '#ffffff',
+                      padding: '0 8px',
+                      outline: hasProductError ? '1px solid #dc2626' : undefined,
+                    }}
                   >
                     <option value="">Select product...</option>
                     {productsList.map((p) => (
@@ -1174,9 +1184,14 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
                     <X size={16} />
                   </button>
                 </div>
-                {hasQtyError && (
-                  <div className="field-error" style={{ color: '#dc2626', fontSize: '0.8125rem', marginTop: '4px', fontWeight: 500 }}>
-                    {lineQtyError}
+                {(hasProductError || hasQtyError) && (
+                  <div className="field-error" style={{ color: '#dc2626', fontSize: '0.8125rem', marginTop: '4px', fontWeight: 500, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    {hasProductError && (
+                      <span>{items.length === 1 ? 'Product is required.' : `Line ${index + 1}: Product is required.`}</span>
+                    )}
+                    {hasQtyError && (
+                      <span>{items.length === 1 ? lineQtyError : `Line ${index + 1}: ${lineQtyError}`}</span>
+                    )}
                   </div>
                 )}
               </div>
@@ -1193,11 +1208,7 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
             Add Line
           </button>
         </div>
-        {error && !items.some(item => {
-          const product = productsList.find((p) => String(p.productId ?? p.id) === String(item.productId))
-          const unit = (referenceData.units ?? []).find((u) => String(u.unitId ?? u.id) === String(product?.unitId))
-          return Boolean(validateStockAdjustmentQuantity(item.quantity, product, unit))
-        }) ? (
+        {error && !items.some((it) => !it.productId || String(it.productId).trim() === '' || Number(it.productId) <= 0) ? (
           <span className="field-error">{error}</span>
         ) : null}
       </div>
@@ -2038,7 +2049,7 @@ function ResourcePage({ config, tabsContent = null }) {
     setIsSaving(true)
     setServerErrors(null)
 
-    const id = editingRecord?.id
+    const id = editingRecord?.movementId ?? editingRecord?.ledgerId ?? editingRecord?.transferId ?? editingRecord?.adjustmentId ?? editingRecord?.auditId ?? editingRecord?.id ?? editingRecord?.transfer_id
     const response = id
       ? await updateResource(config, id, payload, changedPayload)
       : await createResource(config, payload)
@@ -2575,6 +2586,12 @@ function ResourcePage({ config, tabsContent = null }) {
                   icon: Eye,
                   onClick: () => setViewingRecord(row),
                 },
+                canUpdate ? {
+                  key: 'edit',
+                  label: 'Edit',
+                  icon: Pencil,
+                  onClick: () => openEdit(row),
+                } : null,
                 {
                   key: 'print',
                   label: 'Print',

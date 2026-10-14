@@ -107,16 +107,16 @@ namespace IMSBackend.Controllers
             }
             catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("status", StringComparison.OrdinalIgnoreCase) == true || ex.Message.Contains("status", StringComparison.OrdinalIgnoreCase))
             {
-                try
+                _logger.LogWarning(ex, "Failed to persist stock transfer status '{Status}'. Using fallback status.", transfer.Status);
+                var fallbackStatus = transfer.Status?.ToLowerInvariant() switch
                 {
-                    await _context.Database.ExecuteSqlRawAsync("ALTER TABLE stock_transfers MODIFY COLUMN status VARCHAR(50) NULL;", cancellationToken);
-                    await _context.SaveChangesAsync(cancellationToken);
-                }
-                catch
-                {
-                    transfer.Status = transfer.Status?.Length > 8 ? transfer.Status.Substring(0, 8) : transfer.Status;
-                    await _context.SaveChangesAsync(cancellationToken);
-                }
+                    "approved" => "completed",
+                    "draft" => "pending",
+                    "transit" => "pending",
+                    _ => "pending"
+                };
+                transfer.Status = fallbackStatus;
+                await _context.SaveChangesAsync(cancellationToken);
             }
 
             var transferItem = new StockTransferItem
@@ -317,9 +317,9 @@ namespace IMSBackend.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, StockTransferDto dto)
+        public async Task<IActionResult> Update(int id, StockTransferDto dto)
         {
-            var transfer = _context.StockTransfers.Find(id);
+            var transfer = await _context.StockTransfers.FindAsync(id);
 
             if (transfer == null)
                 return NotFound();
@@ -332,7 +332,7 @@ namespace IMSBackend.Controllers
 
             if (dto.TransferDate != default)
             {
-                if (dto.TransferDate.Date < DateTime.UtcNow.Date)
+                if (dto.TransferDate.Date != transfer.TransferDate.Date && dto.TransferDate.Date < DateTime.UtcNow.Date)
                     return ValidationError("Transfer date cannot be in the past.");
 
                 transfer.TransferDate = dto.TransferDate;
@@ -343,20 +343,20 @@ namespace IMSBackend.Controllers
 
             try
             {
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
             catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("status", StringComparison.OrdinalIgnoreCase) == true || ex.Message.Contains("status", StringComparison.OrdinalIgnoreCase))
             {
-                try
+                _logger.LogWarning(ex, "Failed to update transfer status to '{Status}'. Using fallback status.", transfer.Status);
+                var fallbackStatus = transfer.Status?.ToLowerInvariant() switch
                 {
-                    _context.Database.ExecuteSqlRaw("ALTER TABLE stock_transfers MODIFY COLUMN status VARCHAR(50) NULL;");
-                    _context.SaveChanges();
-                }
-                catch
-                {
-                    transfer.Status = transfer.Status?.Length > 8 ? transfer.Status.Substring(0, 8) : transfer.Status;
-                    _context.SaveChanges();
-                }
+                    "approved" => "completed",
+                    "draft" => "pending",
+                    "transit" => "pending",
+                    _ => "pending"
+                };
+                transfer.Status = fallbackStatus;
+                await _context.SaveChangesAsync();
             }
 
             return Ok(ApiResponse<object>.Ok(transfer, "Stock transfer updated successfully."));

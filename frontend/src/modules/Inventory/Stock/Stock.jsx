@@ -473,7 +473,7 @@ function getFieldError(field, value, mode, context = {}) {
     const rawMin = field.min ?? field.minDate
     const resolvedMin = typeof rawMin === 'function' ? rawMin() : rawMin
     const minIso = resolvedMin === 'today' ? new Date().toISOString().slice(0, 10) : (resolvedMin ? String(resolvedMin).slice(0, 10) : '')
-    if (minIso && String(value).slice(0, 10) < minIso) {
+    if (mode !== 'edit' && minIso && String(value).slice(0, 10) < minIso) {
       return field.minMessage || `${label} cannot be in the past.`
     }
 
@@ -1425,6 +1425,8 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
               return uId !== undefined && productUnitId !== undefined && String(uId) === String(productUnitId)
             }) || (typeof product?.unit === 'object' ? product?.unit : null)
 
+            const isProductMissing = !item.productId || String(item.productId).trim() === '' || Number(item.productId) <= 0
+            const hasProductError = isProductMissing && (Boolean(error) || Boolean(item.quantity) || Boolean(item.variantId) || items.length > 1)
             const lineQtyError = validateStockAdjustmentQuantity(item.quantity, product, unit)
             const hasQtyError = Boolean(lineQtyError)
 
@@ -1449,8 +1451,16 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
                     }}
                     required
                     aria-label={`Line ${index + 1} product`}
-                    className="select-input"
-                    style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #dbe4f0', padding: '0 8px' }}
+                    className={`select-input ${hasProductError ? 'field--error' : ''}`}
+                    style={{
+                      width: '100%',
+                      height: '38px',
+                      borderRadius: '4px',
+                      border: hasProductError ? '1.5px solid #dc2626' : '1px solid #dbe4f0',
+                      backgroundColor: hasProductError ? '#fef2f2' : '#ffffff',
+                      padding: '0 8px',
+                      outline: hasProductError ? '1px solid #dc2626' : undefined,
+                    }}
                   >
                     <option value="">Select product...</option>
                     {productsList.map((p) => (
@@ -1515,9 +1525,14 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
                     <X size={16} />
                   </button>
                 </div>
-                {hasQtyError && (
-                  <div className="field-error" style={{ color: '#dc2626', fontSize: '0.8125rem', marginTop: '4px', fontWeight: 500 }}>
-                    {lineQtyError}
+                {(hasProductError || hasQtyError) && (
+                  <div className="field-error" style={{ color: '#dc2626', fontSize: '0.8125rem', marginTop: '4px', fontWeight: 500, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    {hasProductError && (
+                      <span>{items.length === 1 ? 'Product is required.' : `Line ${index + 1}: Product is required.`}</span>
+                    )}
+                    {hasQtyError && (
+                      <span>{items.length === 1 ? lineQtyError : `Line ${index + 1}: ${lineQtyError}`}</span>
+                    )}
                   </div>
                 )}
               </div>
@@ -1534,7 +1549,7 @@ function LineItemsField({ field, value, error, onChange, referenceData = {}, con
             Add Line
           </button>
         </div>
-        {error ? (
+        {error && !items.some((it) => !it.productId || String(it.productId).trim() === '' || Number(it.productId) <= 0) ? (
           <div className="field-error" style={{ color: '#dc2626', fontSize: '0.8125rem', marginTop: '6px', fontWeight: 500 }}>
             {error}
           </div>
@@ -1937,7 +1952,7 @@ function ResourceForm({
           onChange={handleChange}
           onBlur={handleBlur}
           error={error}
-          minDate={(field.min ?? field.minDate) ? (typeof (field.min ?? field.minDate) === 'function' ? (field.min ?? field.minDate)() : (field.min ?? field.minDate)) : undefined}
+          minDate={mode === 'edit' ? undefined : ((field.min ?? field.minDate) ? (typeof (field.min ?? field.minDate) === 'function' ? (field.min ?? field.minDate)() : (field.min ?? field.minDate)) : undefined)}
           maxDate={(field.max ?? field.maxDate) ? (typeof (field.max ?? field.maxDate) === 'function' ? (field.max ?? field.maxDate)() : (field.max ?? field.maxDate)) : undefined}
           readOnly={field.readOnly}
           className={getResourceFieldClassName(config, field)}
@@ -2441,7 +2456,7 @@ function ResourcePage({ config, navigationContent = null }) {
     setIsSaving(true)
     setServerErrors(null)
 
-    const id = editingRecord?.transferId ?? editingRecord?.adjustmentId ?? editingRecord?.auditId ?? editingRecord?.id ?? editingRecord?.transfer_id
+    const id = editingRecord?.movementId ?? editingRecord?.ledgerId ?? editingRecord?.transferId ?? editingRecord?.adjustmentId ?? editingRecord?.auditId ?? editingRecord?.id ?? editingRecord?.transfer_id
     let response
 
     if (config.key === 'stockAdjustments') {
@@ -2449,7 +2464,7 @@ function ResourcePage({ config, navigationContent = null }) {
       const { items: changedItems, ...changedHeaderPayload } = changedPayload
 
       const itemsList = Array.isArray(items) ? items : []
-      if (itemsList.length === 0 || !itemsList.some((it) => it.productId)) {
+      if (itemsList.length === 0) {
         setIsSaving(false)
         showToast({
           type: 'error',
@@ -2464,12 +2479,12 @@ function ResourcePage({ config, navigationContent = null }) {
       const units = referenceData.units ?? []
       for (let i = 0; i < itemsList.length; i++) {
         const item = itemsList[i]
-        if (!item.productId) {
+        if (!item.productId || String(item.productId).trim() === '' || Number(item.productId) <= 0) {
           setIsSaving(false)
           showToast({
             type: 'error',
             title: config.title,
-            message: `Line ${i + 1}: Please select a product.`,
+            message: itemsList.length === 1 ? 'Product is required.' : `Line ${i + 1}: Product is required.`,
           })
           return
         }
@@ -2486,19 +2501,29 @@ function ResourcePage({ config, navigationContent = null }) {
           showToast({
             type: 'error',
             title: config.title,
-            message: `Line ${i + 1}: ${qtyErr}`,
+            message: itemsList.length === 1 ? qtyErr : `Line ${i + 1}: ${qtyErr}`,
           })
           return
         }
       }
 
       const formattedItems = itemsList
-        .filter((it) => it.productId)
+        .filter((it) => it.productId && Number(it.productId) > 0)
         .map((it) => ({
           productId: Number(it.productId),
           variantId: it.variantId ? Number(it.variantId) : null,
           quantity: Number(it.quantity),
         }))
+
+      if (formattedItems.length === 0) {
+        setIsSaving(false)
+        showToast({
+          type: 'error',
+          title: config.title,
+          message: 'Product is required.',
+        })
+        return
+      }
 
       if (id) {
         response = await updateResource(config, id, headerPayload, changedHeaderPayload)
@@ -2581,7 +2606,7 @@ function ResourcePage({ config, navigationContent = null }) {
 
             for (const item of items) {
               if (!item.productId) continue
-              await apiRequest(API_ENDPOINTS.stockTransferItems.list, {
+              const itemRes = await apiRequest(API_ENDPOINTS.stockTransferItems.list, {
                 method: 'POST',
                 body: {
                   transferId: Number(transId),
@@ -2590,6 +2615,13 @@ function ResourcePage({ config, navigationContent = null }) {
                   quantity: Number(item.quantity),
                 },
               })
+              if (!itemRes.success) {
+                response = {
+                  success: false,
+                  error: itemRes.error || itemRes.message || 'Failed to save transfer item.',
+                }
+                break
+              }
             }
           }
         } else {
@@ -3393,23 +3425,11 @@ function ResourcePage({ config, navigationContent = null }) {
                   icon: Eye,
                   onClick: () => setViewingStock(row),
                 } : null,
-                config.key === 'stock' ? {
-                  key: 'print',
-                  label: 'Print',
-                  icon: Printer,
-                  onClick: () => printResourceRows(config, [row]),
-                } : null,
                 config.key === 'stockAdjustments' ? {
                   key: 'view',
                   label: 'View Details',
                   icon: FileText,
                   onClick: () => setViewingAdjustment(row),
-                } : null,
-                config.key === 'stockAdjustments' ? {
-                  key: 'print',
-                  label: 'Print',
-                  icon: Printer,
-                  onClick: () => printResourceRows(config, [row]),
                 } : null,
                 config.key === 'stockTransfers' ? {
                   key: 'view',
@@ -3417,23 +3437,11 @@ function ResourcePage({ config, navigationContent = null }) {
                   icon: FileText,
                   onClick: () => setViewingTransfer(row),
                 } : null,
-                config.key === 'stockTransfers' ? {
-                  key: 'print',
-                  label: 'Print',
-                  icon: Printer,
-                  onClick: () => printResourceRows(config, [row]),
-                } : null,
                 config.key === 'stockAudits' ? {
                   key: 'view',
                   label: 'View Details',
                   icon: FileText,
                   onClick: () => setViewingAudit(row),
-                } : null,
-                config.key === 'stockAudits' ? {
-                  key: 'print',
-                  label: 'Print',
-                  icon: Printer,
-                  onClick: () => printResourceRows(config, [row]),
                 } : null,
                 config.key === 'stockMovements' ? {
                   key: 'view',
@@ -3441,17 +3449,47 @@ function ResourcePage({ config, navigationContent = null }) {
                   icon: Eye,
                   onClick: () => setViewingMovement(row),
                 } : null,
-                config.key === 'stockMovements' ? {
-                  key: 'print',
-                  label: 'Print',
-                  icon: Printer,
-                  onClick: () => printResourceRows(config, [row]),
-                } : null,
                 config.key === 'stockLedger' ? {
                   key: 'view',
                   label: 'View Details',
                   icon: Eye,
                   onClick: () => setViewingLedger(row),
+                } : null,
+                canUpdate ? {
+                  key: 'edit',
+                  label: 'Edit',
+                  icon: Pencil,
+                  onClick: () => openEdit(row),
+                } : null,
+                config.key === 'stock' ? {
+                  key: 'print',
+                  label: 'Print',
+                  icon: Printer,
+                  onClick: () => printResourceRows(config, [row]),
+                } : null,
+                config.key === 'stockAdjustments' ? {
+                  key: 'print',
+                  label: 'Print',
+                  icon: Printer,
+                  onClick: () => printResourceRows(config, [row]),
+                } : null,
+                config.key === 'stockTransfers' ? {
+                  key: 'print',
+                  label: 'Print',
+                  icon: Printer,
+                  onClick: () => printResourceRows(config, [row]),
+                } : null,
+                config.key === 'stockAudits' ? {
+                  key: 'print',
+                  label: 'Print',
+                  icon: Printer,
+                  onClick: () => printResourceRows(config, [row]),
+                } : null,
+                config.key === 'stockMovements' ? {
+                  key: 'print',
+                  label: 'Print',
+                  icon: Printer,
+                  onClick: () => printResourceRows(config, [row]),
                 } : null,
                 config.key === 'stockLedger' ? {
                   key: 'print',
@@ -3467,12 +3505,6 @@ function ResourcePage({ config, navigationContent = null }) {
                     icon: action.icon || (action.type === 'download' ? Download : action.type === 'put' ? Check : Mail),
                     onClick: () => handleRowAction(action, row),
                   })),
-                canUpdate ? {
-                  key: 'edit',
-                  label: 'Edit',
-                  icon: Pencil,
-                  onClick: () => openEdit(row),
-                } : null,
                 canDelete ? {
                   key: 'delete',
                   label: 'Delete',

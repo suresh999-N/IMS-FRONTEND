@@ -425,17 +425,26 @@ export const RESOURCE_CONFIGS = {
         type: 'lineItems',
         required: true,
         validate: (value, context) => {
-          if (!Array.isArray(value) || value.length === 0) return ''
+          if (!Array.isArray(value) || value.length === 0) {
+            return 'At least one adjustment item is required.'
+          }
           const products = context?.referenceData?.products || []
           const units = context?.referenceData?.units || []
           for (let i = 0; i < value.length; i++) {
             const item = value[i]
-            if (!item.productId) continue
-            const product = products.find((p) => String(p.productId ?? p.id) === String(item.productId))
-            const unit = units.find((u) => String(u.unitId ?? u.id) === String(product?.unitId))
-            const qtyErr = validateStockAdjustmentQuantity(item.quantity, product, unit)
+            if (!item.productId || String(item.productId).trim() === '' || Number(item.productId) <= 0) {
+              return value.length === 1 ? 'Product is required.' : `Line ${i + 1}: Product is required.`
+            }
+            const product = products.find((p) => String(p.productId ?? p.id ?? '') === String(item.productId ?? ''))
+            const productUnitId = product?.unitId ?? product?.UnitId ?? product?.unit_id ?? (typeof product?.unit === 'object' ? product?.unit?.unitId ?? product?.unit?.id : null)
+            const unit = units.find((u) => {
+              const uId = u.unitId ?? u.UnitId ?? u.unit_id ?? u.id
+              return uId !== undefined && productUnitId !== undefined && String(uId) === String(productUnitId)
+            }) || (typeof product?.unit === 'object' ? product?.unit : null)
+
+            const qtyErr = validateStockAdjustmentQuantity(item.quantity, product, unit, { required: true })
             if (qtyErr) {
-              return `Line ${i + 1}: ${qtyErr}`
+              return value.length === 1 ? qtyErr : `Line ${i + 1}: ${qtyErr}`
             }
           }
           return ''
@@ -649,8 +658,9 @@ export const RESOURCE_CONFIGS = {
         min: getToday,
         minDate: getToday,
         minMessage: 'Transfer Date cannot be in the past.',
-        validate: (value) => {
+        validate: (value, context) => {
           if (!value) return ''
+          if (context?.mode === 'edit') return ''
           const today = getToday()
           const dateStr = String(value).slice(0, 10)
           if (dateStr < today) {

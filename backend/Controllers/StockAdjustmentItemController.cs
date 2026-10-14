@@ -67,6 +67,9 @@ namespace IMSBackend.Controllers
             if (adjustment == null)
                 return BadRequest("Invalid AdjustmentId");
 
+            if (dto.ProductId <= 0)
+                return BadRequest("Product is required.");
+
             // Check Product
             var product = _context.Products.FirstOrDefault(item =>
                 item.ProductId == dto.ProductId &&
@@ -199,6 +202,9 @@ namespace IMSBackend.Controllers
 
             if (item == null)
                 return NotFound();
+
+            if (dto.ProductId <= 0)
+                return BadRequest("Product is required.");
 
             if (dto.Quantity <= 0)
             {

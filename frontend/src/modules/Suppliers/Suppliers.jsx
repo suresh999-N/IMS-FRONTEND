@@ -712,14 +712,14 @@ export default function Suppliers({
       const isOfflineError = !response.success && (response.status === 0 || /connect|network|offline|failed to fetch/i.test(response.error || response.message || ''))
 
         if (response.success || isOfflineError) {
-          const savedSupplierId = response.data?.id || response.data?.supplierId || targetId
+          const savedSupplierId = response.data?.id || response.data?.supplierId || response.data?.SupplierId || targetId
           const stagedFiles = (Array.isArray(values?.documents) ? values.documents : []).filter(
             (doc) => doc?.file instanceof File || doc?.file instanceof Blob
           )
 
           if (stagedFiles.length > 0 && savedSupplierId) {
             try {
-              await Promise.all(
+              const uploadResults = await Promise.allSettled(
                 stagedFiles.map((doc) =>
                   uploadSupplierDocument(savedSupplierId, {
                     documentType: doc.documentType || doc.type,
@@ -727,6 +727,10 @@ export default function Suppliers({
                   })
                 )
               )
+              const failures = uploadResults.filter((res) => res.status === 'rejected' || !res.value?.success)
+              if (failures.length > 0) {
+                console.warn('[Supplier Save] Some staged documents failed to upload:', failures)
+              }
             } catch (uploadErr) {
               console.error('[Supplier Save] Staged document upload failed:', uploadErr)
             }
@@ -1282,7 +1286,7 @@ export default function Suppliers({
           >
             <SupplierForm
               key={`${editingSupplier?.id ?? 'new'}-master`}
-              initialValues={selectedSupplier}
+              initialValues={editingSupplier}
               canSubmit={editingSupplier ? canEdit : canCreate}
               onSubmit={handleSave}
               onCancel={handleCloseForm}

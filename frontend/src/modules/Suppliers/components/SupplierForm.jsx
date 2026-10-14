@@ -966,6 +966,12 @@ export default function SupplierForm({
   const panelRef = useRef(null)
   const tabScrollRef = useRef({})
   const initialSupplier = useMemo(() => getInitialSupplier(initialValues), [initialValues])
+  const isPersistedSupplier = Boolean(
+    initialValues &&
+    (initialValues.id || initialValues.supplierId) &&
+    !String(initialValues.id || initialValues.supplierId).startsWith('temp-') &&
+    String(initialValues.id || initialValues.supplierId) !== '0'
+  )
   const [supplier, setSupplier] = useState(initialSupplier)
   const [contactDirtyFields, setContactDirtyFields] = useState({})
   const [customMasterOptions, setCustomMasterOptions] = useState(() => ({
@@ -1620,7 +1626,7 @@ export default function SupplierForm({
         ) : null}
         {activeTab === 'documents' ? (
           <SupplierDocumentsTab
-            supplierId={supplier.id || supplier.supplierId}
+            supplierId={isPersistedSupplier ? (supplier.id || supplier.supplierId) : null}
             documents={supplier.documents}
             readOnly={readOnly}
             onDocumentsChange={(nextDocuments) => {

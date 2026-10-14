@@ -569,6 +569,32 @@ using (var scope = app.Services.CreateScope())
             "company_name",
             "ALTER TABLE `suppliers` ADD COLUMN `company_name` VARCHAR(150) NULL;");
 
+        // =====================================================
+        // STOCK TRANSFERS STATUS COLUMN MIGRATION (ENUM TO VARCHAR)
+        // =====================================================
+        try
+        {
+            await using var statusTypeCommand = connection.CreateCommand();
+            statusTypeCommand.CommandText = @"
+                SELECT DATA_TYPE 
+                FROM INFORMATION_SCHEMA.COLUMNS 
+                WHERE TABLE_SCHEMA = DATABASE() 
+                  AND TABLE_NAME = 'stock_transfers' 
+                  AND COLUMN_NAME = 'status';";
+            var dataType = Convert.ToString(await statusTypeCommand.ExecuteScalarAsync());
+            if (string.Equals(dataType, "enum", StringComparison.OrdinalIgnoreCase))
+            {
+                await using var alterStatusCmd = connection.CreateCommand();
+                alterStatusCmd.CommandText = "ALTER TABLE `stock_transfers` MODIFY COLUMN `status` VARCHAR(50) NULL;";
+                await alterStatusCmd.ExecuteNonQueryAsync();
+                app.Logger.LogInformation("Migrated stock_transfers.status from ENUM to VARCHAR(50).");
+            }
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning(ex, "Could not verify/migrate stock_transfers.status column.");
+        }
+
 
         // =====================================================
         // NEW:

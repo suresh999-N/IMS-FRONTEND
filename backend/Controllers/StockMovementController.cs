@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using IMSBackend.Data;
 using IMSBackend.DTOs;
 using IMSBackend.Models;
@@ -261,12 +261,12 @@ namespace IMSBackend.Controllers
 
         private static string? NormalizeMovementType(string? movementType)
         {
-            var normalized = movementType?.Trim().ToUpperInvariant();
+            var normalized = movementType?.Trim().ToUpperInvariant().Replace(" ", "_").Replace("-", "_");
 
             return normalized switch
             {
-                "IN" or "STOCK_IN" or "RETURN_IN" => "IN",
-                "OUT" or "STOCK_OUT" or "RETURN_OUT" => "OUT",
+                "IN" or "STOCK_IN" or "RETURN_IN" or "PUTAWAY" or "PUT_AWAY" or "TRANSFER_IN" or "SALES_RETURN" => "IN",
+                "OUT" or "STOCK_OUT" or "RETURN_OUT" or "TRANSFER_OUT" or "PURCHASE_RETURN" => "OUT",
                 "SALE" => "SALE",
                 "PURCHASE" => "PURCHASE",
                 "ADJUSTMENT" => "ADJUSTMENT",

@@ -431,7 +431,7 @@ export const RESOURCE_CONFIGS = {
     endpoint: API_ENDPOINTS.stockMovements.list,
     byId: API_ENDPOINTS.stockMovements.byId,
     canCreate: false,
-    canUpdate: false,
+    canUpdate: true,
     canDelete: false,
     statuslessRowsAreActive: true,
     idFields: ['movementId'],
@@ -480,7 +480,7 @@ export const RESOURCE_CONFIGS = {
     endpoint: API_ENDPOINTS.stockLedger.list,
     byId: API_ENDPOINTS.stockLedger.byId,
     canCreate: false,
-    canUpdate: false,
+    canUpdate: true,
     canDelete: false,
     statuslessRowsAreActive: true,
     idFields: ['ledgerId'],
@@ -571,15 +571,15 @@ export const RESOURCE_CONFIGS = {
         type: 'lineItems',
         required: true,
         validate: (value, context) => {
-          if (!Array.isArray(value) || value.length === 0 || !value.some((item) => item.productId)) {
+          if (!Array.isArray(value) || value.length === 0) {
             return 'At least one adjustment item is required.'
           }
           const products = context?.referenceData?.products || []
           const units = context?.referenceData?.units || []
           for (let i = 0; i < value.length; i++) {
             const item = value[i]
-            if (!item.productId) {
-              return `Line ${i + 1}: Product is required.`
+            if (!item.productId || String(item.productId).trim() === '' || Number(item.productId) <= 0) {
+              return value.length === 1 ? 'Product is required.' : `Line ${i + 1}: Product is required.`
             }
             const product = products.find((p) => String(p.productId ?? p.id ?? '') === String(item.productId ?? ''))
             const productUnitId = product?.unitId ?? product?.UnitId ?? product?.unit_id ?? (typeof product?.unit === 'object' ? product?.unit?.unitId ?? product?.unit?.id : null)
@@ -590,7 +590,7 @@ export const RESOURCE_CONFIGS = {
 
             const qtyErr = validateStockAdjustmentQuantity(item.quantity, product, unit, { required: true })
             if (qtyErr) {
-              return `Line ${i + 1}: ${qtyErr}`
+              return value.length === 1 ? qtyErr : `Line ${i + 1}: ${qtyErr}`
             }
           }
           return ''
@@ -814,8 +814,9 @@ export const RESOURCE_CONFIGS = {
         min: getToday,
         minDate: getToday,
         minMessage: 'Transfer Date cannot be in the past.',
-        validate: (value) => {
+        validate: (value, context) => {
           if (!value) return ''
+          if (context?.mode === 'edit') return ''
           const today = getToday()
           const dateStr = String(value).slice(0, 10)
           if (dateStr < today) {
