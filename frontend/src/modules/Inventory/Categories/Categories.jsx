@@ -460,10 +460,15 @@ function CategoryForm({
   categories,
   editingCategory,
   initialParentId = '',
+  isSubcategoryInitial = false,
   onSubmit,
   onCancel,
   isSubmitting,
 }) {
+  const isEditing = Boolean(editingCategory)
+  const [isSubcategory, setIsSubcategory] = useState(() =>
+    Boolean(initialParentId || (editingCategory && parentIdOf(editingCategory)) || isSubcategoryInitial)
+  )
   const [formData, setFormData] = useState(() => ({
     name: editingCategory?.name ?? '',
     parentId: editingCategory ? parentIdOf(editingCategory) : initialParentId,
@@ -472,7 +477,6 @@ function CategoryForm({
   }))
   const [touched, setTouched] = useState({})
 
-  const isEditing = Boolean(editingCategory)
   const editingId = categoryIdOf(editingCategory)
   const descendantIds = editingCategory ? getDescendantIds(categories, editingId) : new Set()
   const name = clean(formData.name)
@@ -493,11 +497,13 @@ function CategoryForm({
       : duplicateName
         ? 'A category with this name already exists under the selected parent.'
         : categoryValidationErr,
-    parentId: selfParent
-      ? 'A category cannot be its own parent.'
-      : circularParent
-        ? 'A category cannot be moved under one of its subcategories.'
-        : '',
+    parentId: isSubcategory && !parentId
+      ? 'Parent category is required.'
+      : selfParent
+        ? 'A category cannot be its own parent.'
+        : circularParent
+          ? 'A category cannot be moved under one of its subcategories.'
+          : '',
     status: !statusValue
       ? 'Please select a status.'
       : !['active', 'inactive'].includes(statusValue.toLowerCase())
@@ -526,6 +532,9 @@ function CategoryForm({
 
   function handleChange(event) {
     const { name: fieldName, value } = event.target
+    if (fieldName === 'parentId' && value) {
+      setIsSubcategory(true)
+    }
     setFormData((currentValue) => ({
       ...currentValue,
       [fieldName]: value,
@@ -541,7 +550,7 @@ function CategoryForm({
 
   function handleSubmit(event) {
     event.preventDefault()
-    setTouched({ name: true, parentId: Boolean(errors.parentId), status: true })
+    setTouched({ name: true, parentId: true, status: true })
 
     if (!isFormValid || !hasChanges || isSubmitting) {
       return
@@ -549,7 +558,7 @@ function CategoryForm({
 
     onSubmit({
       name,
-      parentId: parentId ? Number(parentId) : null,
+      parentId: isSubcategory && parentId ? Number(parentId) : null,
       description: clean(formData.description),
       status: clean(formData.status),
       isActive: clean(formData.status).toLowerCase() === 'active',
@@ -559,6 +568,44 @@ function CategoryForm({
   return (
     <form className="catalog-form" onSubmit={handleSubmit} autoComplete="off">
       <div className="catalog-form__section">
+        <div className="field field--full catalog-hierarchy-type" style={{ marginBottom: '4px' }}>
+          <span className="field-label" style={{ fontWeight: 600, fontSize: '13px', color: '#1e293b', marginBottom: '8px', display: 'block' }}>
+            Category Hierarchy
+          </span>
+          <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', fontWeight: 500, color: '#334155' }}>
+              <input
+                type="radio"
+                name="categoryHierarchy"
+                checked={!isSubcategory}
+                disabled={Boolean(editingCategory && parentIdOf(editingCategory))}
+                onChange={() => {
+                  setIsSubcategory(false)
+                  setFormData((prev) => ({ ...prev, parentId: '' }))
+                }}
+                style={{ cursor: 'pointer', accentColor: 'var(--primary, #059669)', width: '16px', height: '16px' }}
+              />
+              <span>Top-level Category (No Parent)</span>
+            </label>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', fontWeight: 500, color: '#334155' }}>
+              <input
+                type="radio"
+                name="categoryHierarchy"
+                checked={isSubcategory}
+                disabled={Boolean(editingCategory && !parentIdOf(editingCategory) && editingCategory?.childCount > 0)}
+                onChange={() => {
+                  setIsSubcategory(true)
+                  if (initialParentId) {
+                    setFormData((prev) => ({ ...prev, parentId: initialParentId }))
+                  }
+                }}
+                style={{ cursor: 'pointer', accentColor: 'var(--primary, #059669)', width: '16px', height: '16px' }}
+              />
+              <span>Subcategory (Under Existing Hierarchy)</span>
+            </label>
+          </div>
+        </div>
+
         <div className="form-grid">
           <InputField
             id="category-name"
@@ -571,18 +618,27 @@ function CategoryForm({
             placeholder="Enter category name"
           />
 
-          <SearchableSelect
-            id="category-parent"
-            name="parentId"
-            label="Parent category"
-            value={formData.parentId}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            options={parentOptions}
-            placeholder="No parent category"
-            error={errors.parentId}
-            showError={Boolean(touched.parentId && errors.parentId)}
-          />
+          <div className="field">
+            <SearchableSelect
+              id="category-parent"
+              name="parentId"
+              label={isSubcategory ? 'Parent category *' : 'Parent category'}
+              required={isSubcategory}
+              value={formData.parentId}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              options={parentOptions}
+              disabled={!isSubcategory}
+              placeholder={isSubcategory ? 'Select parent category' : 'No parent category (Top-level)'}
+              error={touched.parentId ? errors.parentId : ''}
+              showError={Boolean(touched.parentId && errors.parentId)}
+            />
+            {!isSubcategory ? (
+              <span className="field-hint" style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', display: 'block' }}>
+                Top-level categories do not have a parent. Choose &quot;Subcategory&quot; above to link under an existing hierarchy.
+              </span>
+            ) : null}
+          </div>
 
           <SearchableSelect
             id="category-status"
@@ -624,7 +680,7 @@ function CategoryForm({
           disabled={!isFormValid || !hasChanges || isSubmitting}
         >
           <Save size={16} />
-          {isSubmitting ? 'Saving...' : 'Save Category'}
+          {isSubmitting ? 'Saving...' : (isSubcategory ? 'Save Subcategory' : 'Save Category')}
         </button>
         <button type="button" className="button button-secondary button-cancel" onClick={onCancel} disabled={isSubmitting}>
           Cancel
@@ -908,10 +964,11 @@ export default function Categories() {
 
     await loadCategories({ force: true })
 
+    const isSub = Boolean(values.parentId)
     showToast({
       type: 'success',
-      title: 'Categories',
-      message: `Category ${formState?.category ? 'updated' : 'created'} successfully.`,
+      title: isSub ? 'Subcategories' : 'Categories',
+      message: `${isSub ? 'Subcategory' : 'Category'} ${formState?.category ? 'updated' : 'created'} successfully.`,
     })
     setFormState(null)
   }
@@ -1339,6 +1396,12 @@ export default function Categories() {
                   icon: Eye,
                   onClick: () => setViewingCategory(category),
                 },
+                canCreate ? {
+                  key: 'add-sub',
+                  label: 'Add Subcategory',
+                  icon: Plus,
+                  onClick: () => setFormState({ category: null, initialParentId: categoryIdOf(category), isSubcategory: true }),
+                } : null,
                 category.childCount > 0 ? {
                   key: 'view-subcategories',
                   label: 'View Subcategories',
@@ -1349,7 +1412,7 @@ export default function Categories() {
                   key: 'edit',
                   label: 'Edit',
                   icon: Pencil,
-                  onClick: () => setFormState({ category, initialParentId: '' }),
+                  onClick: () => setFormState({ category, initialParentId: parentIdOf(category), isSubcategory: Boolean(parentIdOf(category)) }),
                 } : null,
                 canEdit ? {
                   key: 'toggle-status',
@@ -1436,11 +1499,17 @@ export default function Categories() {
               className="inventory-row-action-menu"
               label={`Actions for ${row.name}`}
               actions={[
+                canCreate ? {
+                  key: 'add-sub',
+                  label: 'Add Subcategory',
+                  icon: Plus,
+                  onClick: () => setFormState({ category: null, initialParentId: categoryIdOf(row), isSubcategory: true }),
+                } : null,
                 canEdit ? {
                   key: 'edit',
                   label: 'Edit',
                   icon: Pencil,
-                  onClick: () => setFormState({ category: row, initialParentId: '' }),
+                  onClick: () => setFormState({ category: row, initialParentId: parentIdOf(row), isSubcategory: Boolean(parentIdOf(row)) }),
                 } : null,
                 canEdit ? {
                   key: 'toggle-status',
@@ -1626,7 +1695,11 @@ export default function Categories() {
 
       {formState ? (
         <FormModal
-          title={`${formState.category ? 'Edit' : 'Create'} Category`}
+          title={
+            (formState.isSubcategory || formState.initialParentId || (formState.category && parentIdOf(formState.category)))
+              ? `${formState.category ? 'Edit' : 'Create'} Subcategory`
+              : `${formState.category ? 'Edit' : 'Create'} Category`
+          }
           onClose={() => setFormState(null)}
           dialogClassName="catalog-category-modal"
           bodyClassName="catalog-category-modal__body"
@@ -1635,6 +1708,7 @@ export default function Categories() {
             categories={categories}
             editingCategory={formState.category}
             initialParentId={formState.initialParentId}
+            isSubcategoryInitial={Boolean(formState.isSubcategory || formState.initialParentId || (formState.category && parentIdOf(formState.category)))}
             onSubmit={handleSubmit}
             onCancel={() => setFormState(null)}
             isSubmitting={isSaving}
@@ -1738,7 +1812,7 @@ export default function Categories() {
                   type="button"
                   className="button button-primary button-sm"
                   onClick={() => {
-                    setFormState({ category: null, initialParentId: subcategoriesViewTarget.id })
+                    setFormState({ category: null, initialParentId: subcategoriesViewTarget.id, isSubcategory: true })
                   }}
                 >
                   <Plus size={14} /> Add Subcategory
@@ -1778,7 +1852,7 @@ export default function Categories() {
                                 title="Edit subcategory"
                                 onClick={() => {
                                   setSubcategoriesViewTarget(null)
-                                  setFormState({ category: sub, initialParentId: subcategoriesViewTarget.id })
+                                  setFormState({ category: sub, initialParentId: subcategoriesViewTarget.id, isSubcategory: true })
                                 }}
                               >
                                 <Pencil size={14} />

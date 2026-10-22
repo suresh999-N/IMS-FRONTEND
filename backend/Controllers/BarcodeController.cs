@@ -38,6 +38,15 @@ namespace IMSBackend.Controllers
                                   b.BarcodeId,
                                   b.ProductId,
                                   ProductName = prod != null ? prod.Name : string.Empty,
+                                  Code = !string.IsNullOrWhiteSpace(b.CodeValue)
+                                      ? b.CodeValue
+                                      : (prod != null
+                                          ? (!string.IsNullOrWhiteSpace(prod.Barcode)
+                                              ? prod.Barcode
+                                              : (!string.IsNullOrWhiteSpace(prod.SKU)
+                                                  ? prod.SKU
+                                                  : $"PRD-{prod.ProductId}"))
+                                          : string.Empty),
                                   CodeValue = !string.IsNullOrWhiteSpace(b.CodeValue)
                                       ? b.CodeValue
                                       : (prod != null
@@ -47,7 +56,7 @@ namespace IMSBackend.Controllers
                                                   ? prod.SKU
                                                   : $"PRD-{prod.ProductId}"))
                                           : string.Empty),
-                                  b.CodeType,
+                                  CodeType = !string.IsNullOrWhiteSpace(b.CodeType) ? b.CodeType : "Barcode",
                                   b.ImageUrl,
                                   b.CreatedAt
                               }).ToListAsync();
@@ -56,12 +65,12 @@ namespace IMSBackend.Controllers
         }
 
         // =========================
-        // GENERATE BARCODE
+        // GENERATE BARCODE / QR
         // =========================
         [HttpPost("generate")]
         [Permission("barcode", "add")]
         [System.Runtime.Versioning.SupportedOSPlatform("windows")]
-        public async Task<IActionResult> GenerateBarcode(int productId)
+        public async Task<IActionResult> GenerateBarcode(int productId, [FromQuery] string? codeType = "Barcode")
         {
             var product = await _context.Products
                 .FirstOrDefaultAsync(x =>
@@ -76,15 +85,22 @@ namespace IMSBackend.Controllers
                 });
             }
 
+            var normalizedType = string.Equals(codeType?.Trim(), "QR Code", StringComparison.OrdinalIgnoreCase) ||
+                                 string.Equals(codeType?.Trim(), "QR", StringComparison.OrdinalIgnoreCase)
+                                 ? "QR Code"
+                                 : "Barcode";
+
+            var isQr = normalizedType == "QR Code";
+
             var writer = new BarcodeWriterPixelData
             {
-                Format = BarcodeFormat.CODE_128,
+                Format = isQr ? BarcodeFormat.QR_CODE : BarcodeFormat.CODE_128,
 
                 Options = new EncodingOptions
                 {
-                    Height = 120,
-                    Width = 350,
-                    Margin = 2
+                    Height = isQr ? 250 : 120,
+                    Width = isQr ? 250 : 350,
+                    Margin = isQr ? 1 : 2
                 }
             };
 
@@ -138,11 +154,22 @@ namespace IMSBackend.Controllers
 
             var imageUrl = $"/uploads/barcodes/{fileName}";
 
+            // Remove previous code of the same type for this product
+            var existingCodes = await _context.Barcodes
+                .Where(b => b.ProductId == product.ProductId &&
+                            (b.CodeType == normalizedType || (normalizedType == "Barcode" && (b.CodeType == null || b.CodeType == ""))))
+                .ToListAsync();
+
+            if (existingCodes.Any())
+            {
+                _context.Barcodes.RemoveRange(existingCodes);
+            }
+
             var barcode = new Barcode
             {
                 ProductId = product.ProductId,
                 CodeValue = resolvedCode,
-                CodeType = "Barcode",
+                CodeType = normalizedType,
                 ImageUrl = imageUrl,
                 CreatedAt = DateTime.UtcNow
             };
@@ -153,12 +180,13 @@ namespace IMSBackend.Controllers
 
             return Ok(new
             {
-                message = "Barcode generated successfully",
+                message = $"{normalizedType} generated successfully",
                 data = new
                 {
                     barcode.BarcodeId,
                     barcode.ProductId,
                     ProductName = product.Name,
+                    Code = barcode.CodeValue,
                     CodeValue = barcode.CodeValue,
                     barcode.CodeType,
                     barcode.ImageUrl,

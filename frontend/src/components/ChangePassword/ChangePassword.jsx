@@ -391,6 +391,10 @@ function ChangePassword({ settingsData, onClose }) {
       const data = await response.json();
 
       if (typeof data === "string") return data;
+      if (data?.errors && typeof data.errors === "object") {
+        const firstError = Object.values(data.errors).flat().find(Boolean);
+        if (firstError) return firstError;
+      }
       if (data?.message) return data.message;
       if (data?.error) return data.error;
       if (data?.title) return data.title;
@@ -441,7 +445,17 @@ function ChangePassword({ settingsData, onClose }) {
       }, 900);
     } catch (error) {
       console.error("Change password error:", error);
-      setApiError(error.message || p.failed);
+      const msg = error.message || p.failed;
+      setApiError(msg);
+      if (
+        msg.toLowerCase().includes("same as the current password") ||
+        msg.toLowerCase().includes("cannot be the same")
+      ) {
+        setErrors((prev) => ({
+          ...prev,
+          newPassword: p.sameAsCurrent || "New password cannot be the same as the current password",
+        }));
+      }
     } finally {
       setSaving(false);
     }

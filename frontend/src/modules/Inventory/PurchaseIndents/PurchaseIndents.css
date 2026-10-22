@@ -1652,3 +1652,71 @@
   flex: 0 0 280px;
 }
 
+/* Purchase Indents Header & Metrics Single-Line Alignment */
+.purchases-page__compact-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+.purchases-page__compact-main {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.purchases-page__compact-header h1 {
+  margin: 0 !important;
+  color: #111827 !important;
+  font-size: 20px !important;
+  line-height: 1.15 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.purchases-page__metrics {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 2px 0 !important;
+}
+
+.purchases-page__metrics::-webkit-scrollbar {
+  display: none !important;
+}
+
+.purchases-page__metric {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  min-height: 28px !important;
+  padding: 2px 9px !important;
+  border: 1px solid #dbe5ef !important;
+  border-radius: 999px !important;
+  background: #f8fafc !important;
+  color: #334155 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.purchases-page__compact-header > .button {
+  min-height: 40px !important;
+  padding-inline: 18px !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+

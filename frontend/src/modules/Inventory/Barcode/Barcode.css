@@ -246,3 +246,141 @@
   line-height: 1.4 !important;
 }
 
+/* Tabs & Filter Bar for Barcode / QR */
+.barcode-tabs-wrapper {
+  padding: 10px 14px 0 14px;
+  border-bottom: 1px solid #e2e8f0;
+  background: var(--surface, #ffffff);
+}
+
+.barcode-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.barcode-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.barcode-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  white-space: nowrap;
+  outline: none;
+  margin-bottom: -1px;
+}
+
+.barcode-tab:hover {
+  color: #0f172a;
+  background: #f8fafc;
+}
+
+.barcode-tab.is-active {
+  color: #0284c7;
+  border-bottom-color: #0284c7;
+  background: transparent;
+  font-weight: 700;
+}
+
+.barcode-tab__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #64748b;
+  transition: all 0.15s ease-in-out;
+}
+
+.barcode-tab.is-active .barcode-tab__badge {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+/* Badges / Pills for Type column in Table */
+.barcode-type-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 650;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.barcode-type-pill--barcode {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.barcode-type-pill--qr {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+/* Dark mode overrides */
+.ims-dark-theme .barcode-tabs-wrapper {
+  background: var(--surface);
+  border-bottom-color: var(--border);
+}
+
+.ims-dark-theme .barcode-tab {
+  color: var(--muted);
+}
+
+.ims-dark-theme .barcode-tab:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ims-dark-theme .barcode-tab.is-active {
+  color: #38bdf8;
+  border-bottom-color: #38bdf8;
+}
+
+.ims-dark-theme .barcode-tab__badge {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+}
+
+.ims-dark-theme .barcode-tab.is-active .barcode-tab__badge {
+  background: rgba(56, 189, 248, 0.2);
+  color: #7dd3fc;
+}
+
+.ims-dark-theme .barcode-type-pill--barcode {
+  background: rgba(148, 163, 184, 0.12);
+  color: #94a3b8;
+  border-color: rgba(148, 163, 184, 0.24);
+}
+
+.ims-dark-theme .barcode-type-pill--qr {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+

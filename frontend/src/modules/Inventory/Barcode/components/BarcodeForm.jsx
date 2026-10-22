@@ -1,7 +1,9 @@
 import {
   AlertTriangle,
+  Barcode as BarcodeIcon,
   CalendarDays,
   Package,
+  QrCode,
   Save,
   ScanLine,
   X,
@@ -25,6 +27,7 @@ export default function BarcodeForm({
   isSaving = false,
 }) {
   const isFormValid = Object.values(errors).every((value) => !value)
+  const codeTypeLabel = formData.codeType || 'Barcode'
 
   return (
     <div className="card">
@@ -51,7 +54,7 @@ export default function BarcodeForm({
           >
             <AlertTriangle size={18} style={{ flexShrink: 0 }} />
             <span style={{ textAlign: 'left', lineHeight: '1.4' }}>
-              <strong>Warning:</strong> Barcode already exists for this product. Generating a new code will require explicit overwrite confirmation.
+              <strong>Warning:</strong> {codeTypeLabel} already exists for this product. Generating a new code will require explicit overwrite confirmation.
             </span>
           </div>
         ) : null}
@@ -100,7 +103,7 @@ export default function BarcodeForm({
               }}
             >
               <AlertTriangle size={12} />
-              Barcode already exists for this product.
+              {codeTypeLabel} already exists for this product.
             </span>
           ) : null}
         </div>
@@ -109,7 +112,7 @@ export default function BarcodeForm({
           id="barcode-type"
           name="codeType"
           label="Code Type"
-          icon={ScanLine}
+          icon={formData.codeType === 'QR Code' ? QrCode : BarcodeIcon}
           value={formData.codeType}
           onChange={onChange}
           options={['Barcode', 'QR Code']}
@@ -144,7 +147,7 @@ export default function BarcodeForm({
 
         {livePreviewValue ? (
           <div className="barcode-page__live-preview">
-            <h3>Preview</h3>
+            <h3>{codeTypeLabel} Preview</h3>
             <CodePreview codeType={formData.codeType} value={livePreviewValue} />
           </div>
         ) : null}
@@ -156,7 +159,7 @@ export default function BarcodeForm({
             disabled={!isFormValid || isSaving}
           >
             <Save size={16} />
-            {isSaving ? 'Generating...' : existingBarcode ? 'Overwrite & Regenerate' : 'Generate'}
+            {isSaving ? 'Generating...' : existingBarcode ? `Overwrite & Regenerate ${codeTypeLabel}` : `Generate ${codeTypeLabel}`}
           </button>
           <button type="button" className="button button-cancel" onClick={onCancel}>
             <X size={16} />

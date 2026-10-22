@@ -9,16 +9,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
+  width: 100%;
 }
 
-.purchases-page__compact-main,
-.purchases-page__metrics {
+.purchases-page__compact-main {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 .purchases-page__compact-header h1 {
@@ -27,25 +28,40 @@
   font-size: 20px;
   line-height: 1.15;
   letter-spacing: 0;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
 }
 
 .purchases-page__metrics {
-  flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex-wrap: nowrap !important;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 0;
+}
+
+.purchases-page__metrics::-webkit-scrollbar {
+  display: none;
 }
 
 .purchases-page__metric {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   min-height: 28px;
-  padding: 3px 11px;
+  padding: 2px 9px;
   border: 1px solid #dbe5ef;
   border-radius: 999px;
   background: #f8fafc;
   color: #334155;
   font-size: 12px;
   font-weight: 700;
-  white-space: nowrap;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
 }
 
 .purchases-page__metric strong,
@@ -246,6 +262,8 @@
 .purchases-page__compact-header > .button {
   min-height: 40px;
   padding-inline: 18px;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
 }
 
 .purchases-page__table .search-input-container {

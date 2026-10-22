@@ -860,19 +860,19 @@ namespace IMSBackend.Controllers
 
 
 
-            // Check confirm password
-            if (dto.NewPassword != dto.ConfirmPassword)
+            // Check confirm password
+            if (dto.NewPassword != dto.ConfirmPassword)
             {
                 return BadRequest(ApiResponse<object>.Fail(
-                "New password and confirm password do not match.",
-                traceId: HttpContext.TraceIdentifier));
+                    "New password and confirm password do not match.",
+                    traceId: HttpContext.TraceIdentifier));
             }
-
-
 
             // Prevent using the same password again
             if (string.Equals(dto.CurrentPassword?.Trim(), dto.NewPassword?.Trim(), StringComparison.Ordinal) ||
-                BCrypt.Net.BCrypt.Verify(dto.NewPassword, user.PasswordHash))
+                (!string.IsNullOrEmpty(user.PasswordHash) && !string.IsNullOrEmpty(dto.NewPassword) &&
+                 (BCrypt.Net.BCrypt.Verify(dto.NewPassword, user.PasswordHash) ||
+                  BCrypt.Net.BCrypt.Verify(dto.NewPassword.Trim(), user.PasswordHash))))
             {
                 return BadRequest(ApiResponse<object>.Fail(
                     "New password cannot be the same as the current password.",
@@ -1069,11 +1069,21 @@ namespace IMSBackend.Controllers
             }
 
             // Prevent using the current password again during reset
-            if (BCrypt.Net.BCrypt.Verify(dto.NewPassword, user.PasswordHash))
+            try
             {
-                return BadRequest(ApiResponse<object>.Fail(
-                    "New password cannot be the same as the current password.",
-                    traceId: HttpContext.TraceIdentifier));
+                if (!string.IsNullOrEmpty(user.PasswordHash) &&
+                    !string.IsNullOrEmpty(dto.NewPassword) &&
+                    (BCrypt.Net.BCrypt.Verify(dto.NewPassword, user.PasswordHash) ||
+                     BCrypt.Net.BCrypt.Verify(dto.NewPassword.Trim(), user.PasswordHash)))
+                {
+                    return BadRequest(ApiResponse<object>.Fail(
+                        "New password cannot be the same as the current password.",
+                        traceId: HttpContext.TraceIdentifier));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to verify password hash during reset for {Email}", email);
             }
 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);

@@ -61,8 +61,16 @@ export default function ResetPassword() {
     confirmPasswordError = 'Passwords do not match.'
   }
 
+  const isSamePasswordError = Boolean(
+    error &&
+    (error.toLowerCase().includes('same as the current password') ||
+     error.toLowerCase().includes('same as your current password') ||
+     error.toLowerCase().includes('same as the old password') ||
+     error.toLowerCase().includes('cannot be the same'))
+  )
+
   const otpDisplayError = touched.otp && otpError
-  const passwordDisplayError = touched.password && passwordError
+  const passwordDisplayError = (touched.password && passwordError) || (isSamePasswordError ? error : '')
   const confirmPasswordDisplayError = touched.confirmPassword && confirmPasswordError
 
   const isFormValid = !otpError && !passwordError && !confirmPasswordError
@@ -105,7 +113,8 @@ export default function ResetPassword() {
       })
 
       if (!result.success) {
-        setError(getAuthErrorMessage(result.error, 'We could not update your password. Try again.'))
+        const rawErr = result.error || result.message || ''
+        setError(getAuthErrorMessage(rawErr, 'We could not update your password. Try again.'))
         return
       }
 

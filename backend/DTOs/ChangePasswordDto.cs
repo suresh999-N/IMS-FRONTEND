@@ -2,9 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace IMSBackend.DTOs
 {
-    public class ChangePasswordDto
+    public class ChangePasswordDto : IValidatableObject
     {
-        [Required]
+        [Required(ErrorMessage = "Current password is required.")]
         public string CurrentPassword { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Password is required.")]
@@ -16,7 +16,28 @@ namespace IMSBackend.DTOs
         )]
         public string NewPassword { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Confirm password is required.")]
         public string ConfirmPassword { get; set; } = string.Empty;
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (!string.IsNullOrWhiteSpace(CurrentPassword) &&
+                !string.IsNullOrWhiteSpace(NewPassword) &&
+                string.Equals(CurrentPassword.Trim(), NewPassword.Trim(), StringComparison.Ordinal))
+            {
+                yield return new ValidationResult(
+                    "New password cannot be the same as the current password.",
+                    new[] { nameof(NewPassword) });
+            }
+
+            if (!string.IsNullOrWhiteSpace(NewPassword) &&
+                !string.IsNullOrWhiteSpace(ConfirmPassword) &&
+                !string.Equals(NewPassword, ConfirmPassword, StringComparison.Ordinal))
+            {
+                yield return new ValidationResult(
+                    "New password and confirm password do not match.",
+                    new[] { nameof(ConfirmPassword) });
+            }
+        }
     }
 }

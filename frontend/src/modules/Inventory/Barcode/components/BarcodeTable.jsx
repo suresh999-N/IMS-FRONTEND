@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Printer, RefreshCw } from 'lucide-react'
+import { Barcode as BarcodeIcon, Printer, QrCode, RefreshCw, ScanLine } from 'lucide-react'
 import CodePreview from './CodePreview'
 import { DataTable, ActionMenu, FilterBar } from '../../../../components/erp'
 import { formatDate } from '../../../../utils/helpers'
@@ -30,6 +30,7 @@ function handlePrintBarcode(input) {
   const cardsHtml = items.map((item) => {
     const isQr = item.codeType === 'QR Code'
     const itemValue =
+      item.code ||
       item.value ||
       item.codeValue ||
       item.barcode ||
@@ -229,11 +230,32 @@ function handlePrintBarcode(input) {
 
 export default function BarcodeTable({ barcodes = [], onRefresh, isLoading }) {
   const [selectedBarcodeIds, setSelectedBarcodeIds] = useState([])
+  const [activeTab, setActiveTab] = useState('all')
+
+  const barcodeCount = useMemo(
+    () => barcodes.filter((b) => String(b.codeType || '').toLowerCase() !== 'qr code').length,
+    [barcodes]
+  )
+  const qrCount = useMemo(
+    () => barcodes.filter((b) => String(b.codeType || '').toLowerCase() === 'qr code').length,
+    [barcodes]
+  )
+  const allCount = barcodes.length
+
+  const filteredBarcodes = useMemo(() => {
+    if (activeTab === 'barcode') {
+      return barcodes.filter((b) => String(b.codeType || '').toLowerCase() !== 'qr code')
+    }
+    if (activeTab === 'qr') {
+      return barcodes.filter((b) => String(b.codeType || '').toLowerCase() === 'qr code')
+    }
+    return barcodes
+  }, [barcodes, activeTab])
 
   const selectedBarcodes = useMemo(() => {
     const selectedSet = new Set(selectedBarcodeIds.map(String))
-    return barcodes.filter((item) => selectedSet.has(String(item.id)))
-  }, [barcodes, selectedBarcodeIds])
+    return filteredBarcodes.filter((item) => selectedSet.has(String(item.id)))
+  }, [filteredBarcodes, selectedBarcodeIds])
 
   const toolbarContent = (
     <FilterBar className="barcode-page__toolbar-actions" ariaLabel="Barcode table refresh actions">
@@ -261,6 +283,22 @@ export default function BarcodeTable({ barcodes = [], onRefresh, isLoading }) {
     </FilterBar>
   )
 
+  // Migrate any existing saved columns from 'value' to 'code'
+  if (typeof window !== 'undefined') {
+    try {
+      const v1 = window.localStorage.getItem('ims.barcode.table.visibleColumns.v1')
+      if (v1 && !window.localStorage.getItem('ims.barcode.table.visibleColumns.v2')) {
+        const parsed = JSON.parse(v1)
+        if (Array.isArray(parsed)) {
+          const migrated = parsed.map((k) => (k === 'value' ? 'code' : k))
+          window.localStorage.setItem('ims.barcode.table.visibleColumns.v2', JSON.stringify(migrated))
+        }
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }
+
   const columns = [
     { key: 'date', label: 'Date', format: 'date', sortable: true, render: (item) => formatDate(item.date) },
     {
@@ -269,16 +307,45 @@ export default function BarcodeTable({ barcodes = [], onRefresh, isLoading }) {
       sortable: true,
       mobilePrimary: true,
       searchValue: (item) =>
-        `${item.productName} ${item.codeType} ${item.value || item.codeValue || item.barcode || item.sku || ''}`,
+        `${item.productName} ${item.codeType} ${item.code || item.value || item.codeValue || item.barcode || item.sku || ''}`,
     },
-    { key: 'codeType', label: 'Type', sortable: true, mobileStatus: true },
     {
-      key: 'value',
-      label: 'Value',
+      key: 'codeType',
+      label: 'Type',
+      sortable: true,
+      mobileStatus: true,
+      render: (item) => {
+        const isQr = String(item.codeType || '').toLowerCase().includes('qr')
+        return (
+          <span className={`barcode-type-pill ${isQr ? 'barcode-type-pill--qr' : 'barcode-type-pill--barcode'}`}>
+            {isQr ? <QrCode size={13} /> : <BarcodeIcon size={13} />}
+            <span>{isQr ? 'QR Code' : 'Barcode'}</span>
+          </span>
+        )
+      },
+    },
+    {
+      key: 'code',
+      label: 'Code',
       sortable: true,
       className: 'barcode-page__code',
+      searchValue: (item) =>
+        item.code ||
+        item.value ||
+        item.codeValue ||
+        item.barcode ||
+        item.sku ||
+        (item.productId ? `PRD-${item.productId}` : ''),
+      sortValue: (item) =>
+        item.code ||
+        item.value ||
+        item.codeValue ||
+        item.barcode ||
+        item.sku ||
+        (item.productId ? `PRD-${item.productId}` : ''),
       render: (item) => {
         const displayValue =
+          item.code ||
           item.value ||
           item.codeValue ||
           item.barcode ||
@@ -294,6 +361,7 @@ export default function BarcodeTable({ barcodes = [], onRefresh, isLoading }) {
       mobileHidden: true,
       render: (item) => {
         const displayValue =
+          item.code ||
           item.value ||
           item.codeValue ||
           item.barcode ||
@@ -327,20 +395,65 @@ export default function BarcodeTable({ barcodes = [], onRefresh, isLoading }) {
     },
   ]
 
+  const emptyMessage =
+    activeTab === 'qr'
+      ? 'No QR code records available.'
+      : activeTab === 'barcode'
+      ? 'No barcode records available.'
+      : 'No barcode or QR records available.'
+
   return (
     <div className="card barcode-page__table-card">
+      <div className="barcode-tabs-wrapper">
+        <div className="barcode-tabs" role="tablist" aria-label="Code type filters">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'all'}
+            className={`barcode-tab ${activeTab === 'all' ? 'is-active' : ''}`}
+            onClick={() => setActiveTab('all')}
+          >
+            <ScanLine size={15} />
+            <span>All Codes</span>
+            <span className="barcode-tab__badge">{allCount}</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'barcode'}
+            className={`barcode-tab ${activeTab === 'barcode' ? 'is-active' : ''}`}
+            onClick={() => setActiveTab('barcode')}
+          >
+            <BarcodeIcon size={15} />
+            <span>Barcodes</span>
+            <span className="barcode-tab__badge">{barcodeCount}</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'qr'}
+            className={`barcode-tab ${activeTab === 'qr' ? 'is-active' : ''}`}
+            onClick={() => setActiveTab('qr')}
+          >
+            <QrCode size={15} />
+            <span>QR Codes</span>
+            <span className="barcode-tab__badge">{qrCount}</span>
+          </button>
+        </div>
+      </div>
+
       <DataTable
-        rows={barcodes}
+        rows={filteredBarcodes}
         columns={columns}
         loading={isLoading}
         defaultPageSize={8}
         splitToolbar
         showColumnControls={true}
-        columnStorageKey="ims.barcode.table.visibleColumns.v1"
-        defaultVisibleColumnKeys={['date', 'productName', 'codeType', 'value', 'preview', 'actions']}
+        columnStorageKey="ims.barcode.table.visibleColumns.v2"
+        defaultVisibleColumnKeys={['date', 'productName', 'codeType', 'code', 'preview', 'actions']}
         toolbarContent={toolbarContent}
         searchPlaceholder="Search product or code"
-        emptyMessage="No barcode or QR records available."
+        emptyMessage={emptyMessage}
         enableRowSelection={true}
         selectedRowKeys={selectedBarcodeIds}
         onSelectionChange={setSelectedBarcodeIds}

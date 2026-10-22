@@ -42,8 +42,8 @@ export default function Barcode({
 
   const existingBarcode = useMemo(() => {
     if (!formData.productId && !selectedProduct?.name) return null
-    return findExistingBarcode(formData.productId, selectedProduct?.name, barcodes)
-  }, [barcodes, formData.productId, selectedProduct])
+    return findExistingBarcode(formData.productId, selectedProduct?.name, barcodes, formData.codeType)
+  }, [barcodes, formData.productId, selectedProduct, formData.codeType])
 
   async function loadBarcodes() {
     setIsLoading(true)
@@ -106,15 +106,16 @@ export default function Barcode({
     setMessage(null)
 
     try {
-      const response = await generateBarcode(formData.productId, products)
+      const response = await generateBarcode(formData.productId, formData.codeType, products)
 
       if (response.success) {
         setBarcodes((current) => {
           if (isOverwrite) {
             const filtered = current.filter((b) => {
               const isMatch =
-                (formData.productId && String(b.productId) === String(formData.productId)) ||
-                (selectedProduct?.name && b.productName && b.productName.trim().toLowerCase() === selectedProduct.name.trim().toLowerCase())
+                ((formData.productId && String(b.productId) === String(formData.productId)) ||
+                 (selectedProduct?.name && b.productName && b.productName.trim().toLowerCase() === selectedProduct.name.trim().toLowerCase())) &&
+                (String(b.codeType || 'Barcode').toLowerCase() === String(formData.codeType || 'Barcode').toLowerCase())
               return !isMatch
             })
             return [response.data, ...filtered]
@@ -149,7 +150,7 @@ export default function Barcode({
     setShowOverwriteConfirm(false)
     setMessage({
       success: false,
-      message: 'Barcode already exists for this product.',
+      message: `${formData.codeType} already exists for this product.`,
     })
   }
 
@@ -198,8 +199,8 @@ export default function Barcode({
 
       {showOverwriteConfirm ? (
         <ConfirmationDialog
-          title="Barcode Already Exists"
-          message={`A barcode already exists for "${selectedProduct?.name || 'this product'}". Do you want to regenerate and overwrite the existing barcode?`}
+          title={`${formData.codeType} Already Exists`}
+          message={`A ${formData.codeType.toLowerCase()} already exists for "${selectedProduct?.name || 'this product'}". Do you want to regenerate and overwrite the existing ${formData.codeType.toLowerCase()}?`}
           confirmLabel="Overwrite & Regenerate"
           cancelLabel="Cancel"
           tone="warning"

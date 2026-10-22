@@ -10,7 +10,9 @@ export function deduplicateBarcodes(barcodes = []) {
   const result = []
 
   for (const item of barcodes) {
-    const key = String(item.productId || item.productName || '').trim().toLowerCase()
+    const prodKey = String(item.productId || item.productName || '').trim().toLowerCase()
+    const typeKey = String(item.codeType || 'Barcode').trim().toLowerCase()
+    const key = prodKey ? `${prodKey}_${typeKey}` : ''
     if (!key) {
       result.push(item)
       continue
@@ -25,11 +27,17 @@ export function deduplicateBarcodes(barcodes = []) {
   return result
 }
 
-export function findExistingBarcode(productId, productName, barcodes = []) {
+export function findExistingBarcode(productId, productName, barcodes = [], codeType = 'Barcode') {
   const targetId = String(productId || '').trim()
   const targetName = String(productName || '').trim().toLowerCase()
+  const targetType = String(codeType || 'Barcode').trim().toLowerCase()
 
   return barcodes.find((item) => {
+    const itemType = String(item.codeType || 'Barcode').trim().toLowerCase()
+    if (targetType && itemType !== targetType) {
+      return false
+    }
+
     if (targetId && String(item.productId) === targetId) {
       return true
     }
@@ -68,11 +76,20 @@ export async function getBarcodes(products = []) {
   }
 }
 
-export async function generateBarcode(productId, products = []) {
+export async function generateBarcode(productId, codeTypeOrProducts = 'Barcode', products = []) {
+  const normalizedType = typeof codeTypeOrProducts === 'string'
+    ? (codeTypeOrProducts.toLowerCase().includes('qr') ? 'QR Code' : 'Barcode')
+    : 'Barcode'
+
+  const resolvedProducts = Array.isArray(codeTypeOrProducts)
+    ? codeTypeOrProducts
+    : (Array.isArray(products) ? products : [])
+
   const response = await apiRequest(API_ENDPOINTS.barcode.generate, {
     method: 'POST',
     query: {
       productId: Number(productId) || productId,
+      codeType: normalizedType,
     },
   })
 
@@ -80,7 +97,7 @@ export async function generateBarcode(productId, products = []) {
     return response
   }
 
-  let productList = Array.isArray(products) && products.length > 0 ? products : []
+  let productList = resolvedProducts.length > 0 ? resolvedProducts : []
   if (productList.length === 0) {
     try {
       const prodRes = await apiRequest(API_ENDPOINTS.products.list)
@@ -136,10 +153,15 @@ export function normalizeBarcode(item = {}, products = []) {
     (rawId ? `BC-${rawId}` : '') ||
     ''
 
-  const codeType = item.codeType || item.CodeType || (String(rawValue).startsWith('QR:') ? 'QR Code' : 'Barcode')
+  const rawCodeType = item.codeType || item.CodeType
+  const codeType = rawCodeType
+    ? (String(rawCodeType).trim().toLowerCase().includes('qr') ? 'QR Code' : 'Barcode')
+    : (String(rawValue).startsWith('QR:') ? 'QR Code' : 'Barcode')
+
   const dateVal = item.date || item.Date || item.createdAt || item.CreatedAt || new Date().toISOString().split('T')[0]
   const date = String(dateVal).split('T')[0]
-  const id = rawId || String(productId ? `barcode-prod-${productId}` : `${productName}-${rawValue || date}`)
+  const typeKey = codeType.toLowerCase().replace(/\s+/g, '-')
+  const id = rawId || String(productId ? `${typeKey}-prod-${productId}` : `${productName}-${typeKey}-${rawValue || date}`)
 
   return {
     ...item,
@@ -147,6 +169,7 @@ export function normalizeBarcode(item = {}, products = []) {
     productId,
     productName,
     codeType,
+    code: rawValue,
     value: rawValue,
     preview: codeType === 'QR Code' ? `[ QR ] ${productName}` : `|||| ${rawValue} ||||`,
     date,
